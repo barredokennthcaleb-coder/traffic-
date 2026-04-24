@@ -14,8 +14,11 @@ $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::registerPost');
 $routes->get('logout', 'AuthController::logout');
 
+// User Dashboard Route
+$routes->get('user/dashboard', 'UserController::index', ['filter' => 'auth']);
+
 // Admin Routes
-$routes->group('', ['filter' => 'auth'], function($routes) {
+$routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('dashboard', 'Admin\AdminController::index');
     $routes->get('analytics', 'Admin\AdminController::analytics');
     $routes->get('about', 'Admin\AdminController::about');
