@@ -24,7 +24,7 @@ class AdminController extends BaseController
             'recent_violations' => $recentViolations,
         ]);
 
-        return view('admin/dashboard', $data);
+        return view('admin/main/dashboard', $data);
     }
 
     public function analytics()
@@ -43,7 +43,7 @@ class AdminController extends BaseController
             ],
         ];
 
-        return view('admin/analytics', $data);
+        return view('admin/main/analytics', $data);
     }
 
     public function about()
@@ -51,6 +51,6 @@ class AdminController extends BaseController
         $data = [
             'title' => 'About System'
         ];
-        return view('admin/about', $data);
+        return view('admin/main/about', $data);
     }
 }

@@ -93,6 +93,14 @@
         .form-control:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background-color: #fff;
+        }
+        .input-group:focus-within .input-group-text {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .input-group:focus-within .form-control {
+            border-color: #667eea;
         }
         .input-group-text {
             border: 2px solid #e9ecef;
@@ -214,7 +222,9 @@
                            placeholder="Enter your email" 
                            required 
                            value="<?= old('email') ?>"
-                           autocomplete="email">
+                           autocomplete="email"
+                           list="emailSuggestions">
+                    <datalist id="emailSuggestions"></datalist>
                 </div>
             </div>
             <div class="mb-4">
@@ -261,6 +271,11 @@
     }
 
     document.getElementById('loginForm').addEventListener('submit', function() {
+        const email = document.getElementById('email').value;
+        if (email) {
+            saveEmail(email);
+        }
+
         const btn = document.getElementById('submitBtn');
         const btnText = document.getElementById('btnText');
         const spinner = document.getElementById('btnSpinner');
@@ -269,6 +284,34 @@
         btnText.textContent = 'Signing in...';
         spinner.classList.remove('d-none');
     });
+
+    // Handle Recently Used Accounts
+    function saveEmail(email) {
+        let savedEmails = JSON.parse(localStorage.getItem('traffic_saved_emails') || '[]');
+        if (!savedEmails.includes(email)) {
+            savedEmails.push(email);
+            // Keep only last 5 accounts
+            if (savedEmails.length > 5) savedEmails.shift();
+            localStorage.setItem('traffic_saved_emails', JSON.stringify(savedEmails));
+        }
+    }
+
+    function loadSavedEmails() {
+        const savedEmails = JSON.parse(localStorage.getItem('traffic_saved_emails') || '[]');
+        const datalist = document.getElementById('emailSuggestions');
+        
+        if (savedEmails.length > 0) {
+            datalist.innerHTML = savedEmails.map(email => `<option value="${email}">`).join('');
+            
+            // Also show a small hint if it's the first visit back
+            if (!document.getElementById('email').value && savedEmails.length > 0) {
+                // Optional: you could auto-fill the last one or just let the datalist handle it
+            }
+        }
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', loadSavedEmails);
 </script>
 
 </body>

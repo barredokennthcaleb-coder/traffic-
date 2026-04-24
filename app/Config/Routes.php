@@ -15,12 +15,12 @@ $routes->post('register', 'AuthController::registerPost');
 $routes->get('logout', 'AuthController::logout');
 
 // User Dashboard Route
-$routes->get('user/dashboard', 'UserController::index', ['filter' => 'auth']);
-$routes->get('user/violations', 'UserController::violations', ['filter' => 'auth']);
-$routes->get('user/history', 'UserController::history', ['filter' => 'auth']);
-$routes->get('user/pay/(:any)', 'UserController::payViolation/$1', ['filter' => 'auth']);
-$routes->post('user/process-payment', 'UserController::processPayment', ['filter' => 'auth']);
-$routes->get('user/receipt/(:any)', 'UserController::receipt/$1', ['filter' => 'auth']);
+$routes->get('user/dashboard', 'User\UserController::index', ['filter' => 'auth']);
+$routes->get('user/violations', 'User\UserController::violations', ['filter' => 'auth']);
+$routes->get('user/history', 'User\UserController::history', ['filter' => 'auth']);
+$routes->get('user/pay/(:any)', 'User\UserController::payViolation/$1', ['filter' => 'auth']);
+$routes->post('user/process-payment', 'User\UserController::processPayment', ['filter' => 'auth']);
+$routes->get('user/receipt/(:any)', 'User\UserController::receipt/$1', ['filter' => 'auth']);
 
 // Officer Routes
 $routes->group('officer', ['filter' => 'officer'], function($routes) {

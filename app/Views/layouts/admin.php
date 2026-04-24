@@ -77,12 +77,13 @@
 
         .sidebar-toggle {
             position: absolute;
-            right: -15px;
-            top: 20px;
-            width: 30px;
-            height: 30px;
-            background: #343a40;
-            border: 1px solid rgba(255,255,255,0.1);
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: #0d6efd; /* Bright Bootstrap Blue */
+            border: 3px solid white;
             border-radius: 50%;
             color: white;
             display: flex;
@@ -90,11 +91,23 @@
             justify-content: center;
             cursor: pointer;
             z-index: 1001;
-            transition: transform var(--transition-speed) ease;
+            transition: all var(--transition-speed) ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-size: 1.2rem;
+        }
+
+        .sidebar-toggle:hover {
+            background: #0b5ed7;
+            transform: translateY(-50%) scale(1.15);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
 
         .sidebar.collapsed .sidebar-toggle {
-            transform: rotate(180deg);
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .sidebar.collapsed .sidebar-toggle:hover {
+            transform: translateY(-50%) rotate(180deg) scale(1.15);
         }
 
         .main-content {

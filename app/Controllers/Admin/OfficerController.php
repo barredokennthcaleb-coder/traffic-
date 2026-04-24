@@ -26,7 +26,7 @@ class OfficerController extends BaseController
             'title' => 'Record Violation',
             'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
         ];
-        return view('officer/index', $data);
+        return view('admin/officer/index', $data);
     }
 
     public function store()
@@ -77,7 +77,7 @@ class OfficerController extends BaseController
             'title' => 'My Recorded Violations',
             'violations' => $this->violationRecord->getAllDetailed(),
         ];
-        return view('officer/violations', $data);
+        return view('admin/officer/violations', $data);
     }
 
     public function view($id)
@@ -92,7 +92,7 @@ class OfficerController extends BaseController
             'title' => 'Violation Details',
             'violation' => $violation
         ];
-        return view('officer/view', $data);
+        return view('admin/officer/view', $data);
     }
 
     public function cancel($id)
