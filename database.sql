@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 24, 2026 at 09:02 AM
+-- Generation Time: Apr 24, 2026 at 10:52 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -83,7 +83,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'ken', 'ken@gmail.com', '$2y$10$4UK8zNJBHoM.mH5lXkHzMOSs7WVZISIoQsUAbS1qxKvX.DMRwKA0K', 'user', 'active', '2026-04-24 06:24:39', '2026-04-24 06:24:39'),
 (2, 'leb', 'leb@gmail.com', '$2y$10$LufdV2oxGUqxjvALE799EuRkjgFzCSKAUA3/AVbsECXHkBjSnT.ai', 'user', 'active', '2026-04-24 06:34:46', '2026-04-24 06:34:46'),
-(3, 'kenneth', 'kenneth@gmail.com', '$2y$10$IavKG8WMg194LZSYNCgiY..gE/3lXZQ/niCDaiNxoVrJUT/v5AFdC', 'admin', 'active', '2026-04-24 06:37:44', '2026-04-24 06:37:44');
+(3, 'kenneth', 'kenneth@gmail.com', '$2y$10$IavKG8WMg194LZSYNCgiY..gE/3lXZQ/niCDaiNxoVrJUT/v5AFdC', 'admin', 'active', '2026-04-24 06:37:44', '2026-04-24 06:37:44'),
+(6, 'janrey', 'janrey@gmail.com', '$2y$10$dBn6qJz1EHJs2.9xXZfPZuqXJlFlshK/PyZw3swtxK0zeVQ9LCK1y', 'traffic_officer', 'active', '2026-04-24 08:50:07', '2026-04-24 08:50:07');
 
 -- --------------------------------------------------------
 
@@ -199,7 +200,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `violations`
