@@ -14,6 +14,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link <?= (uri_string() == 'penalties' || strpos(uri_string(), 'penalties/') === 0) ? 'active' : '' ?>" href="/penalties">
+                    <i class="bi bi-wallet2 me-2"></i> Penalty Management
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link <?= (uri_string() == 'users' || strpos(uri_string(), 'users/') === 0) ? 'active' : '' ?>" href="/users">
                     <i class="bi bi-people me-2"></i> User Management
                 </a>

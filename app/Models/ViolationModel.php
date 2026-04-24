@@ -22,11 +22,12 @@ class ViolationModel extends Model
 
     // Validation
     protected $validationRules      = [
+        'id'             => 'permit_empty|integer',
         'driver_name'    => 'required|min_length[3]',
         'license_plate'  => 'required|min_length[3]',
         'violation_type' => 'required',
         'penalty_amount' => 'required|decimal',
         'status'         => 'required|in_list[Pending,Paid,Cancelled]',
-        'violation_date' => 'required|valid_date',
+        'violation_date' => 'required',
     ];
 }

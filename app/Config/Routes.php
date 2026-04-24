@@ -27,4 +27,10 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');
     $routes->post('users/update/(:num)', 'Admin\UserController::update/$1');
     $routes->get('users/delete/(:num)', 'Admin\UserController::delete/$1');
+
+    // Penalty & Payment Routes
+    $routes->get('penalties', 'Admin\PenaltyController::index');
+    $routes->get('penalties/pay/(:num)', 'Admin\PenaltyController::pay/$1');
+    $routes->post('penalties/store', 'Admin\PenaltyController::store');
+    $routes->get('penalties/history', 'Admin\PenaltyController::history');
 });
