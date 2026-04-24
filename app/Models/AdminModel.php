@@ -22,8 +22,9 @@ class AdminModel extends Model
 
     // Validation
     protected $validationRules      = [
-        'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[admins.username]',
-        'email'    => 'required|valid_email|is_unique[admins.email]',
+        'id'       => 'permit_empty',
+        'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[admins.username,id,{id}]',
+        'email'    => 'required|valid_email|is_unique[admins.email,id,{id}]',
         'password' => 'required|min_length[8]',
     ];
     protected $validationMessages   = [];
