@@ -57,6 +57,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('penalties/store', 'Admin\PenaltyController::store');
     $routes->post('penalties/cancel/(:num)', 'Admin\PenaltyController::cancel/$1');
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
+    $routes->get('penalties/reverse/(:num)', 'Admin\PenaltyController::reverse/$1');
     $routes->get('penalties/search', 'Admin\PenaltyController::search');
 
     // Violation Types Routes

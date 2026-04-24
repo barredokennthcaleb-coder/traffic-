@@ -34,17 +34,34 @@ class ViolationTypeController extends BaseController
         ];
 
         if ($this->violationTypeModel->save($data)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'message' => 'Violation type added successfully.',
+                    'data' => $this->violationTypeModel->find($this->violationTypeModel->insertID())
+                ]);
+            }
             return redirect()->to('/violation-types')->with('success', 'Violation type added successfully.');
         } else {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'errors' => $this->violationTypeModel->errors()
+                ]);
+            }
             return redirect()->back()->withInput()->with('errors', $this->violationTypeModel->errors());
         }
     }
 
     public function update($id = null)
     {
+        $id = $this->request->getPost('id'); // Get ID from POST for AJAX compatibility
         $violationType = $this->violationTypeModel->find($id);
         
         if (!$violationType) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Violation type not found.']);
+            }
             return redirect()->to('/violation-types')->with('error', 'Violation type not found.');
         }
 
@@ -58,8 +75,21 @@ class ViolationTypeController extends BaseController
         ];
 
         if ($this->violationTypeModel->save($data)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'message' => 'Violation type updated successfully.',
+                    'data' => $this->violationTypeModel->find($id)
+                ]);
+            }
             return redirect()->to('/violation-types')->with('success', 'Violation type updated successfully.');
         } else {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'errors' => $this->violationTypeModel->errors()
+                ]);
+            }
             return redirect()->back()->withInput()->with('errors', $this->violationTypeModel->errors());
         }
     }
@@ -69,12 +99,21 @@ class ViolationTypeController extends BaseController
         $violationType = $this->violationTypeModel->find($id);
         
         if (!$violationType) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Violation type not found.']);
+            }
             return redirect()->to('/violation-types')->with('error', 'Violation type not found.');
         }
 
         if ($this->violationTypeModel->delete($id)) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'success', 'message' => 'Violation type deleted successfully.']);
+            }
             return redirect()->to('/violation-types')->with('success', 'Violation type deleted successfully.');
         } else {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete violation type.']);
+            }
             return redirect()->to('/violation-types')->with('error', 'Failed to delete violation type.');
         }
     }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 24, 2026 at 10:52 AM
+-- Generation Time: Apr 24, 2026 at 05:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -59,6 +59,18 @@ CREATE TABLE `migrations` (
   `batch` int(11) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`, `batch`) VALUES
+(1, '20240424000001', 'App\\Database\\Migrations\\CreateAdminsTable', 'default', 'App', 1777040581, 1),
+(2, '20240424000002', 'App\\Database\\Migrations\\CreateViolationsTable', 'default', 'App', 1777040581, 1),
+(3, '20240424000003', 'App\\Database\\Migrations\\CreateUsersTable', 'default', 'App', 1777040581, 1),
+(4, '20240424000004', 'App\\Database\\Migrations\\UpdateViolationsTable', 'default', 'App', 1777040603, 2),
+(5, '20240424000005', 'App\\Database\\Migrations\\CreateViolationTypesTable', 'default', 'App', 1777040603, 2),
+(6, '2026-04-24-142535', 'App\\Database\\Migrations\\AddMissingColumnsToViolationsTable', 'default', 'App', 1777040762, 3);
+
 -- --------------------------------------------------------
 
 --
@@ -84,7 +96,8 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `status`, `c
 (1, 'ken', 'ken@gmail.com', '$2y$10$4UK8zNJBHoM.mH5lXkHzMOSs7WVZISIoQsUAbS1qxKvX.DMRwKA0K', 'user', 'active', '2026-04-24 06:24:39', '2026-04-24 06:24:39'),
 (2, 'leb', 'leb@gmail.com', '$2y$10$LufdV2oxGUqxjvALE799EuRkjgFzCSKAUA3/AVbsECXHkBjSnT.ai', 'user', 'active', '2026-04-24 06:34:46', '2026-04-24 06:34:46'),
 (3, 'kenneth', 'kenneth@gmail.com', '$2y$10$IavKG8WMg194LZSYNCgiY..gE/3lXZQ/niCDaiNxoVrJUT/v5AFdC', 'admin', 'active', '2026-04-24 06:37:44', '2026-04-24 06:37:44'),
-(6, 'janrey', 'janrey@gmail.com', '$2y$10$dBn6qJz1EHJs2.9xXZfPZuqXJlFlshK/PyZw3swtxK0zeVQ9LCK1y', 'traffic_officer', 'active', '2026-04-24 08:50:07', '2026-04-24 08:50:07');
+(7, 'janrey', 'janrey@gmail.com', '$2y$10$4FaDo5NXqqN3AgICU3t0AegATrP145oUSMfzeEHyT2O30cn/0HGgW', 'traffic_officer', 'active', '2026-04-24 14:19:59', '2026-04-24 14:19:59'),
+(8, 'mark', 'mark@gmail.com', '$2y$10$l3PpGRLyGuI5vu5uG1CiauUX3p.45N1TWDpIzouhqLXvhVlaWdQVG', 'user', 'active', '2026-04-24 14:32:40', '2026-04-24 14:32:40');
 
 -- --------------------------------------------------------
 
@@ -97,18 +110,31 @@ CREATE TABLE `violations` (
   `ticket_id` varchar(50) DEFAULT NULL,
   `driver_name` varchar(255) NOT NULL,
   `license_plate` varchar(20) NOT NULL,
+  `violation_type_id` int(11) UNSIGNED DEFAULT NULL,
   `officer_id` int(11) UNSIGNED DEFAULT NULL,
   `created_by` int(11) UNSIGNED DEFAULT NULL,
   `violation_type` varchar(255) NOT NULL,
   `penalty_amount` decimal(10,2) NOT NULL,
+  `points` int(11) DEFAULT 0,
   `status` enum('Pending','Paid','Cancelled') DEFAULT 'Pending',
   `violation_date` datetime NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `paid_date` datetime DEFAULT NULL,
   `payment_method` varchar(50) DEFAULT NULL,
-  `receipt_number` varchar(50) DEFAULT NULL
+  `receipt_number` varchar(50) DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `location` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `violations`
+--
+
+INSERT INTO `violations` (`id`, `ticket_id`, `driver_name`, `license_plate`, `violation_type_id`, `officer_id`, `created_by`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_at`, `updated_at`, `paid_date`, `payment_method`, `receipt_number`, `remarks`, `location`, `notes`) VALUES
+(1, 'TKT-16ABCBF8', 'mark', '12345', 2, 7, 7, 'Running Red Light', 200.00, 4, 'Paid', '2026-04-24 14:28:33', '2026-04-24 14:28:33', '2026-04-24 14:36:40', '2026-04-24 14:36:40', 'Cash', 'RCP-EBF5CD346B', NULL, 'kabankalan', ''),
+(2, 'TKT-C48A473F', 'ken', '789999', 3, 7, 7, 'Illegal Parking', 75.00, 2, 'Pending', '2026-04-24 15:09:00', '2026-04-24 15:09:00', '2026-04-24 15:09:00', NULL, NULL, NULL, NULL, 'kabankalan', '');
 
 -- --------------------------------------------------------
 
@@ -194,19 +220,19 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `violations`
 --
 ALTER TABLE `violations`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `violation_types`

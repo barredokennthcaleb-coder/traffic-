@@ -35,7 +35,7 @@ class ViolationRecord extends Model
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';
     protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_field';
+    protected $updatedField  = 'updated_at';
 
     protected $validationRules = [
         'id'              => 'permit_empty|integer',
@@ -231,12 +231,37 @@ class ViolationRecord extends Model
     public function getMonthlyTrend($year = null)
     {
         $year = $year ?? date('Y');
+        
+        // Initialize 12 months with 0
+        $trend = array_fill(1, 12, ['count' => 0, 'revenue' => 0]);
 
-        return $this->select("MONTH(violation_date) as month, COUNT(*) as count, SUM(penalty_amount) as revenue")
-                    ->where('YEAR(violation_date)', $year)
-                    ->where('status', 'Paid')
-                    ->groupBy('MONTH(violation_date)')
-                    ->orderBy('month', 'ASC')
+        $results = $this->select("MONTH(violation_date) as month, COUNT(*) as count, SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END) as revenue")
+                        ->where('YEAR(violation_date)', $year)
+                        ->groupBy('MONTH(violation_date)')
+                        ->orderBy('month', 'ASC')
+                        ->findAll();
+
+        foreach ($results as $row) {
+            $trend[(int)$row['month']] = [
+                'count' => (int)$row['count'],
+                'revenue' => (float)$row['revenue']
+            ];
+        }
+
+        return $trend;
+    }
+
+    public function getStatusDistribution()
+    {
+        return $this->select('status, COUNT(*) as count')
+                    ->groupBy('status')
                     ->findAll();
+    }
+
+    public function getOutstandingFines()
+    {
+        return $this->selectSum('penalty_amount')
+                    ->where('status', 'Pending')
+                    ->findAll()[0]['penalty_amount'] ?? 0;
     }
 }

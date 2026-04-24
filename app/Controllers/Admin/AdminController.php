@@ -31,16 +31,26 @@ class AdminController extends BaseController
     {
         $monthlyTrend = $this->violationRecord->getMonthlyTrend();
         $violationTypesSummary = $this->violationRecord->getViolationTypesSummary();
+        $statusDistribution = $this->violationRecord->getStatusDistribution();
+        
+        $totalCollected = $this->violationRecord->getTotalRevenue();
+        $totalPending = $this->violationRecord->getOutstandingFines();
+        $totalViolations = $this->violationRecord->countAll();
+        
+        $collectionRate = $totalViolations > 0 ? ($this->violationRecord->getPaidCount() / $totalViolations) * 100 : 0;
 
         $data = [
-            'title' => 'Analytics',
+            'title' => 'Analytics Dashboard',
             'monthly_trend' => $monthlyTrend,
             'violation_types' => $violationTypesSummary,
-            'status_counts' => [
-                'pending' => $this->violationRecord->getPendingCount(),
-                'paid' => $this->violationRecord->getPaidCount(),
-                'cancelled' => $this->violationRecord->getCancelledCount(),
-            ],
+            'status_distribution' => $statusDistribution,
+            'summary' => [
+                'total_collected' => $totalCollected,
+                'total_pending' => $totalPending,
+                'total_violations' => $totalViolations,
+                'collection_rate' => round($collectionRate, 1),
+                'top_violation' => $violationTypesSummary[0]['violation_type'] ?? 'None'
+            ]
         ];
 
         return view('admin/main/analytics', $data);

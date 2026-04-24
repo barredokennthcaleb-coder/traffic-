@@ -49,7 +49,7 @@ class CreateViolationsTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('violations');
+        $this->forge->createTable('violations', true);
     }
 
     public function down()

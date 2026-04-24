@@ -13,27 +13,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative; /* Added for logo positioning */
-        }
-        .logo-container {
-            position: absolute;
-            left: 15%; /* Adjust as needed */
-            top: 50%;
-            transform: translateY(-50%);
-            text-align: center;
-            color: white;
-            z-index: 10;
-        }
-        .logo-container img {
-            max-width: 200px; /* Adjust logo size */
-            height: auto;
-            margin-bottom: 15px;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
-        }
-        .logo-container h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            padding: 20px;
         }
         .login-card {
             width: 100%;
@@ -42,42 +22,31 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            z-index: 1; /* Ensure card is above logo if they overlap */
-        }
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .logo-container {
-                position: relative;
-                left: auto;
-                top: auto;
-                transform: none;
-                margin-bottom: 30px;
-            }
-            body {
-                flex-direction: column;
-                padding: 30px 0;
-            }
-        }
-        .card-body {
-            padding: 2.5rem;
         }
         .login-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        .login-header .icon-wrapper {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
+        .login-header .logo-wrapper {
+            margin-bottom: 1rem;
         }
-        .login-header .icon-wrapper i {
-            font-size: 2.5rem;
-            color: white;
+        .login-header .logo-wrapper img {
+            max-width: 120px;
+            height: auto;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+        }
+        .login-header h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+        .login-header p {
+            color: #6c757d;
+            font-size: 0.95rem;
         }
         .form-label {
             font-weight: 500;
@@ -176,19 +145,14 @@
 </head>
 <body>
 
-<div class="logo-container">
-    <img src="/img/pic 1.png" alt="Traffic System Logo">
-    <h1>Traffic System</h1>
-</div>
-
 <div class="card login-card">
-    <div class="card-body">
+    <div class="card-body p-4 p-md-5">
         <div class="login-header">
-            <div class="icon-wrapper">
-                <i class="bi bi-shield-lock"></i>
+            <div class="logo-wrapper">
+                <img src="/img/pic 1.png" alt="Traffic System Logo">
             </div>
-            <h3 class="mb-2">Welcome Back</h3>
-            <p class="text-muted">Sign in to access your account</p>
+            <h2>Traffic System</h2>
+            <p>Sign in to access your account</p>
         </div>
 
         <?php if (session()->getFlashdata('success')): ?>

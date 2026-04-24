@@ -736,3 +736,999 @@ DEBUG - 2026-04-24 09:03:34 --> Session: Class initialized using 'CodeIgniter\Se
 DEBUG - 2026-04-24 09:03:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
 DEBUG - 2026-04-24 09:03:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
 DEBUG - 2026-04-24 09:03:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:12:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 09:13:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:08:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:08:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:08:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:08:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:08:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:09:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:09:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:09:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:09:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:12:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:13:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:18:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:18:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:18:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:18:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:19:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:20:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:20:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:20:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:20:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:20:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:20:51 --> Unknown column 'violation_type_id' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:20:51 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_type_id' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:20:51 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_type_id' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:20:51 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_type_id' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:20:51\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:20:51\', \'2026-04-24 14:20:51\', \'TKT-700252CF\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+ERROR - 2026-04-24 14:22:13 --> Table 'admins' already exists
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('CREATE TABLE `admins` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(100) NOT NULL UNIQUE,
+	`email` VARCHAR(255) NOT NULL UNIQUE,
+	`password` VARCHAR(255) NOT NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	CONSTRAINT `pk_admins` PRIMARY KEY(`id`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('CREATE TABLE `admins` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(100) NOT NULL UNIQUE,
+	`email` VARCHAR(255) NOT NULL UNIQUE,
+	`password` VARCHAR(255) NOT NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	CONSTRAINT `pk_admins` PRIMARY KEY(`id`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('CREATE TABLE `admins` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(100) NOT NULL UNIQUE,
+	`email` VARCHAR(255) NOT NULL UNIQUE,
+	`password` VARCHAR(255) NOT NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	CONSTRAINT `pk_admins` PRIMARY KEY(`id`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 4 SYSTEMPATH\Database\Forge.php(570): CodeIgniter\Database\BaseConnection->query('CREATE TABLE `admins` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`username` VARCHAR(100) NOT NULL UNIQUE,
+	`email` VARCHAR(255) NOT NULL UNIQUE,
+	`password` VARCHAR(255) NOT NULL,
+	`created_at` DATETIME NULL,
+	`updated_at` DATETIME NULL,
+	CONSTRAINT `pk_admins` PRIMARY KEY(`id`)
+) DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci')
+ 5 APPPATH\Database\Migrations\20240424000001_CreateAdminsTable.php(42): CodeIgniter\Database\Forge->createTable('admins')
+ 6 SYSTEMPATH\Database\MigrationRunner.php(1014): App\Database\Migrations\CreateAdminsTable->up()
+ 7 SYSTEMPATH\Database\MigrationRunner.php(202): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+ 8 SYSTEMPATH\Commands\Database\Migrate.php(89): CodeIgniter\Database\MigrationRunner->latest(null)
+ 9 SYSTEMPATH\CLI\SignalTrait.php(245): CodeIgniter\Commands\Database\Migrate::CodeIgniter\Commands\Database\{closure}()
+10 SYSTEMPATH\Commands\Database\Migrate.php(88): CodeIgniter\Commands\Database\Migrate->withSignalsBlocked(Object(Closure))
+11 SYSTEMPATH\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run([])
+12 SYSTEMPATH\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', [])
+13 SYSTEMPATH\Boot.php(442): CodeIgniter\CLI\Console->run()
+14 SYSTEMPATH\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+15 ROOTPATH\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+ERROR - 2026-04-24 14:23:01 --> Duplicate column name 'ticket_id'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('ALTER TABLE `violations`
+	ADD `ticket_id` VARCHAR(50) AFTER `id`,
+	ADD `violation_type_id` INT(11) UNSIGNED NULL AFTER `license_plate`,
+	ADD `officer_id` INT(11) UNSIGNED AFTER `violation_type_id`,
+	ADD `created_by` INT(11) UNSIGNED NULL AFTER `officer_id`,
+	ADD `paid_date` DATETIME NULL AFTER `updated_at`,
+	ADD `payment_method` VARCHAR(50) NULL AFTER `paid_date`,
+	ADD `receipt_number` VARCHAR(50) NULL AFTER `payment_method`', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('ALTER TABLE `violations`
+	ADD `ticket_id` VARCHAR(50) AFTER `id`,
+	ADD `violation_type_id` INT(11) UNSIGNED NULL AFTER `license_plate`,
+	ADD `officer_id` INT(11) UNSIGNED AFTER `violation_type_id`,
+	ADD `created_by` INT(11) UNSIGNED NULL AFTER `officer_id`,
+	ADD `paid_date` DATETIME NULL AFTER `updated_at`,
+	ADD `payment_method` VARCHAR(50) NULL AFTER `paid_date`,
+	ADD `receipt_number` VARCHAR(50) NULL AFTER `payment_method`')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('ALTER TABLE `violations`
+	ADD `ticket_id` VARCHAR(50) AFTER `id`,
+	ADD `violation_type_id` INT(11) UNSIGNED NULL AFTER `license_plate`,
+	ADD `officer_id` INT(11) UNSIGNED AFTER `violation_type_id`,
+	ADD `created_by` INT(11) UNSIGNED NULL AFTER `officer_id`,
+	ADD `paid_date` DATETIME NULL AFTER `updated_at`,
+	ADD `payment_method` VARCHAR(50) NULL AFTER `paid_date`,
+	ADD `receipt_number` VARCHAR(50) NULL AFTER `payment_method`')
+ 4 SYSTEMPATH\Database\Forge.php(772): CodeIgniter\Database\BaseConnection->query('ALTER TABLE `violations`
+	ADD `ticket_id` VARCHAR(50) AFTER `id`,
+	ADD `violation_type_id` INT(11) UNSIGNED NULL AFTER `license_plate`,
+	ADD `officer_id` INT(11) UNSIGNED AFTER `violation_type_id`,
+	ADD `created_by` INT(11) UNSIGNED NULL AFTER `officer_id`,
+	ADD `paid_date` DATETIME NULL AFTER `updated_at`,
+	ADD `payment_method` VARCHAR(50) NULL AFTER `paid_date`,
+	ADD `receipt_number` VARCHAR(50) NULL AFTER `payment_method`')
+ 5 APPPATH\Database\Migrations\20240424000004_UpdateViolationsTable.php(56): CodeIgniter\Database\Forge->addColumn('violations', [...])
+ 6 SYSTEMPATH\Database\MigrationRunner.php(1014): App\Database\Migrations\UpdateViolationsTable->up()
+ 7 SYSTEMPATH\Database\MigrationRunner.php(202): CodeIgniter\Database\MigrationRunner->migrate('up', Object(stdClass))
+ 8 SYSTEMPATH\Commands\Database\Migrate.php(89): CodeIgniter\Database\MigrationRunner->latest(null)
+ 9 SYSTEMPATH\CLI\SignalTrait.php(245): CodeIgniter\Commands\Database\Migrate::CodeIgniter\Commands\Database\{closure}()
+10 SYSTEMPATH\Commands\Database\Migrate.php(88): CodeIgniter\Commands\Database\Migrate->withSignalsBlocked(Object(Closure))
+11 SYSTEMPATH\CLI\Commands.php(74): CodeIgniter\Commands\Database\Migrate->run([])
+12 SYSTEMPATH\CLI\Console.php(47): CodeIgniter\CLI\Commands->run('migrate', [])
+13 SYSTEMPATH\Boot.php(442): CodeIgniter\CLI\Console->run()
+14 SYSTEMPATH\Boot.php(166): CodeIgniter\Boot::runCommand(Object(CodeIgniter\CLI\Console))
+15 ROOTPATH\spark(87): CodeIgniter\Boot::bootSpark(Object(Config\Paths))
+DEBUG - 2026-04-24 14:24:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:24:03 --> Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:03 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:03 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:03 --> [Caused by] mysqli_sql_exception: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:03\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:03\', \'2026-04-24 14:24:03\', \'TKT-2B969215\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:24:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:24:06 --> Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:06 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:06 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:06 --> [Caused by] mysqli_sql_exception: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:06\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:06\', \'2026-04-24 14:24:06\', \'TKT-89F57E45\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:24:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:24:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:24:17 --> Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:17 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:17 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:17 --> [Caused by] mysqli_sql_exception: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:17\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:17\', \'2026-04-24 14:24:17\', \'TKT-0742C0F6\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:24:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:24:20 --> Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:20 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:20 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:24:20 --> [Caused by] mysqli_sql_exception: Unknown column 'points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:24:20\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:24:20\', \'2026-04-24 14:24:20\', \'TKT-915E7A98\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:26:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:26:31 --> Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:31 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:31 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:31 --> [Caused by] mysqli_sql_exception: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:31\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:31\', \'2026-04-24 14:26:31\', \'TKT-F17EA694\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:26:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:26:35 --> Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:35 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:35 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:35 --> [Caused by] mysqli_sql_exception: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:35\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:35\', \'2026-04-24 14:26:35\', \'TKT-B20D49F8\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:26:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:26:38 --> Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:38 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:38 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:38 --> [Caused by] mysqli_sql_exception: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:38\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:38\', \'2026-04-24 14:26:38\', \'TKT-DCA46270\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:26:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:26:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2026-04-24 14:26:45 --> Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:45 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+[Method: POST, Route: officer/store]
+in SYSTEMPATH\Database\BaseConnection.php on line 865.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 2 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 3 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 4 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 5 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 6 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 7 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+ 8 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+ 9 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:45 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 310.
+ 1 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 2 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 4 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 5 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 6 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 7 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 8 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+ 9 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+10 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+11 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+CRITICAL - 2026-04-24 14:26:45 --> [Caused by] mysqli_sql_exception: Unknown column 'updated_field' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 300.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(300): mysqli->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 3 SYSTEMPATH\Database\BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (\'mark\', \'12345\', \'7\', \'2\', \'Running Red Light\', \'200.00\', \'4\', \'Pending\', \'2026-04-24 14:26:45\', \'7\', \'kabankalan\', \'\', \'2026-04-24 14:26:45\', \'2026-04-24 14:26:45\', \'TKT-F0AD394D\')')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(2345): CodeIgniter\Database\BaseConnection->query('INSERT INTO `violations` (`driver_name`, `license_plate`, `officer_id`, `violation_type_id`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_by`, `location`, `notes`, `created_at`, `updated_field`, `ticket_id`) VALUES (:driver_name:, :license_plate:, :officer_id:, :violation_type_id:, :violation_type:, :penalty_amount:, :points:, :status:, :violation_date:, :created_by:, :location:, :notes:, :created_at:, :updated_field:, :ticket_id:)', [...], false)
+ 5 SYSTEMPATH\Model.php(355): CodeIgniter\Database\BaseBuilder->insert()
+ 6 SYSTEMPATH\BaseModel.php(899): CodeIgniter\Model->doInsert([...])
+ 7 SYSTEMPATH\Model.php(668): CodeIgniter\BaseModel->insert([...], false)
+ 8 SYSTEMPATH\BaseModel.php(752): CodeIgniter\Model->insert([...], false)
+ 9 APPPATH\Controllers\Admin\OfficerController.php(58): CodeIgniter\BaseModel->save([...])
+10 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\OfficerController->store()
+11 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\OfficerController))
+12 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+13 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+14 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+15 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+16 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:28:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:28:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:29:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:29:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:29:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:32:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:33:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-04-24 14:35:33 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/penalties/view.php"
+[Method: GET, Route: penalties/view/1]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(228): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/penalties/view.php')
+ 2 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('admin/penalties/view', [], true)
+ 3 APPPATH\Controllers\Admin\PenaltyController.php(115): view('admin/penalties/view', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PenaltyController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PenaltyController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:35:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-04-24 14:35:37 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/penalties/view.php"
+[Method: GET, Route: penalties/view/1]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(228): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/penalties/view.php')
+ 2 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('admin/penalties/view', [], true)
+ 3 APPPATH\Controllers\Admin\PenaltyController.php(115): view('admin/penalties/view', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PenaltyController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PenaltyController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:35:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:35:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-04-24 14:35:54 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/penalties/view.php"
+[Method: GET, Route: penalties/view/1]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(228): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/penalties/view.php')
+ 2 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('admin/penalties/view', [], true)
+ 3 APPPATH\Controllers\Admin\PenaltyController.php(115): view('admin/penalties/view', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PenaltyController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PenaltyController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:36:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-04-24 14:36:05 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/penalties/view.php"
+[Method: GET, Route: penalties/view/1]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(228): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/penalties/view.php')
+ 2 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('admin/penalties/view', [], true)
+ 3 APPPATH\Controllers\Admin\PenaltyController.php(115): view('admin/penalties/view', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PenaltyController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PenaltyController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:36:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:36:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2026-04-24 14:36:51 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "admin/penalties/view.php"
+[Method: GET, Route: penalties/view/1]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(228): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('admin/penalties/view.php')
+ 2 SYSTEMPATH\Common.php(1250): CodeIgniter\View\View->render('admin/penalties/view', [], true)
+ 3 APPPATH\Controllers\Admin\PenaltyController.php(115): view('admin/penalties/view', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(951): App\Controllers\Admin\PenaltyController->view('1')
+ 5 SYSTEMPATH\CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\PenaltyController))
+ 6 SYSTEMPATH\CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(417): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\xampp\\htdocs\\traffic-\\public\\index.php')
+DEBUG - 2026-04-24 14:53:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:53:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:53:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:53:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:53:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:53:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:57:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 14:59:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:12 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:00:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:04:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:06:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:11 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:07:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:07 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:08:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:09:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:09:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:10:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:11:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:11:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:11:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:11:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:11:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:20:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-24 15:20:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

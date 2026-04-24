@@ -155,13 +155,15 @@ class UserController extends BaseController
         $user = $this->userModel->find($id);
 
         if (!$user) {
-            return redirect()->to('/users')->with('error', 'User not found.');
+            return redirect()->back()->with('error', 'User not found.');
         }
 
+        $role = $user['role'];
         if ($this->userModel->delete($id)) {
-            return redirect()->to('/users')->with('success', 'User deleted successfully.');
+            $redirect = ($role === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
+            return redirect()->to($redirect)->with('success', 'User deleted successfully.');
         } else {
-            return redirect()->to('/users')->with('error', 'Failed to delete user.');
+            return redirect()->back()->with('error', 'Failed to delete user.');
         }
     }
 
@@ -170,15 +172,15 @@ class UserController extends BaseController
         $user = $this->userModel->find($id);
 
         if (!$user) {
-            return redirect()->to('/users')->with('error', 'User not found.');
+            return redirect()->back()->with('error', 'User not found.');
         }
 
-        $newPassword = bin2hex(random_bytes(8)); // Generate an 8-character random password
+        // Generate a simple 8-character password for easier copying
+        $newPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
 
         if ($this->userModel->update($id, ['password' => $newPassword])) {
-            // In a real application, you would email this password to the user.
-            // For now, we'll just flash it to the session.
-            return redirect()->to('/users')->with('success', "Password for {$user['username']} reset to: <strong>{$newPassword}</strong>. Please inform the user.");
+            $redirect = ($user['role'] === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
+            return redirect()->to($redirect)->with('success', "Password for <strong>{$user['username']}</strong> reset to: <strong class='text-danger'>{$newPassword}</strong>. Please copy this password now.");
         } else {
             return redirect()->back()->with('error', 'Failed to reset password.');
         }

@@ -71,11 +71,33 @@ class PenaltyController extends BaseController
     {
         $data = [
             'title' => 'Payment History',
-            'paid_violations' => $this->violationRecord->where('status', 'Paid')
-                                                         ->orderBy('paid_date', 'DESC')
-                                                         ->findAll(),
+            'payments' => $this->violationRecord->where('status', 'Paid')
+                                                 ->orderBy('paid_date', 'DESC')
+                                                 ->findAll(),
         ];
         return view('admin/penalties/history', $data);
+    }
+
+    public function reverse($id = null)
+    {
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation || $violation['status'] !== 'Paid') {
+            return redirect()->to('/penalties/history')->with('error', 'Violation not found or not in Paid status.');
+        }
+
+        $updateData = [
+            'status' => 'Pending',
+            'paid_date' => null,
+            'payment_method' => null,
+            'receipt_number' => null
+        ];
+
+        if ($this->violationRecord->update($id, $updateData)) {
+            return redirect()->to('/penalties/history')->with('success', 'Payment has been reversed and ticket is now Pending.');
+        } else {
+            return redirect()->to('/penalties/history')->with('error', 'Failed to reverse payment.');
+        }
     }
 
     public function view($id)

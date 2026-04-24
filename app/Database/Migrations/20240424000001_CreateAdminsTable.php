@@ -39,7 +39,7 @@ class CreateAdminsTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('admins');
+        $this->forge->createTable('admins', true);
     }
 
     public function down()

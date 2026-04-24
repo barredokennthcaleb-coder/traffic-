@@ -49,7 +49,7 @@ class CreateViolationTypesTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('violation_types');
+        $this->forge->createTable('violation_types', true);
 
         // Seed default violation types
         $seedData = [
@@ -63,19 +63,13 @@ class CreateViolationTypesTable extends Migration
             ['violation_name' => 'Running Stop Sign', 'description' => 'Failing to stop at a stop sign', 'fine_amount' => 175.00, 'points' => 3],
         ];
 
+        $db = \Config\Database::connect();
+        $builder = $db->table('violation_types');
         foreach ($seedData as $data) {
-            $this->forge->reset();
-            $this->forge->addField([
-                'id' => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-                'violation_name' => ['type' => 'VARCHAR', 'constraint' => 100],
-                'description' => ['type' => 'TEXT', 'null' => true],
-                'fine_amount' => ['type' => 'DECIMAL', 'constraint' => '10,2'],
-                'points' => ['type' => 'INT', 'constraint' => 3],
-                'status' => ['type' => 'ENUM', 'constraint' => ['active', 'inactive'], 'default' => 'active'],
-                'created_at' => ['type' => 'DATETIME', 'null' => true],
-                'updated_at' => ['type' => 'DATETIME', 'null' => true],
-            ]);
-            $this->forge->createTable('violation_types', true);
+            $existing = $builder->where('violation_name', $data['violation_name'])->get()->getRow();
+            if (!$existing) {
+                $builder->insert($data);
+            }
         }
     }
 
