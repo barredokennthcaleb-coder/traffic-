@@ -3,38 +3,54 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\AnalyticModel;
-use App\Models\ViolationModel;
+use App\Models\ViolationRecord;
 
 class AdminController extends BaseController
 {
+    protected $violationRecord;
+
+    public function __construct()
+    {
+        $this->violationRecord = new ViolationRecord();
+    }
+
     public function index()
     {
-        $analyticModel = new AnalyticModel();
-        $violationModel = new ViolationModel();
-        
-        $stats = $analyticModel->getDashboardStats();
+        $stats = $this->violationRecord->getStatistics();
+        $recentViolations = $this->violationRecord->getRecentViolations(5);
+
         $data = array_merge($stats, [
-            'recent_violations' => $violationModel->orderBy('violation_date', 'DESC')->limit(5)->find(),
+            'title' => 'Admin Dashboard',
+            'recent_violations' => $recentViolations,
         ]);
-        
+
         return view('admin/dashboard', $data);
     }
 
     public function analytics()
     {
-        $analyticModel = new AnalyticModel();
-        
+        $monthlyTrend = $this->violationRecord->getMonthlyTrend();
+        $violationTypesSummary = $this->violationRecord->getViolationTypesSummary();
+
         $data = [
-            'status_counts' => $analyticModel->getStatusCounts(),
-            'type_counts'   => $analyticModel->getTypeCounts(),
+            'title' => 'Analytics',
+            'monthly_trend' => $monthlyTrend,
+            'violation_types' => $violationTypesSummary,
+            'status_counts' => [
+                'pending' => $this->violationRecord->getPendingCount(),
+                'paid' => $this->violationRecord->getPaidCount(),
+                'cancelled' => $this->violationRecord->getCancelledCount(),
+            ],
         ];
-        
+
         return view('admin/analytics', $data);
     }
 
     public function about()
     {
-        return view('admin/about');
+        $data = [
+            'title' => 'About System'
+        ];
+        return view('admin/about', $data);
     }
 }

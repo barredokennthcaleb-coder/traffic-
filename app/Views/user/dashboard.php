@@ -99,7 +99,7 @@
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-4">
+            <div id="pending-violations" class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Pending Violations</h5>
                 </div>
@@ -142,7 +142,7 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm">
+            <div id="payment-history" class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-check-circle me-2 text-success"></i>Payment History</h5>
                 </div>

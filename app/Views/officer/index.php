@@ -66,7 +66,7 @@
                                 <label for="violation_type" class="form-label">Violation Type <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
-                                    <select name="violation_type" id="violation_type" class="form-select" required onchange="updateFineAmount()">
+                                    <select name="violation_type_id" id="violation_type" class="form-select" required onchange="updateFineAmount()">
                                         <option value="">-- Select Violation Type --</option>
                                         <?php foreach ($violationTypes as $type): ?>
                                             <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
@@ -105,6 +105,26 @@
                                             <p class="mb-0" id="violationInfo">Select a violation type to see its details.</p>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="location" class="form-label">Location</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                    <input type="text" name="location" id="location" class="form-control" 
+                                           placeholder="e.g., Main Street, Downtown"
+                                           value="<?= old('location') ?>">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="notes" class="form-label">Notes</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                    <input type="text" name="notes" id="notes" class="form-control" 
+                                           placeholder="Additional notes (optional)"
+                                           value="<?= old('notes') ?>">
                                 </div>
                             </div>
 

@@ -13,6 +13,27 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative; /* Added for logo positioning */
+        }
+        .logo-container {
+            position: absolute;
+            left: 15%; /* Adjust as needed */
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: center;
+            color: white;
+            z-index: 10;
+        }
+        .logo-container img {
+            max-width: 200px; /* Adjust logo size */
+            height: auto;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        }
+        .logo-container h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .login-card {
             width: 100%;
@@ -21,6 +42,21 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            z-index: 1; /* Ensure card is above logo if they overlap */
+        }
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .logo-container {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none;
+                margin-bottom: 30px;
+            }
+            body {
+                flex-direction: column;
+                padding: 30px 0;
+            }
         }
         .card-body {
             padding: 2.5rem;
@@ -131,6 +167,11 @@
     </style>
 </head>
 <body>
+
+<div class="logo-container">
+    <img src="/img/pic 1.png" alt="Traffic System Logo">
+    <h1>Traffic System</h1>
+</div>
 
 <div class="card login-card">
     <div class="card-body">

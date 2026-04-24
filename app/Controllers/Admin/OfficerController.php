@@ -3,19 +3,19 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\ViolationModel;
+use App\Models\ViolationRecord;
 use App\Models\ViolationTypeModel;
 use App\Models\UserModel;
 
 class OfficerController extends BaseController
 {
-    protected $violationModel;
+    protected $violationRecord;
     protected $violationTypeModel;
     protected $userModel;
 
     public function __construct()
     {
-        $this->violationModel = new ViolationModel();
+        $this->violationRecord = new ViolationRecord();
         $this->violationTypeModel = new ViolationTypeModel();
         $this->userModel = new UserModel();
     }
@@ -32,48 +32,88 @@ class OfficerController extends BaseController
     public function store()
     {
         $session = session();
-        
-        $violationType = $this->violationTypeModel->find($this->request->getPost('violation_type'));
-        
+
+        $violationTypeId = $this->request->getPost('violation_type_id');
+        $violationType = $this->violationTypeModel->find($violationTypeId);
+
         if (!$violationType) {
             return redirect()->back()->with('error', 'Invalid violation type selected.');
         }
 
-        $ticketId = 'TKT-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
-
         $data = [
-            'ticket_id'      => $ticketId,
-            'driver_name'    => trim($this->request->getPost('driver_name')),
-            'license_plate'  => trim($this->request->getPost('license_plate')),
-            'officer_id'     => $session->get('id'),
-            'violation_type' => $this->request->getPost('violation_type'),
-            'penalty_amount' => $violationType['fine_amount'],
-            'status'         => 'Pending',
-            'violation_date' => date('Y-m-d H:i:s'),
-            'created_by'     => $session->get('id'),
+            'driver_name'      => trim($this->request->getPost('driver_name')),
+            'license_plate'    => trim($this->request->getPost('license_plate')),
+            'officer_id'       => $session->get('id'),
+            'violation_type_id' => $violationTypeId,
+            'violation_type'   => $violationType['violation_name'],
+            'penalty_amount'   => $violationType['fine_amount'],
+            'points'           => $violationType['points'] ?? 0,
+            'status'           => 'Pending',
+            'violation_date'   => date('Y-m-d H:i:s'),
+            'created_by'       => $session->get('id'),
+            'location'         => trim($this->request->getPost('location') ?? ''),
+            'notes'            => trim($this->request->getPost('notes') ?? ''),
         ];
 
-        if ($this->violationModel->save($data)) {
-            return redirect()->to('/officer/violations')->with('success', "Violation recorded successfully! Ticket ID: {$ticketId}");
+        if ($this->violationRecord->save($data)) {
+            $ticketId = $this->violationRecord->getInsertID();
+            $savedViolation = $this->violationRecord->find($ticketId);
+            return redirect()->to('/officer/violations')->with('success', "Violation recorded successfully! Ticket ID: {$savedViolation['ticket_id']}");
         } else {
-            return redirect()->back()->withInput()->with('errors', $this->violationModel->errors());
+            return redirect()->back()->withInput()->with('errors', $this->violationRecord->errors());
         }
     }
 
     public function violations()
     {
         $session = session();
-        
-        $builder = $this->violationModel->builder();
+
+        $builder = $this->violationRecord->builder();
         if ($session->get('role') === 'traffic_officer') {
             $builder->where('officer_id', $session->get('id'));
         }
-        
+
         $data = [
             'title' => 'My Recorded Violations',
-            'violations' => $this->violationModel->orderBy('created_at', 'DESC')->findAll(),
+            'violations' => $this->violationRecord->getAllDetailed(),
         ];
         return view('officer/violations', $data);
+    }
+
+    public function view($id)
+    {
+        $violation = $this->violationRecord->getDetailedViolation($id);
+
+        if (!$violation) {
+            return redirect()->to('/officer/violations')->with('error', 'Violation not found.');
+        }
+
+        $data = [
+            'title' => 'Violation Details',
+            'violation' => $violation
+        ];
+        return view('officer/view', $data);
+    }
+
+    public function cancel($id)
+    {
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation) {
+            return redirect()->to('/officer/violations')->with('error', 'Violation not found.');
+        }
+
+        if ($violation['status'] !== 'Pending') {
+            return redirect()->to('/officer/violations')->with('error', 'Only pending violations can be cancelled.');
+        }
+
+        $reason = $this->request->getPost('reason') ?? 'Cancelled by officer';
+
+        if ($this->violationRecord->cancelViolation($id, $reason)) {
+            return redirect()->to('/officer/violations')->with('success', 'Violation cancelled successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to cancel violation.');
+        }
     }
 
     public function getViolationTypes()
@@ -89,7 +129,7 @@ class OfficerController extends BaseController
         if ($this->request->isAJAX()) {
             $typeId = $this->request->getGet('type_id');
             $type = $this->violationTypeModel->find($typeId);
-            
+
             if ($type) {
                 return $this->response->setJSON([
                     'success' => true,

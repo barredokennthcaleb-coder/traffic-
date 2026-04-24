@@ -16,6 +16,8 @@ $routes->get('logout', 'AuthController::logout');
 
 // User Dashboard Route
 $routes->get('user/dashboard', 'UserController::index', ['filter' => 'auth']);
+$routes->get('user/violations', 'UserController::violations', ['filter' => 'auth']);
+$routes->get('user/history', 'UserController::history', ['filter' => 'auth']);
 $routes->get('user/pay/(:any)', 'UserController::payViolation/$1', ['filter' => 'auth']);
 $routes->post('user/process-payment', 'UserController::processPayment', ['filter' => 'auth']);
 $routes->get('user/receipt/(:any)', 'UserController::receipt/$1', ['filter' => 'auth']);
@@ -25,6 +27,8 @@ $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Admin\OfficerController::index');
     $routes->post('store', 'Admin\OfficerController::store');
     $routes->get('violations', 'Admin\OfficerController::violations');
+    $routes->get('view/(:num)', 'Admin\OfficerController::view/$1');
+    $routes->post('cancel/(:num)', 'Admin\OfficerController::cancel/$1');
 });
 
 // Admin Routes
@@ -35,17 +39,25 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     
     // User CRUD Routes
     $routes->get('users', 'Admin\UserController::index');
+    $routes->get('users/enforcers', 'Admin\UserController::enforcers');
+    $routes->get('users/drivers', 'Admin\UserController::drivers');
+    $routes->get('users/drivers/view/(:num)', 'Admin\UserController::viewDriver/$1');
     $routes->get('users/create', 'Admin\UserController::create');
     $routes->post('users/store', 'Admin\UserController::store');
     $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');
     $routes->post('users/update/(:num)', 'Admin\UserController::update/$1');
     $routes->get('users/delete/(:num)', 'Admin\UserController::delete/$1');
+    $routes->post('users/reset-password/(:num)', 'Admin\UserController::resetPassword/$1');
 
     // Penalty & Payment Routes
     $routes->get('penalties', 'Admin\PenaltyController::index');
+    $routes->get('penalties/all', 'Admin\PenaltyController::all');
+    $routes->get('penalties/view/(:num)', 'Admin\PenaltyController::view/$1');
     $routes->get('penalties/pay/(:num)', 'Admin\PenaltyController::pay/$1');
     $routes->post('penalties/store', 'Admin\PenaltyController::store');
+    $routes->post('penalties/cancel/(:num)', 'Admin\PenaltyController::cancel/$1');
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
+    $routes->get('penalties/search', 'Admin\PenaltyController::search');
 
     // Violation Types Routes
     $routes->get('violation-types', 'Admin\ViolationTypeController::index');

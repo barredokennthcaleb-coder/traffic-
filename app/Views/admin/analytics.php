@@ -61,7 +61,7 @@
     });
 
     // Type Chart
-    const typeData = <?= json_encode($type_counts) ?>;
+    const typeData = <?= json_encode($violation_types) ?>;
     const typeLabels = typeData.map(item => item.violation_type);
     const typeValues = typeData.map(item => item.count);
 

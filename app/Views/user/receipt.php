@@ -4,6 +4,29 @@
 
 <?= $this->section('content') ?>
 
+<style>
+    @media print {
+        .sidebar, .sidebar-toggle, .btn, .alert, .main-content h1, .breadcrumb {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+        .container-fluid {
+            padding: 0 !important;
+        }
+        body {
+            background-color: white !important;
+        }
+    }
+</style>
+
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-6">

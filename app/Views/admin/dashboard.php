@@ -24,7 +24,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-uppercase mb-1">Pending Penalties</h6>
-                        <h2 class="mb-0"><?= $pending_penalties ?></h2>
+                        <h2 class="mb-0"><?= $pending ?></h2>
                     </div>
                     <i class="bi bi-clock-history fs-1"></i>
                 </div>
@@ -37,7 +37,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-uppercase mb-1">Paid Penalties</h6>
-                        <h2 class="mb-0"><?= $paid_penalties ?></h2>
+                        <h2 class="mb-0"><?= $paid ?></h2>
                     </div>
                     <i class="bi bi-check-circle fs-1"></i>
                 </div>

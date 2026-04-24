@@ -3,39 +3,48 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\ViolationModel;
-use App\Models\PaymentModel;
+use App\Models\ViolationRecord;
 
 class PenaltyController extends BaseController
 {
-    protected $violationModel;
-    protected $paymentModel;
+    protected $violationRecord;
 
     public function __construct()
     {
-        $this->violationModel = new ViolationModel();
-        $this->paymentModel = new PaymentModel();
+        $this->violationRecord = new ViolationRecord();
     }
 
     public function index()
     {
         $data = [
-            'violations' => $this->violationModel->where('status', 'Pending')->findAll(),
-            'title' => 'Penalty Management'
+            'title' => 'Penalty Management',
+            'pending_violations' => $this->violationRecord->where('status', 'Pending')
+                                                          ->orderBy('violation_date', 'DESC')
+                                                          ->findAll(),
         ];
         return view('admin/penalties/index', $data);
     }
 
+    public function all()
+    {
+        $data = [
+            'title' => 'All Violations',
+            'violations' => $this->violationRecord->getAllDetailed(),
+        ];
+        return view('admin/penalties/all', $data);
+    }
+
     public function pay($id = null)
     {
-        $violation = $this->violationModel->find($id);
+        $violation = $this->violationRecord->find($id);
+
         if (!$violation || $violation['status'] != 'Pending') {
             return redirect()->to('/penalties')->with('error', 'Violation not found or already paid.');
         }
 
         $data = [
+            'title' => 'Record Payment',
             'violation' => $violation,
-            'title' => 'Record Payment'
         ];
         return view('admin/penalties/pay', $data);
     }
@@ -43,36 +52,81 @@ class PenaltyController extends BaseController
     public function store()
     {
         $violationId = $this->request->getPost('violation_id');
-        $violation = $this->violationModel->find($violationId);
+        $paymentMethod = $this->request->getPost('payment_method');
+
+        $violation = $this->violationRecord->find($violationId);
 
         if (!$violation) {
             return redirect()->to('/penalties')->with('error', 'Violation not found.');
         }
 
-        $data = [
-            'violation_id'   => $violationId,
-            'amount_paid'    => $this->request->getPost('amount_paid'),
-            'payment_method' => $this->request->getPost('payment_method'),
-            'transaction_id' => $this->request->getPost('transaction_id'),
-            'remarks'        => $this->request->getPost('remarks'),
-            'payment_date'   => date('Y-m-d H:i:s')
-        ];
-
-        if ($this->paymentModel->save($data)) {
-            // Update violation status to Paid
-            $this->violationModel->update($violationId, ['status' => 'Paid']);
-            return redirect()->to('/penalties')->with('success', 'Payment recorded successfully.');
+        if ($this->violationRecord->recordPayment($violationId, $paymentMethod)) {
+            return redirect()->to('/penalties/history')->with('success', 'Payment recorded successfully.');
         } else {
-            return redirect()->back()->withInput()->with('errors', $this->paymentModel->errors());
+            return redirect()->back()->with('error', 'Failed to record payment.');
         }
     }
 
     public function history()
     {
         $data = [
-            'payments' => $this->paymentModel->getPaymentWithViolation(),
-            'title' => 'Payment History'
+            'title' => 'Payment History',
+            'paid_violations' => $this->violationRecord->where('status', 'Paid')
+                                                         ->orderBy('paid_date', 'DESC')
+                                                         ->findAll(),
         ];
         return view('admin/penalties/history', $data);
+    }
+
+    public function view($id)
+    {
+        $violation = $this->violationRecord->getDetailedViolation($id);
+
+        if (!$violation) {
+            return redirect()->to('/penalties/all')->with('error', 'Violation not found.');
+        }
+
+        $data = [
+            'title' => 'Violation Details',
+            'violation' => $violation,
+        ];
+        return view('admin/penalties/view', $data);
+    }
+
+    public function cancel($id)
+    {
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation) {
+            return redirect()->to('/penalties/all')->with('error', 'Violation not found.');
+        }
+
+        if ($violation['status'] !== 'Pending') {
+            return redirect()->to('/penalties/all')->with('error', 'Only pending violations can be cancelled.');
+        }
+
+        $reason = $this->request->getPost('reason') ?? 'Cancelled by admin';
+
+        if ($this->violationRecord->cancelViolation($id, $reason)) {
+            return redirect()->to('/penalties/all')->with('success', 'Violation cancelled successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to cancel violation.');
+        }
+    }
+
+    public function search()
+    {
+        $keyword = $this->request->getGet('q');
+
+        if (empty($keyword)) {
+            return redirect()->to('/penalties/all');
+        }
+
+        $data = [
+            'title' => 'Search Results',
+            'violations' => $this->violationRecord->searchViolations($keyword),
+            'keyword' => $keyword,
+        ];
+        return view('admin/penalties/search', $data);
     }
 }
