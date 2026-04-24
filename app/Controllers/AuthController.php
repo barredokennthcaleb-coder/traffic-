@@ -10,8 +10,11 @@ class AuthController extends BaseController
     public function login()
     {
         if (session()->get('isLoggedIn')) {
-            if (session()->get('role') === 'admin') {
+            $role = session()->get('role');
+            if ($role === 'admin') {
                 return redirect()->to('/dashboard');
+            } elseif ($role === 'traffic_officer') {
+                return redirect()->to('/officer');
             } else {
                 return redirect()->to('/user/dashboard');
             }
@@ -54,6 +57,8 @@ class AuthController extends BaseController
                 // Redirect based on role
                 if ($user['role'] === 'admin') {
                     return redirect()->to('/dashboard');
+                } elseif ($user['role'] === 'traffic_officer') {
+                    return redirect()->to('/officer');
                 } else {
                     return redirect()->to('/user/dashboard');
                 }

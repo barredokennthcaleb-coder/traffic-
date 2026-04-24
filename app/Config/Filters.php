@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => \App\Filters\Auth::class,
         'admin'         => \App\Filters\AdminAuth::class,
+        'officer'       => \App\Filters\OfficerAuth::class,
     ];
 
     /**

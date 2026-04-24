@@ -16,6 +16,16 @@ $routes->get('logout', 'AuthController::logout');
 
 // User Dashboard Route
 $routes->get('user/dashboard', 'UserController::index', ['filter' => 'auth']);
+$routes->get('user/pay/(:any)', 'UserController::payViolation/$1', ['filter' => 'auth']);
+$routes->post('user/process-payment', 'UserController::processPayment', ['filter' => 'auth']);
+$routes->get('user/receipt/(:any)', 'UserController::receipt/$1', ['filter' => 'auth']);
+
+// Officer Routes
+$routes->group('officer', ['filter' => 'officer'], function($routes) {
+    $routes->get('/', 'Admin\OfficerController::index');
+    $routes->post('store', 'Admin\OfficerController::store');
+    $routes->get('violations', 'Admin\OfficerController::violations');
+});
 
 // Admin Routes
 $routes->group('', ['filter' => 'admin'], function($routes) {
@@ -36,4 +46,10 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('penalties/pay/(:num)', 'Admin\PenaltyController::pay/$1');
     $routes->post('penalties/store', 'Admin\PenaltyController::store');
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
+
+    // Violation Types Routes
+    $routes->get('violation-types', 'Admin\ViolationTypeController::index');
+    $routes->post('violation-types/store', 'Admin\ViolationTypeController::store');
+    $routes->post('violation-types/update', 'Admin\ViolationTypeController::update');
+    $routes->get('violation-types/delete/(:num)', 'Admin\ViolationTypeController::delete/$1');
 });
