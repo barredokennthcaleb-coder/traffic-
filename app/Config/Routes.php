@@ -16,7 +16,15 @@ $routes->get('logout', 'AuthController::logout');
 
 // Admin Routes
 $routes->group('', ['filter' => 'auth'], function($routes) {
-    $routes->get('dashboard', 'AdminController::index');
-    $routes->get('analytics', 'AdminController::analytics');
-    $routes->get('about', 'AdminController::about');
+    $routes->get('dashboard', 'Admin\AdminController::index');
+    $routes->get('analytics', 'Admin\AdminController::analytics');
+    $routes->get('about', 'Admin\AdminController::about');
+    
+    // User CRUD Routes
+    $routes->get('users', 'Admin\UserController::index');
+    $routes->get('users/create', 'Admin\UserController::create');
+    $routes->post('users/store', 'Admin\UserController::store');
+    $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');
+    $routes->post('users/update/(:num)', 'Admin\UserController::update/$1');
+    $routes->get('users/delete/(:num)', 'Admin\UserController::delete/$1');
 });
