@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="col-md-3 text-end">
-            <a href="/penalties" class="btn btn-outline-primary shadow-sm">
+            <a href="<?= base_url('penalties') ?>" class="btn btn-outline-primary shadow-sm">
                 <i class="bi bi-arrow-left me-1"></i> Back to Pending
             </a>
         </div>
@@ -65,11 +65,11 @@
                                 <td><span class="text-success fw-bold">+$<?= number_format($p['penalty_amount'], 2) ?></span></td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group shadow-sm">
-                                        <a href="/user/receipt/<?= $p['ticket_id'] ?>" class="btn btn-sm btn-white border" title="View Receipt" target="_blank">
+                                        <a href="<?= base_url('user/receipt/' . $p['ticket_id']) ?>" class="btn btn-sm btn-white border" title="View Receipt" target="_blank">
                                             <i class="bi bi-receipt text-info"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-white border" title="Reverse Payment" 
-                                                onclick="confirmReverse(<?= $p['id'] ?>, '<?= $p['receipt_number'] ?>')">
+                                        <button type="button" class="btn btn-sm btn-white border btn-reverse" title="Reverse Payment" 
+                                                data-id="<?= $p['id'] ?>" data-receipt="<?= $p['receipt_number'] ?>">
                                             <i class="bi bi-arrow-counterclockwise text-danger"></i>
                                         </button>
                                     </div>
@@ -118,39 +118,50 @@
 <?= $this->section('scripts') ?>
 <script>
     // Live Search Filtering
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const rows = document.querySelectorAll('.payment-row');
-        let hasResults = false;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.payment-row');
+            let hasResults = false;
 
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(keyword)) {
-                row.style.display = '';
-                hasResults = true;
-            } else {
-                row.style.display = 'none';
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(keyword)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noDataRow = document.getElementById('noDataRow');
+            if (!hasResults) {
+                if (!noDataRow) {
+                    const tbody = document.querySelector('#paymentTable tbody');
+                    const row = tbody.insertRow();
+                    row.id = 'noDataRow';
+                    row.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">No matching transactions found.</td>`;
+                }
+            } else if (noDataRow) {
+                noDataRow.remove();
             }
         });
-
-        const noDataRow = document.getElementById('noDataRow');
-        if (!hasResults) {
-            if (!noDataRow) {
-                const tbody = document.querySelector('#paymentTable tbody');
-                const row = tbody.insertRow();
-                row.id = 'noDataRow';
-                row.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">No matching transactions found.</td>`;
-            }
-        } else if (noDataRow) {
-            noDataRow.remove();
-        }
-    });
-
-    function confirmReverse(id, receipt) {
-        document.getElementById('receiptId').textContent = receipt;
-        document.getElementById('confirmReverseBtn').href = '/penalties/reverse/' + id;
-        var modal = new bootstrap.Modal(document.getElementById('reverseModal'));
-        modal.show();
     }
+
+    // Reverse Payment Modal Logic
+    const reverseModal = new bootstrap.Modal(document.getElementById('reverseModal'));
+    const receiptIdSpan = document.getElementById('receiptId');
+    const confirmReverseBtn = document.getElementById('confirmReverseBtn');
+
+    document.querySelectorAll('.btn-reverse').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const receipt = this.dataset.receipt;
+            receiptIdSpan.textContent = receipt;
+            confirmReverseBtn.href = `<?= base_url('penalties/reverse') ?>/${id}`;
+            reverseModal.show();
+        });
+    });
 </script>
 <?= $this->endSection() ?>

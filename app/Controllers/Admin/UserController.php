@@ -19,32 +19,29 @@ class UserController extends BaseController
 
     public function index()
     {
-        return redirect()->to('/users/drivers');
-    }
+        $role = (string) ($this->request->getGet('role') ?? '');
+        $allowedRoles = ['admin', 'driver', 'enforcer'];
 
-    public function enforcers()
-    {
-        $data = [
-            'title' => 'Traffic Enforcers',
-            'users' => $this->userModel->where('role', 'traffic_officer')->findAll(),
-        ];
-        return view('admin/users/enforcers', $data);
-    }
+        $usersQuery = $this->userModel;
+        if ($role !== '' && in_array($role, $allowedRoles, true)) {
+            $usersQuery = $usersQuery->where('role', $role);
+        } else {
+            $role = '';
+        }
 
-    public function drivers()
-    {
         $data = [
-            'title' => 'Driver Management',
-            'users' => $this->userModel->where('role', 'user')->findAll(),
+            'title' => 'User Management',
+            'selectedRole' => $role,
+            'users' => $usersQuery->findAll(),
         ];
-        return view('admin/users/drivers', $data);
+        return view('admin/users/index', $data);
     }
 
     public function viewDriver($id = null)
     {
         $user = $this->userModel->find($id);
-        if (!$user || $user['role'] !== 'user') {
-            return redirect()->to('/users/drivers')->with('error', 'Driver not found.');
+        if (!$user || $user['role'] !== 'driver') {
+            return redirect()->to(base_url('users?role=driver'))->with('error', 'Driver not found.');
         }
 
         $data = [
@@ -59,34 +56,48 @@ class UserController extends BaseController
     {
         $data = [
             'title' => 'Create New User',
+            'defaults' => [
+                'username' => (string) (env('auth.defaultAdminUsername') ?? ''),
+                'password' => (string) (env('auth.defaultAdminPassword') ?? env('auth.defaultUserPassword') ?? ''),
+                'role'     => 'driver',
+            ],
         ];
         return view('admin/users/create', $data);
     }
 
     public function store()
     {
+        $defaultPassword = (string) (env('auth.defaultUserPassword') ?? '');
+        $defaultRole = 'driver';
+
         $rules = [
             'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[users.username]',
             'email'    => 'required|valid_email|is_unique[users.email]',
-            'password' => 'required|min_length[8]',
-            'role'     => 'required|in_list[admin,user,traffic_officer]',
+            // allow shorter password when default env password is used
+            'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
+            'role'     => 'permit_empty|in_list[admin,driver,enforcer]',
         ];
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
+        $role = (string) ($this->request->getPost('role') ?: $defaultRole);
+        $password = (string) $this->request->getPost('password');
+        if ($password === '' && $defaultPassword !== '') {
+            $password = $defaultPassword;
+        }
+
         $data = [
             'username' => $this->request->getPost('username'),
             'email'    => $this->request->getPost('email'),
-            'password' => $this->request->getPost('password'),
-            'role'     => $this->request->getPost('role'),
+            'password' => $password,
+            'role'     => $role,
             'status'   => 'active',
         ];
 
         if ($this->userModel->save($data)) {
-            $redirect = ($data['role'] === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
-            return redirect()->to($redirect)->with('success', 'User created successfully.');
+            return redirect()->to(base_url('users') . ($data['role'] ? '?role=' . $data['role'] : ''))->with('success', 'User created successfully.');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->userModel->errors());
         }
@@ -97,7 +108,7 @@ class UserController extends BaseController
         $user = $this->userModel->find($id);
 
         if (!$user) {
-            return redirect()->to('/users')->with('error', 'User not found.');
+            return redirect()->to(base_url('users'))->with('error', 'User not found.');
         }
 
         $data = [
@@ -112,13 +123,13 @@ class UserController extends BaseController
         $user = $this->userModel->find($id);
 
         if (!$user) {
-            return redirect()->to('/users')->with('error', 'User not found.');
+            return redirect()->to(base_url('users'))->with('error', 'User not found.');
         }
 
         $rules = [
             'username' => "required|alpha_numeric_space|min_length[3]|is_unique[users.username,id,{$id}]",
             'email'    => "required|valid_email|is_unique[users.email,id,{$id}]",
-            'role'     => 'required|in_list[admin,user,traffic_officer]',
+            'role'     => 'required|in_list[admin,driver,enforcer]',
             'status'   => 'required|in_list[active,inactive,suspended]',
         ];
 
@@ -143,8 +154,7 @@ class UserController extends BaseController
         }
 
         if ($this->userModel->save($data)) {
-            $redirect = ($data['role'] === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
-            return redirect()->to($redirect)->with('success', 'User updated successfully.');
+            return redirect()->to(base_url('users') . ($data['role'] ? '?role=' . $data['role'] : ''))->with('success', 'User updated successfully.');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->userModel->errors());
         }
@@ -160,8 +170,7 @@ class UserController extends BaseController
 
         $role = $user['role'];
         if ($this->userModel->delete($id)) {
-            $redirect = ($role === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
-            return redirect()->to($redirect)->with('success', 'User deleted successfully.');
+            return redirect()->to(base_url('users') . ($role ? '?role=' . $role : ''))->with('success', 'User deleted successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to delete user.');
         }
@@ -179,8 +188,7 @@ class UserController extends BaseController
         $newPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
 
         if ($this->userModel->update($id, ['password' => $newPassword])) {
-            $redirect = ($user['role'] === 'traffic_officer') ? '/users/enforcers' : '/users/drivers';
-            return redirect()->to($redirect)->with('success', "Password for <strong>{$user['username']}</strong> reset to: <strong class='text-danger'>{$newPassword}</strong>. Please copy this password now.");
+            return redirect()->to(base_url('users') . ($user['role'] ? '?role=' . $user['role'] : ''))->with('success', "Password for <strong>{$user['username']}</strong> reset to: <strong class='text-danger'>{$newPassword}</strong>. Please copy this password now.");
         } else {
             return redirect()->back()->with('error', 'Failed to reset password.');
         }

@@ -24,15 +24,18 @@
                         </div>
                     <?php endif; ?>
 
-                    <form action="/users/store" method="POST">
+                    <form action="<?= base_url('users/store') ?>" method="POST">
                         <?= csrf_field() ?>
                         
+                        <?php
+                            $defaults = $defaults ?? ['username' => '', 'password' => '', 'role' => 'driver'];
+                        ?>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                                 <input type="text" name="username" id="username" class="form-control" 
                                        placeholder="Enter username" required
-                                       value="<?= old('username') ?>">
+                                       value="<?= old('username') ?: esc($defaults['username']) ?>">
                             </div>
 
                             <div class="col-md-6">
@@ -44,9 +47,13 @@
 
                             <div class="col-md-6">
                                 <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" name="password" id="password" class="form-control" 
-                                       placeholder="Enter password" required>
-                                <div class="form-text">Minimum 8 characters.</div>
+                                <div class="input-group">
+                                    <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" value="<?= esc($defaults['password']) ?>">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" aria-label="Show or hide password">
+                                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Leave blank to use the default password (if configured).</div>
                             </div>
 
                             <div class="col-md-6">
@@ -54,15 +61,15 @@
                                 <select name="role" id="role" class="form-select" required>
                                     <option value="">-- Select Role --</option>
                                     <option value="admin" <?= old('role') == 'admin' ? 'selected' : '' ?>>Admin</option>
-                                    <option value="traffic_officer" <?= old('role') == 'traffic_officer' ? 'selected' : '' ?>>Traffic Officer</option>
-                                    <option value="user" <?= old('role') == 'user' ? 'selected' : '' ?>>User (Driver)</option>
+                                    <option value="enforcer" <?= old('role') == 'enforcer' ? 'selected' : '' ?>>Traffic Enforcer</option>
+                                    <option value="driver" <?= (old('role') == 'driver' || (!old('role') && ($defaults['role'] ?? '') === 'driver')) ? 'selected' : '' ?>>Driver</option>
                                 </select>
                             </div>
 
                             <div class="col-12 mt-4">
                                 <hr>
                                 <div class="d-flex justify-content-between">
-                                    <a href="/users" class="btn btn-outline-secondary">
+                                    <a href="<?= base_url('users') ?>" class="btn btn-outline-secondary">
                                         <i class="bi bi-arrow-left me-1"></i> Back to User List
                                     </a>
                                     <button type="submit" class="btn btn-primary">
@@ -78,4 +85,22 @@
     </div>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+    (function () {
+        const input = document.getElementById('password');
+        const btn = document.getElementById('togglePasswordBtn');
+        const icon = document.getElementById('togglePasswordIcon');
+        if (!input || !btn || !icon) return;
+
+        btn.addEventListener('click', function () {
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            icon.classList.toggle('bi-eye', !show);
+            icon.classList.toggle('bi-eye-slash', show);
+        });
+    })();
+</script>
 <?= $this->endSection() ?>

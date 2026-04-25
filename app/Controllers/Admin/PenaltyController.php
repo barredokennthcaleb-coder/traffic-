@@ -39,7 +39,7 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->find($id);
 
         if (!$violation || $violation['status'] != 'Pending') {
-            return redirect()->to('/penalties')->with('error', 'Violation not found or already paid.');
+            return redirect()->to(base_url('penalties'))->with('error', 'Violation not found or already paid.');
         }
 
         $data = [
@@ -57,11 +57,11 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->find($violationId);
 
         if (!$violation) {
-            return redirect()->to('/penalties')->with('error', 'Violation not found.');
+            return redirect()->to(base_url('penalties'))->with('error', 'Violation not found.');
         }
 
         if ($this->violationRecord->recordPayment($violationId, $paymentMethod)) {
-            return redirect()->to('/penalties/history')->with('success', 'Payment recorded successfully.');
+            return redirect()->to(base_url('penalties/history'))->with('success', 'Payment recorded successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to record payment.');
         }
@@ -83,7 +83,7 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->find($id);
 
         if (!$violation || $violation['status'] !== 'Paid') {
-            return redirect()->to('/penalties/history')->with('error', 'Violation not found or not in Paid status.');
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Violation not found or not in Paid status.');
         }
 
         $updateData = [
@@ -94,9 +94,9 @@ class PenaltyController extends BaseController
         ];
 
         if ($this->violationRecord->update($id, $updateData)) {
-            return redirect()->to('/penalties/history')->with('success', 'Payment has been reversed and ticket is now Pending.');
+            return redirect()->to(base_url('penalties/history'))->with('success', 'Payment has been reversed and ticket is now Pending.');
         } else {
-            return redirect()->to('/penalties/history')->with('error', 'Failed to reverse payment.');
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Failed to reverse payment.');
         }
     }
 
@@ -105,7 +105,7 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->getDetailedViolation($id);
 
         if (!$violation) {
-            return redirect()->to('/penalties/all')->with('error', 'Violation not found.');
+            return redirect()->to(base_url('penalties/all'))->with('error', 'Violation not found.');
         }
 
         $data = [
@@ -120,17 +120,17 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->find($id);
 
         if (!$violation) {
-            return redirect()->to('/penalties/all')->with('error', 'Violation not found.');
+            return redirect()->to(base_url('penalties/all'))->with('error', 'Violation not found.');
         }
 
         if ($violation['status'] !== 'Pending') {
-            return redirect()->to('/penalties/all')->with('error', 'Only pending violations can be cancelled.');
+            return redirect()->to(base_url('penalties/all'))->with('error', 'Only pending violations can be cancelled.');
         }
 
         $reason = $this->request->getPost('reason') ?? 'Cancelled by admin';
 
         if ($this->violationRecord->cancelViolation($id, $reason)) {
-            return redirect()->to('/penalties/all')->with('success', 'Violation cancelled successfully.');
+            return redirect()->to(base_url('penalties/all'))->with('success', 'Violation cancelled successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to cancel violation.');
         }
@@ -141,7 +141,7 @@ class PenaltyController extends BaseController
         $keyword = $this->request->getGet('q');
 
         if (empty($keyword)) {
-            return redirect()->to('/penalties/all');
+            return redirect()->to(base_url('penalties/all'));
         }
 
         $data = [

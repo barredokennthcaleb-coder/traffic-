@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="col-md-3 text-end">
-            <a href="/penalties/history" class="btn btn-outline-primary shadow-sm">
+            <a href="<?= base_url('penalties/history') ?>" class="btn btn-outline-primary shadow-sm">
                 <i class="bi bi-clock-history me-1"></i> Payment History
             </a>
         </div>

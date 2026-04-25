@@ -15,7 +15,7 @@ class OfficerAuth implements FilterInterface
         }
 
         $role = session()->get('role');
-        if ($role !== 'traffic_officer' && $role !== 'admin') {
+        if ($role !== 'enforcer' && $role !== 'admin') {
             return redirect()->to('/user/dashboard')->with('error', 'You do not have permission to access the officer area.');
         }
     }

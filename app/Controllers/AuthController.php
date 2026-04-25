@@ -12,11 +12,11 @@ class AuthController extends BaseController
         if (session()->get('isLoggedIn')) {
             $role = session()->get('role');
             if ($role === 'admin') {
-                return redirect()->to('/dashboard');
-            } elseif ($role === 'traffic_officer') {
-                return redirect()->to('/officer');
+                return redirect()->to(base_url('dashboard'));
+            } elseif ($role === 'enforcer') {
+                return redirect()->to(base_url('officer'));
             } else {
-                return redirect()->to('/user/dashboard');
+                return redirect()->to(base_url('user/dashboard'));
             }
         }
         return view('auth/login');
@@ -56,11 +56,11 @@ class AuthController extends BaseController
                 
                 // Redirect based on role
                 if ($user['role'] === 'admin') {
-                    return redirect()->to('/dashboard');
-                } elseif ($user['role'] === 'traffic_officer') {
-                    return redirect()->to('/officer');
+                    return redirect()->to(base_url('dashboard'));
+                } elseif ($user['role'] === 'enforcer') {
+                    return redirect()->to(base_url('officer'));
                 } else {
-                    return redirect()->to('/user/dashboard');
+                    return redirect()->to(base_url('user/dashboard'));
                 }
             } else {
                 $session->setFlashdata('warning', 'Incorrect password. Please try again.');
@@ -75,7 +75,7 @@ class AuthController extends BaseController
     public function register()
     {
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to(base_url('dashboard'));
         }
         return view('auth/register');
     }
@@ -87,8 +87,13 @@ class AuthController extends BaseController
 
         $username = trim($this->request->getVar('username'));
         $email = trim($this->request->getVar('email'));
-        $password = $this->request->getVar('password');
-        $confirmPassword = $this->request->getVar('confirm_password');
+        $envDefaultPassword = (string) (env('auth.defaultUserPassword') ?? '');
+        $passwordInput = (string) $this->request->getVar('password');
+        $confirmPasswordInput = (string) $this->request->getVar('confirm_password');
+
+        // Only fall back to env default when the user leaves it blank.
+        $password = $passwordInput !== '' ? $passwordInput : $envDefaultPassword;
+        $confirmPassword = $confirmPasswordInput !== '' ? $confirmPasswordInput : $envDefaultPassword;
 
         if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
             $session->setFlashdata('errors', ['All fields are required.']);
@@ -105,19 +110,22 @@ class AuthController extends BaseController
             return redirect()->back()->withInput();
         }
 
-        if (strlen($password) < 8) {
-            $session->setFlashdata('errors', ['Password must be at least 8 characters long.']);
-            return redirect()->back()->withInput();
-        }
+        // If NO default password is set in .env, enforce stronger rules.
+        if ($envDefaultPassword === '') {
+            if (strlen($password) < 8) {
+                $session->setFlashdata('errors', ['Password must be at least 8 characters long.']);
+                return redirect()->back()->withInput();
+            }
 
-        if (!preg_match('/[a-zA-Z]/', $password)) {
-            $session->setFlashdata('errors', ['Password must contain at least one letter.']);
-            return redirect()->back()->withInput();
-        }
+            if (!preg_match('/[a-zA-Z]/', $password)) {
+                $session->setFlashdata('errors', ['Password must contain at least one letter.']);
+                return redirect()->back()->withInput();
+            }
 
-        if (!preg_match('/[0-9]/', $password)) {
-            $session->setFlashdata('errors', ['Password must contain at least one number.']);
-            return redirect()->back()->withInput();
+            if (!preg_match('/[0-9]/', $password)) {
+                $session->setFlashdata('errors', ['Password must contain at least one number.']);
+                return redirect()->back()->withInput();
+            }
         }
 
         $existingEmail = $model->where('email', $email)->first();
@@ -136,13 +144,13 @@ class AuthController extends BaseController
             'username' => $username,
             'email'    => $email,
             'password' => $password,
-            'role'     => 'admin', // Default role for self-registration
+            'role'     => 'driver', // Default role for self-registration
             'status'   => 'active'
         ];
 
         if ($model->save($data)) {
             $session->setFlashdata('success', 'Account created successfully! Please log in with your credentials.');
-            return redirect()->to('/login');
+            return redirect()->to(base_url('login'));
         } else {
             $session->setFlashdata('errors', $model->errors());
             return redirect()->back()->withInput();
@@ -154,6 +162,6 @@ class AuthController extends BaseController
         $session = session();
         $username = $session->get('username');
         $session->destroy();
-        return redirect()->to('/login')->with('success', 'You have been logged out successfully.');
+        return redirect()->to(base_url('login'))->with('success', 'You have been logged out successfully.');
     }
 }

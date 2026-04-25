@@ -222,8 +222,10 @@ class ViolationRecord extends Model
 
     public function getViolationTypesSummary()
     {
-        return $this->select('violation_type, COUNT(*) as count, SUM(penalty_amount) as total_amount')
-                    ->groupBy('violation_type')
+        // Prefer canonical names from violation_types when linked, but fall back to the stored text.
+        return $this->select("IFNULL(vt.violation_name, violations.violation_type) as violation_type, COUNT(*) as count, SUM(violations.penalty_amount) as total_amount")
+                    ->join('violation_types vt', 'vt.id = violations.violation_type_id', 'left')
+                    ->groupBy('violations.violation_type_id, violations.violation_type, vt.violation_name')
                     ->orderBy('count', 'DESC')
                     ->findAll();
     }

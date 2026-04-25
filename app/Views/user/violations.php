@@ -11,7 +11,7 @@
             <p class="text-muted small mb-0">List of all your traffic violations, including pending and paid.</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="/user/dashboard" class="btn btn-outline-secondary">
+            <a href="<?= base_url('user/dashboard') ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>

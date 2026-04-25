@@ -11,7 +11,7 @@
             <p class="text-muted small">Found <strong><?= count($violations) ?></strong> results for "<?= esc($keyword) ?>"</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="/penalties/all" class="btn btn-outline-secondary">
+            <a href="<?= base_url('penalties/all') ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to All Violations
             </a>
         </div>
@@ -61,7 +61,7 @@
                                 </td>
                                 <td><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
                                 <td class="text-end">
-                                    <a href="/penalties/view/<?= $v['id'] ?>" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <a href="<?= base_url('penalties/view/' . $v['id']) ?>" class="btn btn-sm btn-outline-primary" title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>

@@ -74,10 +74,12 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group shadow-sm">
-                                        <button class="btn btn-sm btn-white border" onclick="editViolationType(<?= htmlspecialchars(json_encode($type)) ?>)" title="Edit">
+                                        <button class="btn btn-sm btn-white border btn-edit" 
+                                                data-type="<?= htmlspecialchars(json_encode($type)) ?>" title="Edit">
                                             <i class="bi bi-pencil text-primary"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-white border" onclick="confirmDelete(<?= $type['id'] ?>, '<?= esc($type['violation_name']) ?>')" title="Delete">
+                                        <button class="btn btn-sm btn-white border btn-delete" 
+                                                data-id="<?= $type['id'] ?>" data-name="<?= esc($type['violation_name']) ?>" title="Delete">
                                             <i class="bi bi-trash text-danger"></i>
                                         </button>
                                     </div>
@@ -246,33 +248,36 @@
     }
 
     // Search Filtering
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const rows = document.querySelectorAll('.violation-row');
-        let hasResults = false;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.violation-row');
+            let hasResults = false;
 
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(keyword)) {
-                row.style.display = '';
-                hasResults = true;
-            } else {
-                row.style.display = 'none';
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(keyword)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noDataRow = document.getElementById('noDataRow');
+            if (!hasResults) {
+                if (!noDataRow) {
+                    const tbody = document.querySelector('#violationTable tbody');
+                    const row = tbody.insertRow();
+                    row.id = 'noDataRow';
+                    row.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">No matching results found.</td>`;
+                }
+            } else if (noDataRow) {
+                noDataRow.remove();
             }
         });
-
-        const noDataRow = document.getElementById('noDataRow');
-        if (!hasResults) {
-            if (!noDataRow) {
-                const tbody = document.querySelector('#violationTable tbody');
-                const row = tbody.insertRow();
-                row.id = 'noDataRow';
-                row.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">No matching results found.</td>`;
-            }
-        } else if (noDataRow) {
-            noDataRow.remove();
-        }
-    });
+    }
 
     // Add Submission
     document.getElementById('addForm').addEventListener('submit', async function(e) {
@@ -284,7 +289,7 @@
 
         try {
             const formData = new FormData(this);
-            const response = await fetch('/violation-types/store', {
+            const response = await fetch('<?= base_url('violation-types/store') ?>', {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -308,16 +313,20 @@
     });
 
     // Edit Modal Populator
-    function editViolationType(data) {
-        document.getElementById('edit_id').value = data.id;
-        document.getElementById('edit_violation_name').value = data.violation_name;
-        document.getElementById('edit_description').value = data.description || '';
-        document.getElementById('edit_fine_amount').value = data.fine_amount;
-        document.getElementById('edit_points').value = data.points;
-        document.getElementById('edit_status').value = data.status;
-        
-        new bootstrap.Modal(document.getElementById('editModal')).show();
-    }
+    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const data = JSON.parse(this.dataset.type);
+            document.getElementById('edit_id').value = data.id;
+            document.getElementById('edit_violation_name').value = data.violation_name;
+            document.getElementById('edit_description').value = data.description || '';
+            document.getElementById('edit_fine_amount').value = data.fine_amount;
+            document.getElementById('edit_points').value = data.points;
+            document.getElementById('edit_status').value = data.status;
+            
+            editModal.show();
+        });
+    });
 
     // Update Submission
     document.getElementById('editForm').addEventListener('submit', async function(e) {
@@ -329,7 +338,7 @@
 
         try {
             const formData = new FormData(this);
-            const response = await fetch('/violation-types/update', {
+            const response = await fetch('<?= base_url('violation-types/update') ?>', {
                 method: 'POST',
                 body: formData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -364,20 +373,26 @@
     });
 
     // Delete Confirmation
-    function confirmDelete(id, name) {
-        deleteId = id;
-        document.getElementById('deleteTargetName').textContent = name;
-        new bootstrap.Modal(document.getElementById('deleteModal')).show();
-    }
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const deleteTargetName = document.getElementById('deleteTargetName');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
-    document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            deleteId = this.dataset.id;
+            deleteTargetName.textContent = this.dataset.name;
+            deleteModal.show();
+        });
+    });
+
+    confirmDeleteBtn.addEventListener('click', async function() {
         if (!deleteId) return;
         
         this.disabled = true;
         this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
         try {
-            const response = await fetch(`/violation-types/delete/${deleteId}`, {
+            const response = await fetch(`<?= base_url('violation-types/delete') ?>/${deleteId}`, {
                 method: 'GET',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });

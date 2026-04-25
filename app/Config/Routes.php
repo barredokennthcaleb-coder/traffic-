@@ -24,11 +24,12 @@ $routes->get('user/receipt/(:any)', 'User\UserController::receipt/$1', ['filter'
 
 // Officer Routes
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
-    $routes->get('/', 'Admin\OfficerController::index');
-    $routes->post('store', 'Admin\OfficerController::store');
-    $routes->get('violations', 'Admin\OfficerController::violations');
-    $routes->get('view/(:num)', 'Admin\OfficerController::view/$1');
-    $routes->post('cancel/(:num)', 'Admin\OfficerController::cancel/$1');
+    $routes->get('/', 'Officer\OfficerController::index');
+    $routes->post('store', 'Officer\OfficerController::store');
+    $routes->get('violations', 'Officer\OfficerController::violations');
+    $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
+    $routes->post('cancel/(:num)', 'Officer\OfficerController::cancel/$1');
+    $routes->post('violation-types/store', 'Officer\OfficerController::storeViolationType');
 });
 
 // Admin Routes
@@ -39,9 +40,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     
     // User CRUD Routes
     $routes->get('users', 'Admin\UserController::index');
-    $routes->get('users/enforcers', 'Admin\UserController::enforcers');
-    $routes->get('users/drivers', 'Admin\UserController::drivers');
-    $routes->get('users/drivers/view/(:num)', 'Admin\UserController::viewDriver/$1');
+    $routes->get('users/view/(:num)', 'Admin\UserController::viewDriver/$1');
     $routes->get('users/create', 'Admin\UserController::create');
     $routes->post('users/store', 'Admin\UserController::store');
     $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');

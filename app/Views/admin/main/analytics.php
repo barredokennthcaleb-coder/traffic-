@@ -102,13 +102,27 @@
 
     <div class="row g-4">
         <!-- Violation Types Bar Chart -->
-        <div class="col-lg-12">
+        <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3">
                     <h5 class="mb-0"><i class="bi bi-bar-chart me-2 text-info"></i>Violations by Type</h5>
                 </div>
                 <div class="card-body">
                     <canvas id="typeChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users by Role -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-people me-2 text-secondary"></i>Users by Role</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div style="width: 100%; max-width: 380px;">
+                        <canvas id="roleChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -134,6 +148,10 @@
     const typeLabels = typeData.map(t => t.violation_type);
     const typeCounts = typeData.map(t => t.count);
     const typeRevenue = typeData.map(t => t.total_amount);
+
+    const roleData = <?= json_encode($user_role_distribution ?? []) ?>;
+    const roleLabels = roleData.map(r => r.role);
+    const roleCounts = roleData.map(r => r.count);
 
     // Trend Chart
     new Chart(document.getElementById('trendChart'), {
@@ -213,6 +231,22 @@
             scales: {
                 y: { beginAtZero: true }
             }
+        }
+    });
+
+    // Role Chart
+    new Chart(document.getElementById('roleChart'), {
+        type: 'doughnut',
+        data: {
+            labels: roleLabels,
+            datasets: [{
+                data: roleCounts,
+                backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#6c757d', '#dc3545'].slice(0, roleLabels.length),
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 </script>

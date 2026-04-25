@@ -11,7 +11,7 @@
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0"><i class="bi bi-credit-card me-2 text-success"></i>Pay Violation</h4>
-                        <a href="/user/dashboard" class="btn btn-outline-secondary btn-sm">
+                        <a href="<?= base_url('user/dashboard') ?>" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-arrow-left me-1"></i> Back
                         </a>
                     </div>
@@ -59,7 +59,7 @@
                         <h1 class="mb-0 display-4 fw-bold">$<?= number_format($violation['penalty_amount'], 2) ?></h1>
                     </div>
 
-                    <form action="/user/process-payment" method="POST" id="paymentForm">
+                    <form action="<?= base_url('user/process-payment') ?>" method="POST" id="paymentForm">
                         <?= csrf_field() ?>
                         <input type="hidden" name="ticket_id" value="<?= esc($violation['ticket_id']) ?>">
                         

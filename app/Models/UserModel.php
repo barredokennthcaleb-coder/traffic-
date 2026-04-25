@@ -25,8 +25,9 @@ class UserModel extends Model
         'id'       => 'permit_empty',
         'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[users.username,id,{id}]',
         'email'    => 'required|valid_email|is_unique[users.email,id,{id}]',
-        'password' => 'permit_empty|min_length[8]',
-        'role'     => 'required|in_list[admin,user,traffic_officer]',
+        // Dev convenience: allow short default passwords (e.g. 00000). Increase for production.
+        'password' => 'permit_empty|min_length[5]',
+        'role'     => 'required|in_list[admin,driver,enforcer]',
     ];
     
     protected $validationMessages   = [];

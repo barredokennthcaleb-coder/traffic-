@@ -52,13 +52,13 @@ class UserController extends BaseController
         $violation = $this->violationRecord->where('ticket_id', $ticketId)->first();
 
         if (!$violation) {
-            return redirect()->to('/user/dashboard')->with('error', 'Violation not found.');
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'Violation not found.');
         }
         
         // Ensure the violation belongs to the logged-in user
         $session = session();
         if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to('/user/dashboard')->with('error', 'You do not have permission to view this violation.');
+             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this violation.');
         }
 
         $data = [
@@ -74,17 +74,17 @@ class UserController extends BaseController
         $violation = $this->violationRecord->where('ticket_id', $ticketId)->first();
 
         if (!$violation) {
-            return redirect()->to('/user/dashboard')->with('error', 'Violation not found.');
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'Violation not found.');
         }
 
         // Ensure the violation belongs to the logged-in user
         $session = session();
         if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to('/user/dashboard')->with('error', 'You do not have permission to pay this violation.');
+             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
         }
 
         if ($violation['status'] !== 'Pending') {
-            return redirect()->to('/user/dashboard')->with('error', 'This violation has already been processed.');
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'This violation has already been processed.');
         }
 
         $data = [
@@ -105,17 +105,17 @@ class UserController extends BaseController
         $violation = $violationModel->where('ticket_id', $ticketId)->first();
 
         if (!$violation || $violation['status'] !== 'Pending') {
-            return redirect()->to('/user/dashboard')->with('error', 'Invalid violation or already paid.');
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'Invalid violation or already paid.');
         }
 
         // Ensure the violation belongs to the logged-in user
         $session = session();
         if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to('/user/dashboard')->with('error', 'You do not have permission to pay this violation.');
+             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
         }
 
         if ($violationModel->recordPayment($violation['id'], $paymentMethod)) {
-            return redirect()->to('/user/receipt/' . $ticketId)->with('success', 'Payment successful!');
+            return redirect()->to(base_url('user/receipt/' . $ticketId))->with('success', 'Payment successful!');
         } else {
             return redirect()->back()->with('error', 'Payment failed. Please try again.');
         }
@@ -126,13 +126,13 @@ class UserController extends BaseController
         $violation = $this->violationRecord->where('ticket_id', $ticketId)->first();
 
         if (!$violation || $violation['status'] !== 'Paid') {
-            return redirect()->to('/user/dashboard')->with('error', 'Receipt not found.');
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'Receipt not found.');
         }
 
         // Ensure the violation belongs to the logged-in user
         $session = session();
         if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to('/user/dashboard')->with('error', 'You do not have permission to view this receipt.');
+             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this receipt.');
         }
 
         $data = [

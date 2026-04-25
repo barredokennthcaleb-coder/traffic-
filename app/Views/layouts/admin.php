@@ -1,3 +1,4 @@
+<?php $layoutRole = (string) session()->get('role'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,17 +12,24 @@
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
             --transition-speed: 0.3s;
+            --brand-primary: #667eea;
+            --brand-secondary: #764ba2;
+            --brand-gradient: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+            --surface-bg: #f5f7ff;
+            --surface-muted: #eef1ff;
+            --text-strong: #1f2440;
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: var(--surface-bg);
             overflow-x: hidden;
+            color: #2f3555;
         }
 
         .sidebar {
             width: var(--sidebar-width);
             min-height: 100vh;
-            background-color: #343a40;
+            background: linear-gradient(180deg, #1e2237 0%, #262c49 100%);
             color: white;
             transition: width var(--transition-speed) ease;
             position: fixed;
@@ -72,7 +80,7 @@
 
         .sidebar a:hover, .sidebar a.active {
             color: white;
-            background-color: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.12);
         }
 
         .sidebar-toggle {
@@ -82,7 +90,7 @@
             transform: translateY(-50%);
             width: 40px;
             height: 40px;
-            background: #0d6efd; /* Bright Bootstrap Blue */
+            background: var(--brand-gradient);
             border: 3px solid white;
             border-radius: 50%;
             color: white;
@@ -97,7 +105,7 @@
         }
 
         .sidebar-toggle:hover {
-            background: #0b5ed7;
+            filter: brightness(0.95);
             transform: translateY(-50%) scale(1.15);
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
@@ -124,7 +132,43 @@
 
         .card {
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(42, 56, 119, 0.08);
+        }
+
+        .btn-primary {
+            border: none;
+            background: var(--brand-gradient);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(0.96);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.2);
+        }
+
+        .main-content .h2 {
+            color: var(--text-strong);
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 12px;
+        }
+
+        body.role-enforcer .card-header,
+        body.role-enforcer .table-light {
+            background: var(--surface-muted) !important;
+        }
+
+        body.role-enforcer .border-bottom {
+            border-color: #dbe2ff !important;
         }
 
         @media (max-width: 768px) {
@@ -141,7 +185,7 @@
         }
     </style>
 </head>
-<body>
+<body class="role-<?= esc($layoutRole) ?>">
 
 <div class="d-flex">
     <?= $this->include('theme/sidebar') ?>

@@ -11,7 +11,7 @@
             <p class="text-muted small mb-0">Records of all your settled traffic violation payments.</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="/user/dashboard" class="btn btn-outline-secondary">
+            <a href="<?= base_url('user/dashboard') ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>
@@ -48,7 +48,7 @@
                                 <td><?= esc($violation['payment_method']) ?></td>
                                 <td><?= date('M d, Y', strtotime($violation['paid_date'])) ?></td>
                                 <td class="text-end">
-                                    <a href="/user/receipt/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-outline-primary px-3">
+                                    <a href="<?= base_url('user/receipt/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-outline-primary px-3">
                                         <i class="bi bi-printer me-1"></i> View & Print
                                     </a>
                                 </td>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 24, 2026 at 05:20 PM
+-- Generation Time: Apr 25, 2026 at 06:11 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,28 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Database: `database`
 --
-
--- --------------------------------------------------------
-
---
--- Table structure for table `admins`
---
-
-CREATE TABLE `admins` (
-  `id` int(11) UNSIGNED NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `admins`
---
-
-INSERT INTO `admins` (`id`, `username`, `email`, `password`, `created_at`, `updated_at`) VALUES
-(1, 'admin12345', 'admin12345@gmail.com', '$2y$10$zS87ze3e4lYflDrqmeGHluC.F63bO6lfhuseoPd6t.U6j1Ju8woay', '2026-04-24 06:21:39', '2026-04-24 06:21:39');
 
 -- --------------------------------------------------------
 
@@ -69,7 +47,9 @@ INSERT INTO `migrations` (`id`, `version`, `class`, `group`, `namespace`, `time`
 (3, '20240424000003', 'App\\Database\\Migrations\\CreateUsersTable', 'default', 'App', 1777040581, 1),
 (4, '20240424000004', 'App\\Database\\Migrations\\UpdateViolationsTable', 'default', 'App', 1777040603, 2),
 (5, '20240424000005', 'App\\Database\\Migrations\\CreateViolationTypesTable', 'default', 'App', 1777040603, 2),
-(6, '2026-04-24-142535', 'App\\Database\\Migrations\\AddMissingColumnsToViolationsTable', 'default', 'App', 1777040762, 3);
+(6, '2026-04-24-142535', 'App\\Database\\Migrations\\AddMissingColumnsToViolationsTable', 'default', 'App', 1777040762, 3),
+(7, '2026-04-25-231800', 'App\\Database\\Migrations\\UpdateUserRoles', 'default', 'App', 1777130432, 4),
+(8, '2026-04-25-232500', 'App\\Database\\Migrations\\DropAdminsTable', 'default', 'App', 1777130715, 5);
 
 -- --------------------------------------------------------
 
@@ -82,7 +62,7 @@ CREATE TABLE `users` (
   `username` varchar(100) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','user','traffic_officer') DEFAULT 'user',
+  `role` varchar(20) NOT NULL DEFAULT 'driver',
   `status` varchar(20) DEFAULT 'active',
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -93,11 +73,13 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'ken', 'ken@gmail.com', '$2y$10$4UK8zNJBHoM.mH5lXkHzMOSs7WVZISIoQsUAbS1qxKvX.DMRwKA0K', 'user', 'active', '2026-04-24 06:24:39', '2026-04-24 06:24:39'),
-(2, 'leb', 'leb@gmail.com', '$2y$10$LufdV2oxGUqxjvALE799EuRkjgFzCSKAUA3/AVbsECXHkBjSnT.ai', 'user', 'active', '2026-04-24 06:34:46', '2026-04-24 06:34:46'),
+(1, 'ken', 'ken@gmail.com', '$2y$10$4UK8zNJBHoM.mH5lXkHzMOSs7WVZISIoQsUAbS1qxKvX.DMRwKA0K', 'driver', 'active', '2026-04-24 06:24:39', '2026-04-25 23:20:32'),
+(2, 'leb', 'leb@gmail.com', '$2y$10$LufdV2oxGUqxjvALE799EuRkjgFzCSKAUA3/AVbsECXHkBjSnT.ai', 'driver', 'active', '2026-04-24 06:34:46', '2026-04-25 23:20:32'),
 (3, 'kenneth', 'kenneth@gmail.com', '$2y$10$IavKG8WMg194LZSYNCgiY..gE/3lXZQ/niCDaiNxoVrJUT/v5AFdC', 'admin', 'active', '2026-04-24 06:37:44', '2026-04-24 06:37:44'),
-(7, 'janrey', 'janrey@gmail.com', '$2y$10$4FaDo5NXqqN3AgICU3t0AegATrP145oUSMfzeEHyT2O30cn/0HGgW', 'traffic_officer', 'active', '2026-04-24 14:19:59', '2026-04-24 14:19:59'),
-(8, 'mark', 'mark@gmail.com', '$2y$10$l3PpGRLyGuI5vu5uG1CiauUX3p.45N1TWDpIzouhqLXvhVlaWdQVG', 'user', 'active', '2026-04-24 14:32:40', '2026-04-24 14:32:40');
+(7, 'janrey', 'janrey@gmail.com', '$2y$10$4FaDo5NXqqN3AgICU3t0AegATrP145oUSMfzeEHyT2O30cn/0HGgW', 'enforcer', 'active', '2026-04-24 14:19:59', '2026-04-25 23:20:32'),
+(8, 'mark', 'mark@gmail.com', '$2y$10$l3PpGRLyGuI5vu5uG1CiauUX3p.45N1TWDpIzouhqLXvhVlaWdQVG', 'driver', 'active', '2026-04-24 14:32:40', '2026-04-25 23:20:32'),
+(9, 'admin123456', 'admin123456@gmail.com', '$2y$10$s675aytrUd258rtGpGRmouokDOF5NgdUwscXXY9OHLAElN7OjP4vS', 'admin', 'active', '2026-04-25 14:52:59', '2026-04-25 14:52:59'),
+(11, 'james', 'james@gmail.com', '$2y$10$POojmdfKl28WZgMulVz8e.gL9oWvtqb4xARo20mV42C11C7N6wRbW', 'driver', 'active', '2026-04-25 15:12:19', '2026-04-25 23:20:32');
 
 -- --------------------------------------------------------
 
@@ -134,7 +116,8 @@ CREATE TABLE `violations` (
 
 INSERT INTO `violations` (`id`, `ticket_id`, `driver_name`, `license_plate`, `violation_type_id`, `officer_id`, `created_by`, `violation_type`, `penalty_amount`, `points`, `status`, `violation_date`, `created_at`, `updated_at`, `paid_date`, `payment_method`, `receipt_number`, `remarks`, `location`, `notes`) VALUES
 (1, 'TKT-16ABCBF8', 'mark', '12345', 2, 7, 7, 'Running Red Light', 200.00, 4, 'Paid', '2026-04-24 14:28:33', '2026-04-24 14:28:33', '2026-04-24 14:36:40', '2026-04-24 14:36:40', 'Cash', 'RCP-EBF5CD346B', NULL, 'kabankalan', ''),
-(2, 'TKT-C48A473F', 'ken', '789999', 3, 7, 7, 'Illegal Parking', 75.00, 2, 'Pending', '2026-04-24 15:09:00', '2026-04-24 15:09:00', '2026-04-24 15:09:00', NULL, NULL, NULL, NULL, 'kabankalan', '');
+(2, 'TKT-C48A473F', 'ken', '789999', 3, 7, 7, 'Illegal Parking', 75.00, 2, 'Pending', '2026-04-24 15:09:00', '2026-04-24 15:09:00', '2026-04-24 15:09:00', NULL, NULL, NULL, NULL, 'kabankalan', ''),
+(3, 'TKT-2558745D', 'mark', '99999', 2, 7, 7, 'Running Red Light', 200.00, 4, 'Pending', '2026-04-25 13:02:18', '2026-04-25 13:02:18', '2026-04-25 13:02:18', NULL, NULL, NULL, NULL, 'talubangi', '');
 
 -- --------------------------------------------------------
 
@@ -172,14 +155,6 @@ INSERT INTO `violation_types` (`id`, `violation_name`, `description`, `fine_amou
 --
 
 --
--- Indexes for table `admins`
---
-ALTER TABLE `admins`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`);
-
---
 -- Indexes for table `migrations`
 --
 ALTER TABLE `migrations`
@@ -211,28 +186,22 @@ ALTER TABLE `violation_types`
 --
 
 --
--- AUTO_INCREMENT for table `admins`
---
-ALTER TABLE `admins`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `violations`
 --
 ALTER TABLE `violations`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `violation_types`

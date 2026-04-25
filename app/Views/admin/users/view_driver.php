@@ -50,8 +50,8 @@
             <button onclick="window.print()" class="btn btn-outline-primary me-2">
                 <i class="bi bi-printer me-1"></i> Print Records
             </button>
-            <a href="/users/drivers" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to Drivers
+            <a href="<?= base_url('users?role=driver') ?>" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Users
             </a>
         </div>
     </div>
@@ -73,7 +73,13 @@
                     </div>
                     <div class="mb-0">
                         <small class="text-muted text-uppercase d-block">Status</small>
-                        <span class="badge bg-success">Active</span>
+                        <?php if ($user['status'] == 'active'): ?>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Active</span>
+                        <?php elseif ($user['status'] == 'inactive'): ?>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 rounded-pill">Inactive</span>
+                        <?php else: ?>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 rounded-pill"><?= ucfirst(esc($user['status'])) ?></span>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -6,11 +6,15 @@
         <i class="bi bi-chevron-left"></i>
     </div>
     <div class="position-sticky pt-3">
+        <div class="text-center mb-3 sidebar-header-text px-3">
+            <img src="/img/pic 1.png" alt="Traffic System Logo" style="width: 58px; height: 58px; object-fit: contain; border-radius: 14px; background: rgba(255,255,255,0.09); padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.22);">
+            <div class="mt-2 fw-semibold" style="font-size: 0.95rem; color: rgba(255,255,255,0.9);">Traffic System</div>
+        </div>
         <h5 class="text-center mb-4 sidebar-header-text">
             <?php if ($role === 'admin'): ?>
                 Traffic Admin
-            <?php elseif ($role === 'traffic_officer'): ?>
-                Traffic Officer
+            <?php elseif ($role === 'enforcer'): ?>
+                Traffic Enforcer
             <?php else: ?>
                 Driver Portal
             <?php endif; ?>
@@ -50,15 +54,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'users/enforcers') ? 'active' : '' ?>" href="/users/enforcers">
-                        <i class="bi bi-shield-shaded"></i>
-                        <span class="nav-text ms-2">Traffic Enforcers</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'users/drivers' || strpos(uri_string(), 'users/drivers/') === 0) ? 'active' : '' ?>" href="/users/drivers">
+                    <a class="nav-link <?= (uri_string() == 'users' || strpos(uri_string(), 'users/') === 0) ? 'active' : '' ?>" href="/users">
                         <i class="bi bi-people"></i>
-                        <span class="nav-text ms-2">Drivers</span>
+                        <span class="nav-text ms-2">Users</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -74,8 +72,8 @@
                     </a>
                 </li>
 
-            <?php elseif ($role === 'traffic_officer'): ?>
-                <!-- Traffic Officer Navigation -->
+            <?php elseif ($role === 'enforcer'): ?>
+                <!-- Traffic Enforcer Navigation -->
                 <li class="nav-item">
                     <a class="nav-link <?= (uri_string() == 'officer' || uri_string() == 'officer/') ? 'active' : '' ?>" href="/officer">
                         <i class="bi bi-clipboard-plus"></i>

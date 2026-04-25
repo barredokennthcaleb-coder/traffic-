@@ -32,7 +32,7 @@
 
                 <hr>
 
-                <form action="/penalties/store" method="POST">
+                <form action="<?= base_url('penalties/store') ?>" method="POST">
                     <?= csrf_field() ?>
                     <input type="hidden" name="violation_id" value="<?= $violation['id'] ?>">
                     
@@ -68,7 +68,7 @@
                         <button type="submit" class="btn btn-success px-4">
                             <i class="bi bi-check-lg me-1"></i> Confirm Payment
                         </button>
-                        <a href="/penalties" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <a href="<?= base_url('penalties') ?>" class="btn btn-outline-secondary px-4">Cancel</a>
                     </div>
                 </form>
             </div>

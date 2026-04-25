@@ -18,7 +18,7 @@
                             <p class="text-muted mb-0">Role: <span class="badge bg-info text-dark text-uppercase"><?= esc($role) ?></span></p>
                         </div>
                         <div>
-                            <a href="/logout" class="btn btn-outline-danger">
+                            <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger">
                                 <i class="bi bi-box-arrow-right me-1"></i> Logout
                             </a>
                         </div>
@@ -129,7 +129,7 @@
                                         <td><strong class="text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
                                         <td><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
                                         <td>
-                                            <a href="/user/pay/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-success">
+                                            <a href="<?= base_url('user/pay/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-success">
                                                 <i class="bi bi-credit-card me-1"></i> Pay Now
                                             </a>
                                         </td>
@@ -172,7 +172,7 @@
                                         <td>$<?= number_format($violation['penalty_amount'], 2) ?></td>
                                         <td><?= date('M d, Y', strtotime($violation['paid_date'])) ?></td>
                                         <td>
-                                            <a href="/user/receipt/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-outline-primary">
+                                            <a href="<?= base_url('user/receipt/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-receipt me-1"></i> View
                                             </a>
                                         </td>

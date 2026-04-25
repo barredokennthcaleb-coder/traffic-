@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="col-md-3 text-end">
-            <a href="/officer" class="btn btn-primary shadow-sm">
+            <a href="<?= base_url('officer') ?>" class="btn btn-primary shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> New Violation
             </a>
         </div>
@@ -69,14 +69,14 @@
                                 <td class="text-muted small"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group shadow-sm">
-                                        <a href="/penalties/view/<?= $v['id'] ?>" class="btn btn-sm btn-white border" title="View Details">
+                                        <a href="<?= base_url('penalties/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                             <i class="bi bi-eye text-info"></i>
                                         </a>
                                         <?php if ($v['status'] == 'Pending'): ?>
-                                            <a href="/penalties/pay/<?= $v['id'] ?>" class="btn btn-sm btn-white border" title="Record Payment">
+                                            <a href="<?= base_url('penalties/pay/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="Record Payment">
                                                 <i class="bi bi-credit-card text-success"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-white border" onclick="confirmCancel(<?= $v['id'] ?>)" title="Cancel">
+                                            <button type="button" class="btn btn-sm btn-white border btn-cancel" data-id="<?= $v['id'] ?>" title="Cancel">
                                                 <i class="bi bi-x-circle text-danger"></i>
                                             </button>
                                         <?php endif; ?>
@@ -130,38 +130,47 @@
 <?= $this->section('scripts') ?>
 <script>
     // Live Search Filtering
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const rows = document.querySelectorAll('.violation-row');
-        let hasResults = false;
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.violation-row');
+            let hasResults = false;
 
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(keyword)) {
-                row.style.display = '';
-                hasResults = true;
-            } else {
-                row.style.display = 'none';
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(keyword)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noDataRow = document.getElementById('noDataRow');
+            if (!hasResults) {
+                if (!noDataRow) {
+                    const tbody = document.querySelector('#violationTable tbody');
+                    const row = tbody.insertRow();
+                    row.id = 'noDataRow';
+                    row.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">No matching results found.</td>`;
+                }
+            } else if (noDataRow) {
+                noDataRow.remove();
             }
         });
-
-        const noDataRow = document.getElementById('noDataRow');
-        if (!hasResults) {
-            if (!noDataRow) {
-                const tbody = document.querySelector('#violationTable tbody');
-                const row = tbody.insertRow();
-                row.id = 'noDataRow';
-                row.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">No matching results found.</td>`;
-            }
-        } else if (noDataRow) {
-            noDataRow.remove();
-        }
-    });
-
-    function confirmCancel(violationId) {
-        const form = document.getElementById('cancelForm');
-        form.action = `/penalties/cancel/${violationId}`;
-        new bootstrap.Modal(document.getElementById('cancelModal')).show();
     }
+
+    // Cancel Confirmation Modal Logic
+    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    const cancelForm = document.getElementById('cancelForm');
+
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            cancelForm.action = `<?= base_url('penalties/cancel') ?>/${id}`;
+            cancelModal.show();
+        });
+    });
 </script>
 <?= $this->endSection() ?>

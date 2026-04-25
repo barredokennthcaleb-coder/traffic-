@@ -41,7 +41,7 @@ class ViolationTypeController extends BaseController
                     'data' => $this->violationTypeModel->find($this->violationTypeModel->insertID())
                 ]);
             }
-            return redirect()->to('/violation-types')->with('success', 'Violation type added successfully.');
+            return redirect()->to(base_url('violation-types'))->with('success', 'Violation type added successfully.');
         } else {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -62,7 +62,7 @@ class ViolationTypeController extends BaseController
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Violation type not found.']);
             }
-            return redirect()->to('/violation-types')->with('error', 'Violation type not found.');
+            return redirect()->to(base_url('violation-types'))->with('error', 'Violation type not found.');
         }
 
         $data = [
@@ -82,7 +82,7 @@ class ViolationTypeController extends BaseController
                     'data' => $this->violationTypeModel->find($id)
                 ]);
             }
-            return redirect()->to('/violation-types')->with('success', 'Violation type updated successfully.');
+            return redirect()->to(base_url('violation-types'))->with('success', 'Violation type updated successfully.');
         } else {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON([
@@ -102,19 +102,19 @@ class ViolationTypeController extends BaseController
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Violation type not found.']);
             }
-            return redirect()->to('/violation-types')->with('error', 'Violation type not found.');
+            return redirect()->to(base_url('violation-types'))->with('error', 'Violation type not found.');
         }
 
         if ($this->violationTypeModel->delete($id)) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'success', 'message' => 'Violation type deleted successfully.']);
             }
-            return redirect()->to('/violation-types')->with('success', 'Violation type deleted successfully.');
+            return redirect()->to(base_url('violation-types'))->with('success', 'Violation type deleted successfully.');
         } else {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to delete violation type.']);
             }
-            return redirect()->to('/violation-types')->with('error', 'Failed to delete violation type.');
+            return redirect()->to(base_url('violation-types'))->with('error', 'Failed to delete violation type.');
         }
     }
 }

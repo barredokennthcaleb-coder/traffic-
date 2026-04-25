@@ -141,7 +141,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="/penalties/pay/<?= $violation['id'] ?>" class="btn btn-success">
+                        <a href="<?= base_url('penalties/pay/' . $violation['id']) ?>" class="btn btn-success">
                             <i class="bi bi-credit-card me-2"></i> Record Payment
                         </a>
                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
@@ -164,7 +164,7 @@
                 <h5 class="modal-title">Cancel Violation</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="/penalties/cancel/<?= $violation['id'] ?>" method="POST">
+            <form action="<?= base_url('penalties/cancel/' . $violation['id']) ?>" method="POST">
                 <?= csrf_field() ?>
                 <div class="modal-body">
                     <p>Are you sure you want to cancel this violation ticket?</p>
