@@ -115,6 +115,27 @@
     #searchInput {
         border-color: #dbe1ff;
     }
+    @media (max-width: 768px) {
+        .container-fluid.py-4 {
+            padding-top: 0.5rem !important;
+        }
+        .row.mb-4.align-items-center > [class*='col-'] {
+            margin-bottom: 0.75rem;
+        }
+        .row.mb-4.align-items-center .text-end {
+            text-align: left !important;
+        }
+        .row.mb-4.align-items-center .text-end .btn {
+            width: 100%;
+            margin-right: 0 !important;
+        }
+        .row.mb-4.align-items-center .text-end .btn + .btn {
+            margin-top: 0.5rem;
+        }
+        #violationTable {
+            min-width: 760px;
+        }
+    }
     @media print {
         .no-print, .sidebar, .sidebar-toggle, .btn, .alert, .main-content h1, .breadcrumb {
             display: none !important;

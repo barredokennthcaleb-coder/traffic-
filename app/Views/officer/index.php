@@ -228,6 +228,36 @@
         background: #eaf4ff;
         color: #22495f;
     }
+    @media (max-width: 768px) {
+        .enforcer-card .card-body {
+            padding: 1rem !important;
+        }
+        .enforcer-header h4 {
+            font-size: 1.1rem;
+        }
+        .enforcer-card .input-group {
+            flex-wrap: nowrap;
+        }
+        .enforcer-card .input-group .btn {
+            white-space: nowrap;
+            font-size: 0.85rem;
+            padding-left: 0.65rem;
+            padding-right: 0.65rem;
+        }
+        .enforcer-card .d-flex.justify-content-between.align-items-center {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 0.75rem;
+        }
+        .enforcer-card .d-flex.gap-2 {
+            width: 100%;
+            display: grid !important;
+            grid-template-columns: 1fr;
+        }
+        .enforcer-card .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+    }
 </style>
 
 <?= $this->endSection() ?>

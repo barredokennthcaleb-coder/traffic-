@@ -220,4 +220,26 @@
     </div>
 </div>
 
+<style>
+    @media (max-width: 768px) {
+        .container-fluid.py-4 {
+            padding-top: 0.5rem !important;
+        }
+        .card-body .d-flex.align-items-center {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.75rem;
+        }
+        .card-body .d-flex.align-items-center > div:last-child {
+            width: 100%;
+        }
+        .card-body .d-flex.align-items-center > div:last-child .btn {
+            width: 100%;
+        }
+        .table {
+            min-width: 700px;
+        }
+    }
+</style>
+
 <?= $this->endSection() ?>

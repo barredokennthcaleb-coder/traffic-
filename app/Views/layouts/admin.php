@@ -123,6 +123,7 @@
             transition: margin-left var(--transition-speed) ease;
             width: calc(100% - var(--sidebar-width));
             padding: 20px;
+            min-height: 100vh;
         }
 
         .sidebar.collapsed + .main-content {
@@ -171,16 +172,78 @@
             border-color: #dbe2ff !important;
         }
 
+        .mobile-topbar {
+            display: none;
+            position: sticky;
+            top: 0;
+            z-index: 990;
+            background: rgba(245, 247, 255, 0.95);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid #dbe2ff;
+            padding: 10px 12px;
+        }
+
+        .mobile-sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(21, 27, 52, 0.45);
+            z-index: 998;
+        }
+
+        body.sidebar-open .mobile-sidebar-backdrop {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-strong);
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 left: calc(-1 * var(--sidebar-width));
+                width: min(var(--sidebar-width), 86vw);
+                box-shadow: 0 10px 35px rgba(0,0,0,0.28);
+                transition: left var(--transition-speed) ease;
             }
             .sidebar.active {
                 left: 0;
             }
+            .sidebar-toggle {
+                display: none;
+            }
             .main-content {
                 margin-left: 0 !important;
                 width: 100% !important;
+                padding: 12px;
+            }
+            .mobile-topbar {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                margin: -12px -12px 10px -12px;
+            }
+            .desktop-header {
+                display: none !important;
+            }
+            .main-content .h2 {
+                font-size: 1.15rem;
+            }
+            .btn-toolbar {
+                margin-left: auto;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .main-content {
+                padding: 16px;
+            }
+            .main-content .h2 {
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -189,10 +252,19 @@
 
 <div class="d-flex">
     <?= $this->include('theme/sidebar') ?>
+    <div class="mobile-sidebar-backdrop"></div>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="mobile-topbar">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="mobileMenuBtn">
+                <i class="bi bi-list fs-5"></i>
+            </button>
+            <h2 class="page-title"><?= $this->renderSection('title') ?></h2>
+            <span class="text-muted small text-truncate" style="max-width: 45vw;">Hi, <?= esc((string) session()->get('username')) ?></span>
+        </div>
+
+        <div class="desktop-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
             <h1 class="h2"><?= $this->renderSection('title') ?></h1>
             <div class="btn-toolbar mb-2 mb-md-0">
                 <span class="text-muted">Welcome, <?= session()->get('username') ?></span>
@@ -216,6 +288,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         const sidebar = document.querySelector('.sidebar');
         const toggle = document.querySelector('.sidebar-toggle');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const backdrop = document.querySelector('.mobile-sidebar-backdrop');
+        const isMobile = () => window.matchMedia('(max-width: 768px)').matches;
         
         if (toggle) {
             toggle.addEventListener('click', function() {
@@ -229,9 +304,37 @@
 
         // Restore state
         const savedState = localStorage.getItem('sidebarCollapsed');
-        if (savedState === 'true') {
+        if (savedState === 'true' && !isMobile()) {
             sidebar.classList.add('collapsed');
         }
+
+        const closeMobileSidebar = () => {
+            sidebar.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        };
+
+        const openMobileSidebar = () => {
+            sidebar.classList.add('active');
+            document.body.classList.add('sidebar-open');
+        };
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', function() {
+                if (sidebar.classList.contains('active')) {
+                    closeMobileSidebar();
+                } else {
+                    openMobileSidebar();
+                }
+            });
+        }
+
+        backdrop?.addEventListener('click', closeMobileSidebar);
+
+        window.addEventListener('resize', function() {
+            if (!isMobile()) {
+                closeMobileSidebar();
+            }
+        });
     });
 </script>
 <?= $this->renderSection('scripts') ?>
