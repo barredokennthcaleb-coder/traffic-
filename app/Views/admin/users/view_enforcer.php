@@ -113,7 +113,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">Ticket ID</th>
@@ -136,11 +136,11 @@
                         <?php else: ?>
                             <?php foreach ($records as $record): ?>
                                 <tr>
-                                    <td class="ps-4"><span class="badge bg-dark-subtle text-dark border border-dark-subtle"><?= esc($record['ticket_id'] ?? 'N/A') ?></span></td>
-                                    <td><?= esc(trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')) ?: ($record['driver_name'] ?? '-')) ?></td>
-                                    <td><?= esc($record['violation_type'] ?? '-') ?></td>
-                                    <td class="fw-semibold text-danger">$<?= number_format((float) ($record['penalty_amount'] ?? 0), 2) ?></td>
-                                    <td>
+                                    <td class="ps-4" data-label="Ticket ID"><span class="badge bg-dark-subtle text-dark border border-dark-subtle"><?= esc($record['ticket_id'] ?? 'N/A') ?></span></td>
+                                    <td data-label="Violator"><?= esc(trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')) ?: ($record['driver_name'] ?? '-')) ?></td>
+                                    <td data-label="Violation Type"><?= esc($record['violation_type'] ?? '-') ?></td>
+                                    <td class="fw-semibold text-danger" data-label="Amount">$<?= number_format((float) ($record['penalty_amount'] ?? 0), 2) ?></td>
+                                    <td data-label="Status">
                                         <?php if (($record['status'] ?? '') === 'Pending'): ?>
                                             <span class="badge bg-warning rounded-pill px-3">Pending</span>
                                         <?php elseif (($record['status'] ?? '') === 'Paid'): ?>
@@ -149,8 +149,8 @@
                                             <span class="badge bg-danger rounded-pill px-3">Cancelled</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= isset($record['violation_date']) ? date('M d, Y h:i A', strtotime($record['violation_date'])) : '-' ?></td>
-                                    <td class="text-end pe-4 no-print">
+                                    <td data-label="Date"><?= isset($record['violation_date']) ? date('M d, Y h:i A', strtotime($record['violation_date'])) : '-' ?></td>
+                                    <td class="text-end pe-4 no-print" data-label="Action">
                                         <a href="<?= base_url('officer/view/' . $record['id']) ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye me-1"></i> View
                                         </a>

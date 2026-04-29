@@ -27,7 +27,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="violationTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="violationTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">Ticket ID</th>
@@ -50,14 +50,14 @@
                         <?php else: ?>
                             <?php foreach ($violations as $v): ?>
                             <tr class="violation-row">
-                                <td class="ps-4"><span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td>
+                                <td class="ps-4" data-label="Ticket ID"><span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
+                                <td data-label="Driver Information">
                                     <div class="fw-bold"><?= esc($v['driver_name']) ?></div>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
-                                <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
-                                <td>
+                                <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type']) ?></td>
+                                <td data-label="Amount"><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td data-label="Status">
                                     <?php if ($v['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning rounded-pill px-3">Pending</span>
                                     <?php elseif ($v['status'] == 'Paid'): ?>
@@ -66,8 +66,8 @@
                                         <span class="badge bg-danger rounded-pill px-3">Cancelled</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-muted small"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
-                                <td class="text-end pe-4">
+                                <td class="text-muted small" data-label="Date"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
+                                <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('penalties/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                             <i class="bi bi-eye text-info"></i>

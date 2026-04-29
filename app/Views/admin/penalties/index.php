@@ -27,7 +27,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="pendingTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="pendingTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 50px;">#</th>
@@ -55,16 +55,16 @@
                             ?>
                             <?php foreach ($pending_violations as $v): ?>
                             <tr class="pending-row">
-                                <td class="ps-4 text-muted small"><?= $i++ ?></td>
-                                <td><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td>
+                                <td class="ps-4 text-muted small" data-label="#"><span><?= $i++ ?></span></td>
+                                <td data-label="Ticket ID"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
+                                <td data-label="Driver Information">
                                     <div class="fw-bold"><?= esc($v['driver_name']) ?></div>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
-                                <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
-                                <td class="text-muted small"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
-                                <td class="text-end pe-4">
+                                <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type']) ?></td>
+                                <td data-label="Amount Due"><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td class="text-muted small" data-label="Violation Date"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
+                                <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('penalties/pay/' . $v['id']) ?>" class="btn btn-sm btn-success px-3" title="Record Payment">
                                             <i class="bi bi-cash-coin me-1"></i> Record Payment

@@ -65,16 +65,21 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 8px;
             margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
         .brand-side h1 {
             font-size: 2rem;
             font-weight: 800;
             margin-bottom: 8px;
             letter-spacing: -0.02em;
+            text-align: center;
         }
         .brand-side p {
             color: #bdc8f6;
             margin-bottom: 28px;
+            text-align: center;
         }
         .premium-points {
             list-style: none;
@@ -90,6 +95,11 @@
             padding: 11px 12px;
             color: #d9e1ff;
             font-size: 0.92rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
         }
         .form-side {
             padding: 42px 34px;
@@ -189,6 +199,69 @@
             }
             .form-side {
                 padding: 28px 24px;
+            }
+        }
+        @media (max-width: 576px) {
+            body {
+                padding: 12px;
+            }
+            .login-shell {
+                border-radius: 18px;
+            }
+            .brand-side {
+                padding: 20px 16px;
+            }
+            .brand-logo {
+                width: 72px;
+                height: 72px;
+                border-radius: 14px;
+                margin-bottom: 12px;
+            }
+            .brand-side h1 {
+                font-size: 1.35rem;
+                line-height: 1.2;
+                margin-bottom: 6px;
+            }
+            .brand-side p {
+                font-size: 0.88rem;
+                line-height: 1.45;
+                margin-bottom: 14px;
+            }
+            .premium-points {
+                gap: 8px;
+            }
+            .premium-points li {
+                font-size: 0.82rem;
+                padding: 8px 10px;
+            }
+            .form-side {
+                padding: 20px 16px;
+            }
+            .form-head h2 {
+                font-size: 1.3rem;
+                line-height: 1.2;
+            }
+            .form-head p {
+                font-size: 0.86rem;
+                margin-bottom: 16px;
+                line-height: 1.45;
+            }
+            .form-label {
+                font-size: 0.86rem;
+                margin-bottom: 0.35rem;
+            }
+            .form-control {
+                font-size: 0.9rem;
+                padding: 0.68rem 0.78rem;
+            }
+            .btn-login,
+            .btn-create {
+                font-size: 0.9rem;
+                padding: 0.72rem;
+            }
+            .help-text {
+                font-size: 0.8rem;
+                line-height: 1.4;
             }
         }
     </style>

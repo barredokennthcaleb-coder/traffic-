@@ -27,7 +27,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="paymentTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="paymentTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 50px;">#</th>
@@ -56,21 +56,21 @@
                             ?>
                             <?php foreach ($payments as $p): ?>
                             <tr class="payment-row">
-                                <td class="ps-4 text-muted small"><?= $i++ ?></td>
-                                <td class="text-muted small"><?= date('M d, Y H:i', strtotime($p['paid_date'])) ?></td>
-                                <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 font-monospace"><?= $p['receipt_number'] ?: 'N/A' ?></span></td>
-                                <td>
+                                <td class="ps-4 text-muted small" data-label="#"><span><?= $i++ ?></span></td>
+                                <td class="text-muted small" data-label="Date Paid"><?= date('M d, Y H:i', strtotime($p['paid_date'])) ?></td>
+                                <td data-label="Receipt #"><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 font-monospace"><?= $p['receipt_number'] ?: 'N/A' ?></span></td>
+                                <td data-label="Driver">
                                     <div class="fw-bold"><?= esc($p['driver_name']) ?></div>
                                     <span class="badge bg-light text-dark border small font-monospace"><?= esc($p['license_plate']) ?></span>
                                 </td>
-                                <td class="small fw-semibold text-muted"><?= esc($p['violation_type']) ?></td>
-                                <td>
+                                <td class="small fw-semibold text-muted" data-label="Violation"><?= esc($p['violation_type']) ?></td>
+                                <td data-label="Method">
                                     <span class="badge bg-light text-dark border">
                                         <?= esc($p['payment_method']) ?>
                                     </span>
                                 </td>
-                                <td><span class="text-success fw-bold">+$<?= number_format($p['penalty_amount'], 2) ?></span></td>
-                                <td class="text-end pe-4">
+                                <td data-label="Amount Paid"><span class="text-success fw-bold">+$<?= number_format($p['penalty_amount'], 2) ?></span></td>
+                                <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('user/receipt/' . $p['ticket_id']) ?>" class="btn btn-sm btn-white border" title="View Receipt" target="_blank">
                                             <i class="bi bi-receipt text-info"></i>

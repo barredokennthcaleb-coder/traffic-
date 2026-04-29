@@ -52,7 +52,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="userTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="userTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">ID</th>
@@ -77,14 +77,14 @@
                         <?php else: ?>
                             <?php foreach ($users as $user): ?>
                             <tr class="user-row">
-                                <td class="ps-4"><?= esc($user['id']) ?></td>
-                                <td><?= esc($user['username']) ?></td>
-                                <td><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></td>
-                                <td><?= esc((string) ($user['age'] ?? '-')) ?></td>
-                                <td><?= esc($user['address'] ?? '-') ?></td>
-                                <td><?= esc($user['email']) ?></td>
-                                <td><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
-                                <td>
+                                <td class="ps-4" data-label="ID"><?= esc($user['id']) ?></td>
+                                <td data-label="Username"><?= esc($user['username']) ?></td>
+                                <td data-label="Full Name"><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></td>
+                                <td data-label="Age"><?= esc((string) ($user['age'] ?? '-')) ?></td>
+                                <td data-label="Address"><?= esc($user['address'] ?? '-') ?></td>
+                                <td data-label="Email"><?= esc($user['email']) ?></td>
+                                <td data-label="Role"><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
+                                <td data-label="Status">
                                     <?php if ($user['status'] == 'active'): ?>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Active</span>
                                     <?php elseif ($user['status'] == 'inactive'): ?>
@@ -93,7 +93,7 @@
                                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 rounded-pill">Suspended</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-end pe-4">
+                                <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <?php if ($user['role'] == 'driver'): ?>
                                         <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Details">

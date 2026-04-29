@@ -76,10 +76,28 @@
                 </li>
 
             <?php else: ?>
-                <!-- Driver portal removed -->
+                <!-- Driver Navigation -->
+                <li class="nav-item">
+                    <a class="nav-link <?= (uri_string() == 'user/dashboard') ? 'active' : '' ?>" href="<?= base_url('user/dashboard') ?>">
+                        <i class="bi bi-speedometer2"></i>
+                        <span class="nav-text ms-2">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= (uri_string() == 'user/violations' || strpos(uri_string(), 'user/view/') === 0) ? 'active' : '' ?>" href="<?= base_url('user/violations') ?>">
+                        <i class="bi bi-card-checklist"></i>
+                        <span class="nav-text ms-2">My Violations</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= (uri_string() == 'user/history' || strpos(uri_string(), 'user/receipt/') === 0) ? 'active' : '' ?>" href="<?= base_url('user/history') ?>">
+                        <i class="bi bi-clock-history"></i>
+                        <span class="nav-text ms-2">Payment History</span>
+                    </a>
+                </li>
             <?php endif; ?>
 
-            <li class="nav-item mt-5">
+            <li class="nav-item mt-4">
                 <a class="nav-link text-danger" style="background: rgba(220, 53, 69, 0.1);" href="<?= base_url('logout') ?>">
                     <i class="bi bi-box-arrow-right"></i>
                     <span class="nav-text ms-2">Logout</span>

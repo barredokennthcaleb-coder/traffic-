@@ -439,6 +439,10 @@
             background-color: transparent;
         }
 
+        .table-responsive {
+            border-radius: 12px;
+        }
+
         .badge {
             font-weight: 600;
             letter-spacing: 0.01em;
@@ -695,6 +699,11 @@
         }
 
         @media (max-width: 768px) {
+            body::before,
+            body::after {
+                display: none;
+            }
+
             .sidebar {
                 left: calc(-1 * var(--sidebar-width));
                 width: min(var(--sidebar-width), 86vw);
@@ -712,6 +721,47 @@
                 width: 100% !important;
                 padding: 12px;
             }
+
+            .container-fluid {
+                padding-left: 0.35rem;
+                padding-right: 0.35rem;
+            }
+
+            .card {
+                border-radius: 14px;
+            }
+
+            .card-header,
+            .card-body,
+            .card-footer {
+                padding-left: 0.9rem !important;
+                padding-right: 0.9rem !important;
+            }
+
+            .btn-group {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+
+            .modal-dialog {
+                margin: 0.75rem;
+            }
+
+            .table {
+                min-width: 640px;
+                font-size: 0.9rem;
+            }
+
+            .table-premium-mobile {
+                min-width: 0;
+            }
+
+            .form-control,
+            .form-select,
+            .input-group-text {
+                font-size: 0.95rem;
+            }
+
             .mobile-topbar {
                 display: flex;
                 align-items: center;
@@ -922,6 +972,23 @@
             if (!isMobile()) {
                 closeMobileSidebar();
             }
+        });
+
+        document.querySelectorAll('.main-content table').forEach(function(table) {
+            if (!table.closest('.table-responsive')) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-responsive';
+                table.parentNode.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            }
+        });
+
+        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (isMobile()) {
+                    closeMobileSidebar();
+                }
+            });
         });
     });
 </script>

@@ -139,7 +139,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle table-premium-mobile">
                     <thead class="table-light">
                         <tr>
                             <th>Ticket ID</th>
@@ -159,10 +159,10 @@
                         <?php else: ?>
                             <?php foreach ($violations as $violation): ?>
                             <tr>
-                                <td><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td><?= esc($violation['violation_type']) ?></td>
-                                <td>$<?= number_format($violation['penalty_amount'], 2) ?></td>
-                                <td>
+                                <td data-label="Ticket ID"><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
+                                <td data-label="Violation Type"><?= esc($violation['violation_type']) ?></td>
+                                <td data-label="Amount">$<?= number_format($violation['penalty_amount'], 2) ?></td>
+                                <td data-label="Status">
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning text-dark">Pending</span>
                                     <?php elseif ($violation['status'] == 'Paid'): ?>
@@ -171,7 +171,7 @@
                                         <span class="badge bg-danger">Cancelled</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
+                                <td data-label="Date"><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
                             </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
