@@ -19,6 +19,26 @@ class CreateViolationsTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
             ],
+            'first_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
+                'null'       => true,
+            ],
+            'last_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
+                'null'       => true,
+            ],
+            'age' => [
+                'type'       => 'INT',
+                'constraint' => 3,
+                'null'       => true,
+            ],
+            'address' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
             'license_plate' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '20',

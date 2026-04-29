@@ -52,14 +52,49 @@ class UserController extends BaseController
         return view('admin/users/view_driver', $data);
     }
 
+    public function viewEnforcer($id = null)
+    {
+        $user = $this->userModel->find($id);
+        if (!$user || $user['role'] !== 'enforcer') {
+            return redirect()->to(base_url('users?role=enforcer'))->with('error', 'Traffic enforcer not found.');
+        }
+
+        $records = $this->violationModel
+            ->select('violations.*, users.username as officer_name')
+            ->join('users', 'users.id = violations.officer_id', 'left')
+            ->where('violations.officer_id', $id)
+            ->orderBy('violations.violation_date', 'DESC')
+            ->findAll();
+
+        $totalIssuedAmount = array_sum(array_map(static function ($record) {
+            return (float) ($record['penalty_amount'] ?? 0);
+        }, $records));
+
+        $data = [
+            'title'            => 'Traffic Enforcer Profile: ' . $user['username'],
+            'user'             => $user,
+            'records'          => $records,
+            'pendingCount'     => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Pending')),
+            'paidCount'        => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
+            'cancelledCount'   => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
+            'totalIssuedAmount'=> $totalIssuedAmount,
+        ];
+
+        return view('admin/users/view_enforcer', $data);
+    }
+
     public function create()
     {
         $data = [
             'title' => 'Create New User',
             'defaults' => [
-                'username' => (string) (env('auth.defaultAdminUsername') ?? ''),
-                'password' => (string) (env('auth.defaultAdminPassword') ?? env('auth.defaultUserPassword') ?? ''),
-                'role'     => 'driver',
+                'username'  => (string) (env('auth.defaultAdminUsername') ?? ''),
+                'firstname' => '',
+                'lastname'  => '',
+                'age'       => '',
+                'address'   => '',
+                'password'  => (string) (env('auth.defaultAdminPassword') ?? env('auth.defaultUserPassword') ?? ''),
+                'role'      => 'driver',
             ],
         ];
         return view('admin/users/create', $data);
@@ -72,6 +107,10 @@ class UserController extends BaseController
 
         $rules = [
             'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[users.username]',
+            'firstname'=> 'permit_empty|min_length[2]|max_length[100]',
+            'lastname' => 'permit_empty|min_length[2]|max_length[100]',
+            'age'      => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
+            'address'  => 'permit_empty|max_length[255]',
             'email'    => 'required|valid_email|is_unique[users.email]',
             // allow shorter password when default env password is used
             'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
@@ -89,11 +128,15 @@ class UserController extends BaseController
         }
 
         $data = [
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
-            'password' => $password,
-            'role'     => $role,
-            'status'   => 'active',
+            'username'  => trim((string) $this->request->getPost('username')),
+            'firstname' => trim((string) $this->request->getPost('firstname')),
+            'lastname'  => trim((string) $this->request->getPost('lastname')),
+            'age'       => $this->request->getPost('age') !== '' ? (int) $this->request->getPost('age') : null,
+            'address'   => trim((string) $this->request->getPost('address')),
+            'email'     => trim((string) $this->request->getPost('email')),
+            'password'  => $password,
+            'role'      => $role,
+            'status'    => 'active',
         ];
 
         if ($this->userModel->save($data)) {
@@ -128,6 +171,10 @@ class UserController extends BaseController
 
         $rules = [
             'username' => "required|alpha_numeric_space|min_length[3]|is_unique[users.username,id,{$id}]",
+            'firstname'=> 'permit_empty|min_length[2]|max_length[100]',
+            'lastname' => 'permit_empty|min_length[2]|max_length[100]',
+            'age'      => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
+            'address'  => 'permit_empty|max_length[255]',
             'email'    => "required|valid_email|is_unique[users.email,id,{$id}]",
             'role'     => 'required|in_list[admin,driver,enforcer]',
             'status'   => 'required|in_list[active,inactive,suspended]',
@@ -142,11 +189,15 @@ class UserController extends BaseController
         }
 
         $data = [
-            'id'       => $id,
-            'username' => $this->request->getPost('username'),
-            'email'    => $this->request->getPost('email'),
-            'role'     => $this->request->getPost('role'),
-            'status'   => $this->request->getPost('status'),
+            'id'        => $id,
+            'username'  => trim((string) $this->request->getPost('username')),
+            'firstname' => trim((string) $this->request->getPost('firstname')),
+            'lastname'  => trim((string) $this->request->getPost('lastname')),
+            'age'       => $this->request->getPost('age') !== '' ? (int) $this->request->getPost('age') : null,
+            'address'   => trim((string) $this->request->getPost('address')),
+            'email'     => trim((string) $this->request->getPost('email')),
+            'role'      => $this->request->getPost('role'),
+            'status'    => $this->request->getPost('status'),
         ];
 
         if ($this->request->getPost('password')) {

@@ -15,8 +15,11 @@ class AuthController extends BaseController
                 return redirect()->to(base_url('dashboard'));
             } elseif ($role === 'enforcer') {
                 return redirect()->to(base_url('officer'));
-            } else {
+            } elseif ($role === 'driver' || $role === 'user') {
                 return redirect()->to(base_url('user/dashboard'));
+            } else {
+                session()->destroy();
+                return redirect()->to(base_url('login'))->with('error', 'This account role is not allowed to sign in.');
             }
         }
         return view('auth/login');
@@ -59,8 +62,11 @@ class AuthController extends BaseController
                     return redirect()->to(base_url('dashboard'));
                 } elseif ($user['role'] === 'enforcer') {
                     return redirect()->to(base_url('officer'));
-                } else {
+                } elseif ($user['role'] === 'driver' || $user['role'] === 'user') {
                     return redirect()->to(base_url('user/dashboard'));
+                } else {
+                    $session->destroy();
+                    return redirect()->to(base_url('login'))->with('error', 'This account role is not allowed to sign in.');
                 }
             } else {
                 $session->setFlashdata('warning', 'Incorrect password. Please try again.');

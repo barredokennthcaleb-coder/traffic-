@@ -30,7 +30,8 @@
                 <table class="table table-hover align-middle mb-0" id="paymentTable">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">Date Paid</th>
+                            <th class="ps-4" style="width: 50px;">#</th>
+                            <th>Date Paid</th>
                             <th>Receipt #</th>
                             <th>Driver</th>
                             <th>Violation</th>
@@ -42,15 +43,21 @@
                     <tbody>
                         <?php if (empty($payments)): ?>
                             <tr id="noDataRow">
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No payment history found.
                                 </td>
                             </tr>
                         <?php else: ?>
+                            <?php 
+                            $currentPage = $pager->getCurrentPage('history');
+                            $perPage = 10;
+                            $i = ($currentPage - 1) * $perPage + 1;
+                            ?>
                             <?php foreach ($payments as $p): ?>
                             <tr class="payment-row">
-                                <td class="ps-4 text-muted small"><?= date('M d, Y H:i', strtotime($p['paid_date'])) ?></td>
+                                <td class="ps-4 text-muted small"><?= $i++ ?></td>
+                                <td class="text-muted small"><?= date('M d, Y H:i', strtotime($p['paid_date'])) ?></td>
                                 <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 font-monospace"><?= $p['receipt_number'] ?: 'N/A' ?></span></td>
                                 <td>
                                     <div class="fw-bold"><?= esc($p['driver_name']) ?></div>
@@ -80,6 +87,9 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class="card-footer bg-white border-0 py-3">
+            <?= $pager->links('history', 'bootstrap_pagination') ?>
         </div>
     </div>
 </div>

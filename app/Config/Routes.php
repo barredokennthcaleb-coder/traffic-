@@ -14,33 +14,38 @@ $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::registerPost');
 $routes->get('logout', 'AuthController::logout');
 
-// User Dashboard Route
-$routes->get('user/dashboard', 'User\UserController::index', ['filter' => 'auth']);
-$routes->get('user/violations', 'User\UserController::violations', ['filter' => 'auth']);
-$routes->get('user/history', 'User\UserController::history', ['filter' => 'auth']);
-$routes->get('user/pay/(:any)', 'User\UserController::payViolation/$1', ['filter' => 'auth']);
-$routes->post('user/process-payment', 'User\UserController::processPayment', ['filter' => 'auth']);
-$routes->get('user/receipt/(:any)', 'User\UserController::receipt/$1', ['filter' => 'auth']);
-
 // Officer Routes
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
+    $routes->get('profile', 'Officer\OfficerController::profile');
     $routes->post('store', 'Officer\OfficerController::store');
     $routes->get('violations', 'Officer\OfficerController::violations');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
+    $routes->post('update/(:num)', 'Officer\OfficerController::update/$1');
+    $routes->post('delete/(:num)', 'Officer\OfficerController::delete/$1');
     $routes->post('cancel/(:num)', 'Officer\OfficerController::cancel/$1');
     $routes->post('violation-types/store', 'Officer\OfficerController::storeViolationType');
+});
+
+// Driver/User Routes
+$routes->group('user', ['filter' => 'auth'], function($routes) {
+    $routes->get('dashboard', 'User\UserController::index');
+    $routes->get('violations', 'User\UserController::violations');
+    $routes->get('history', 'User\UserController::history');
+    $routes->get('view/(:segment)', 'User\UserController::viewViolation/$1');
+    $routes->get('pay/(:segment)', 'User\UserController::payViolation/$1');
+    $routes->post('pay/process', 'User\UserController::processPayment');
+    $routes->get('receipt/(:segment)', 'User\UserController::receipt/$1');
 });
 
 // Admin Routes
 $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('dashboard', 'Admin\AdminController::index');
-    $routes->get('analytics', 'Admin\AdminController::analytics');
-    $routes->get('about', 'Admin\AdminController::about');
     
     // User CRUD Routes
     $routes->get('users', 'Admin\UserController::index');
     $routes->get('users/view/(:num)', 'Admin\UserController::viewDriver/$1');
+    $routes->get('users/view-enforcer/(:num)', 'Admin\UserController::viewEnforcer/$1');
     $routes->get('users/create', 'Admin\UserController::create');
     $routes->post('users/store', 'Admin\UserController::store');
     $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');
@@ -55,6 +60,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('penalties/pay/(:num)', 'Admin\PenaltyController::pay/$1');
     $routes->post('penalties/store', 'Admin\PenaltyController::store');
     $routes->post('penalties/cancel/(:num)', 'Admin\PenaltyController::cancel/$1');
+    $routes->post('penalties/delete/(:num)', 'Admin\PenaltyController::delete/$1');
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
     $routes->get('penalties/reverse/(:num)', 'Admin\PenaltyController::reverse/$1');
     $routes->get('penalties/search', 'Admin\PenaltyController::search');

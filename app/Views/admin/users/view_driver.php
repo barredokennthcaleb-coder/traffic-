@@ -71,6 +71,18 @@
                         <small class="text-muted text-uppercase d-block">Email Address</small>
                         <span><?= esc($user['email']) ?></span>
                     </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase d-block">Full Name</small>
+                        <span><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase d-block">Age</small>
+                        <span><?= esc((string) ($user['age'] ?? '-')) ?></span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase d-block">Address</small>
+                        <span><?= esc($user['address'] ?? '-') ?></span>
+                    </div>
                     <div class="mb-0">
                         <small class="text-muted text-uppercase d-block">Status</small>
                         <?php if ($user['status'] == 'active'): ?>

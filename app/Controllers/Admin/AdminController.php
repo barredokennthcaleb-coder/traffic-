@@ -22,19 +22,11 @@ class AdminController extends BaseController
 
     public function index()
     {
+        // Basic Statistics
         $stats = $this->violationRecord->getStatistics();
         $recentViolations = $this->violationRecord->getRecentViolations(5);
 
-        $data = array_merge($stats, [
-            'title' => 'Admin Dashboard',
-            'recent_violations' => $recentViolations,
-        ]);
-
-        return view('admin/main/dashboard', $data);
-    }
-
-    public function analytics()
-    {
+        // Analytics Data
         $monthlyTrend = $this->violationRecord->getMonthlyTrend();
         $violationTypesSummary = $this->violationRecord->getViolationTypesSummary();
         $statusDistribution = $this->violationRecord->getStatusDistribution();
@@ -60,8 +52,9 @@ class AdminController extends BaseController
             'inactive' => $this->violationTypes->where('status', 'inactive')->countAllResults(),
         ];
 
-        $data = [
-            'title' => 'Analytics Dashboard',
+        $data = array_merge($stats, [
+            'title' => 'Admin Dashboard',
+            'recent_violations' => $recentViolations,
             'monthly_trend' => $monthlyTrend,
             'violation_types' => $violationTypesSummary,
             'status_distribution' => $statusDistribution,
@@ -77,16 +70,8 @@ class AdminController extends BaseController
                 'total_officers' => $this->users->where('role', 'enforcer')->countAllResults(),
                 'violation_types_active' => $violationTypeCatalog['active'],
             ]
-        ];
+        ]);
 
-        return view('admin/main/analytics', $data);
-    }
-
-    public function about()
-    {
-        $data = [
-            'title' => 'About System'
-        ];
-        return view('admin/main/about', $data);
+        return view('admin/main/dashboard', $data);
     }
 }

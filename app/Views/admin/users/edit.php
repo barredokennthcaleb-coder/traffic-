@@ -43,6 +43,34 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label for="firstname" class="form-label">First Name</label>
+                                <input type="text" name="firstname" id="firstname" class="form-control"
+                                       placeholder="Enter first name"
+                                       value="<?= old('firstname', $user['firstname'] ?? '') ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="lastname" class="form-label">Last Name</label>
+                                <input type="text" name="lastname" id="lastname" class="form-control"
+                                       placeholder="Enter last name"
+                                       value="<?= old('lastname', $user['lastname'] ?? '') ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" name="age" id="age" class="form-control"
+                                       min="1" max="120" step="1" placeholder="Enter age"
+                                       value="<?= old('age', $user['age'] ?? '') ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" name="address" id="address" class="form-control"
+                                       placeholder="Enter address"
+                                       value="<?= old('address', $user['address'] ?? '') ?>">
+                            </div>
+
+                            <div class="col-md-6">
                                 <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
                                 <select name="role" id="role" class="form-select" required>
                                     <option value="admin" <?= old('role', $user['role']) == 'admin' ? 'selected' : '' ?>>Admin</option>

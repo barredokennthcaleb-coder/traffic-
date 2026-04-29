@@ -15,6 +15,10 @@ class ViolationRecord extends Model
     protected $allowedFields    = [
         'ticket_id', 
         'driver_name', 
+        'first_name',
+        'last_name',
+        'age',
+        'address',
         'license_plate', 
         'officer_id', 
         'violation_type_id',
@@ -40,6 +44,10 @@ class ViolationRecord extends Model
     protected $validationRules = [
         'id'              => 'permit_empty|integer',
         'ticket_id'       => 'permit_empty',
+        'first_name'      => 'required|min_length[2]|max_length[100]',
+        'last_name'       => 'required|min_length[2]|max_length[100]',
+        'age'             => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
+        'address'         => 'required|min_length[5]|max_length[255]',
         'driver_name'     => 'required|min_length[2]|max_length[255]',
         'license_plate'   => 'required|min_length[2]|max_length[20]',
         'officer_id'      => 'permit_empty|integer',
@@ -59,6 +67,24 @@ class ViolationRecord extends Model
     ];
 
     protected $validationMessages = [
+        'first_name' => [
+            'required' => 'First name is required.',
+            'min_length' => 'First name must be at least 2 characters.',
+        ],
+        'last_name' => [
+            'required' => 'Last name is required.',
+            'min_length' => 'Last name must be at least 2 characters.',
+        ],
+        'age' => [
+            'required' => 'Age is required.',
+            'integer' => 'Age must be a valid number.',
+            'greater_than_equal_to' => 'Age must be at least 16.',
+            'less_than_equal_to' => 'Age must be 120 or below.',
+        ],
+        'address' => [
+            'required' => 'Address is required.',
+            'min_length' => 'Address must be at least 5 characters.',
+        ],
         'driver_name' => [
             'required' => 'Driver name is required.',
             'min_length' => 'Driver name must be at least 2 characters.',

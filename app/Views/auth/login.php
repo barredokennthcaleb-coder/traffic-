@@ -8,171 +8,228 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
+            background: radial-gradient(circle at 15% 10%, #29336d 0%, #131a3e 38%, #0b1027 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            position: relative;
+            color: #e8edff;
         }
-        .login-card {
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            filter: blur(105px);
+            z-index: -1;
+            pointer-events: none;
+        }
+        body::before {
+            background: rgba(73, 132, 255, 0.45);
+            top: -140px;
+            left: -120px;
+        }
+        body::after {
+            background: rgba(170, 88, 255, 0.4);
+            bottom: -170px;
+            right: -140px;
+        }
+        .login-shell {
             width: 100%;
-            max-width: 420px;
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 980px;
+            border-radius: 28px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 80px rgba(3, 8, 26, 0.55);
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            background: rgba(9, 15, 38, 0.88);
+            backdrop-filter: blur(12px);
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
+        .brand-side {
+            padding: 44px 40px;
+            background: linear-gradient(160deg, rgba(70, 101, 255, 0.26) 0%, rgba(116, 58, 255, 0.14) 100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .login-header .logo-wrapper {
-            margin-bottom: 1rem;
+        .brand-logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            margin-bottom: 20px;
         }
-        .login-header .logo-wrapper img {
-            max-width: 120px;
-            height: auto;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
-        }
-        .login-header h2 {
-            font-size: 1.8rem;
+        .brand-side h1 {
+            font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
-        .login-header p {
-            color: #6c757d;
-            font-size: 0.95rem;
+        .brand-side p {
+            color: #bdc8f6;
+            margin-bottom: 28px;
+        }
+        .premium-points {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 10px;
+        }
+        .premium-points li {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 12px;
+            padding: 11px 12px;
+            color: #d9e1ff;
+            font-size: 0.92rem;
+        }
+        .form-side {
+            padding: 42px 34px;
+            background: linear-gradient(165deg, rgba(17, 24, 58, 0.95) 0%, rgba(10, 15, 34, 0.95) 100%);
+        }
+        .form-head h2 {
+            margin: 0;
+            font-size: 1.65rem;
+            font-weight: 800;
+        }
+        .form-head p {
+            margin-top: 6px;
+            color: #aebce8;
+            margin-bottom: 22px;
         }
         .form-label {
-            font-weight: 500;
-            color: #495057;
+            font-weight: 600;
+            color: #d5defd;
             margin-bottom: 0.5rem;
         }
-        .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            background-color: #fff;
-        }
-        .input-group:focus-within .input-group-text {
-            border-color: #667eea;
-            color: #667eea;
-        }
-        .input-group:focus-within .form-control {
-            border-color: #667eea;
+        .input-group-text,
+        .form-control,
+        .password-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(181, 196, 255, 0.25);
+            color: #eef2ff;
         }
         .input-group-text {
-            border: 2px solid #e9ecef;
             border-right: none;
-            background: #fff;
-            border-radius: 10px 0 0 10px;
+            border-radius: 12px 0 0 12px;
         }
-        .input-group .form-control {
-            border-left: none;
-            border-radius: 0 10px 10px 0;
+        .form-control {
+            border-radius: 0 12px 12px 0;
+            padding: 0.78rem 0.9rem;
         }
-        .input-group .form-control:focus {
+        .form-control::placeholder {
+            color: #9caad6;
+        }
+        .form-control:focus {
+            border-color: #7fa2ff;
+            box-shadow: 0 0 0 0.2rem rgba(105, 137, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+        .password-toggle {
             border-left: none;
+            border-radius: 0 12px 12px 0;
+            cursor: pointer;
         }
         .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 10px;
-            padding: 0.75rem;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            padding: 0.85rem;
+            font-size: 1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4d78ff 0%, #7c54f9 100%);
+            box-shadow: 0 14px 32px rgba(78, 103, 226, 0.4);
+            transition: 0.25s ease;
         }
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 18px 36px rgba(78, 103, 226, 0.5);
         }
-        .btn-login:active {
-            transform: translateY(0);
+        .btn-create {
+            border-radius: 12px;
+            border: 1px solid rgba(173, 189, 245, 0.45);
+            color: #d9e2ff;
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
+        .btn-create:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
         }
         .alert {
-            border-radius: 10px;
             border: none;
+            border-radius: 12px;
         }
-        .alert-success {
-            background-color: #d1e7dd;
-            color: #0a3622;
+        .alert-success { background-color: #194336; color: #d0ffe8; }
+        .alert-danger { background-color: #4a2530; color: #ffd7de; }
+        .alert-warning { background-color: #57451f; color: #ffebb5; }
+        .help-text {
+            color: #9eaddd;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 12px;
         }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #58151c;
-        }
-        .alert-warning {
-            background-color: #fff3cd;
-            color: #664d03;
-        }
-        .form-text {
-            color: #6c757d;
-            font-size: 0.875rem;
-        }
-        a {
-            color: #667eea;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        a:hover {
-            color: #764ba2;
-        }
-        .password-toggle {
-            cursor: pointer;
-            border: 2px solid #e9ecef;
-            border-left: none;
-            border-radius: 0 10px 10px 0;
-            background: #fff;
-            padding: 0 12px;
-            display: flex;
-            align-items: center;
-        }
-        .password-toggle:hover {
-            background: #f8f9fa;
+        @media (max-width: 900px) {
+            .login-shell {
+                grid-template-columns: 1fr;
+                max-width: 520px;
+            }
+            .brand-side {
+                padding: 28px 26px;
+                border-right: 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .form-side {
+                padding: 28px 24px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="card login-card">
-    <div class="card-body p-4 p-md-5">
-        <div class="login-header">
-            <div class="logo-wrapper">
-                <img src="/img/pic 1.png" alt="Traffic System Logo">
-            </div>
-            <h2>Traffic System</h2>
-            <p>Sign in to access your account</p>
+<div class="login-shell">
+    <div class="brand-side">
+        <img class="brand-logo" src="/img/pic 1.png" alt="Traffic System Logo">
+        <h1>Traffic System</h1>
+        <p>Manage violations, payments, and enforcement with a premium-grade workflow.</p>
+        <ul class="premium-points">
+            <li><i class="bi bi-shield-check me-2"></i>Secure role-based dashboard access</li>
+            <li><i class="bi bi-graph-up-arrow me-2"></i>Real-time traffic violation tracking</li>
+            <li><i class="bi bi-receipt-cutoff me-2"></i>Fast digital payment and receipt flow</li>
+        </ul>
+    </div>
+    <div class="form-side">
+        <div class="form-head">
+            <h2>Sign in</h2>
+            <p>Welcome back. Enter your credentials to continue.</p>
         </div>
 
         <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('warning')): ?>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle me-2"></i><?= session()->getFlashdata('warning') ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
@@ -209,11 +266,12 @@
                     <span id="btnText">Sign In</span>
                     <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
                 </button>
+                <a href="/register" class="btn btn-create">
+                    <i class="bi bi-person-plus me-1"></i> Create Account
+                </a>
             </div>
         </form>
-        <div class="text-center mt-4">
-            <p class="text-muted mb-0">Don't have an account? <a href="/register"><strong>Create Account</strong></a></p>
-        </div>
+        <p class="help-text mb-0">Need access help? Contact your administrator.</p>
     </div>
 </div>
 

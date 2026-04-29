@@ -13,6 +13,10 @@
         </div>
         <div class="card-body p-4">
             <div class="row g-3">
+                <div class="col-md-6"><strong>First Name:</strong> <?= esc($violation['first_name'] ?? '-') ?></div>
+                <div class="col-md-6"><strong>Last Name:</strong> <?= esc($violation['last_name'] ?? '-') ?></div>
+                <div class="col-md-6"><strong>Age:</strong> <?= esc((string) ($violation['age'] ?? '-')) ?></div>
+                <div class="col-md-6"><strong>Address:</strong> <?= esc($violation['address'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Driver Name:</strong> <?= esc($violation['driver_name'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>License Plate:</strong> <?= esc($violation['license_plate'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Violation Type:</strong> <?= esc($violation['violation_type'] ?? '-') ?></div>
@@ -27,4 +31,34 @@
         </div>
     </div>
 </div>
+<?php $isPrintMode = service('request')->getGet('print') === '1'; ?>
+<?php $fromViolations = service('request')->getGet('from') === 'violations'; ?>
+<?php if ($isPrintMode): ?>
+<style>
+    @media print {
+        .sidebar, .sidebar-toggle, .mobile-topbar, .desktop-header, .btn, .breadcrumb {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+        .container-fluid {
+            padding: 0 !important;
+        }
+    }
+</style>
+<script>
+    window.addEventListener('load', function () {
+        window.print();
+    });
+
+    <?php if ($fromViolations): ?>
+    window.addEventListener('afterprint', function () {
+        window.location.href = '<?= base_url('officer/violations') ?>';
+    });
+    <?php endif; ?>
+</script>
+<?php endif; ?>
 <?= $this->endSection() ?>

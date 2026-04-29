@@ -106,7 +106,7 @@
                         <button onclick="window.print()" class="btn btn-outline-primary flex-grow-1">
                             <i class="bi bi-printer me-1"></i> Print Receipt
                         </button>
-                        <a href="/user/dashboard" class="btn btn-primary flex-grow-1">
+                        <a href="<?= base_url('user/dashboard') ?>" class="btn btn-primary flex-grow-1">
                             <i class="bi bi-house me-1"></i> Back to Dashboard
                         </a>
                     </div>

@@ -8,19 +8,57 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: radial-gradient(circle at 10% 20%, #28c4b5 0%, #1a9f95 40%, #127f7a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 24px 14px;
+            position: relative;
+        }
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            width: 330px;
+            height: 330px;
+            border-radius: 50%;
+            filter: blur(85px);
+            z-index: -1;
+            opacity: 0.5;
+        }
+        body::before {
+            top: -130px;
+            right: -100px;
+            background: #66f0d8;
+        }
+        body::after {
+            bottom: -140px;
+            left: -100px;
+            background: #89ffd3;
         }
         .register-card {
             width: 100%;
-            max-width: 450px;
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            border: 1px solid rgba(255,255,255,0.32);
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(7, 45, 42, 0.35);
+            background: linear-gradient(160deg, rgba(255,255,255,0.93) 0%, rgba(244,255,251,0.82) 100%);
+            backdrop-filter: blur(12px);
             overflow: hidden;
+        }
+        .register-card::before {
+            content: "";
+            position: absolute;
+            inset: -40% auto auto -20%;
+            width: 240px;
+            height: 240px;
+            background: radial-gradient(circle, rgba(98, 255, 204, 0.28) 0%, rgba(98, 255, 204, 0) 68%);
+            pointer-events: none;
+        }
+        .register-card {
+            position: relative;
         }
         .card-body {
             padding: 2.5rem;
@@ -32,7 +70,7 @@
         .register-header .icon-wrapper {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #149c92 0%, #3ac78e 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -49,10 +87,11 @@
             margin-bottom: 0.5rem;
         }
         .form-control {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            border: 1px solid #cde9e0;
+            border-radius: 12px;
             padding: 0.75rem 1rem;
             transition: all 0.3s ease;
+            background: rgba(255,255,255,0.82);
         }
         .form-control:focus {
             border-color: #11998e;
@@ -62,27 +101,28 @@
             border-color: #dc3545;
         }
         .input-group-text {
-            border: 2px solid #e9ecef;
+            border: 1px solid #cde9e0;
             border-right: none;
-            background: #fff;
-            border-radius: 10px 0 0 10px;
+            background: rgba(255,255,255,0.82);
+            border-radius: 12px 0 0 12px;
         }
         .input-group .form-control {
             border-left: none;
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 12px 12px 0;
         }
         .input-group .form-control:focus {
             border-left: none;
         }
         .btn-register {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #149c92 0%, #31bf85 100%);
             border: none;
-            border-radius: 10px;
-            padding: 0.75rem;
+            border-radius: 12px;
+            padding: 0.82rem;
             font-weight: 600;
             font-size: 1.1rem;
             color: white;
             transition: all 0.3s ease;
+            box-shadow: 0 14px 30px rgba(25, 145, 118, 0.3);
         }
         .btn-register:hover {
             transform: translateY(-2px);
@@ -119,10 +159,10 @@
         }
         .password-toggle {
             cursor: pointer;
-            border: 2px solid #e9ecef;
+            border: 1px solid #cde9e0;
             border-left: none;
-            border-radius: 0 10px 10px 0;
-            background: #fff;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.82);
             padding: 0 12px;
             display: flex;
             align-items: center;
@@ -131,7 +171,8 @@
             background: #f8f9fa;
         }
         .password-requirements {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #effaf6 0%, #f7fffb 100%);
+            border: 1px solid #d5efe7;
             border-radius: 10px;
             padding: 1rem;
             margin-top: 0.5rem;

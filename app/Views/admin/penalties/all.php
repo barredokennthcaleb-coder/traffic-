@@ -89,6 +89,9 @@
                 </table>
             </div>
         </div>
+        <div class="card-footer bg-white border-0 py-3">
+            <?= $pager->links('all', 'bootstrap_pagination') ?>
+        </div>
     </div>
 </div>
 

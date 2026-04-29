@@ -22,16 +22,59 @@ class OfficerController extends BaseController
 
     public function index()
     {
+        return redirect()->to(base_url('officer/violations'));
+    }
+
+    public function profile()
+    {
+        $session = session();
+        $officerId = (int) $session->get('id');
+
+        $officer = $this->userModel->find($officerId);
+        if (!$officer) {
+            return redirect()->to(base_url('officer'))->with('error', 'Officer profile not found.');
+        }
+
+        $records = $this->violationRecord
+            ->where('officer_id', $officerId)
+            ->orderBy('violation_date', 'DESC')
+            ->findAll();
+
+        $totalAmount = array_sum(array_map(static function ($record) {
+            return (float) ($record['penalty_amount'] ?? 0);
+        }, $records));
+
         $data = [
-            'title' => 'Record Violation',
-            'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
+            'title'          => 'My Profile',
+            'officer'        => $officer,
+            'records'        => $records,
+            'pendingCount'   => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Pending')),
+            'paidCount'      => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
+            'cancelledCount' => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
+            'totalAmount'    => $totalAmount,
         ];
-        return view('officer/index', $data);
+
+        return view('officer/profile', $data);
     }
 
     public function store()
     {
         $session = session();
+
+        $rules = [
+            'first_name'        => 'required|min_length[2]|max_length[100]',
+            'last_name'         => 'required|min_length[2]|max_length[100]',
+            'age'               => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
+            'address'           => 'required|min_length[5]|max_length[255]',
+            'license_plate'     => 'required|min_length[2]|max_length[20]',
+            'violation_type_id' => 'required|integer',
+            'location'          => 'permit_empty|max_length[255]',
+            'notes'             => 'permit_empty|max_length[500]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
 
         $violationTypeId = $this->request->getPost('violation_type_id');
         $violationType = $this->violationTypeModel->find($violationTypeId);
@@ -40,14 +83,41 @@ class OfficerController extends BaseController
             return redirect()->back()->with('error', 'Invalid violation type selected.');
         }
 
+        $firstName = trim((string) $this->request->getPost('first_name'));
+        $lastName = trim((string) $this->request->getPost('last_name'));
+        $licensePlate = strtoupper(trim((string) $this->request->getPost('license_plate')));
+
+        // Prevent accidental duplicate pending tickets for the same plate + violation type.
+        $existingPending = $this->violationRecord
+            ->where('license_plate', $licensePlate)
+            ->where('violation_type_id', (int) $violationTypeId)
+            ->where('status', 'Pending')
+            ->orderBy('violation_date', 'DESC')
+            ->first();
+
+        if ($existingPending) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                'A pending ticket for this license plate and violation type already exists (Ticket: ' . ($existingPending['ticket_id'] ?? '#') . ').'
+            );
+        }
+        $baseFine = (float) ($violationType['fine_amount'] ?? 0);
+        $basePoints = (int) ($violationType['points'] ?? 0);
+        $computedFine = $baseFine;
+        $computedPoints = $basePoints;
+
         $data = [
-            'driver_name'      => trim($this->request->getPost('driver_name')),
-            'license_plate'    => trim($this->request->getPost('license_plate')),
+            'first_name'       => $firstName,
+            'last_name'        => $lastName,
+            'age'              => (int) $this->request->getPost('age'),
+            'address'          => trim((string) $this->request->getPost('address')),
+            'driver_name'      => trim($firstName . ' ' . $lastName),
+            'license_plate'    => $licensePlate,
             'officer_id'       => $session->get('id'),
             'violation_type_id' => $violationTypeId,
             'violation_type'   => $violationType['violation_name'],
-            'penalty_amount'   => $violationType['fine_amount'],
-            'points'           => $violationType['points'] ?? 0,
+            'penalty_amount'   => $computedFine,
+            'points'           => $computedPoints,
             'status'           => 'Pending',
             'violation_date'   => date('Y-m-d H:i:s'),
             'created_by'       => $session->get('id'),
@@ -57,8 +127,8 @@ class OfficerController extends BaseController
 
         if ($this->violationRecord->save($data)) {
             $ticketId = $this->violationRecord->getInsertID();
-            $savedViolation = $this->violationRecord->find($ticketId);
-            return redirect()->to(base_url('officer/violations'))->with('success', "Violation recorded successfully! Ticket ID: {$savedViolation['ticket_id']}");
+            return redirect()->to(base_url('officer/view/' . $ticketId . '?print=1&from=violations'))
+                ->with('success', 'Violation recorded successfully.');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->violationRecord->errors());
         }
@@ -66,18 +136,17 @@ class OfficerController extends BaseController
 
     public function violations()
     {
-        $session = session();
-
-        $builder = $this->violationRecord->builder();
-        if ($session->get('role') === 'enforcer') {
-            $builder->where('officer_id', $session->get('id'));
-        }
+        $officerId = (int) session()->get('id');
 
         $data = [
-            'title' => 'My Recorded Violations',
-            'violations' => $this->violationRecord->getAllDetailed(),
+            'title' => 'Violation',
+            'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
+            'violations' => $this->violationRecord
+                ->where('officer_id', $officerId)
+                ->orderBy('violation_date', 'DESC')
+                ->findAll(),
         ];
-        return view('officer/violations', $data);
+        return view('officer/index', $data);
     }
 
     public function view($id)
@@ -114,6 +183,87 @@ class OfficerController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to cancel violation.');
         }
+    }
+
+    public function update($id)
+    {
+        $session = session();
+        $officerId = (int) $session->get('id');
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation || (int) ($violation['officer_id'] ?? 0) !== $officerId) {
+            return redirect()->to(base_url('officer/violations'))->with('error', 'Violation record not found.');
+        }
+
+        if (($violation['status'] ?? '') !== 'Pending') {
+            return redirect()->to(base_url('officer/violations'))->with('error', 'Only pending violations can be updated.');
+        }
+
+        $violationTypeId = (int) $this->request->getPost('violation_type_id');
+        $violationType = $this->violationTypeModel->find($violationTypeId);
+        if (!$violationType) {
+            return redirect()->back()->withInput()->with('error', 'Invalid violation type selected.');
+        }
+
+        $firstName = trim((string) $this->request->getPost('first_name'));
+        $lastName = trim((string) $this->request->getPost('last_name'));
+
+        $rules = [
+            'first_name'    => 'required|min_length[2]|max_length[100]',
+            'last_name'     => 'required|min_length[2]|max_length[100]',
+            'age'           => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
+            'address'       => 'required|min_length[5]|max_length[255]',
+            'license_plate' => 'required|min_length[2]|max_length[20]',
+            'location'      => 'permit_empty|max_length[255]',
+            'notes'         => 'permit_empty|max_length[500]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $data = [
+            'id'               => $id,
+            'first_name'       => $firstName,
+            'last_name'        => $lastName,
+            'age'              => (int) $this->request->getPost('age'),
+            'address'          => trim((string) $this->request->getPost('address')),
+            'driver_name'      => trim($firstName . ' ' . $lastName),
+            'license_plate'    => trim((string) $this->request->getPost('license_plate')),
+            'violation_type_id'=> $violationTypeId,
+            'violation_type'   => (string) ($violationType['violation_name'] ?? ''),
+            'penalty_amount'   => (float) ($violationType['fine_amount'] ?? 0),
+            'points'           => (int) ($violationType['points'] ?? 0),
+            'location'         => trim((string) ($this->request->getPost('location') ?? '')),
+            'notes'            => trim((string) ($this->request->getPost('notes') ?? '')),
+        ];
+
+        if ($this->violationRecord->save($data)) {
+            return redirect()->to(base_url('officer/violations'))->with('success', 'Violation updated successfully.');
+        }
+
+        return redirect()->back()->withInput()->with('errors', $this->violationRecord->errors());
+    }
+
+    public function delete($id)
+    {
+        $session = session();
+        $officerId = (int) $session->get('id');
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation || (int) ($violation['officer_id'] ?? 0) !== $officerId) {
+            return redirect()->to(base_url('officer/violations'))->with('error', 'Violation record not found.');
+        }
+
+        if (($violation['status'] ?? '') !== 'Pending') {
+            return redirect()->to(base_url('officer/violations'))->with('error', 'Only pending violations can be deleted.');
+        }
+
+        if ($this->violationRecord->delete($id)) {
+            return redirect()->to(base_url('officer/violations'))->with('success', 'Violation deleted successfully.');
+        }
+
+        return redirect()->to(base_url('officer/violations'))->with('error', 'Failed to delete violation.');
     }
 
     public function getViolationTypes()

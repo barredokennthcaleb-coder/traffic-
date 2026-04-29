@@ -49,7 +49,9 @@
                     <thead class="table-light violations-head">
                         <tr>
                             <th class="ps-4">Ticket ID</th>
-                            <th>Driver Name</th>
+                            <th>Violator</th>
+                            <th>Age</th>
+                            <th>Address</th>
                             <th>License Plate</th>
                             <th>Violation Type</th>
                             <th>Amount</th>
@@ -60,7 +62,7 @@
                     <tbody>
                         <?php if (empty($violations)): ?>
                             <tr id="noDataRow">
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No violations recorded yet.
                                 </td>
@@ -69,7 +71,11 @@
                             <?php foreach ($violations as $violation): ?>
                             <tr class="violation-row">
                                 <td class="ps-4"><span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2 font-monospace"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td class="fw-bold"><?= esc($violation['driver_name']) ?></td>
+                                <td class="fw-bold">
+                                    <?= esc(trim(($violation['first_name'] ?? '') . ' ' . ($violation['last_name'] ?? '')) ?: ($violation['driver_name'] ?? '-')) ?>
+                                </td>
+                                <td><?= esc((string) ($violation['age'] ?? '-')) ?></td>
+                                <td class="small text-muted"><?= esc($violation['address'] ?? '-') ?></td>
                                 <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace px-2"><?= esc($violation['license_plate']) ?></span></td>
                                 <td class="small fw-semibold text-muted"><?= esc($violation['violation_type']) ?></td>
                                 <td class="fw-bold text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></td>
@@ -186,7 +192,7 @@
                 const tbody = document.querySelector('#violationTable tbody');
                 const row = tbody.insertRow();
                 row.id = 'noDataRow';
-                row.innerHTML = `<td colspan="7" class="text-center py-5 text-muted">No matching results found.</td>`;
+                row.innerHTML = `<td colspan="9" class="text-center py-5 text-muted">No matching results found.</td>`;
             }
         } else if (noDataRow) {
             noDataRow.remove();

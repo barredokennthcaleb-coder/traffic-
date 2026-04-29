@@ -23,7 +23,7 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
                         </span>
-                        <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by name, email...">
+                        <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by username, full name, email...">
                     </div>
                 </form>
             </div>
@@ -57,6 +57,9 @@
                         <tr>
                             <th class="ps-4">ID</th>
                             <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Age</th>
+                            <th>Address</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Status</th>
@@ -66,7 +69,7 @@
                     <tbody>
                         <?php if (empty($users)): ?>
                             <tr id="noDataRow">
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-person-x fs-1 d-block mb-2"></i>
                                     No users found.
                                 </td>
@@ -76,6 +79,9 @@
                             <tr class="user-row">
                                 <td class="ps-4"><?= esc($user['id']) ?></td>
                                 <td><?= esc($user['username']) ?></td>
+                                <td><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></td>
+                                <td><?= esc((string) ($user['age'] ?? '-')) ?></td>
+                                <td><?= esc($user['address'] ?? '-') ?></td>
                                 <td><?= esc($user['email']) ?></td>
                                 <td><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
                                 <td>
@@ -92,6 +98,10 @@
                                         <?php if ($user['role'] == 'driver'): ?>
                                         <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                             <i class="bi bi-eye text-info"></i>
+                                        </a>
+                                        <?php elseif ($user['role'] == 'enforcer'): ?>
+                                        <a href="<?= base_url('users/view-enforcer/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Enforcer Profile">
+                                            <i class="bi bi-person-vcard text-info"></i>
                                         </a>
                                         <?php endif; ?>
                                         <a href="<?= base_url('users/edit/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="Edit User">
@@ -180,7 +190,7 @@
                         const tbody = document.querySelector('#userTable tbody');
                         const row = tbody.insertRow();
                         row.id = 'noDataRow';
-                        row.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">No matching users found.</td>`;
+                        row.innerHTML = `<td colspan="9" class="text-center py-5 text-muted">No matching users found.</td>`;
                     }
                 } else if (noDataRow) {
                     noDataRow.remove();

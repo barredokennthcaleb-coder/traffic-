@@ -20,7 +20,8 @@ class PenaltyController extends BaseController
             'title' => 'Penalty Management',
             'pending_violations' => $this->violationRecord->where('status', 'Pending')
                                                           ->orderBy('violation_date', 'DESC')
-                                                          ->findAll(),
+                                                          ->paginate(10, 'penalties'),
+            'pager' => $this->violationRecord->pager,
         ];
         return view('admin/penalties/index', $data);
     }
@@ -29,7 +30,11 @@ class PenaltyController extends BaseController
     {
         $data = [
             'title' => 'All Violations',
-            'violations' => $this->violationRecord->getAllDetailed(),
+            'violations' => $this->violationRecord->select('violations.*, users.username as officer_name')
+                                                   ->join('users', 'users.id = violations.officer_id', 'left')
+                                                   ->orderBy('violations.violation_date', 'DESC')
+                                                   ->paginate(10, 'all'),
+            'pager' => $this->violationRecord->pager,
         ];
         return view('admin/penalties/all', $data);
     }
@@ -73,7 +78,8 @@ class PenaltyController extends BaseController
             'title' => 'Payment History',
             'payments' => $this->violationRecord->where('status', 'Paid')
                                                  ->orderBy('paid_date', 'DESC')
-                                                 ->findAll(),
+                                                 ->paginate(10, 'history'),
+            'pager' => $this->violationRecord->pager,
         ];
         return view('admin/penalties/history', $data);
     }
@@ -133,6 +139,21 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('penalties/all'))->with('success', 'Violation cancelled successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to cancel violation.');
+        }
+    }
+
+    public function delete($id = null)
+    {
+        $violation = $this->violationRecord->find($id);
+
+        if (!$violation) {
+            return redirect()->to(base_url('penalties'))->with('error', 'Violation record not found.');
+        }
+
+        if ($this->violationRecord->delete($id)) {
+            return redirect()->to(base_url('penalties'))->with('success', 'Violation record deleted successfully.');
+        } else {
+            return redirect()->back()->with('error', 'Failed to delete violation record.');
         }
     }
 

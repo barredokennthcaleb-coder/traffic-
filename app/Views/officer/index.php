@@ -1,15 +1,15 @@
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>Record Violation - Traffic Officer<?= $this->endSection() ?>
+<?= $this->section('title') ?>Violation - Traffic Officer<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm enforcer-card">
+            <div class="card border-0 shadow-sm enforcer-card premium-reveal analytics-tilt" style="--reveal-delay:.08s;">
                 <div class="card-header py-3 enforcer-header">
-                    <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Record New Violation</h4>
+                    <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Violation</h4>
                     <small class="text-muted">Fill in the incident details and submit an official traffic ticket.</small>
                 </div>
                 <div class="card-body p-4">
@@ -44,12 +44,22 @@
                         
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label for="driver_name" class="form-label">Driver Name <span class="text-danger">*</span></label>
+                                <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input type="text" name="driver_name" id="driver_name" class="form-control" 
-                                           placeholder="Enter driver's full name" required
-                                           value="<?= old('driver_name') ?>">
+                                    <input type="text" name="first_name" id="first_name" class="form-control" 
+                                           placeholder="Enter violator first name" required
+                                           value="<?= old('first_name') ?>">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+                                    <input type="text" name="last_name" id="last_name" class="form-control" 
+                                           placeholder="Enter violator last name" required
+                                           value="<?= old('last_name') ?>">
                                 </div>
                             </div>
 
@@ -60,6 +70,17 @@
                                     <input type="text" name="license_plate" id="license_plate" class="form-control" 
                                            placeholder="e.g., ABC 1234" required
                                            value="<?= old('license_plate') ?>">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-123"></i></span>
+                                    <input type="number" name="age" id="age" class="form-control"
+                                           min="16" max="120" required
+                                           value="<?= old('age') ?>"
+                                           placeholder="Enter violator age">
                                 </div>
                             </div>
 
@@ -100,6 +121,7 @@
                                 </div>
                             </div>
 
+
                             <div class="col-12">
                                 <div class="alert alert-info border-0 shadow-sm info-box">
                                     <div class="d-flex">
@@ -109,6 +131,17 @@
                                             <p class="mb-0" id="violationInfo">Select a violation type to see its details.</p>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-house-door"></i></span>
+                                    <input type="text" name="address" id="address" class="form-control" 
+                                           placeholder="e.g., Brgy. Poblacion, City"
+                                           required
+                                           value="<?= old('address') ?>">
                                 </div>
                             </div>
 
@@ -139,11 +172,8 @@
                                         <i class="bi bi-calendar-event me-1"></i> Date: <?= date('F d, Y - h:i A') ?>
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary">
-                                            <i class="bi bi-arrow-left me-1"></i> Back
-                                        </a>
-                                        <button type="submit" class="btn btn-primary" id="submitBtn">
-                                            <i class="bi bi-save me-1"></i> Record Violation
+                                        <button type="submit" class="btn btn-outline-primary" id="submitPrintBtn" name="print_ticket" value="1">
+                                            <i class="bi bi-printer me-1"></i> Print Ticket
                                         </button>
                                     </div>
                                 </div>
@@ -152,6 +182,226 @@
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="container-fluid pb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm enforcer-card premium-reveal analytics-tilt" style="--reveal-delay:.18s;">
+                <div class="card-header py-3 enforcer-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                    <div>
+                        <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>My Recorded Violations</h5>
+                        <small class="text-muted">Styled like All Violations, with quick actions.</small>
+                    </div>
+                    <div class="input-group shadow-sm" style="max-width: 360px;">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0" placeholder="Search ticket, driver, plate...">
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 table-premium-mobile" id="officerViolationTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Ticket ID</th>
+                                    <th>Driver Information</th>
+                                    <th>Violation Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($violations)): ?>
+                                    <tr id="noTableDataRow">
+                                        <td colspan="7">
+                                            <div class="empty-state">
+                                                <i class="bi bi-inbox"></i>
+                                                <div class="empty-state-title">No Violation Records</div>
+                                                <div>Your submitted violations will appear in this table.</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($violations as $v): ?>
+                                    <tr class="officer-violation-row">
+                                        <td class="ps-4" data-label="Ticket ID"><span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
+                                        <td data-label="Driver Information">
+                                            <div class="fw-bold"><?= esc(trim(($v['first_name'] ?? '') . ' ' . ($v['last_name'] ?? '')) ?: ($v['driver_name'] ?? '-')) ?></div>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate'] ?? '-') ?></span>
+                                        </td>
+                                        <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type'] ?? '-') ?></td>
+                                        <td data-label="Amount"><span class="fw-bold text-danger">$<?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></span></td>
+                                        <td data-label="Status">
+                                            <?php if (($v['status'] ?? '') === 'Pending'): ?>
+                                                <span class="badge bg-warning rounded-pill px-3">Pending</span>
+                                            <?php elseif (($v['status'] ?? '') === 'Paid'): ?>
+                                                <span class="badge bg-success rounded-pill px-3">Paid</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-danger rounded-pill px-3">Cancelled</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-muted small" data-label="Date"><?= isset($v['violation_date']) ? date('M d, Y', strtotime($v['violation_date'])) : '-' ?></td>
+                                        <td class="text-end pe-4" data-label="Actions">
+                                            <div class="btn-group shadow-sm">
+                                                <a href="<?= base_url('officer/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
+                                                    <i class="bi bi-eye text-info"></i>
+                                                </a>
+                                                <?php if (($v['status'] ?? '') === 'Pending'): ?>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-white border btn-edit-violation"
+                                                        title="Update Ticket"
+                                                        data-id="<?= $v['id'] ?>"
+                                                        data-first-name="<?= esc($v['first_name'] ?? '') ?>"
+                                                        data-last-name="<?= esc($v['last_name'] ?? '') ?>"
+                                                        data-age="<?= esc((string) ($v['age'] ?? '')) ?>"
+                                                        data-address="<?= esc($v['address'] ?? '') ?>"
+                                                        data-license-plate="<?= esc($v['license_plate'] ?? '') ?>"
+                                                        data-violation-type-id="<?= esc((string) ($v['violation_type_id'] ?? '')) ?>"
+                                                        data-location="<?= esc($v['location'] ?? '') ?>"
+                                                        data-notes="<?= esc($v['notes'] ?? '') ?>">
+                                                        <i class="bi bi-pencil text-primary"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-white border btn-cancel-violation" data-id="<?= $v['id'] ?>" title="Cancel Ticket">
+                                                        <i class="bi bi-x-circle text-danger"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-white border btn-delete-violation" data-id="<?= $v['id'] ?>" title="Delete Ticket">
+                                                        <i class="bi bi-trash text-danger"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cancelViolationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancel Violation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="cancelViolationForm" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <p class="fw-bold">Are you sure you want to cancel this ticket?</p>
+                    <div class="mb-0">
+                        <label class="form-label fw-bold">Reason</label>
+                        <textarea class="form-control shadow-sm" name="reason" rows="3" required placeholder="Provide a reason for cancellation..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Keep Ticket</button>
+                    <button type="submit" class="btn btn-danger px-4 shadow-sm">Confirm Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editViolationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update Violation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editViolationForm" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" id="edit_first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" id="edit_last_name" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Age</label>
+                            <input type="number" class="form-control" name="age" id="edit_age" min="16" max="120" required>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">License Plate</label>
+                            <input type="text" class="form-control" name="license_plate" id="edit_license_plate" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" name="address" id="edit_address" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Violation Type</label>
+                            <select class="form-select" name="violation_type_id" id="edit_violation_type_id" required>
+                                <option value="">-- Select Violation Type --</option>
+                                <?php foreach ($violationTypes as $type): ?>
+                                    <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
+                                        <?= esc($type['violation_name']) ?> - $<?= number_format((float) $type['fine_amount'], 2) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Amount</label>
+                            <input type="text" class="form-control bg-light" id="edit_penalty_amount" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Points</label>
+                            <input type="text" class="form-control bg-light" id="edit_points" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location" id="edit_location">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" name="notes" id="edit_notes">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteViolationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Delete Violation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="deleteViolationForm" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <p class="fw-bold mb-1">Delete this violation record permanently?</p>
+                    <p class="text-muted small mb-0">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger px-4 shadow-sm">Delete</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -199,9 +449,12 @@
     .enforcer-card {
         overflow: hidden;
         border: 1px solid #e4e9ff !important;
+        border-radius: 16px;
+        background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(247,250,255,0.88) 100%);
+        transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .enforcer-header {
-        background: linear-gradient(180deg, #f3f5ff 0%, #ffffff 100%);
+        background: linear-gradient(120deg, rgba(97,116,227,0.14) 0%, rgba(255,255,255,0.95) 65%);
         border-bottom: 1px solid #e4e9ff;
     }
     .enforcer-header h4 {
@@ -220,13 +473,44 @@
     .enforcer-card .form-control,
     .enforcer-card .form-select {
         border-color: #dbe1ff;
+        border-radius: 10px;
     }
     .enforcer-card .form-control.bg-light {
         background: #f7f9ff !important;
     }
     .info-box {
-        background: #eaf4ff;
+        background: linear-gradient(120deg, #e7f2ff 0%, #f1f8ff 100%);
         color: #22495f;
+        border: 1px solid #d6e8ff;
+    }
+    .btn-white { background: #fff; }
+    .btn-white:hover { background: #f8f9fa; }
+    .enforcer-card .table thead th {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #4d5678;
+        border-bottom: 1px solid #e8ecff;
+    }
+    .enforcer-card .table tbody tr:hover {
+        background-color: #f8faff;
+    }
+    .enforcer-card .btn-group .btn {
+        border-radius: 8px !important;
+    }
+    .enforcer-card .card-header h4,
+    .enforcer-card .card-header h5 {
+        letter-spacing: -0.01em;
+    }
+    .analytics-tilt {
+        transform-style: preserve-3d;
+        will-change: transform;
+    }
+    #tableSearchInput {
+        border-radius: 0 10px 10px 0;
+    }
+    #tableSearchInput:focus {
+        box-shadow: none;
     }
     @media (max-width: 768px) {
         .enforcer-card .card-body {
@@ -269,25 +553,29 @@
         const option = select.options[select.selectedIndex];
         const amount = option.dataset.amount;
         const points = option.dataset.points;
+        const baseAmount = amount ? parseFloat(amount) : 0;
+        const basePoints = points ? parseInt(points, 10) : 0;
+        const finalAmount = baseAmount;
+        const finalPoints = basePoints;
         
-        document.getElementById('penalty_amount').value = amount ? parseFloat(amount).toFixed(2) : '0.00';
-        document.getElementById('points').value = points || '0';
+        document.getElementById('penalty_amount').value = finalAmount.toFixed(2);
+        document.getElementById('points').value = String(finalPoints || 0);
         
         const violationInfo = document.getElementById('violationInfo');
         if (select.value) {
             const selectedText = select.options[select.selectedIndex].text;
             violationInfo.innerHTML = `<strong>${selectedText.split(' - $')[0]}</strong><br>
-                This violation will be recorded with a fine of <strong>$${parseFloat(amount).toFixed(2)}</strong> 
-                and <strong>${points} penalty points</strong>.`;
+                This violation will be recorded with a fine of <strong>$${finalAmount.toFixed(2)}</strong>
+                and <strong>${finalPoints} penalty points</strong>.`;
         } else {
             violationInfo.textContent = 'Select a violation type to see its details.';
         }
     }
 
     document.getElementById('violationForm').addEventListener('submit', function() {
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Recording...';
+        const printBtn = document.getElementById('submitPrintBtn');
+        printBtn.disabled = true;
+        printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
     });
 
     async function saveViolationType() {
@@ -350,5 +638,117 @@
     }
 
     document.getElementById('saveViolationTypeBtn')?.addEventListener('click', saveViolationType);
+    const tableSearchInput = document.getElementById('tableSearchInput');
+    if (tableSearchInput) {
+        tableSearchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.officer-violation-row');
+            let hasResults = false;
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(keyword)) {
+                    row.style.display = '';
+                    hasResults = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const noDataRow = document.getElementById('noTableDataRow');
+            if (!hasResults) {
+                if (!noDataRow) {
+                    const tbody = document.querySelector('#officerViolationTable tbody');
+                    const row = tbody.insertRow();
+                    row.id = 'noTableDataRow';
+                    row.innerHTML = `<td colspan="7"><div class="empty-state"><i class="bi bi-search"></i><div class="empty-state-title">No Matching Results</div><div>Try a different ticket, driver, or plate keyword.</div></div></td>`;
+                }
+            } else if (noDataRow) {
+                noDataRow.remove();
+            }
+        });
+    }
+
+    const cancelViolationModalEl = document.getElementById('cancelViolationModal');
+    const cancelViolationForm = document.getElementById('cancelViolationForm');
+    if (cancelViolationModalEl && cancelViolationForm) {
+        const cancelViolationModal = new bootstrap.Modal(cancelViolationModalEl);
+        document.querySelectorAll('.btn-cancel-violation').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                cancelViolationForm.action = `<?= base_url('officer/cancel') ?>/${id}`;
+                cancelViolationModal.show();
+            });
+        });
+    }
+
+    const editModalEl = document.getElementById('editViolationModal');
+    const editForm = document.getElementById('editViolationForm');
+    const editTypeSelect = document.getElementById('edit_violation_type_id');
+    const editAmount = document.getElementById('edit_penalty_amount');
+    const editPoints = document.getElementById('edit_points');
+
+    function updateEditComputedFields() {
+        const option = editTypeSelect?.options[editTypeSelect.selectedIndex];
+        const amount = option?.dataset?.amount ? parseFloat(option.dataset.amount) : 0;
+        const points = option?.dataset?.points ? parseInt(option.dataset.points, 10) : 0;
+        if (editAmount) editAmount.value = amount.toFixed(2);
+        if (editPoints) editPoints.value = String(points || 0);
+    }
+
+    editTypeSelect?.addEventListener('change', updateEditComputedFields);
+
+    if (editModalEl && editForm) {
+        const editModal = new bootstrap.Modal(editModalEl);
+        document.querySelectorAll('.btn-edit-violation').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                editForm.action = `<?= base_url('officer/update') ?>/${id}`;
+                document.getElementById('edit_first_name').value = this.dataset.firstName || '';
+                document.getElementById('edit_last_name').value = this.dataset.lastName || '';
+                document.getElementById('edit_age').value = this.dataset.age || '';
+                document.getElementById('edit_address').value = this.dataset.address || '';
+                document.getElementById('edit_license_plate').value = this.dataset.licensePlate || '';
+                document.getElementById('edit_location').value = this.dataset.location || '';
+                document.getElementById('edit_notes').value = this.dataset.notes || '';
+                if (editTypeSelect) {
+                    editTypeSelect.value = this.dataset.violationTypeId || '';
+                }
+                updateEditComputedFields();
+                editModal.show();
+            });
+        });
+    }
+
+    const deleteModalEl = document.getElementById('deleteViolationModal');
+    const deleteForm = document.getElementById('deleteViolationForm');
+    if (deleteModalEl && deleteForm) {
+        const deleteModal = new bootstrap.Modal(deleteModalEl);
+        document.querySelectorAll('.btn-delete-violation').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.id;
+                deleteForm.action = `<?= base_url('officer/delete') ?>/${id}`;
+                deleteModal.show();
+            });
+        });
+    }
+
+    // Subtle premium tilt interaction, consistent with admin.
+    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('.analytics-tilt').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            if (reducedMotion) return;
+            const rect = card.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width;
+            const py = (e.clientY - rect.top) / rect.height;
+            const rotateY = (px - 0.5) * 4;
+            const rotateX = (0.5 - py) * 4;
+            card.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-2px)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+
 </script>
 <?= $this->endSection() ?>

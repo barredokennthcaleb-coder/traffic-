@@ -15,6 +15,10 @@ class ViolationModel extends ViolationRecord
     protected $allowedFields    = [
         'ticket_id', 
         'driver_name', 
+        'first_name',
+        'last_name',
+        'age',
+        'address',
         'license_plate', 
         'officer_id', 
         'violation_type_id',
