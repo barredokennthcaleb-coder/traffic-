@@ -39,7 +39,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="violationTable">
+                <table class="table table-hover align-middle mb-0" id="violationTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">Violation Name</th>
@@ -61,18 +61,18 @@
                         <?php else: ?>
                             <?php foreach ($violationTypes as $type): ?>
                             <tr id="row-<?= $type['id'] ?>" class="violation-row">
-                                <td class="ps-4" data-label="Violation Name"><strong><?= esc($type['violation_name']) ?></strong></td>
-                                <td class="text-muted small" data-label="Description"><?= esc($type['description'] ?? 'N/A') ?></td>
-                                <td data-label="Fine Amount"><span class="badge bg-success-subtle text-success border border-success-subtle px-3">$<?= number_format($type['fine_amount'], 2) ?></span></td>
-                                <td data-label="Points"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3"><?= $type['points'] ?> pts</span></td>
-                                <td data-label="Status">
+                                <td class="ps-4"><strong><?= esc($type['violation_name']) ?></strong></td>
+                                <td class="text-muted small"><?= esc($type['description'] ?? 'N/A') ?></td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3">$<?= number_format($type['fine_amount'], 2) ?></span></td>
+                                <td><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3"><?= $type['points'] ?> pts</span></td>
+                                <td>
                                     <?php if ($type['status'] == 'active'): ?>
                                         <span class="badge bg-success rounded-pill px-3">Active</span>
                                     <?php else: ?>
                                         <span class="badge bg-secondary rounded-pill px-3">Inactive</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-end pe-4" data-label="Actions">
+                                <td class="text-end pe-4">
                                     <div class="btn-group shadow-sm">
                                         <button class="btn btn-sm btn-white border btn-edit" 
                                                 data-type="<?= htmlspecialchars(json_encode($type)) ?>" title="Edit">

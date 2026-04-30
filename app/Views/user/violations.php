@@ -20,7 +20,7 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover align-middle table-premium-mobile">
+                <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Ticket ID</th>
@@ -42,13 +42,13 @@
                         <?php else: ?>
                             <?php foreach ($violations as $violation): ?>
                             <tr>
-                                <td data-label="Ticket ID"><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td data-label="Violation Type">
+                                <td><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
+                                <td>
                                     <div class="fw-semibold"><?= esc($violation['violation_type']) ?></div>
                                     <small class="text-muted"><?= esc($violation['location'] ?? 'Location not specified') ?></small>
                                 </td>
-                                <td data-label="Amount"><strong class="<?= $violation['status'] == 'Pending' ? 'text-danger' : 'text-success' ?>">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
-                                <td data-label="Status">
+                                <td><strong class="<?= $violation['status'] == 'Pending' ? 'text-danger' : 'text-success' ?>">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
+                                <td>
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning text-dark">Pending</span>
                                     <?php elseif ($violation['status'] == 'Paid'): ?>
@@ -57,8 +57,8 @@
                                         <span class="badge bg-danger">Cancelled</span>
                                     <?php endif; ?>
                                 </td>
-                                <td data-label="Violation Date"><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
-                                <td class="text-end" data-label="Actions">
+                                <td><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
+                                <td class="text-end">
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <a href="/user/pay/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-success px-3">
                                             <i class="bi bi-credit-card me-1"></i> Pay Now

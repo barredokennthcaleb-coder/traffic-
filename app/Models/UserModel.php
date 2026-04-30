@@ -12,7 +12,7 @@ class UserModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['username', 'firstname', 'lastname', 'age', 'address', 'profile_image', 'email', 'password', 'role', 'status'];
+    protected $allowedFields    = ['username', 'firstname', 'lastname', 'middle_initial', 'age', 'birthdate', 'address', 'profile_image', 'email', 'password', 'role', 'status'];
 
     // Dates
     protected $useTimestamps = true;
@@ -26,7 +26,9 @@ class UserModel extends Model
         'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[users.username,id,{id}]',
         'firstname'=> 'permit_empty|min_length[2]|max_length[100]',
         'lastname' => 'permit_empty|min_length[2]|max_length[100]',
+        'middle_initial' => 'permit_empty|max_length[10]',
         'age'      => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
+        'birthdate'=> 'permit_empty|valid_date',
         'address'  => 'permit_empty|max_length[255]',
         'profile_image' => 'permit_empty|max_length[255]',
         'email'    => 'required|valid_email|is_unique[users.email,id,{id}]',

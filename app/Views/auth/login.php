@@ -270,7 +270,7 @@
 
 <div class="login-shell">
     <div class="brand-side">
-        <img class="brand-logo" src="/img/pic 1.png" alt="Traffic System Logo">
+        <img class="brand-logo" src="<?= base_url('img/pic 1.png') ?>" alt="Traffic System Logo">
         <h1>Traffic System</h1>
         <p>Manage violations, payments, and enforcement with a premium-grade workflow.</p>
         <ul class="premium-points">

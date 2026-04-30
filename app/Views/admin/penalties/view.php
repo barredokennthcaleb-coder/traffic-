@@ -67,7 +67,7 @@
                         <?php if ($violation['notes']): ?>
                         <div class="col-12">
                             <label class="text-muted small text-uppercase d-block">Notes</label>
-                            <p class="mb-0 italic"><?= esc($violation['notes']) ?></p>
+                            <p class="mb-0 fst-italic"><?= esc($violation['notes']) ?></p>
                         </div>
                         <?php endif; ?>
                     </div>

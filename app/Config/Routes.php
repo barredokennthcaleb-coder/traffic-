@@ -18,7 +18,6 @@ $routes->get('logout', 'AuthController::logout');
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
     $routes->get('profile', 'Officer\OfficerController::profile');
-    $routes->post('profile/photo', 'Officer\OfficerController::updateProfilePhoto');
     $routes->post('store', 'Officer\OfficerController::store');
     $routes->get('violations', 'Officer\OfficerController::violations');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
@@ -51,7 +50,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('users/store', 'Admin\UserController::store');
     $routes->get('users/edit/(:num)', 'Admin\UserController::edit/$1');
     $routes->post('users/update/(:num)', 'Admin\UserController::update/$1');
-    $routes->get('users/delete/(:num)', 'Admin\UserController::delete/$1');
+    $routes->post('users/delete/(:num)', 'Admin\UserController::delete/$1');
     $routes->post('users/reset-password/(:num)', 'Admin\UserController::resetPassword/$1');
 
     // Penalty & Payment Routes

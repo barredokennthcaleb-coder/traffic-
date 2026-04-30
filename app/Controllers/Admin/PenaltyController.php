@@ -58,6 +58,8 @@ class PenaltyController extends BaseController
     {
         $violationId = $this->request->getPost('violation_id');
         $paymentMethod = $this->request->getPost('payment_method');
+        $remarks = $this->request->getPost('remarks');
+        $transactionId = $this->request->getPost('transaction_id');
 
         $violation = $this->violationRecord->find($violationId);
 
@@ -65,7 +67,7 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('penalties'))->with('error', 'Violation not found.');
         }
 
-        if ($this->violationRecord->recordPayment($violationId, $paymentMethod)) {
+        if ($this->violationRecord->recordPayment($violationId, $paymentMethod, $remarks, $transactionId)) {
             return redirect()->to(base_url('penalties/history'))->with('success', 'Payment recorded successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to record payment.');

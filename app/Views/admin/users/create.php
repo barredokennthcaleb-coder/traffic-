@@ -45,31 +45,44 @@
                                        value="<?= old('email') ?>">
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="firstname" class="form-label">First Name</label>
-                                <input type="text" name="firstname" id="firstname" class="form-control"
-                                       placeholder="Enter first name"
-                                       value="<?= old('firstname') ?: esc($defaults['firstname']) ?>">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="lastname" class="form-label">Last Name</label>
+                            <div class="col-md-4">
+                                <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
                                 <input type="text" name="lastname" id="lastname" class="form-control"
-                                       placeholder="Enter last name"
+                                       placeholder="Enter last name" required
                                        value="<?= old('lastname') ?: esc($defaults['lastname']) ?>">
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="age" class="form-label">Age</label>
-                                <input type="number" name="age" id="age" class="form-control"
-                                       min="1" max="120" step="1" placeholder="Enter age"
-                                       value="<?= old('age') ?: esc((string) $defaults['age']) ?>">
+                            <div class="col-md-4">
+                                <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" name="firstname" id="firstname" class="form-control"
+                                       placeholder="Enter first name" required
+                                       value="<?= old('firstname') ?: esc($defaults['firstname']) ?>">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="middle_initial" class="form-label">Middle Initial</label>
+                                <input type="text" name="middle_initial" id="middle_initial" class="form-control"
+                                       placeholder="M.I." maxlength="10"
+                                       value="<?= old('middle_initial') ?: esc($defaults['middle_initial'] ?? '') ?>">
                             </div>
 
                             <div class="col-md-6">
-                                <label for="address" class="form-label">Address</label>
+                                <label for="birthdate" class="form-label">Birthdate <span class="text-danger">*</span></label>
+                                <input type="date" name="birthdate" id="birthdate" class="form-control" required
+                                       value="<?= old('birthdate') ?: esc($defaults['birthdate'] ?? '') ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
+                                <input type="number" name="age" id="age" class="form-control"
+                                       min="1" max="120" step="1" placeholder="Enter age" required
+                                       value="<?= old('age') ?: esc((string) $defaults['age']) ?>">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
                                 <input type="text" name="address" id="address" class="form-control"
-                                       placeholder="Enter address"
+                                       placeholder="Enter address" required
                                        value="<?= old('address') ?: esc($defaults['address']) ?>">
                             </div>
 

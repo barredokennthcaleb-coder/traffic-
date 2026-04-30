@@ -192,15 +192,16 @@ class ViolationRecord extends Model
                     ->findAll();
     }
 
-    public function recordPayment($id, $paymentMethod)
+    public function recordPayment($id, $paymentMethod, $remarks = null, $transactionId = null)
     {
-        $receiptNumber = 'RCP-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
+        $receiptNumber = $transactionId ?: 'RCP-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
 
         return $this->update($id, [
             'status'          => 'Paid',
             'paid_date'       => date('Y-m-d H:i:s'),
             'payment_method'  => $paymentMethod,
             'receipt_number'  => $receiptNumber,
+            'remarks'         => $remarks,
         ]);
     }
 

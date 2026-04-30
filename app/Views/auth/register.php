@@ -217,40 +217,65 @@
 
         <form action="/register" method="POST" id="registerForm" novalidate>
             <?= csrf_field() ?>
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <input type="text" name="username" class="form-control <?= isset(session()->getFlashdata('errors')['username']) ? 'is-invalid' : '' ?>" 
-                           id="username" 
-                           placeholder="Choose a username" 
-                           required 
-                           value="<?= old('username') ?>"
-                           autocomplete="username">
-                </div>
-                <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['username'])): ?>
-                    <div class="invalid-feedback d-block">
-                        <i class="bi bi-exclamation-circle me-1"></i><?= session()->getFlashdata('errors')['username'] ?>
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control <?= isset(session()->getFlashdata('errors')['username']) ? 'is-invalid' : '' ?>" 
+                               id="username" 
+                               placeholder="Choose a username" 
+                               required 
+                               value="<?= old('username') ?>"
+                               autocomplete="username">
                     </div>
-                <?php endif; ?>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" name="email" class="form-control <?= isset(session()->getFlashdata('errors')['email']) ? 'is-invalid' : '' ?>" 
-                           id="email" 
-                           placeholder="Enter your email" 
-                           required 
-                           value="<?= old('email') ?>"
-                           autocomplete="email">
                 </div>
-                <?php if (session()->getFlashdata('errors') && isset(session()->getFlashdata('errors')['email'])): ?>
-                    <div class="invalid-feedback d-block">
-                        <i class="bi bi-exclamation-circle me-1"></i><?= session()->getFlashdata('errors')['email'] ?>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" name="email" class="form-control <?= isset(session()->getFlashdata('errors')['email']) ? 'is-invalid' : '' ?>" 
+                               id="email" 
+                               placeholder="Enter your email" 
+                               required 
+                               value="<?= old('email') ?>"
+                               autocomplete="email">
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-5">
+                    <label for="lastname" class="form-label">Last Name</label>
+                    <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Last Name" required value="<?= old('lastname') ?>">
+                </div>
+                <div class="col-md-5">
+                    <label for="firstname" class="form-label">First Name</label>
+                    <input type="text" name="firstname" class="form-control" id="firstname" placeholder="First Name" required value="<?= old('firstname') ?>">
+                </div>
+                <div class="col-md-2">
+                    <label for="middle_initial" class="form-label">M.I.</label>
+                    <input type="text" name="middle_initial" class="form-control" id="middle_initial" placeholder="M.I." maxlength="10" value="<?= old('middle_initial') ?>">
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-7">
+                    <label for="birthdate" class="form-label">Birthdate</label>
+                    <input type="date" name="birthdate" class="form-control" id="birthdate" required value="<?= old('birthdate') ?>">
+                </div>
+                <div class="col-md-5">
+                    <label for="age" class="form-label">Age</label>
+                    <input type="number" name="age" class="form-control" id="age" min="16" max="120" required value="<?= old('age') ?>">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Current Address</label>
+                <input type="text" name="address" class="form-control" id="address" placeholder="Full Address" required value="<?= old('address') ?>">
+            </div>
+
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
                 <div class="input-group" id="passwordGroup">

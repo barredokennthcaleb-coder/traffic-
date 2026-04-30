@@ -91,67 +91,36 @@ class AuthController extends BaseController
         $session = session();
         $model = new UserModel();
 
-        $username = trim($this->request->getVar('username'));
-        $email = trim($this->request->getVar('email'));
-        $envDefaultPassword = (string) (env('auth.defaultUserPassword') ?? '');
-        $passwordInput = (string) $this->request->getVar('password');
-        $confirmPasswordInput = (string) $this->request->getVar('confirm_password');
+        $rules = [
+            'username' => 'required|alpha_numeric_space|min_length[3]|is_unique[users.username]',
+            'email'    => 'required|valid_email|is_unique[users.email]',
+            'firstname'=> 'required|min_length[2]|max_length[100]',
+            'lastname' => 'required|min_length[2]|max_length[100]',
+            'middle_initial' => 'permit_empty|max_length[10]',
+            'age'      => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
+            'birthdate'=> 'required|valid_date',
+            'address'  => 'required|max_length[255]',
+            'password' => 'required|min_length[8]',
+            'confirm_password' => 'required|matches[password]',
+        ];
 
-        // Only fall back to env default when the user leaves it blank.
-        $password = $passwordInput !== '' ? $passwordInput : $envDefaultPassword;
-        $confirmPassword = $confirmPasswordInput !== '' ? $confirmPasswordInput : $envDefaultPassword;
-
-        if (empty($username) || empty($email) || empty($password) || empty($confirmPassword)) {
-            $session->setFlashdata('errors', ['All fields are required.']);
-            return redirect()->back()->withInput();
-        }
-
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $session->setFlashdata('errors', ['Please enter a valid email address.']);
-            return redirect()->back()->withInput();
-        }
-
-        if ($password !== $confirmPassword) {
-            $session->setFlashdata('errors', ['Password and confirm password do not match.']);
-            return redirect()->back()->withInput();
-        }
-
-        // If NO default password is set in .env, enforce stronger rules.
-        if ($envDefaultPassword === '') {
-            if (strlen($password) < 8) {
-                $session->setFlashdata('errors', ['Password must be at least 8 characters long.']);
-                return redirect()->back()->withInput();
-            }
-
-            if (!preg_match('/[a-zA-Z]/', $password)) {
-                $session->setFlashdata('errors', ['Password must contain at least one letter.']);
-                return redirect()->back()->withInput();
-            }
-
-            if (!preg_match('/[0-9]/', $password)) {
-                $session->setFlashdata('errors', ['Password must contain at least one number.']);
-                return redirect()->back()->withInput();
-            }
-        }
-
-        $existingEmail = $model->where('email', $email)->first();
-        if ($existingEmail) {
-            $session->setFlashdata('errors', ['This email is already registered. Please use a different email or try logging in.']);
-            return redirect()->back()->withInput();
-        }
-
-        $existingUsername = $model->where('username', $username)->first();
-        if ($existingUsername) {
-            $session->setFlashdata('errors', ['This username is already taken. Please choose a different username.']);
+        if (!$this->validate($rules)) {
+            $session->setFlashdata('errors', $this->validator->getErrors());
             return redirect()->back()->withInput();
         }
 
         $data = [
-            'username' => $username,
-            'email'    => $email,
-            'password' => $password,
-            'role'     => 'driver', // Default role for self-registration
-            'status'   => 'active'
+            'username'  => trim((string) $this->request->getVar('username')),
+            'email'     => trim((string) $this->request->getVar('email')),
+            'firstname' => trim((string) $this->request->getVar('firstname')),
+            'lastname'  => trim((string) $this->request->getVar('lastname')),
+            'middle_initial' => trim((string) $this->request->getVar('middle_initial')),
+            'age'       => (int) $this->request->getVar('age'),
+            'birthdate' => $this->request->getVar('birthdate'),
+            'address'   => trim((string) $this->request->getVar('address')),
+            'password'  => (string) $this->request->getVar('password'),
+            'role'      => 'driver',
+            'status'    => 'active'
         ];
 
         if ($model->save($data)) {
