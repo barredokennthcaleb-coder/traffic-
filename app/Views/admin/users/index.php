@@ -52,18 +52,18 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="userTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile users-table" id="userTable">
                     <thead class="table-light">
                         <tr>
-                            <th class="ps-4">ID</th>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Age</th>
-                            <th>Address</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th class="text-end pe-4">Actions</th>
+                            <th class="ps-4 col-id">ID</th>
+                            <th class="col-username">Username</th>
+                            <th class="col-fullname">Full Name</th>
+                            <th class="col-age text-center">Age</th>
+                            <th class="col-address">Address</th>
+                            <th class="col-email">Email</th>
+                            <th class="col-role text-center">Role</th>
+                            <th class="col-status text-center">Status</th>
+                            <th class="text-end pe-4 col-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -77,14 +77,14 @@
                         <?php else: ?>
                             <?php foreach ($users as $user): ?>
                             <tr class="user-row">
-                                <td class="ps-4" data-label="ID"><?= esc($user['id']) ?></td>
-                                <td data-label="Username"><?= esc($user['username']) ?></td>
-                                <td data-label="Full Name"><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></td>
-                                <td data-label="Age"><?= esc((string) ($user['age'] ?? '-')) ?></td>
-                                <td data-label="Address"><?= esc($user['address'] ?? '-') ?></td>
-                                <td data-label="Email"><?= esc($user['email']) ?></td>
-                                <td data-label="Role"><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
-                                <td data-label="Status">
+                                <td class="ps-4 col-id" data-label="ID"><?= esc($user['id']) ?></td>
+                                <td class="col-username text-truncate" data-label="Username" title="<?= esc($user['username']) ?>"><?= esc($user['username']) ?></td>
+                                <td class="col-fullname text-truncate" data-label="Full Name" title="<?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?>"><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: '-') ?></td>
+                                <td class="col-age text-center" data-label="Age"><?= esc((string) ($user['age'] ?? '-')) ?></td>
+                                <td class="col-address text-truncate" data-label="Address" title="<?= esc($user['address'] ?? '-') ?>"><?= esc($user['address'] ?? '-') ?></td>
+                                <td class="col-email text-truncate" data-label="Email" title="<?= esc($user['email']) ?>"><?= esc($user['email']) ?></td>
+                                <td class="col-role text-center" data-label="Role"><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
+                                <td class="col-status text-center" data-label="Status">
                                     <?php if ($user['status'] == 'active'): ?>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Active</span>
                                     <?php elseif ($user['status'] == 'inactive'): ?>
@@ -93,8 +93,8 @@
                                         <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 rounded-pill">Suspended</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-end pe-4" data-label="Actions">
-                                    <div class="btn-group shadow-sm">
+                                <td class="text-end pe-4 col-actions" data-label="Actions">
+                                    <div class="btn-group shadow-sm actions-group">
                                         <?php if ($user['role'] == 'driver'): ?>
                                         <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                             <i class="bi bi-eye text-info"></i>
@@ -159,6 +159,19 @@
 <style>
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
+    .users-table { table-layout: fixed; }
+    .users-table th,
+    .users-table td { vertical-align: middle; }
+    .users-table .col-id { width: 56px; }
+    .users-table .col-username { width: 120px; }
+    .users-table .col-fullname { width: 140px; }
+    .users-table .col-age { width: 60px; white-space: nowrap; }
+    .users-table .col-address { width: 150px; }
+    .users-table .col-email { width: 170px; }
+    .users-table .col-role { width: 95px; white-space: nowrap; }
+    .users-table .col-status { width: 105px; white-space: nowrap; }
+    .users-table .col-actions { width: 150px; white-space: nowrap; }
+    .users-table .actions-group { flex-wrap: nowrap; }
 </style>
 
 <?= $this->endSection() ?>

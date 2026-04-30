@@ -27,15 +27,15 @@
     <div class="card border-0 shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-premium-mobile" id="pendingTable">
+                <table class="table table-hover align-middle mb-0 table-premium-mobile penalties-table" id="pendingTable">
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 50px;">#</th>
                             <th>Ticket ID</th>
-                            <th>Driver Information</th>
+                            <th class="col-driver">Driver Information</th>
                             <th>Violation Type</th>
-                            <th>Amount Due</th>
-                            <th>Violation Date</th>
+                            <th class="col-amount text-end">Amount Due</th>
+                            <th class="col-date">Violation Date</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
@@ -57,13 +57,13 @@
                             <tr class="pending-row">
                                 <td class="ps-4 text-muted small" data-label="#"><span><?= $i++ ?></span></td>
                                 <td data-label="Ticket ID"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td data-label="Driver Information">
-                                    <div class="fw-bold"><?= esc($v['driver_name']) ?></div>
+                                <td class="col-driver" data-label="Driver Information">
+                                    <div class="fw-bold mb-1 text-truncate" title="<?= esc($v['driver_name']) ?>"><?= esc($v['driver_name']) ?></div>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
                                 <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type']) ?></td>
-                                <td data-label="Amount Due"><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
-                                <td class="text-muted small" data-label="Violation Date"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
+                                <td class="col-amount text-end" data-label="Amount Due"><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td class="col-date text-muted small" data-label="Violation Date"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
                                 <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('penalties/pay/' . $v['id']) ?>" class="btn btn-sm btn-success px-3" title="Record Payment">
@@ -149,6 +149,12 @@
     .pending-row { transition: all 0.2s ease; }
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
+    .penalties-table { table-layout: fixed; }
+    .penalties-table th,
+    .penalties-table td { vertical-align: middle; }
+    .penalties-table .col-driver { width: 200px; }
+    .penalties-table .col-amount { width: 130px; white-space: nowrap; }
+    .penalties-table .col-date { width: 130px; white-space: nowrap; }
 </style>
 
 <?= $this->endSection() ?>

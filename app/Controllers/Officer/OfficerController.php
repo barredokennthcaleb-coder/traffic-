@@ -57,6 +57,60 @@ class OfficerController extends BaseController
         return view('officer/profile', $data);
     }
 
+    public function updateProfilePhoto()
+    {
+        $officerId = (int) session()->get('id');
+        $officer = $this->userModel->find($officerId);
+
+        if (!$officer) {
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Officer profile not found.');
+        }
+
+        $rules = [
+            'profile_photo' => 'uploaded[profile_photo]|is_image[profile_photo]|mime_in[profile_photo,image/jpg,image/jpeg,image/png,image/webp]|max_size[profile_photo,2048]',
+        ];
+
+        if (!$this->validate($rules)) {
+            $errors = $this->validator->getErrors();
+            return redirect()->to(base_url('officer/profile'))->with('error', $errors['profile_photo'] ?? 'Invalid image upload.');
+        }
+
+        $file = $this->request->getFile('profile_photo');
+        if (!$file || !$file->isValid()) {
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Failed to upload profile photo.');
+        }
+
+        $uploadPath = FCPATH . 'uploads/profile/';
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Cannot create upload directory.');
+        }
+
+        $extension = $file->getExtension() ?: 'jpg';
+        $newName = 'officer_' . $officerId . '_' . time() . '.' . strtolower($extension);
+
+        if (!$file->move($uploadPath, $newName, true)) {
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Unable to save uploaded photo.');
+        }
+
+        $oldImage = trim((string) ($officer['profile_image'] ?? ''));
+        if ($oldImage !== '') {
+            $oldPath = $uploadPath . $oldImage;
+            if (is_file($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        if (!$this->userModel->update($officerId, ['profile_image' => $newName])) {
+            $newPath = $uploadPath . $newName;
+            if (is_file($newPath)) {
+                @unlink($newPath);
+            }
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Failed to update profile photo.');
+        }
+
+        return redirect()->to(base_url('officer/profile'))->with('success', 'Profile photo updated successfully.');
+    }
+
     public function store()
     {
         $session = session();
@@ -166,10 +220,11 @@ class OfficerController extends BaseController
 
     public function cancel($id)
     {
+        $officerId = (int) session()->get('id');
         $violation = $this->violationRecord->find($id);
 
-        if (!$violation) {
-            return redirect()->to(base_url('officer/violations'))->with('error', 'Violation not found.');
+        if (!$violation || (int) ($violation['officer_id'] ?? 0) !== $officerId) {
+            return redirect()->to(base_url('officer/violations'))->with('error', 'Violation record not found.');
         }
 
         if ($violation['status'] !== 'Pending') {
@@ -229,7 +284,7 @@ class OfficerController extends BaseController
             'age'              => (int) $this->request->getPost('age'),
             'address'          => trim((string) $this->request->getPost('address')),
             'driver_name'      => trim($firstName . ' ' . $lastName),
-            'license_plate'    => trim((string) $this->request->getPost('license_plate')),
+            'license_plate'    => strtoupper(trim((string) $this->request->getPost('license_plate'))),
             'violation_type_id'=> $violationTypeId,
             'violation_type'   => (string) ($violationType['violation_name'] ?? ''),
             'penalty_amount'   => (float) ($violationType['fine_amount'] ?? 0),

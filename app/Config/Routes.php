@@ -18,6 +18,7 @@ $routes->get('logout', 'AuthController::logout');
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
     $routes->get('profile', 'Officer\OfficerController::profile');
+    $routes->post('profile/photo', 'Officer\OfficerController::updateProfilePhoto');
     $routes->post('store', 'Officer\OfficerController::store');
     $routes->get('violations', 'Officer\OfficerController::violations');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');

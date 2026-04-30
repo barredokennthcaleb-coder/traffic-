@@ -4,6 +4,29 @@
 
 <?= $this->section('content') ?>
 <div class="container-fluid py-4">
+    <?php
+        $fullName = trim((string) (($officer['firstname'] ?? '') . ' ' . ($officer['lastname'] ?? '')));
+        $displayName = $fullName !== '' ? $fullName : (string) ($officer['username'] ?? 'Officer');
+        $initials = strtoupper(substr((string) $displayName, 0, 1));
+        $profileImage = !empty($officer['profile_image'])
+            ? base_url('uploads/profile/' . $officer['profile_image'])
+            : null;
+    ?>
+
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
     <div class="row mb-4">
         <div class="col-md-7">
             <h4 class="mb-0"><i class="bi bi-person-vcard me-2 text-primary"></i>Traffic Enforcer Profile</h4>
@@ -26,6 +49,26 @@
                     <h6 class="mb-0">Enforcer Details</h6>
                 </div>
                 <div class="card-body">
+                    <div class="profile-avatar-wrap mb-4 text-center">
+                        <div class="profile-avatar">
+                            <?php if ($profileImage): ?>
+                                <img src="<?= esc($profileImage) ?>" alt="Profile photo" class="profile-avatar-img">
+                            <?php else: ?>
+                                <span class="profile-avatar-fallback"><?= esc($initials) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <form action="<?= base_url('officer/profile/photo') ?>" method="POST" enctype="multipart/form-data" class="mt-3">
+                            <?= csrf_field() ?>
+                            <div class="input-group input-group-sm">
+                                <input type="file" name="profile_photo" class="form-control" accept="image/png,image/jpeg,image/jpg,image/webp" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-camera me-1"></i>Update
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-2">Upload JPG, PNG, or WEBP (max 2MB).</small>
+                        </form>
+                    </div>
+
                     <div class="mb-3">
                         <small class="text-muted text-uppercase d-block">Username</small>
                         <span class="fw-semibold"><?= esc($officer['username'] ?? '-') ?></span>
@@ -154,6 +197,36 @@
 </div>
 
 <style>
+    .profile-avatar-wrap {
+        border: 1px solid #e9edf7;
+        border-radius: 14px;
+        background: #f9fbff;
+        padding: 1rem;
+    }
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        margin: 0 auto;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 14px rgba(22, 34, 66, 0.14);
+        background: linear-gradient(135deg, #5f78ff, #7c4dff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .profile-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .profile-avatar-fallback {
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+    }
     @media print {
         .sidebar, .sidebar-toggle, .btn, .alert, .main-content h1, .breadcrumb {
             display: none !important;

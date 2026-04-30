@@ -9,8 +9,8 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm enforcer-card premium-reveal analytics-tilt" style="--reveal-delay:.08s;">
                 <div class="card-header py-3 enforcer-header">
-                    <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Violation</h4>
-                    <small class="text-muted">Fill in the incident details and submit an official traffic ticket.</small>
+                    <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Record Violation</h4>
+                    <small class="text-muted">Enter clear driver and incident details before submitting.</small>
                 </div>
                 <div class="card-body p-4">
                     <?php if (session()->getFlashdata('success')): ?>
@@ -43,12 +43,16 @@
                         <?= csrf_field() ?>
                         
                         <div class="row g-4">
+                            <div class="col-12">
+                                <div class="section-label">Driver Information</div>
+                            </div>
                             <div class="col-md-6">
                                 <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-person"></i></span>
                                     <input type="text" name="first_name" id="first_name" class="form-control" 
                                            placeholder="Enter violator first name" required
+                                           pattern="[A-Za-z\s\-']{2,100}"
                                            value="<?= old('first_name') ?>">
                                 </div>
                             </div>
@@ -59,6 +63,7 @@
                                     <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
                                     <input type="text" name="last_name" id="last_name" class="form-control" 
                                            placeholder="Enter violator last name" required
+                                           pattern="[A-Za-z\s\-']{2,100}"
                                            value="<?= old('last_name') ?>">
                                 </div>
                             </div>
@@ -69,6 +74,7 @@
                                     <span class="input-group-text"><i class="bi bi-car-front"></i></span>
                                     <input type="text" name="license_plate" id="license_plate" class="form-control" 
                                            placeholder="e.g., ABC 1234" required
+                                           maxlength="20"
                                            value="<?= old('license_plate') ?>">
                                 </div>
                             </div>
@@ -84,6 +90,9 @@
                                 </div>
                             </div>
 
+                            <div class="col-12 pt-1">
+                                <div class="section-label">Violation Details</div>
+                            </div>
                             <div class="col-12">
                                 <label for="violation_type" class="form-label">Violation Type <span class="text-danger">*</span></label>
                                 <div class="input-group">
@@ -109,7 +118,7 @@
                                     <input type="text" id="penalty_amount" class="form-control bg-light" readonly 
                                            value="0.00" placeholder="Auto-calculated based on violation type">
                                 </div>
-                                <div class="form-text">Amount is automatically set based on the violation type</div>
+                                <div class="form-text">Auto-calculated from selected violation type.</div>
                             </div>
 
                             <div class="col-md-6">
@@ -134,6 +143,9 @@
                                 </div>
                             </div>
 
+                            <div class="col-12 pt-1">
+                                <div class="section-label">Location & Notes</div>
+                            </div>
                             <div class="col-md-6">
                                 <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
                                 <div class="input-group">
@@ -167,13 +179,13 @@
 
                             <div class="col-12">
                                 <hr class="my-2">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
+                                <div class="d-flex justify-content-between align-items-center form-footer">
+                                    <div class="text-muted small">
                                         <i class="bi bi-calendar-event me-1"></i> Date: <?= date('F d, Y - h:i A') ?>
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-outline-primary" id="submitPrintBtn" name="print_ticket" value="1">
-                                            <i class="bi bi-printer me-1"></i> Print Ticket
+                                        <button type="submit" class="btn btn-primary px-4" id="submitPrintBtn" name="print_ticket" value="1">
+                                            <i class="bi bi-printer me-1"></i> Save & Print Ticket
                                         </button>
                                     </div>
                                 </div>
@@ -194,18 +206,26 @@
                 <div class="card-header py-3 enforcer-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
                     <div>
                         <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>My Recorded Violations</h5>
-                        <small class="text-muted">Styled like All Violations, with quick actions.</small>
+                        <small class="text-muted">Recent records and quick actions.</small>
                     </div>
-                    <div class="input-group shadow-sm" style="max-width: 360px;">
-                        <span class="input-group-text bg-white border-end-0">
-                            <i class="bi bi-search text-muted"></i>
-                        </span>
-                        <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0" placeholder="Search ticket, driver, plate...">
+                    <div class="d-flex gap-2 flex-wrap justify-content-end">
+                        <select id="statusFilter" class="form-select shadow-sm" style="max-width: 160px;">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <div class="input-group shadow-sm" style="max-width: 360px;">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0" placeholder="Search ticket, driver, plate...">
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 table-premium-mobile" id="officerViolationTable">
+                        <table class="table table-hover align-middle mb-0 table-premium-mobile officer-violations-table" id="officerViolationTable">
                             <thead class="table-light">
                                 <tr>
                                     <th class="ps-4">Ticket ID</th>
@@ -214,7 +234,7 @@
                                     <th>Amount</th>
                                     <th>Status</th>
                                     <th>Date</th>
-                                    <th class="text-end pe-4">Actions</th>
+                                    <th class="text-end pe-4 col-actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -248,8 +268,8 @@
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-muted small" data-label="Date"><?= isset($v['violation_date']) ? date('M d, Y', strtotime($v['violation_date'])) : '-' ?></td>
-                                        <td class="text-end pe-4" data-label="Actions">
-                                            <div class="btn-group shadow-sm">
+                                        <td class="text-end pe-4 col-actions" data-label="Actions">
+                                            <div class="btn-group shadow-sm actions-group">
                                                 <a href="<?= base_url('officer/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                                     <i class="bi bi-eye text-info"></i>
                                                 </a>
@@ -465,6 +485,25 @@
         color: #34406f;
         font-weight: 600;
     }
+    .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #5e6b98;
+        background: #eef3ff;
+        border: 1px solid #dce4ff;
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+    }
+    .enforcer-card .form-text {
+        font-size: 0.76rem;
+        color: #7b86ad;
+        margin-top: 0.25rem;
+    }
     .enforcer-card .input-group-text {
         background: #f7f9ff;
         border-color: #dbe1ff;
@@ -474,6 +513,11 @@
     .enforcer-card .form-select {
         border-color: #dbe1ff;
         border-radius: 10px;
+    }
+    .enforcer-card .form-control,
+    .enforcer-card .form-select,
+    .enforcer-card .input-group-text {
+        min-height: 42px;
     }
     .enforcer-card .form-control.bg-light {
         background: #f7f9ff !important;
@@ -498,9 +542,47 @@
     .enforcer-card .btn-group .btn {
         border-radius: 8px !important;
     }
+    .officer-violations-table {
+        table-layout: fixed;
+    }
+    .officer-violations-table th,
+    .officer-violations-table td {
+        vertical-align: middle;
+    }
+    .officer-violations-table .col-actions {
+        width: 170px;
+        white-space: nowrap;
+    }
+    .officer-violations-table .actions-group {
+        flex-wrap: nowrap;
+    }
     .enforcer-card .card-header h4,
     .enforcer-card .card-header h5 {
         letter-spacing: -0.01em;
+    }
+    .enforcer-card .card-header small {
+        display: block;
+        margin-top: 0.25rem;
+        color: #7b86ad !important;
+    }
+    #violationForm .row.g-4 {
+        --bs-gutter-y: 1rem;
+    }
+    #violationForm hr {
+        opacity: 0.12;
+    }
+    .form-footer {
+        background: #f8faff;
+        border: 1px solid #e4eaff;
+        border-radius: 12px;
+        padding: 0.75rem 0.9rem;
+    }
+    #violationForm .btn-outline-primary {
+        border-width: 1px;
+    }
+    #tableSearchInput,
+    #statusFilter {
+        min-height: 40px;
     }
     .analytics-tilt {
         transform-style: preserve-3d;
@@ -515,6 +597,10 @@
     @media (max-width: 768px) {
         .enforcer-card .card-body {
             padding: 1rem !important;
+        }
+        .section-label {
+            width: 100%;
+            justify-content: center;
         }
         .enforcer-header h4 {
             font-size: 1.1rem;
@@ -533,6 +619,9 @@
             align-items: stretch !important;
             gap: 0.75rem;
         }
+        .form-footer {
+            padding: 0.7rem;
+        }
         .enforcer-card .d-flex.gap-2 {
             width: 100%;
             display: grid !important;
@@ -540,6 +629,9 @@
         }
         .enforcer-card .d-flex.gap-2 .btn {
             width: 100%;
+        }
+        #statusFilter {
+            max-width: 100% !important;
         }
     }
 </style>
@@ -576,6 +668,30 @@
         const printBtn = document.getElementById('submitPrintBtn');
         printBtn.disabled = true;
         printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    });
+
+    const firstNameInput = document.getElementById('first_name');
+    const lastNameInput = document.getElementById('last_name');
+    const plateInput = document.getElementById('license_plate');
+    const ageInput = document.getElementById('age');
+
+    const sanitizeName = (value) => value.replace(/[^A-Za-z\s\-']/g, '');
+    const sanitizePlate = (value) => value.toUpperCase().replace(/[^A-Z0-9\s\-]/g, '').trimStart();
+
+    firstNameInput?.addEventListener('input', function() {
+        this.value = sanitizeName(this.value);
+    });
+    lastNameInput?.addEventListener('input', function() {
+        this.value = sanitizeName(this.value);
+    });
+    plateInput?.addEventListener('input', function() {
+        this.value = sanitizePlate(this.value);
+    });
+    ageInput?.addEventListener('input', function() {
+        const v = parseInt(this.value || '0', 10);
+        if (v > 120) this.value = '120';
+        if (v > 0 && v < 16) this.setCustomValidity('Minimum age is 16.');
+        else this.setCustomValidity('');
     });
 
     async function saveViolationType() {
@@ -639,35 +755,38 @@
 
     document.getElementById('saveViolationTypeBtn')?.addEventListener('click', saveViolationType);
     const tableSearchInput = document.getElementById('tableSearchInput');
-    if (tableSearchInput) {
-        tableSearchInput.addEventListener('keyup', function() {
-            const keyword = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.officer-violation-row');
-            let hasResults = false;
+    const statusFilter = document.getElementById('statusFilter');
+    const applyTableFilters = () => {
+        const keyword = (tableSearchInput?.value || '').toLowerCase().trim();
+        const status = (statusFilter?.value || '').toLowerCase();
+        const rows = document.querySelectorAll('.officer-violation-row');
+        let hasResults = false;
 
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(keyword)) {
-                    row.style.display = '';
-                    hasResults = true;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            const noDataRow = document.getElementById('noTableDataRow');
-            if (!hasResults) {
-                if (!noDataRow) {
-                    const tbody = document.querySelector('#officerViolationTable tbody');
-                    const row = tbody.insertRow();
-                    row.id = 'noTableDataRow';
-                    row.innerHTML = `<td colspan="7"><div class="empty-state"><i class="bi bi-search"></i><div class="empty-state-title">No Matching Results</div><div>Try a different ticket, driver, or plate keyword.</div></div></td>`;
-                }
-            } else if (noDataRow) {
-                noDataRow.remove();
-            }
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const statusCell = row.querySelector('td[data-label="Status"]');
+            const rowStatus = (statusCell?.textContent || '').toLowerCase();
+            const matchesSearch = text.includes(keyword);
+            const matchesStatus = !status || rowStatus.includes(status);
+            const show = matchesSearch && matchesStatus;
+            row.style.display = show ? '' : 'none';
+            if (show) hasResults = true;
         });
-    }
+
+        const noDataRow = document.getElementById('noTableDataRow');
+        if (!hasResults) {
+            if (!noDataRow) {
+                const tbody = document.querySelector('#officerViolationTable tbody');
+                const row = tbody.insertRow();
+                row.id = 'noTableDataRow';
+                row.innerHTML = `<td colspan="7"><div class="empty-state"><i class="bi bi-search"></i><div class="empty-state-title">No Matching Results</div><div>Try a different keyword or status.</div></div></td>`;
+            }
+        } else if (noDataRow) {
+            noDataRow.remove();
+        }
+    };
+    tableSearchInput?.addEventListener('keyup', applyTableFilters);
+    statusFilter?.addEventListener('change', applyTableFilters);
 
     const cancelViolationModalEl = document.getElementById('cancelViolationModal');
     const cancelViolationForm = document.getElementById('cancelViolationForm');
