@@ -3,7 +3,7 @@
 namespace App\Controllers\User;
 
 use App\Controllers\BaseController;
-use App\Models\ViolationRecord;
+use App\Models\ViolatorRecord;
 
 class UserController extends BaseController
 {
@@ -11,7 +11,7 @@ class UserController extends BaseController
 
     public function __construct()
     {
-        $this->violationRecord = new ViolationRecord();
+        $this->violationRecord = new ViolatorRecord();
     }
 
     public function index()
@@ -97,7 +97,7 @@ class UserController extends BaseController
 
     public function processPayment()
     {
-        $violationModel = new ViolationRecord();
+        $violationModel = new ViolatorRecord();
 
         $ticketId = $this->request->getPost('ticket_id');
         $paymentMethod = $this->request->getPost('payment_method');

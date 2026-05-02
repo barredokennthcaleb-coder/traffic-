@@ -3,7 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Models\ViolationRecord;
+use App\Models\ViolatorRecord;
 
 class PenaltyController extends BaseController
 {
@@ -11,7 +11,7 @@ class PenaltyController extends BaseController
 
     public function __construct()
     {
-        $this->violationRecord = new ViolationRecord();
+        $this->violationRecord = new ViolatorRecord();
     }
 
     public function index()

@@ -5,7 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Models\ViolationTypeModel;
-use App\Models\ViolationRecord;
+use App\Models\ViolatorRecord;
 
 class AdminController extends BaseController
 {
@@ -15,7 +15,7 @@ class AdminController extends BaseController
 
     public function __construct()
     {
-        $this->violationRecord = new ViolationRecord();
+        $this->violationRecord = new ViolatorRecord();
         $this->users = new UserModel();
         $this->violationTypes = new ViolationTypeModel();
     }

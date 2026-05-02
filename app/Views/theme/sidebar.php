@@ -32,7 +32,7 @@
                 <li class="nav-item">
                     <a class="nav-link <?= (uri_string() == 'penalties/all') ? 'active' : '' ?>" href="<?= base_url('penalties/all') ?>">
                         <i class="bi bi-list-ul"></i>
-                        <span class="nav-text ms-2">All Violations</span>
+                        <span class="nav-text ms-2">Violators</span>
                     </a>
                 </li>
                 <li class="nav-item">

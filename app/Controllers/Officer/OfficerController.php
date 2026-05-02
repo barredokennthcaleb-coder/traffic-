@@ -3,7 +3,7 @@
 namespace App\Controllers\Officer;
 
 use App\Controllers\BaseController;
-use App\Models\ViolationRecord;
+use App\Models\ViolatorRecord;
 use App\Models\ViolationTypeModel;
 use App\Models\UserModel;
 
@@ -15,7 +15,7 @@ class OfficerController extends BaseController
 
     public function __construct()
     {
-        $this->violationRecord = new ViolationRecord();
+        $this->violationRecord = new ViolatorRecord();
         $this->violationTypeModel = new ViolationTypeModel();
         $this->userModel = new UserModel();
     }

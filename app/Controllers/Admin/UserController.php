@@ -4,7 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
-use App\Models\ViolationRecord;
+use App\Models\ViolatorRecord;
 
 class UserController extends BaseController
 {
@@ -14,7 +14,7 @@ class UserController extends BaseController
     public function __construct()
     {
         $this->userModel = new UserModel();
-        $this->violationModel = new ViolationRecord();
+        $this->violationModel = new ViolatorRecord();
     }
 
     public function index()

@@ -1,13 +1,13 @@
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>All Violations - Admin<?= $this->endSection() ?>
+<?= $this->section('title') ?>Violators - Admin<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4 align-items-center">
         <div class="col-md-4">
-            <h4 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>All Violations</h4>
+            <h4 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Violators</h4>
         </div>
         <div class="col-md-5">
             <div class="input-group shadow-sm">
