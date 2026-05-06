@@ -50,7 +50,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small text-uppercase d-block">Fine Amount</label>
-                            <span class="fw-bold text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></span>
+                            <span class="fw-bold text-danger"><?= number_format($violation['penalty_amount'], 2) ?></span>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small text-uppercase d-block">Penalty Points</label>

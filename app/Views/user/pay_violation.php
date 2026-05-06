@@ -56,7 +56,7 @@
 
                     <div class="text-center p-4 bg-success text-white rounded mb-4">
                         <small class="text-uppercase">Amount Due</small>
-                        <h1 class="mb-0 display-4 fw-bold">$<?= number_format($violation['penalty_amount'], 2) ?></h1>
+                        <h1 class="mb-0 display-4 fw-bold"><?= number_format($violation['penalty_amount'], 2) ?></h1>
                     </div>
 
                     <form action="<?= base_url('user/process-payment') ?>" method="POST" id="paymentForm">
@@ -119,7 +119,7 @@
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
-                                <i class="bi bi-lock me-2"></i> Pay Now - $<?= number_format($violation['penalty_amount'], 2) ?>
+                                <i class="bi bi-lock me-2"></i> Pay Now - <?= number_format($violation['penalty_amount'], 2) ?>
                             </button>
                         </div>
                     </form>

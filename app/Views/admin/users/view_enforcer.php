@@ -99,7 +99,7 @@
                     <hr>
                     <div>
                         <small class="text-muted text-uppercase d-block">Total Issued Amount</small>
-                        <h5 class="mb-0 text-danger">$<?= number_format((float) $totalIssuedAmount, 2) ?></h5>
+                        <h5 class="mb-0 text-danger"><?= number_format((float) $totalIssuedAmount, 2) ?></h5>
                     </div>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                                     <td class="ps-4" data-label="Ticket ID"><span class="badge bg-dark-subtle text-dark border border-dark-subtle"><?= esc($record['ticket_id'] ?? 'N/A') ?></span></td>
                                     <td data-label="Violator"><?= esc(trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')) ?: ($record['driver_name'] ?? '-')) ?></td>
                                     <td data-label="Violation Type"><?= esc($record['violation_type'] ?? '-') ?></td>
-                                    <td class="fw-semibold text-danger" data-label="Amount">$<?= number_format((float) ($record['penalty_amount'] ?? 0), 2) ?></td>
+                                    <td class="fw-semibold text-danger" data-label="Amount"><?= number_format((float) ($record['penalty_amount'] ?? 0), 2) ?></td>
                                     <td data-label="Status">
                                         <?php if (($record['status'] ?? '') === 'Pending'): ?>
                                             <span class="badge bg-warning rounded-pill px-3">Pending</span>

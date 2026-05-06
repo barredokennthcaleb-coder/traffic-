@@ -47,7 +47,7 @@
                                     <div class="fw-semibold"><?= esc($violation['violation_type']) ?></div>
                                     <small class="text-muted"><?= esc($violation['location'] ?? 'Location not specified') ?></small>
                                 </td>
-                                <td><strong class="<?= $violation['status'] == 'Pending' ? 'text-danger' : 'text-success' ?>">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
+                                <td><strong class="<?= $violation['status'] == 'Pending' ? 'text-danger' : 'text-success' ?>"><?= number_format($violation['penalty_amount'], 2) ?></strong></td>
                                 <td>
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning text-dark">Pending</span>

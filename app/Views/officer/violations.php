@@ -78,7 +78,7 @@
                                 <td class="small text-muted"><?= esc($violation['address'] ?? '-') ?></td>
                                 <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace px-2"><?= esc($violation['license_plate']) ?></span></td>
                                 <td class="small fw-semibold text-muted"><?= esc($violation['violation_type']) ?></td>
-                                <td class="fw-bold text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></td>
+                                <td class="fw-bold text-danger"><?= number_format($violation['penalty_amount'], 2) ?></td>
                                 <td>
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning rounded-pill px-3">Pending</span>

@@ -101,7 +101,7 @@
                                         <option value="">-- Select Violation Type --</option>
                                         <?php foreach ($violationTypes as $type): ?>
                                             <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
-                                                <?= esc($type['violation_name']) ?> - $<?= number_format((float)$type['fine_amount'], 2) ?>
+                                                <?= esc($type['violation_name']) ?> - <?= number_format((float)$type['fine_amount'], 2) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -205,22 +205,24 @@
                         <h5 class="mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>My Recorded Violations</h5>
                         <small class="text-muted">Recent records and quick actions.</small>
                     </div>
-                    <div class="d-flex gap-2 flex-wrap justify-content-end">
+                    <div class="d-flex gap-2 flex-wrap justify-content-end align-items-center">
+                        <div class="d-flex gap-2 align-items-center">
+                            <select id="statusFilter" class="form-select shadow-sm" style="max-width: 140px;">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <div class="input-group shadow-sm" style="max-width: 280px;">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="bi bi-search text-muted"></i>
+                                </span>
+                                <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0" placeholder="Search ticket, driver, plate...">
+                            </div>
+                        </div>
                         <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
                             <i class="bi bi-plus-circle me-1"></i> Record New Violation
                         </button>
-                        <select id="statusFilter" class="form-select shadow-sm" style="max-width: 160px;">
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                        <div class="input-group shadow-sm" style="max-width: 360px;">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-search text-muted"></i>
-                            </span>
-                            <input type="text" id="tableSearchInput" class="form-control border-start-0 ps-0" placeholder="Search ticket, driver, plate...">
-                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -257,7 +259,7 @@
                                             <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate'] ?? '-') ?></span>
                                         </td>
                                         <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type'] ?? '-') ?></td>
-                                        <td data-label="Amount"><span class="fw-bold text-danger">$<?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></span></td>
+                                        <td data-label="Amount"><span class="fw-bold text-danger"><?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></span></td>
                                         <td data-label="Status">
                                             <?php if (($v['status'] ?? '') === 'Pending'): ?>
                                                 <span class="badge bg-warning rounded-pill px-3">Pending</span>
@@ -377,7 +379,7 @@
                                 <option value="">-- Select Violation Type --</option>
                                 <?php foreach ($violationTypes as $type): ?>
                                     <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
-                                        <?= esc($type['violation_name']) ?> - $<?= number_format((float) $type['fine_amount'], 2) ?>
+                                        <?= esc($type['violation_name']) ?> - <?= number_format((float) $type['fine_amount'], 2) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>

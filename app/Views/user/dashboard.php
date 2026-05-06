@@ -75,7 +75,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Total Amount Due</h6>
-                            <h2 class="mb-0">$<?= number_format(array_sum(array_column($pending_violations, 'penalty_amount')), 2) ?></h2>
+                            <h2 class="mb-0"><?= number_format(array_sum(array_column($pending_violations, 'penalty_amount')), 2) ?></h2>
                         </div>
                         <i class="bi bi-currency-dollar fs-1"></i>
                     </div>
@@ -88,7 +88,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1">Total Paid</h6>
-                            <h2 class="mb-0">$<?= number_format(array_sum(array_column($paid_violations, 'penalty_amount')), 2) ?></h2>
+                            <h2 class="mb-0"><?= number_format(array_sum(array_column($paid_violations, 'penalty_amount')), 2) ?></h2>
                         </div>
                         <i class="bi bi-receipt fs-1"></i>
                     </div>
@@ -126,7 +126,7 @@
                                     <tr>
                                         <td><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
                                         <td><?= esc($violation['violation_type']) ?></td>
-                                        <td><strong class="text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
+                                        <td><strong class="text-danger"><?= number_format($violation['penalty_amount'], 2) ?></strong></td>
                                         <td><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
                                         <td>
                                             <a href="<?= base_url('user/pay/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-success">
@@ -169,7 +169,7 @@
                                     <tr>
                                         <td><span class="badge bg-secondary"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
                                         <td><?= esc($violation['violation_type']) ?></td>
-                                        <td>$<?= number_format($violation['penalty_amount'], 2) ?></td>
+                                        <td><?= number_format($violation['penalty_amount'], 2) ?></td>
                                         <td><?= date('M d, Y', strtotime($violation['paid_date'])) ?></td>
                                         <td>
                                             <a href="<?= base_url('user/receipt/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-outline-primary">

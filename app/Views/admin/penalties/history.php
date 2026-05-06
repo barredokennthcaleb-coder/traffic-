@@ -69,7 +69,7 @@
                                         <?= esc($p['payment_method']) ?>
                                     </span>
                                 </td>
-                                <td data-label="Amount Paid"><span class="text-success fw-bold">+$<?= number_format($p['penalty_amount'], 2) ?></span></td>
+                                <td data-label="Amount Paid"><span class="text-success fw-bold">+<?= number_format($p['penalty_amount'], 2) ?></span></td>
                                 <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('user/receipt/' . $p['ticket_id']) ?>" class="btn btn-sm btn-white border" title="View Receipt" target="_blank">

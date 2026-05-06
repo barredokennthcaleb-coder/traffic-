@@ -49,7 +49,7 @@
                                     <small class="text-muted"><?= esc($v['license_plate']) ?></small>
                                 </td>
                                 <td><?= esc($v['violation_type']) ?></td>
-                                <td><strong class="text-danger">$<?= number_format($v['penalty_amount'], 2) ?></strong></td>
+                                <td><strong class="text-danger"><?= number_format($v['penalty_amount'], 2) ?></strong></td>
                                 <td>
                                     <?php if ($v['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning text-dark">Pending</span>

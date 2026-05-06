@@ -54,15 +54,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'users' || strpos(uri_string(), 'users/') === 0) ? 'active' : '' ?>" href="<?= base_url('users') ?>">
-                        <i class="bi bi-people"></i>
-                        <span class="nav-text ms-2">Users</span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link <?= (uri_string() == 'inspections' || strpos(uri_string(), 'inspections/') === 0) ? 'active' : '' ?>" href="<?= base_url('inspections') ?>">
                         <i class="bi bi-file-earmark-check"></i>
                         <span class="nav-text ms-2">Inspection</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?= (uri_string() == 'users' || strpos(uri_string(), 'users/') === 0) ? 'active' : '' ?>" href="<?= base_url('users') ?>">
+                        <i class="bi bi-people"></i>
+                        <span class="nav-text ms-2">Users</span>
                     </a>
                 </li>
 
@@ -78,12 +78,6 @@
                     <a class="nav-link <?= (uri_string() == 'officer/violations' || uri_string() == 'officer' || uri_string() == 'officer/') ? 'active' : '' ?>" href="<?= base_url('officer/violations') ?>">
                         <i class="bi bi-list-ul"></i>
                         <span class="nav-text ms-2">Violation</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'inspections' || strpos(uri_string(), 'inspections/') === 0) ? 'active' : '' ?>" href="<?= base_url('inspections') ?>">
-                        <i class="bi bi-file-earmark-check"></i>
-                        <span class="nav-text ms-2">Inspection</span>
                     </a>
                 </li>
 

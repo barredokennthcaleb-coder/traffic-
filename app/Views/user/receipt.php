@@ -89,7 +89,7 @@
 
                     <div class="text-center p-4 bg-success text-white rounded mb-4">
                         <small class="text-uppercase">Amount Paid</small>
-                        <h1 class="mb-0 display-4 fw-bold">$<?= number_format($violation['penalty_amount'], 2) ?></h1>
+                        <h1 class="mb-0 display-4 fw-bold"><?= number_format($violation['penalty_amount'], 2) ?></h1>
                     </div>
 
                     <div class="alert alert-success border-0 shadow-sm mb-4">

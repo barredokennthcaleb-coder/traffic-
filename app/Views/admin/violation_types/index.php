@@ -63,7 +63,7 @@
                             <tr id="row-<?= $type['id'] ?>" class="violation-row">
                                 <td class="ps-4"><strong><?= esc($type['violation_name']) ?></strong></td>
                                 <td class="text-muted small"><?= esc($type['description'] ?? 'N/A') ?></td>
-                                <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3">$<?= number_format($type['fine_amount'], 2) ?></span></td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3"><?= number_format($type['fine_amount'], 2) ?></span></td>
                                 <td><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3"><?= $type['points'] ?> pts</span></td>
                                 <td>
                                     <?php if ($type['status'] == 'active'): ?>

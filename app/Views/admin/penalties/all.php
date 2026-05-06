@@ -56,7 +56,7 @@
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
                                 <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td><span class="fw-bold text-danger"><?= number_format($v['penalty_amount'], 2) ?></span></td>
                                 <td>
                                     <?php if ($v['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning rounded-pill px-3">Pending</span>

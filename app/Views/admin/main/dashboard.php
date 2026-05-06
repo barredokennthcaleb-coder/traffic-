@@ -13,12 +13,12 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-uppercase mb-1 fw-bold opacity-75 small">Total Revenue</h6>
-                            <h3 class="mb-0 fw-bold">$<?= number_format($summary['total_collected'], 2) ?></h3>
+                            <h3 class="mb-0 fw-bold"><?= number_format($summary['total_collected'], 2) ?></h3>
                         </div>
                         <i class="bi bi-cash-stack fs-1 opacity-25"></i>
                     </div>
                     <div class="mt-3 small">
-                        <span class="opacity-75">Outstanding: $<?= number_format($summary['total_pending'], 2) ?></span>
+                        <span class="opacity-75">Outstanding: <?= number_format($summary['total_pending'], 2) ?></span>
                     </div>
                 </div>
             </div>
@@ -159,7 +159,7 @@
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
                                 <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td><span class="fw-bold text-danger"><?= number_format($v['penalty_amount'], 2) ?></span></td>
                                 <td>
                                     <?php if ($v['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 rounded-pill">Pending</span>

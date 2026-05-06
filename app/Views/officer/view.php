@@ -20,7 +20,7 @@
                 <div class="col-md-6"><strong>Driver Name:</strong> <?= esc($violation['driver_name'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>License Plate:</strong> <?= esc($violation['license_plate'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Violation Type:</strong> <?= esc($violation['violation_type'] ?? '-') ?></div>
-                <div class="col-md-6"><strong>Penalty Amount:</strong> $<?= number_format((float) ($violation['penalty_amount'] ?? 0), 2) ?></div>
+                <div class="col-md-6"><strong>Penalty Amount:</strong> <?= number_format((float) ($violation['penalty_amount'] ?? 0), 2) ?></div>
                 <div class="col-md-6"><strong>Status:</strong> <?= esc($violation['status'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Date:</strong> <?= isset($violation['violation_date']) ? date('M d, Y h:i A', strtotime($violation['violation_date'])) : '-' ?></div>
                 <div class="col-md-6"><strong>Location:</strong> <?= esc($violation['location'] ?? '-') ?></div>

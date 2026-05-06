@@ -161,7 +161,7 @@
                             <tr>
                                 <td><span class="badge bg-dark"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
                                 <td><?= esc($violation['violation_type']) ?></td>
-                                <td>$<?= number_format($violation['penalty_amount'], 2) ?></td>
+                                <td><?= number_format($violation['penalty_amount'], 2) ?></td>
                                 <td>
                                     <?php if ($violation['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning text-dark">Pending</span>

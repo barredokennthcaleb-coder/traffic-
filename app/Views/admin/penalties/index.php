@@ -62,12 +62,12 @@
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
                                 <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger">$<?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td><span class="fw-bold text-danger"><?= number_format($v['penalty_amount'], 2) ?></span></td>
                                 <td class="text-muted small"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
                                 <td class="text-end pe-4">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('penalties/pay/' . $v['id']) ?>" class="btn btn-sm btn-success px-3" title="Record Payment">
-                                            <i class="bi bi-cash-coin me-1"></i> Record Payment
+                                            <i class="bi bi-cash-coin me-1"></i>  Payment
                                         </a>
                                         <a href="<?= base_url('penalties/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                             <i class="bi bi-eye text-info"></i>

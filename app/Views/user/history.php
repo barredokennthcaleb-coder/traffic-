@@ -44,7 +44,7 @@
                             <tr>
                                 <td><span class="badge bg-secondary"><?= esc($violation['ticket_id'] ?? 'N/A') ?></span></td>
                                 <td><?= esc($violation['violation_type']) ?></td>
-                                <td><strong class="text-success">$<?= number_format($violation['penalty_amount'], 2) ?></strong></td>
+                                <td><strong class="text-success"><?= number_format($violation['penalty_amount'], 2) ?></strong></td>
                                 <td><?= esc($violation['payment_method']) ?></td>
                                 <td><?= date('M d, Y', strtotime($violation['paid_date'])) ?></td>
                                 <td class="text-end">

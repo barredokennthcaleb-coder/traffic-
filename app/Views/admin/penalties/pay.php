@@ -26,7 +26,7 @@
                     </div>
                     <div class="col-6 mt-3">
                         <p class="text-muted mb-1">Penalty Amount</p>
-                        <h6 class="text-danger">$<?= number_format($violation['penalty_amount'], 2) ?></h6>
+                        <h6 class="text-danger"><?= number_format($violation['penalty_amount'], 2) ?></h6>
                     </div>
                 </div>
 
