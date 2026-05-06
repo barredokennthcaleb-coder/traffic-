@@ -4,41 +4,41 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm enforcer-card premium-reveal analytics-tilt" style="--reveal-delay:.08s;">
-                <div class="card-header py-3 enforcer-header">
-                    <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2 text-primary"></i>Record Violation</h4>
-                    <small class="text-muted">Enter clear driver and incident details before submitting.</small>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <ul class="mb-0 ps-3">
+                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- Record Violation Modal -->
+    <div class="modal fade" id="recordViolationModal" tabindex="-1" aria-labelledby="recordViolationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="recordViolationModalLabel"><i class="bi bi-clipboard-plus me-2"></i>Record New Violation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-body p-4">
-                    <?php if (session()->getFlashdata('success')): ?>
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (session()->getFlashdata('error')): ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (session()->getFlashdata('errors')): ?>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <ul class="mb-0 ps-3">
-                                <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                    <li><?= esc($error) ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    <?php endif; ?>
-
+                <div class="modal-body p-4">
                     <form action="<?= base_url('officer/store') ?>" method="POST" id="violationForm">
                         <?= csrf_field() ?>
                         
@@ -101,7 +101,7 @@
                                         <option value="">-- Select Violation Type --</option>
                                         <?php foreach ($violationTypes as $type): ?>
                                             <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
-                                                <?= esc($type['violation_name']) ?> - $<?= number_format($type['fine_amount'], 2) ?>
+                                                <?= esc($type['violation_name']) ?> - $<?= number_format((float)$type['fine_amount'], 2) ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -179,11 +179,9 @@
 
                             <div class="col-12">
                                 <hr class="my-2">
-                                <div class="d-flex justify-content-between align-items-center form-footer">
-                                    <div class="text-muted small">
-                                        <i class="bi bi-calendar-event me-1"></i> Date: <?= date('F d, Y - h:i A') ?>
-                                    </div>
+                                <div class="d-flex justify-content-end align-items-center form-footer">
                                     <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
                                         <button type="submit" class="btn btn-primary px-4" id="submitPrintBtn" name="print_ticket" value="1">
                                             <i class="bi bi-printer me-1"></i> Save & Print Ticket
                                         </button>
@@ -197,7 +195,6 @@
         </div>
     </div>
 
-</div>
 
 <div class="container-fluid pb-4">
     <div class="row justify-content-center">
@@ -209,6 +206,9 @@
                         <small class="text-muted">Recent records and quick actions.</small>
                     </div>
                     <div class="d-flex gap-2 flex-wrap justify-content-end">
+                        <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
+                            <i class="bi bi-plus-circle me-1"></i> Record New Violation
+                        </button>
                         <select id="statusFilter" class="form-select shadow-sm" style="max-width: 160px;">
                             <option value="">All Status</option>
                             <option value="pending">Pending</option>
@@ -305,6 +305,11 @@
                         </table>
                     </div>
                 </div>
+                <?php if (isset($pager)): ?>
+                    <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-center">
+                        <?= $pager->links('violations', 'bootstrap_pagination') ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -868,6 +873,12 @@
             card.style.transform = '';
         });
     });
+
+    // Auto-open modal if there are flash errors
+    <?php if (session()->getFlashdata('error') || session()->getFlashdata('errors')): ?>
+        const recordViolationModal = new bootstrap.Modal(document.getElementById('recordViolationModal'));
+        recordViolationModal.show();
+    <?php endif; ?>
 
 </script>
 <?= $this->endSection() ?>

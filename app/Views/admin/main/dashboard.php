@@ -34,7 +34,7 @@
                         <i class="bi bi-graph-up-arrow fs-1 opacity-25"></i>
                     </div>
                     <div class="mt-3 small">
-                        <span class="opacity-75">Paid vs Total Violations</span>
+                        <span class="opacity-75">Paid vs Total Violators</span>
                     </div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1 fw-bold opacity-75 small">Total Violations</h6>
+                            <h6 class="text-uppercase mb-1 fw-bold opacity-75 small">Total Violators</h6>
                             <h3 class="mb-0 fw-bold"><?= number_format($summary['total_violations']) ?></h3>
                         </div>
                         <i class="bi bi-file-earmark-text fs-1 opacity-25"></i>
@@ -60,7 +60,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1 fw-bold opacity-75 small">Top Violation</h6>
+                            <h6 class="text-uppercase mb-1 fw-bold opacity-75 small">Top Violator</h6>
                             <h4 class="mb-0 fw-bold text-truncate" style="max-width: 150px;"><?= esc($summary['top_violation']) ?></h4>
                         </div>
                         <i class="bi bi-exclamation-triangle fs-1 opacity-25"></i>
@@ -79,13 +79,13 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold" id="chartTitle">
-                        <i class="bi bi-calendar3 me-2 text-primary"></i>Monthly Violation Trend
+                        <i class="bi bi-calendar3 me-2 text-primary"></i>Monthly Violator Trend
                     </h5>
                     <div class="btn-group btn-group-sm shadow-sm" role="group">
                         <button type="button" class="btn btn-outline-primary active" id="btnTrend" title="Show Monthly Trend">
                             <i class="bi bi-graph-up"></i> Trend
                         </button>
-                        <button type="button" class="btn btn-outline-primary" id="btnType" title="Show Violations by Type">
+                        <button type="button" class="btn btn-outline-primary" id="btnType" title="Show Violators by Type">
                             <i class="bi bi-bar-chart"></i> Types
                         </button>
                     </div>
@@ -101,10 +101,10 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold" id="rightChartTitle">
-                        <i class="bi bi-pie-chart me-2 text-success"></i>Violation Status
+                        <i class="bi bi-pie-chart me-2 text-success"></i>Violator Status
                     </h5>
                     <div class="btn-group btn-group-sm shadow-sm" role="group">
-                        <button type="button" class="btn btn-outline-success active" id="btnStatus" title="Show Violation Status">
+                        <button type="button" class="btn btn-outline-success active" id="btnStatus" title="Show Violator Status">
                             <i class="bi bi-check-circle"></i> Status
                         </button>
                         <button type="button" class="btn btn-outline-success" id="btnRole" title="Show Users by Role">
@@ -124,7 +124,7 @@
     <!-- Recent Activity -->
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2 text-primary"></i>Recent Violations</h5>
+            <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2 text-primary"></i>Recent Violators</h5>
             <a href="<?= base_url('penalties/all') ?>" class="btn btn-sm btn-outline-primary">View All</a>
         </div>
         <div class="card-body p-0">
@@ -212,7 +212,7 @@
     function showTrendChart() {
         if (mainChart) mainChart.destroy();
         
-        chartTitle.innerHTML = '<i class="bi bi-calendar3 me-2 text-primary"></i>Monthly Violation Trend';
+        chartTitle.innerHTML = '<i class="bi bi-calendar3 me-2 text-primary"></i>Monthly Violator Trend';
         document.getElementById('btnTrend').classList.add('active');
         document.getElementById('btnType').classList.remove('active');
 
@@ -222,7 +222,7 @@
                 labels: months,
                 datasets: [
                     {
-                        label: 'Violations Issued',
+                        label: 'Violators Issued',
                         data: trendCounts,
                         borderColor: '#0d6efd',
                         backgroundColor: 'rgba(13, 110, 253, 0.1)',
@@ -254,7 +254,7 @@
     function showTypeChart() {
         if (mainChart) mainChart.destroy();
 
-        chartTitle.innerHTML = '<i class="bi bi-bar-chart me-2 text-info"></i>Violations by Type';
+        chartTitle.innerHTML = '<i class="bi bi-bar-chart me-2 text-info"></i>Violators by Type';
         document.getElementById('btnType').classList.add('active');
         document.getElementById('btnTrend').classList.remove('active');
 
@@ -300,7 +300,7 @@
     function showStatusChart() {
         if (secondaryChart) secondaryChart.destroy();
 
-        rightChartTitle.innerHTML = '<i class="bi bi-pie-chart me-2 text-success"></i>Violation Status';
+        rightChartTitle.innerHTML = '<i class="bi bi-pie-chart me-2 text-success"></i>Violator Status';
         document.getElementById('btnStatus').classList.add('active');
         document.getElementById('btnRole').classList.remove('active');
 

@@ -198,7 +198,8 @@ class OfficerController extends BaseController
             'violations' => $this->violationRecord
                 ->where('officer_id', $officerId)
                 ->orderBy('violation_date', 'DESC')
-                ->findAll(),
+                ->paginate(10, 'violations'),
+            'pager' => $this->violationRecord->pager,
         ];
         return view('officer/index', $data);
     }

@@ -71,3 +71,14 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('violation-types/update', 'Admin\ViolationTypeController::update');
     $routes->get('violation-types/delete/(:num)', 'Admin\ViolationTypeController::delete/$1');
 });
+
+// Inspection Routes (Accessible by Admin and Officer)
+$routes->group('inspections', ['filter' => 'auth'], function($routes) {
+    $routes->get('/', 'InspectionController::index');
+    $routes->get('create', 'InspectionController::create');
+    $routes->post('store', 'InspectionController::store');
+    $routes->get('edit/(:num)', 'InspectionController::edit/$1');
+    $routes->post('update/(:num)', 'InspectionController::update/$1');
+    $routes->post('delete/(:num)', 'InspectionController::delete/$1');
+    $routes->get('print/(:num)', 'InspectionController::print/$1');
+});

@@ -32,14 +32,14 @@
             <h4 class="mb-0"><i class="bi bi-person-vcard me-2 text-primary"></i>Traffic Enforcer Profile</h4>
             <small class="text-muted">View your account details and recorded violator history.</small>
         </div>
-        <div class="col-md-5 text-end">
+        <!-- <div class="col-md-5 text-end">
             <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-primary me-2">
                 <i class="bi bi-plus-circle me-1"></i> Violation
             </a>
             <button onclick="window.print()" class="btn btn-outline-secondary">
                 <i class="bi bi-printer me-1"></i> Print
             </button>
-        </div>
+        </div> -->
     </div>
 
     <div class="row g-4 mb-4">
@@ -135,7 +135,7 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
+    <!-- <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Violator Records You Issued</h6>
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><?= count($records) ?> entries</span>
@@ -193,7 +193,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 
 <style>

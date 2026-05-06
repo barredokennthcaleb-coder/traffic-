@@ -1,13 +1,13 @@
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>Violation Details - <?= esc($violation['ticket_id']) ?><?= $this->endSection() ?>
+<?= $this->section('title') ?>Violator Details - <?= esc($violation['ticket_id']) ?><?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4">
         <div class="col-md-6">
-            <h4 class="mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>Violation Details</h4>
+            <h4 class="mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>Violator Details</h4>
             <p class="text-muted small">Full record for ticket <strong><?= esc($violation['ticket_id']) ?></strong></p>
         </div>
         <div class="col-md-6 text-end">
@@ -45,7 +45,7 @@
                         </div>
                         <hr>
                         <div class="col-md-6">
-                            <label class="text-muted small text-uppercase d-block">Violation Type</label>
+                            <label class="text-muted small text-uppercase d-block">Violator Type</label>
                             <span class="fw-bold"><?= esc($violation['violation_type']) ?></span>
                         </div>
                         <div class="col-md-6">
@@ -57,7 +57,7 @@
                             <span><?= esc($violation['points']) ?> Points</span>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted small text-uppercase d-block">Violation Date</label>
+                            <label class="text-muted small text-uppercase d-block">Violator Date</label>
                             <span><?= date('M d, Y H:i', strtotime($violation['violation_date'])) ?></span>
                         </div>
                         <div class="col-12">

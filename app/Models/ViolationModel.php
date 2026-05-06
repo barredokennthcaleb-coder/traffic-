@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class ViolationModel extends ViolationRecord
+class ViolationModel_Old extends ViolatorRecord
 {
     protected $table            = 'violations';
     protected $primaryKey       = 'id';

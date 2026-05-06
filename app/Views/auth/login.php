@@ -269,15 +269,15 @@
 <body>
 
 <div class="login-shell">
-    <div class="brand-side">
+    <div class="brand-side d-flex flex-column justify-content-center align-items-center">
         <img class="brand-logo" src="<?= base_url('img/pic 1.png') ?>" alt="Traffic System Logo">
         <h1>Traffic System</h1>
         <p>Manage violations, payments, and enforcement with a premium-grade workflow.</p>
-        <ul class="premium-points">
+        <!-- <ul class="premium-points">
             <li><i class="bi bi-shield-check me-2"></i>Secure role-based dashboard access</li>
             <li><i class="bi bi-graph-up-arrow me-2"></i>Real-time traffic violation tracking</li>
             <li><i class="bi bi-receipt-cutoff me-2"></i>Fast digital payment and receipt flow</li>
-        </ul>
+        </ul> -->
     </div>
     <div class="form-side">
         <div class="form-head">

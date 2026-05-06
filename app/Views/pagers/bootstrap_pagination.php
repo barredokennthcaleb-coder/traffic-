@@ -5,9 +5,9 @@
         </div>
 
         <ul class="pagination pagination-sm mb-0">
-            <li class="page-item <?= $pager->hasPrevious() ? '' : 'disabled' ?>">
-                <?php if ($pager->hasPrevious()) : ?>
-                    <a class="page-link" href="<?= $pager->getPrevious() ?>" aria-label="Previous">
+            <li class="page-item <?= $pager->hasPreviousPage() ? '' : 'disabled' ?>">
+                <?php if ($pager->hasPreviousPage()) : ?>
+                    <a class="page-link" href="<?= $pager->getPreviousPage() ?>" aria-label="Previous">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 <?php else : ?>
@@ -21,9 +21,9 @@
                 </li>
             <?php endforeach ?>
 
-            <li class="page-item <?= $pager->hasNext() ? '' : 'disabled' ?>">
-                <?php if ($pager->hasNext()) : ?>
-                    <a class="page-link" href="<?= $pager->getNext() ?>" aria-label="Next">
+            <li class="page-item <?= $pager->hasNextPage() ? '' : 'disabled' ?>">
+                <?php if ($pager->hasNextPage()) : ?>
+                    <a class="page-link" href="<?= $pager->getNextPage() ?>" aria-label="Next">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 <?php else : ?>
