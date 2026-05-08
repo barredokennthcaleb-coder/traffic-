@@ -166,28 +166,6 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteUserModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
-                </div>
-                <h5 class="mb-2">Confirm Delete</h5>
-                <p class="text-muted small">Are you sure you want to delete user <strong id="deleteUsername"></strong>? This action cannot be undone.</p>
-                <form id="deleteUserForm" method="POST">
-                    <?= csrf_field() ?>
-                    <div class="d-flex justify-content-center gap-2 mt-4">
-                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger px-4 shadow-sm">Delete</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
@@ -249,18 +227,37 @@
 
         // Delete Confirmation
         const deleteButtons = document.querySelectorAll('.btn-delete');
-        const deleteUsernameSpan = document.getElementById('deleteUsername');
-        const deleteUserForm = document.getElementById('deleteUserForm');
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
-
         deleteButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const userId = this.getAttribute('data-id');
                 const username = this.getAttribute('data-username');
                 
-                deleteUsernameSpan.textContent = username;
-                deleteUserForm.action = `<?= base_url('users/delete') ?>/${userId}`;
-                deleteModal.show();
+                Swal.fire({
+                    title: 'Confirm Delete',
+                    text: `Are you sure you want to delete user "${username}"? This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Delete',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `<?= base_url('users/delete') ?>/${userId}`;
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '<?= csrf_token() ?>';
+                        csrfInput.value = '<?= csrf_hash() ?>';
+                        
+                        form.appendChild(csrfInput);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
             });
         });
     });

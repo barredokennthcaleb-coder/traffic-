@@ -123,28 +123,6 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
-                </div>
-                <h5 class="mb-2">Confirm Delete</h5>
-                <p class="text-muted small">Are you sure you want to delete this record permanently? This action cannot be undone.</p>
-                <form id="deleteForm" method="POST">
-                    <?= csrf_field() ?>
-                    <div class="d-flex justify-content-center gap-2 mt-4">
-                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger px-4 shadow-sm">Delete</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
     .pending-row { transition: all 0.2s ease; }
     .btn-white { background: #fff; }
@@ -186,8 +164,6 @@
 
     const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
     const cancelForm = document.getElementById('cancelForm');
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    const deleteForm = document.getElementById('deleteForm');
 
     document.querySelectorAll('.btn-cancel').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -200,8 +176,33 @@
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = this.dataset.id;
-            deleteForm.action = `<?= base_url('penalties/delete') ?>/${id}`;
-            deleteModal.show();
+            
+            Swal.fire({
+                title: 'Confirm Delete',
+                text: 'Are you sure you want to delete this record permanently? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `<?= base_url('penalties/delete') ?>/${id}`;
+                    
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '<?= csrf_token() ?>';
+                    csrfInput.value = '<?= csrf_hash() ?>';
+                    
+                    form.appendChild(csrfInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         });
     });
 

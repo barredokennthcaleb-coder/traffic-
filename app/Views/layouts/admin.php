@@ -7,6 +7,7 @@
     <title><?= $this->renderSection('title') ?> - Traffic System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -871,17 +872,50 @@
             </div>
         </div>
 
-        <?php if (session()->getFlashdata('success')): ?>
-            <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
-        <?php endif; ?>
-
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
-        <?php endif; ?>
-
         <?= $this->renderSection('content') ?>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Flash Message Handler
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        <?php if (session()->getFlashdata('success')): ?>
+            Toast.fire({
+                icon: 'success',
+                title: '<?= session()->getFlashdata('success') ?>'
+            });
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('error')): ?>
+            Toast.fire({
+                icon: 'error',
+                title: '<?= session()->getFlashdata('error') ?>'
+            });
+        <?php endif; ?>
+
+        <?php if (session()->getFlashdata('errors')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                html: '<ul class="text-start mb-0 ps-3"><?php foreach (session()->getFlashdata('errors') as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?></ul>',
+                confirmButtonColor: 'var(--brand-primary)'
+            });
+        <?php endif; ?>
+    });
+</script>
 
 <!-- Sweet Alert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
