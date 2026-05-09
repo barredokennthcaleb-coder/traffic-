@@ -28,10 +28,28 @@
             body { background-color: white; }
             .paper { margin: 0; box-shadow: none; width: 100%; }
         }
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .header-logo-left {
+            position: absolute;
+            left: 0;
+            height: 80px;
+            width: auto;
+        }
+        .header-logo-right {
+            position: absolute;
+            right: 0;
+            height: 80px;
+            width: auto;
+        }
         .header-text {
             text-align: center;
             line-height: 1.2;
-            margin-bottom: 30px;
         }
         .header-text h5 { margin-bottom: 2px; font-weight: bold; }
         .header-text h4 { margin-bottom: 2px; font-weight: bold; }
@@ -120,11 +138,15 @@
     </div>
 
     <div class="paper">
-        <div class="header-text">
-            <p class="mb-0">Republic of the Philippines</p>
-            <p class="mb-0">Province of Negros Occidental</p>
-            <h4>CITY TRAFFIC MANAGEMENT OFFICE</h4>
-            <p>City of Kabankalan</p>
+        <div class="header-container">
+            <img src="/img/pic 1.png" alt="Logo" class="header-logo-left">
+            <div class="header-text">
+                <p class="mb-0">Republic of the Philippines</p>
+                <p class="mb-0">Province of Negros Occidental</p>
+                <h4>CITY TRAFFIC MANAGEMENT OFFICE</h4>
+                <p class="mb-0">City of Kabankalan</p>
+            </div>
+            <img src="/img/pic 1.png" alt="Logo" class="header-logo-right">
         </div>
 
         <div class="report-title">INSPECTION REPORT</div>

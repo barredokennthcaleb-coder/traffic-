@@ -135,65 +135,44 @@
         </div>
     </div>
 
-    <!-- <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Violator Records You Issued</h6>
-            <span class="badge bg-primary-subtle text-primary border border-primary-subtle"><?= count($records) ?> entries</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 table-premium-mobile">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Ticket ID</th>
-                            <th>Violator</th>
-                            <th>License Plate</th>
-                            <th>Violation Type</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th class="text-end pe-4">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($records)): ?>
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                    You have no violator records yet.
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($records as $record): ?>
-                                <tr>
-                                    <td class="ps-4" data-label="Ticket ID"><span class="badge bg-dark-subtle text-dark border border-dark-subtle"><?= esc($record['ticket_id'] ?? 'N/A') ?></span></td>
-                                    <td data-label="Violator"><?= esc(trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')) ?: ($record['driver_name'] ?? '-')) ?></td>
-                                    <td data-label="License Plate"><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><?= esc($record['license_plate'] ?? '-') ?></span></td>
-                                    <td data-label="Violation Type"><?= esc($record['violation_type'] ?? '-') ?></td>
-                                    <td class="fw-semibold text-danger" data-label="Amount"><?= number_format((float) ($record['penalty_amount'] ?? 0), 2) ?></td>
-                                    <td data-label="Status">
-                                        <?php if (($record['status'] ?? '') === 'Pending'): ?>
-                                            <span class="badge bg-warning rounded-pill px-3">Pending</span>
-                                        <?php elseif (($record['status'] ?? '') === 'Paid'): ?>
-                                            <span class="badge bg-success rounded-pill px-3">Paid</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-danger rounded-pill px-3">Cancelled</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td data-label="Date"><?= isset($record['violation_date']) ? date('M d, Y h:i A', strtotime($record['violation_date'])) : '-' ?></td>
-                                    <td class="text-end pe-4" data-label="Action">
-                                        <a href="<?= base_url('officer/view/' . $record['id']) ?>" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye me-1"></i>View
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0">Status Distribution</h6>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div style="height: 250px; width: 100%;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-    </div> -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0">Monthly Trend (<?= date('Y') ?>)</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 250px; width: 100%;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0">Top 5 Violation Types Issued</h6>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px; width: 100%;">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -241,4 +220,111 @@
         }
     }
 </style>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Paid', 'Cancelled'],
+            datasets: [{
+                data: [<?= $pendingCount ?>, <?= $paidCount ?>, <?= $cancelledCount ?>],
+                backgroundColor: ['#ffc107', '#198754', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 2. Monthly Trend Chart
+    <?php
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        $trendData = array_fill(0, 12, 0);
+        foreach ($monthlyTrend as $row) {
+            $trendData[(int)$row['month'] - 1] = (int)$row['count'];
+        }
+    ?>
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($months) ?>,
+            datasets: [{
+                label: 'Violations Issued',
+                data: <?= json_encode($trendData) ?>,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#6366f1',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { display: false } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 3. Violation Types Chart
+    <?php
+        $typeLabels = [];
+        $typeCounts = [];
+        foreach ($violationsByType as $row) {
+            $typeLabels[] = $row['violation_type'];
+            $typeCounts[] = (int)$row['count'];
+        }
+    ?>
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($typeLabels) ?>,
+            datasets: [{
+                label: 'Frequency',
+                data: <?= json_encode($typeCounts) ?>,
+                backgroundColor: [
+                    'rgba(99, 102, 241, 0.8)',
+                    'rgba(168, 85, 247, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(244, 63, 94, 0.8)',
+                    'rgba(249, 115, 22, 0.8)'
+                ],
+                borderRadius: 8,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { display: false } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+});
+</script>
 <?= $this->endSection() ?>

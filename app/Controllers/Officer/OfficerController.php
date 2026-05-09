@@ -52,6 +52,22 @@ class OfficerController extends BaseController
             'paidCount'      => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
             'cancelledCount' => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
             'totalAmount'    => $totalAmount,
+            // Chart Data: Violations by Type
+            'violationsByType' => $this->violationRecord
+                ->select('violation_type, COUNT(*) as count')
+                ->where('officer_id', $officerId)
+                ->groupBy('violation_type')
+                ->orderBy('count', 'DESC')
+                ->limit(5)
+                ->findAll(),
+            // Chart Data: Monthly Trend (Current Year)
+            'monthlyTrend' => $this->violationRecord
+                ->select('MONTH(violation_date) as month, COUNT(*) as count')
+                ->where('officer_id', $officerId)
+                ->where('YEAR(violation_date)', date('Y'))
+                ->groupBy('MONTH(violation_date)')
+                ->orderBy('month', 'ASC')
+                ->findAll(),
         ];
 
         return view('officer/profile', $data);
@@ -121,7 +137,7 @@ class OfficerController extends BaseController
             'age'               => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
             'address'           => 'required|min_length[5]|max_length[255]',
             'license_plate'     => 'required|min_length[2]|max_length[20]',
-            'violation_type_id' => 'required|integer',
+            'violation_type_id' => 'required',
             'location'          => 'permit_empty|max_length[255]',
             'notes'             => 'permit_empty|max_length[500]',
         ];
@@ -130,62 +146,72 @@ class OfficerController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $violationTypeId = $this->request->getPost('violation_type_id');
-        $violationType = $this->violationTypeModel->find($violationTypeId);
+        $session = session();
+        $violationTypeIds = $this->request->getPost('violation_type_id');
+        
+        // Ensure it's an array and filter out empty values
+        if (!is_array($violationTypeIds)) {
+            $violationTypeIds = $violationTypeIds ? [$violationTypeIds] : [];
+        }
+        $violationTypeIds = array_filter($violationTypeIds);
 
-        if (!$violationType) {
-            return redirect()->back()->with('error', 'Invalid violation type selected.');
+        if (empty($violationTypeIds)) {
+            return redirect()->back()->withInput()->with('error', 'Please select at least one violation type.');
         }
 
         $firstName = trim((string) $this->request->getPost('first_name'));
         $lastName = trim((string) $this->request->getPost('last_name'));
         $licensePlate = strtoupper(trim((string) $this->request->getPost('license_plate')));
 
-        // Prevent accidental duplicate pending tickets for the same plate + violation type.
-        $existingPending = $this->violationRecord
-            ->where('license_plate', $licensePlate)
-            ->where('violation_type_id', (int) $violationTypeId)
-            ->where('status', 'Pending')
-            ->orderBy('violation_date', 'DESC')
-            ->first();
+        // Generate a single Ticket ID for all violations in this batch
+        $sharedTicketId = 'TKT-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
 
-        if ($existingPending) {
-            return redirect()->back()->withInput()->with(
-                'error',
-                'A pending ticket for this license plate and violation type already exists (Ticket: ' . ($existingPending['ticket_id'] ?? '#') . ').'
-            );
+        $firstInsertedId = null;
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        foreach ($violationTypeIds as $violationTypeId) {
+            $violationType = $this->violationTypeModel->find((int) $violationTypeId);
+            if (!$violationType) continue;
+
+            $data = [
+                'ticket_id'        => $sharedTicketId,
+                'first_name'       => $firstName,
+                'last_name'        => $lastName,
+                'age'              => (int) $this->request->getPost('age'),
+                'address'          => trim((string) $this->request->getPost('address')),
+                'driver_name'      => trim($firstName . ' ' . $lastName),
+                'license_plate'    => $licensePlate,
+                'officer_id'       => $session->get('id'),
+                'violation_type_id' => (int) $violationTypeId,
+                'violation_type'   => $violationType['violation_name'],
+                'penalty_amount'   => (float) ($violationType['fine_amount'] ?? 0),
+                'points'           => (int) ($violationType['points'] ?? 0),
+                'status'           => 'Pending',
+                'violation_date'   => date('Y-m-d H:i:s'),
+                'created_by'       => $session->get('id'),
+                'location'         => trim($this->request->getPost('location') ?? ''),
+                'notes'            => trim($this->request->getPost('notes') ?? ''),
+            ];
+
+            if ($this->violationRecord->save($data)) {
+                if ($firstInsertedId === null) {
+                    $firstInsertedId = $this->violationRecord->getInsertID();
+                }
+            } else {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('errors', $this->violationRecord->errors());
+            }
         }
-        $baseFine = (float) ($violationType['fine_amount'] ?? 0);
-        $basePoints = (int) ($violationType['points'] ?? 0);
-        $computedFine = $baseFine;
-        $computedPoints = $basePoints;
 
-        $data = [
-            'first_name'       => $firstName,
-            'last_name'        => $lastName,
-            'age'              => (int) $this->request->getPost('age'),
-            'address'          => trim((string) $this->request->getPost('address')),
-            'driver_name'      => trim($firstName . ' ' . $lastName),
-            'license_plate'    => $licensePlate,
-            'officer_id'       => $session->get('id'),
-            'violation_type_id' => $violationTypeId,
-            'violation_type'   => $violationType['violation_name'],
-            'penalty_amount'   => $computedFine,
-            'points'           => $computedPoints,
-            'status'           => 'Pending',
-            'violation_date'   => date('Y-m-d H:i:s'),
-            'created_by'       => $session->get('id'),
-            'location'         => trim($this->request->getPost('location') ?? ''),
-            'notes'            => trim($this->request->getPost('notes') ?? ''),
-        ];
+        $db->transComplete();
 
-        if ($this->violationRecord->save($data)) {
-            $ticketId = $this->violationRecord->getInsertID();
-            return redirect()->to(base_url('officer/view/' . $ticketId . '?print=1&from=violations'))
-                ->with('success', 'Violation recorded successfully.');
-        } else {
-            return redirect()->back()->withInput()->with('errors', $this->violationRecord->errors());
+        if ($db->transStatus() === false) {
+            return redirect()->back()->withInput()->with('error', 'Failed to record violations.');
         }
+
+        return redirect()->to(base_url('officer/view/' . $firstInsertedId . '?print=1&from=violations'))
+            ->with('success', 'Violations recorded successfully.');
     }
 
     public function violations()
@@ -196,7 +222,9 @@ class OfficerController extends BaseController
             'title' => 'Violation',
             'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
             'violations' => $this->violationRecord
+                ->select('violations.*, GROUP_CONCAT(violation_type SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
                 ->where('officer_id', $officerId)
+                ->groupBy('ticket_id')
                 ->orderBy('violation_date', 'DESC')
                 ->paginate(10, 'violations'),
             'pager' => $this->violationRecord->pager,
@@ -206,15 +234,22 @@ class OfficerController extends BaseController
 
     public function view($id)
     {
-        $violation = $this->violationRecord->getDetailedViolation($id);
+        $primaryViolation = $this->violationRecord->getDetailedViolation($id);
 
-        if (!$violation) {
+        if (!$primaryViolation) {
             return redirect()->to(base_url('officer/violations'))->with('error', 'Violation not found.');
         }
 
+        // Fetch all violations sharing the same ticket ID
+        $allViolations = $this->violationRecord->select('violations.*, users.username as officer_name')
+            ->join('users', 'users.id = violations.officer_id', 'left')
+            ->where('violations.ticket_id', $primaryViolation['ticket_id'])
+            ->findAll();
+
         $data = [
             'title' => 'Violation Details',
-            'violation' => $violation
+            'violation' => $primaryViolation,
+            'all_violations' => $allViolations
         ];
         return view('officer/view', $data);
     }

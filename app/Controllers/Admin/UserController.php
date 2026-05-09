@@ -32,7 +32,8 @@ class UserController extends BaseController
         $data = [
             'title' => 'User Management',
             'selectedRole' => $role,
-            'users' => $usersQuery->findAll(),
+            'users' => $usersQuery->paginate(10, 'users'),
+            'pager' => $this->userModel->pager,
         ];
         return view('admin/users/index', $data);
     }

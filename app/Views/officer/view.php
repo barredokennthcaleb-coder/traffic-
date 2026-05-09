@@ -19,10 +19,46 @@
                 <div class="col-md-6"><strong>Address:</strong> <?= esc($violation['address'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Driver Name:</strong> <?= esc($violation['driver_name'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>License Plate:</strong> <?= esc($violation['license_plate'] ?? '-') ?></div>
-                <div class="col-md-6"><strong>Violation Type:</strong> <?= esc($violation['violation_type'] ?? '-') ?></div>
-                <div class="col-md-6"><strong>Penalty Amount:</strong> <?= number_format((float) ($violation['penalty_amount'] ?? 0), 2) ?></div>
                 <div class="col-md-6"><strong>Status:</strong> <?= esc($violation['status'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Date:</strong> <?= isset($violation['violation_date']) ? date('M d, Y h:i A', strtotime($violation['violation_date'])) : '-' ?></div>
+                
+                <div class="col-12 mt-4">
+                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-exclamation-circle me-2"></i>Violation Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Violation Type</th>
+                                    <th class="text-end" style="width: 150px;">Penalty</th>
+                                    <th class="text-center" style="width: 100px;">Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                $totalFine = 0;
+                                $totalPoints = 0;
+                                $vList = isset($all_violations) ? $all_violations : [$violation];
+                                foreach ($vList as $v): 
+                                    $totalFine += (float) ($v['penalty_amount'] ?? 0);
+                                    $totalPoints += (int) ($v['points'] ?? 0);
+                                ?>
+                                <tr>
+                                    <td><?= esc($v['violation_type'] ?? '-') ?></td>
+                                    <td class="text-end"><?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></td>
+                                    <td class="text-center"><?= esc((string) ($v['points'] ?? 0)) ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td>Total</td>
+                                    <td class="text-end text-danger"><?= number_format($totalFine, 2) ?></td>
+                                    <td class="text-center"><?= $totalPoints ?></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
                 <div class="col-md-6"><strong>Location:</strong> <?= esc($violation['location'] ?? '-') ?></div>
                 <div class="col-md-6"><strong>Officer:</strong> <?= esc($violation['officer_name'] ?? '-') ?></div>
                 <div class="col-12"><strong>Notes:</strong> <?= esc($violation['notes'] ?? '-') ?></div>

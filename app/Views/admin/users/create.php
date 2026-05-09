@@ -103,7 +103,7 @@
                                     <option value="">-- Select Role --</option>
                                     <option value="admin" <?= old('role') == 'admin' ? 'selected' : '' ?>>Admin</option>
                                     <option value="enforcer" <?= old('role') == 'enforcer' ? 'selected' : '' ?>>Traffic Enforcer</option>
-                                    <option value="driver" <?= (old('role') == 'driver' || (!old('role') && ($defaults['role'] ?? '') === 'driver')) ? 'selected' : '' ?>>Driver</option>
+                                    <!-- <option value="driver" <?= (old('role') == 'driver' || (!old('role') && ($defaults['role'] ?? '') === 'driver')) ? 'selected' : '' ?>>Driver</option> -->
                                 </select>
                             </div>
 

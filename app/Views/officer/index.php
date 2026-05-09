@@ -94,25 +94,38 @@
                                 <div class="section-label">Violation Details</div>
                             </div>
                             <div class="col-12">
-                                <label for="violation_type" class="form-label">Violation Type <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
-                                    <select name="violation_type_id" id="violation_type" class="form-select" required onchange="updateFineAmount()">
-                                        <option value="">-- Select Violation Type --</option>
-                                        <?php foreach ($violationTypes as $type): ?>
-                                            <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
-                                                <?= esc($type['violation_name']) ?> - <?= number_format((float)$type['fine_amount'], 2) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addViolationTypeModal">
-                                        <i class="bi bi-plus-circle me-1"></i> Add
+                                <label class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Violation Type(s) <span class="text-danger">*</span></span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary border-0" data-bs-toggle="modal" data-bs-target="#addViolationTypeModal">
+                                        <i class="bi bi-plus-circle me-1"></i> New Type
                                     </button>
+                                </label>
+                                
+                                <div id="violationContainer">
+                                    <div class="violation-row mb-2">
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
+                                            <select name="violation_type_id[]" class="form-select violation-select" required onchange="updateFineAmount()">
+                                                <option value="">-- Select Violation Type --</option>
+                                                <?php foreach ($violationTypes as $type): ?>
+                                                    <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
+                                                        <?= esc($type['violation_name']) ?> - <?= number_format((float)$type['fine_amount'], 2) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-danger remove-violation-btn" onclick="this.closest('.violation-row').remove(); updateFineAmount();" style="display: none;">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                                <button type="button" class="btn btn-sm btn-link text-decoration-none mt-1" onclick="addViolationRow()">
+                                    <i class="bi bi-plus-circle me-1"></i> Add another violation
+                                </button>
                             </div>
 
                             <div class="col-md-6">
-                                <label for="penalty_amount" class="form-label">Penalty Amount ($)</label>
+                                <label for="penalty_amount" class="form-label">Penalty Amount</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
                                     <input type="text" id="penalty_amount" class="form-control bg-light" readonly 
@@ -258,8 +271,21 @@
                                             <div class="fw-bold"><?= esc(trim(($v['first_name'] ?? '') . ' ' . ($v['last_name'] ?? '')) ?: ($v['driver_name'] ?? '-')) ?></div>
                                             <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate'] ?? '-') ?></span>
                                         </td>
-                                        <td class="small fw-semibold text-muted" data-label="Violation Type"><?= esc($v['violation_type'] ?? '-') ?></td>
-                                        <td data-label="Amount"><span class="fw-bold text-danger"><?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></span></td>
+                                        <td class="small fw-semibold text-muted" data-label="Violation Type">
+                                            <?php 
+                                                $vTypes = explode('||', $v['concatenated_violations'] ?? $v['violation_type'] ?? '-');
+                                                if (count($vTypes) > 1) {
+                                                    echo '<ul class="list-unstyled mb-0">';
+                                                    foreach ($vTypes as $vt) {
+                                                        echo '<li><i class="bi bi-dot"></i> ' . esc($vt) . '</li>';
+                                                    }
+                                                    echo '</ul>';
+                                                } else {
+                                                    echo esc($vTypes[0]);
+                                                }
+                                            ?>
+                                        </td>
+                                        <td data-label="Amount"><span class="fw-bold text-danger"><?= number_format((float) ($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0), 2) ?></span></td>
                                         <td data-label="Status">
                                             <?php if (($v['status'] ?? '') === 'Pending'): ?>
                                                 <span class="badge bg-warning rounded-pill px-3">Pending</span>
@@ -271,10 +297,15 @@
                                         </td>
                                         <td class="text-muted small" data-label="Date"><?= isset($v['violation_date']) ? date('M d, Y', strtotime($v['violation_date'])) : '-' ?></td>
                                         <td class="text-end pe-4 col-actions" data-label="Actions">
-                                            <div class="btn-group shadow-sm actions-group">
+                                            <div class="btn-group shadow-sm actions-group"> 
+                                                <button type="button" class="btn btn-sm btn-white border" title="Print Ticket" 
+                                                        onclick="printTicket('<?= base_url('officer/view/' . $v['id'] . '?print=1') ?>')">
+                                                    <i class="bi bi-printer text-secondary"></i>
+                                                </button>
                                                 <a href="<?= base_url('officer/view/' . $v['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
                                                     <i class="bi bi-eye text-info"></i>
                                                 </a>
+                                               
                                                 <?php if (($v['status'] ?? '') === 'Pending'): ?>
                                                     <button
                                                         type="button"
@@ -449,7 +480,7 @@
                     <input type="text" class="form-control" id="vtName" placeholder="e.g., No Helmet" />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Fine Amount ($) <span class="text-danger">*</span></label>
+                    <label class="form-label">Fine Amount <span class="text-danger">*</span></label>
                     <input type="number" class="form-control" id="vtFine" step="0.01" min="0" placeholder="0.00" />
                 </div>
                 <div class="mb-3">
@@ -647,28 +678,69 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    function updateFineAmount() {
-        const select = document.getElementById('violation_type');
-        const option = select.options[select.selectedIndex];
-        const amount = option.dataset.amount;
-        const points = option.dataset.points;
-        const baseAmount = amount ? parseFloat(amount) : 0;
-        const basePoints = points ? parseInt(points, 10) : 0;
-        const finalAmount = baseAmount;
-        const finalPoints = basePoints;
+    function printTicket(url) {
+        // Remove existing print iframe if it exists
+        const existing = document.getElementById('print-iframe');
+        if (existing) existing.remove();
+
+        const iframe = document.createElement('iframe');
+        iframe.id = 'print-iframe';
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
         
-        document.getElementById('penalty_amount').value = finalAmount.toFixed(2);
-        document.getElementById('points').value = String(finalPoints || 0);
+        // Cleanup after a delay (ensuring print dialog has been handled)
+        setTimeout(() => {
+            if (document.getElementById('print-iframe')) {
+                document.getElementById('print-iframe').remove();
+            }
+        }, 10000);
+    }
+    function updateFineAmount() {
+        const selects = document.querySelectorAll('.violation-select');
+        const rows = document.querySelectorAll('.violation-row');
+        let totalAmount = 0;
+        let totalPoints = 0;
+        let details = [];
+
+        selects.forEach(select => {
+            if (select.value) {
+                const option = select.options[select.selectedIndex];
+                totalAmount += parseFloat(option.dataset.amount || 0);
+                totalPoints += parseInt(option.dataset.points || 0, 10);
+                details.push(`<strong>${option.text.split(' - ')[0]}</strong>`);
+            }
+        });
+        
+        // Show/hide trash buttons based on row count
+        rows.forEach(row => {
+            const trashBtn = row.querySelector('.remove-violation-btn');
+            if (trashBtn) trashBtn.style.display = rows.length > 1 ? 'block' : 'none';
+        });
+        
+        document.getElementById('penalty_amount').value = totalAmount.toFixed(2);
+        document.getElementById('points').value = String(totalPoints);
         
         const violationInfo = document.getElementById('violationInfo');
-        if (select.value) {
-            const selectedText = select.options[select.selectedIndex].text;
-            violationInfo.innerHTML = `<strong>${selectedText.split(' - $')[0]}</strong><br>
-                This violation will be recorded with a fine of <strong>$${finalAmount.toFixed(2)}</strong>
-                and <strong>${finalPoints} penalty points</strong>.`;
+        if (details.length > 0) {
+            violationInfo.innerHTML = `${details.join(', ')}<br>
+                Total fine: <strong>${totalAmount.toFixed(2)}</strong>
+                and <strong>${totalPoints} penalty points</strong>.`;
         } else {
             violationInfo.textContent = 'Select a violation type to see its details.';
         }
+    }
+
+    function addViolationRow() {
+        const container = document.getElementById('violationContainer');
+        const firstRow = container.querySelector('.violation-row');
+        const newRow = firstRow.cloneNode(true);
+        
+        const select = newRow.querySelector('select');
+        select.value = '';
+        
+        container.appendChild(newRow);
+        updateFineAmount();
     }
 
     document.getElementById('violationForm').addEventListener('submit', function() {
@@ -720,7 +792,10 @@
         try {
             const res = await fetch('<?= base_url('officer/violation-types/store') ?>', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: new URLSearchParams({
                     '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
                     violation_name: name,
@@ -739,14 +814,20 @@
             }
 
             const type = data.type;
-            const select = document.getElementById('violation_type');
-            const opt = document.createElement('option');
-            opt.value = type.id;
-            opt.dataset.amount = type.fine_amount;
-            opt.dataset.points = type.points;
-            opt.textContent = `${type.violation_name} - $${parseFloat(type.fine_amount).toFixed(2)}`;
-            select.appendChild(opt);
-            select.value = String(type.id);
+            const selects = document.querySelectorAll('.violation-select');
+            selects.forEach(select => {
+                const opt = document.createElement('option');
+                opt.value = type.id;
+                opt.dataset.amount = type.fine_amount;
+                opt.dataset.points = type.points;
+                opt.textContent = `${type.violation_name} - ${parseFloat(type.fine_amount).toFixed(2)}`;
+                select.appendChild(opt);
+                
+                // If it's the first select and it's empty, select it
+                if (select.value === '') {
+                    select.value = String(type.id);
+                }
+            });
             updateFineAmount();
 
             document.getElementById('vtName').value = '';
@@ -754,6 +835,7 @@
             document.getElementById('vtPoints').value = '';
             document.getElementById('vtDesc').value = '';
             bootstrap.Modal.getInstance(document.getElementById('addViolationTypeModal')).hide();
+            bootstrap.Modal.getInstance(document.getElementById('recordViolationModal')).show();
         } finally {
             btn.disabled = false;
             spinner.classList.add('d-none');

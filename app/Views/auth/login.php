@@ -339,9 +339,9 @@
                     <span id="btnText">Sign In</span>
                     <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
                 </button>
-                <a href="/register" class="btn btn-create">
+                <!-- <a href="/register" class="btn btn-create">
                     <i class="bi bi-person-plus me-1"></i> Create Account
-                </a>
+                </a> -->
             </div>
         </form>
         <p class="help-text mb-0">Need access help? Contact your administrator.</p>

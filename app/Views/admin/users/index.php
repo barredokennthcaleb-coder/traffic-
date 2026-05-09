@@ -5,139 +5,222 @@
 <?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-4">
-            <h4 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>User Management</h4>
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1 text-dark">User Management</h4>
+            <p class="text-muted small mb-0">Manage and monitor system users across all roles.</p>
         </div>
-        <div class="col-md-5">
-            <div class="d-flex gap-2">
-                <form method="GET" action="<?= base_url('users') ?>" class="d-flex gap-2 flex-grow-1">
-                    <select class="form-select shadow-sm" name="role" aria-label="Filter by role" onchange="this.form.submit()">
-                        <?php $selectedRole = $selectedRole ?? ''; ?>
-                        <option value="" <?= $selectedRole === '' ? 'selected' : '' ?>>All roles</option>
-                        <option value="admin" <?= $selectedRole === 'admin' ? 'selected' : '' ?>>Admin</option>
-                        <option value="driver" <?= $selectedRole === 'driver' ? 'selected' : '' ?>>Driver</option>
-                        <option value="enforcer" <?= $selectedRole === 'enforcer' ? 'selected' : '' ?>>Enforcer</option>
-                    </select>
-                    <div class="input-group shadow-sm flex-grow-1">
-                        <span class="input-group-text bg-white border-end-0">
-                            <i class="bi bi-search text-muted"></i>
-                        </span>
-                        <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search by username, full name, email...">
+        <a href="<?= base_url('users/create') ?>" class="btn btn-primary px-4 py-2 shadow-sm d-flex align-items-center justify-content-center">
+            <i class="bi bi-person-plus-fill me-2"></i>
+            <span>Add New User</span>
+        </a>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card-body p-3">
+            <form method="GET" action="<?= base_url('users') ?>" class="row g-3 align-items-center">
+                <div class="col-12 col-md-4">
+                    <div class="input-group input-group-merge">
+                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" id="searchInput" class="form-control bg-light border-0 ps-0" placeholder="Search users...">
                     </div>
-                </form>
-            </div>
-        </div>
-        <div class="col-md-3 text-end">
-            <a href="<?= base_url('users/create') ?>" class="btn btn-primary shadow-sm">
-                <i class="bi bi-person-plus me-1"></i> Add New User
-            </a>
+                </div>
+                <div class="col-12 col-md-3">
+                    <select class="form-select border-0 bg-light" name="role" onchange="this.form.submit()">
+                        <?php $selectedRole = $selectedRole ?? ''; ?>
+                        <option value="" <?= $selectedRole === '' ? 'selected' : '' ?>>All Roles</option>
+                        <option value="admin" <?= $selectedRole === 'admin' ? 'selected' : '' ?>>Administrators</option>
+                        <option value="driver" <?= $selectedRole === 'driver' ? 'selected' : '' ?>>Drivers</option>
+                        <option value="enforcer" <?= $selectedRole === 'enforcer' ? 'selected' : '' ?>>Traffic Enforcers</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-5 d-flex justify-content-md-end gap-2">
+                    <button type="button" class="btn btn-light border-0 px-3" onclick="window.location.href='<?= base_url('users') ?>'">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px;" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div><?= session()->getFlashdata('success') ?></div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="bi bi-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 12px;" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                <div><?= session()->getFlashdata('error') ?></div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="userTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">ID</th>
-                            <th>Username</th>
-                            <th>Last Name</th>
-                            <th>First Name</th>
-                            <th>M.I.</th>
-                            <th>Birthdate</th>
-                            <th>Age</th>
-                            <th>Address</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th class="text-end pe-4">Actions</th>
+    <!-- Users Table/Card Container -->
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-hover align-middle mb-0" id="userTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-muted small fw-bold text-uppercase">ID</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">User / Email</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Full Name</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase text-center">Age</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Role</th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase">Status</th>
+                        <th class="pe-4 py-3 text-muted small fw-bold text-uppercase text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($users)): ?>
+                        <tr id="noDataRow">
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <div class="py-4">
+                                    <i class="bi bi-person-x fs-1 d-block mb-3 opacity-25"></i>
+                                    <p class="mb-0 fw-semibold">No users found in this category.</p>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($users)): ?>
-                            <tr id="noDataRow">
-                                <td colspan="9" class="text-center py-5 text-muted">
-                                    <i class="bi bi-person-x fs-1 d-block mb-2"></i>
-                                    No users found.
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($users as $user): ?>
-                            <tr class="user-row">
-                                <td class="ps-4"><?= esc($user['id']) ?></td>
-                                <td><?= esc($user['username']) ?></td>
-                                <td><?= esc($user['lastname'] ?: '-') ?></td>
-                                <td><?= esc($user['firstname'] ?: '-') ?></td>
-                                <td><?= esc($user['middle_initial'] ?: '-') ?></td>
-                                <td><?= esc($user['birthdate'] ? date('M d, Y', strtotime($user['birthdate'])) : '-') ?></td>
-                                <td><?= esc((string) ($user['age'] ?? '-')) ?></td>
-                                <td><?= esc($user['address'] ?? '-') ?></td>
-                                <td><?= esc($user['email']) ?></td>
-                                <td><span class="badge bg-info-subtle text-info border border-info-subtle text-uppercase px-2"><?= esc($user['role']) ?></span></td>
-                                <td>
-                                    <?php if ($user['status'] == 'active'): ?>
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Active</span>
-                                    <?php elseif ($user['status'] == 'inactive'): ?>
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 rounded-pill">Inactive</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 rounded-pill">Suspended</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="btn-group shadow-sm">
-                                        <?php if ($user['role'] == 'driver'): ?>
-                                        <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Details">
-                                            <i class="bi bi-eye text-info"></i>
-                                        </a>
-                                        <?php elseif ($user['role'] == 'enforcer'): ?>
-                                        <a href="<?= base_url('users/view-enforcer/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="View Enforcer Profile">
-                                            <i class="bi bi-person-vcard text-info"></i>
-                                        </a>
-                                        <?php endif; ?>
-                                        <a href="<?= base_url('users/edit/' . $user['id']) ?>" class="btn btn-sm btn-white border" title="Edit User">
-                                            <i class="bi bi-pencil text-primary"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-sm btn-white border btn-reset-password" 
-                                                title="Reset Password" 
-                                                data-id="<?= $user['id'] ?>" 
-                                                data-username="<?= esc($user['username']) ?>">
-                                            <i class="bi bi-key text-warning"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-white border btn-delete" 
-                                                title="Delete User" 
-                                                data-id="<?= $user['id'] ?>"
-                                                data-username="<?= esc($user['username']) ?>">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
+                    <?php else: ?>
+                        <?php foreach ($users as $user): ?>
+                        <tr class="user-row">
+                            <td class="ps-4">
+                                <span class="text-muted fw-mono small">#<?= esc($user['id']) ?></span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-3 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                        <?= strtoupper(substr($user['username'], 0, 1)) ?>
                                     </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                                    <div>
+                                        <div class="fw-bold text-dark"><?= esc($user['username']) ?></div>
+                                        <div class="text-muted small"><?= esc($user['email']) ?></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold"><?= esc($user['firstname'] . ' ' . $user['lastname']) ?></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark fw-normal"><?= esc((string) ($user['age'] ?? '-')) ?></span>
+                            </td>
+                            <td>
+                                <?php 
+                                    $roleBadge = [
+                                        'admin' => 'bg-danger-subtle text-danger',
+                                        'enforcer' => 'bg-primary-subtle text-primary',
+                                        'driver' => 'bg-success-subtle text-success'
+                                    ];
+                                    $badgeClass = $roleBadge[$user['role']] ?? 'bg-secondary-subtle text-secondary';
+                                ?>
+                                <span class="badge <?= $badgeClass ?> text-uppercase px-2" style="font-size: 0.7rem; letter-spacing: 0.05em;"><?= esc($user['role']) ?></span>
+                            </td>
+                            <td>
+                                <?php if ($user['status'] == 'active'): ?>
+                                    <span class="badge bg-success rounded-pill px-3" style="font-size: 0.65rem;">Active</span>
+                                <?php elseif ($user['status'] == 'inactive'): ?>
+                                    <span class="badge bg-secondary rounded-pill px-3" style="font-size: 0.65rem;">Inactive</span>
+                                <?php else: ?>
+                                    <span class="badge bg-warning text-dark rounded-pill px-3" style="font-size: 0.65rem;">Suspended</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="pe-4 text-end">
+                                <div class="btn-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                                    
+                                    <?php if ($user['role'] == 'driver'): ?>
+                                    <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-white btn-sm border-end" title="View Details">
+                                        <i class="bi bi-eye text-info"></i>
+                                    </a>
+                                    <?php elseif ($user['role'] == 'enforcer'): ?>
+                                    <a href="<?= base_url('users/view-enforcer/' . $user['id']) ?>" class="btn btn-white btn-sm border-end" title="View Profile">
+                                        <i class="bi bi-person-vcard text-info"></i>
+                                    </a>
+                                    <?php endif; ?>
+                                    <a href="<?= base_url('users/edit/' . $user['id']) ?>" class="btn btn-white btn-sm border-end" title="Edit">
+                                        <i class="bi bi-pencil-square text-primary"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-white btn-sm border-end btn-reset-password" 
+                                            title="Reset Password" 
+                                            data-id="<?= $user['id'] ?>" 
+                                            data-username="<?= esc($user['username']) ?>">
+                                        <i class="bi bi-key text-warning"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-white btn-sm btn-delete" 
+                                            title="Delete" 
+                                            data-id="<?= $user['id'] ?>"
+                                            data-username="<?= esc($user['username']) ?>">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile/Tablet Card View -->
+        <div class="d-lg-none p-3">
+            <?php if (empty($users)): ?>
+                <div class="text-center py-5 text-muted">No users found.</div>
+            <?php else: ?>
+                <div class="row g-3">
+                    <?php foreach ($users as $user): ?>
+                    <div class="col-12 user-card">
+                        <div class="card border border-light-subtle shadow-sm p-3" style="border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                        <?= strtoupper(substr($user['username'], 0, 1)) ?>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold"><?= esc($user['username']) ?></div>
+                                        <div class="text-muted small"><?= esc($user['role']) ?></div>
+                                    </div>
+                                </div>
+                                <span class="badge bg-<?= $user['status'] == 'active' ? 'success' : ($user['status'] == 'inactive' ? 'secondary' : 'warning text-dark') ?> rounded-pill" style="font-size: 0.6rem;">
+                                    <?= ucfirst(esc($user['status'])) ?>
+                                </span>
+                            </div>
+                            <div class="mb-3 small">
+                                <div class="mb-1"><strong>Name:</strong> <?= esc($user['firstname'] . ' ' . $user['lastname']) ?></div>
+                                <div class="mb-1"><strong>Email:</strong> <?= esc($user['email']) ?></div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <?php if ($user['role'] == 'driver'): ?>
+                                <a href="<?= base_url('users/view/' . $user['id']) ?>" class="btn btn-sm btn-outline-info flex-grow-1"><i class="bi bi-eye"></i></a>
+                                <?php elseif ($user['role'] == 'enforcer'): ?>
+                                <a href="<?= base_url('users/view-enforcer/' . $user['id']) ?>" class="btn btn-sm btn-outline-info flex-grow-1"><i class="bi bi-person-vcard"></i></a>
+                                <?php endif; ?>
+                                <a href="<?= base_url('users/edit/' . $user['id']) ?>" class="btn btn-sm btn-outline-primary flex-grow-1"><i class="bi bi-pencil"></i></a>
+                                <button type="button" class="btn btn-sm btn-outline-warning flex-grow-1 btn-reset-password" data-id="<?= $user['id'] ?>" data-username="<?= esc($user['username']) ?>"><i class="bi bi-key"></i></button>
+                                <button type="button" class="btn btn-sm btn-outline-danger flex-grow-1 btn-delete" data-id="<?= $user['id'] ?>" data-username="<?= esc($user['username']) ?>"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Card Footer with Pagination -->
+        <div class="card-footer bg-white border-top py-3">
+            <div class="pagination-container">
+                <?= $pager->links('users', 'bootstrap_pagination') ?>
             </div>
         </div>
-         <div class="card-footer bg-white border-0 py-3">
-         
-        </div>
     </div>
+</div>
 </div>
 
 <!-- Reset Password Modal -->

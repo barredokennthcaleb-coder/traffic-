@@ -456,26 +456,89 @@
         }
 
         .desktop-header {
-            background: linear-gradient(120deg, rgba(255,255,255,0.82) 0%, rgba(244,248,255,0.72) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.72);
-            border-radius: 16px;
-            padding: 0.9rem 1rem !important;
-            box-shadow: 0 14px 30px rgba(83, 99, 169, 0.14);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 0.75rem 1.5rem !important;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
         }
 
-        .desktop-header .text-muted {
-            color: var(--text-muted) !important;
+        [data-bs-theme="dark"] .desktop-header {
+            background: rgba(26, 32, 53, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0;
+            color: #1e293b;
+            letter-spacing: -0.02em;
+        }
+
+        [data-bs-theme="dark"] .header-title {
+            color: #f1f5f9;
+        }
+
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        [data-bs-theme="dark"] .user-profile-badge {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-profile-badge:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .theme-select {
-            min-width: 124px;
+            min-width: 110px;
             border-radius: 10px;
-            border: 1px solid #d6def8;
-            background-color: rgba(255, 255, 255, 0.82);
-            color: #344066;
-            font-size: 0.88rem;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #475569;
+            font-size: 0.85rem;
             font-weight: 600;
+            padding: 0.4rem 2rem 0.4rem 0.75rem;
+            cursor: pointer;
+        }
+
+        [data-bs-theme="dark"] .theme-select {
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
         }
 
         .modal-content {
@@ -860,17 +923,34 @@
             </div>
         </div>
 
-        <div class="desktop-header d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2"><?= $this->renderSection('title') ?></h1>
-            <div class="btn-toolbar mb-2 mb-md-0 d-flex align-items-center gap-2">
-                <select class="form-select form-select-sm theme-select" id="themeSelectDesktop" aria-label="Theme mode">
-                    <option value="auto">Auto</option>
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                </select>
-                <span class="text-muted">Welcome, <?= session()->get('username') ?></span>
+        <header class="desktop-header">
+            <div class="d-flex align-items-center gap-3">
+                <h1 class="header-title"><?= $this->renderSection('title') ?></h1>
             </div>
-        </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="btn-toolbar d-flex align-items-center gap-2">
+                    <div class="position-relative">
+                        <i class="bi bi-palette position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style="font-size: 0.8rem; pointer-events: none;"></i>
+                        <select class="form-select form-select-sm theme-select ps-4" id="themeSelectDesktop" aria-label="Theme mode">
+                            <option value="auto">Auto</option>
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="user-profile-badge">
+                    <div class="avatar-circle">
+                        <?= strtoupper(substr(session()->get('username'), 0, 1)) ?>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="fw-bold small text-dark" style="line-height: 1.2;"><?= esc((string) session()->get('username')) ?></span>
+                        <span class="text-muted" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;"><?= esc($layoutRole) ?></span>
+                    </div>
+                </div>
+            </div>
+        </header>
 
         <?= $this->renderSection('content') ?>
     </div>
