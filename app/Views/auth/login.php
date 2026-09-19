@@ -14,140 +14,87 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: radial-gradient(circle at 15% 10%, #29336d 0%, #131a3e 38%, #0b1027 100%);
+            background: #faf3f3ff;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             position: relative;
-            color: #e8edff;
+            color: #1a202c;
         }
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            width: 420px;
-            height: 420px;
-            border-radius: 50%;
-            filter: blur(105px);
-            z-index: -1;
-            pointer-events: none;
-        }
-        body::before {
-            background: rgba(73, 132, 255, 0.45);
-            top: -140px;
-            left: -120px;
-        }
-        body::after {
-            background: rgba(170, 88, 255, 0.4);
-            bottom: -170px;
-            right: -140px;
-        }
+        /* blobs removed for clear white theme */
         .login-shell {
             width: 100%;
-            max-width: 980px;
+            max-width: 480px;
             border-radius: 28px;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 30px 80px rgba(3, 8, 26, 0.55);
-            display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            background: rgba(9, 15, 38, 0.88);
-            backdrop-filter: blur(12px);
-        }
-        .brand-side {
-            padding: 44px 40px;
-            background: linear-gradient(160deg, rgba(70, 101, 255, 0.26) 0%, rgba(116, 58, 255, 0.14) 100%);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.06);
+            background: #ffffff;
         }
         .brand-logo {
             width: 90px;
             height: 90px;
             object-fit: contain;
             border-radius: 18px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #f8f9fa;
+            border: 1px solid rgba(0,0,0,0.05);
             padding: 8px;
             margin-bottom: 20px;
             display: block;
             margin-left: auto;
             margin-right: auto;
         }
-        .brand-side h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -0.02em;
-            text-align: center;
-        }
-        .brand-side p {
-            color: #bdc8f6;
-            margin-bottom: 28px;
-            text-align: center;
-        }
-        .premium-points {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: grid;
-            gap: 10px;
-        }
-        .premium-points li {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            border-radius: 12px;
-            padding: 11px 12px;
-            color: #d9e1ff;
-            font-size: 0.92rem;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.45rem;
-        }
         .form-side {
             padding: 42px 34px;
-            background: linear-gradient(165deg, rgba(17, 24, 58, 0.95) 0%, rgba(10, 15, 34, 0.95) 100%);
+            background: #ffffff;
+        }
+        .form-head {
+            text-align: center;
         }
         .form-head h2 {
             margin: 0;
             font-size: 1.65rem;
             font-weight: 800;
+            color: #1a202c;
         }
         .form-head p {
             margin-top: 6px;
-            color: #aebce8;
+            color: #718096;
             margin-bottom: 22px;
         }
         .form-label {
             font-weight: 600;
-            color: #d5defd;
+            color: #4a5568;
             margin-bottom: 0.5rem;
         }
         .input-group-text,
         .form-control,
         .password-toggle {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(181, 196, 255, 0.25);
-            color: #eef2ff;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #2d3748;
         }
         .input-group-text {
             border-right: none;
             border-radius: 12px 0 0 12px;
+            color: #a0aec0;
         }
         .form-control {
             border-radius: 0 12px 12px 0;
             padding: 0.78rem 0.9rem;
         }
         .form-control::placeholder {
-            color: #9caad6;
+            color: #a0aec0;
         }
         .form-control:focus {
-            border-color: #7fa2ff;
-            box-shadow: 0 0 0 0.2rem rgba(105, 137, 255, 0.25);
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
+            border-color: #6ee7b7;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.2);
+            background: #ffffff;
+            color: #1a202c;
         }
         .password-toggle {
             border-left: none;
             border-radius: 0 12px 12px 0;
             cursor: pointer;
+            color: #a0aec0;
         }
         .btn-login {
             border: none;
@@ -155,13 +102,15 @@
             padding: 0.85rem;
             font-size: 1rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #4d78ff 0%, #7c54f9 100%);
-            box-shadow: 0 14px 32px rgba(78, 103, 226, 0.4);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(16, 185, 129, 0.3);
             transition: 0.25s ease;
         }
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 18px 36px rgba(78, 103, 226, 0.5);
+            box-shadow: 0 14px 28px rgba(16, 185, 129, 0.4);
+            color: #ffffff;
         }
         .btn-create {
             border-radius: 12px;
@@ -182,24 +131,10 @@
         .alert-danger { background-color: #4a2530; color: #ffd7de; }
         .alert-warning { background-color: #57451f; color: #ffebb5; }
         .help-text {
-            color: #9eaddd;
+            color: #718096;
             font-size: 0.9rem;
             text-align: center;
             margin-top: 12px;
-        }
-        @media (max-width: 900px) {
-            .login-shell {
-                grid-template-columns: 1fr;
-                max-width: 520px;
-            }
-            .brand-side {
-                padding: 28px 26px;
-                border-right: 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            .form-side {
-                padding: 28px 24px;
-            }
         }
         @media (max-width: 576px) {
             body {
@@ -208,31 +143,11 @@
             .login-shell {
                 border-radius: 18px;
             }
-            .brand-side {
-                padding: 20px 16px;
-            }
             .brand-logo {
                 width: 72px;
                 height: 72px;
                 border-radius: 14px;
                 margin-bottom: 12px;
-            }
-            .brand-side h1 {
-                font-size: 1.35rem;
-                line-height: 1.2;
-                margin-bottom: 6px;
-            }
-            .brand-side p {
-                font-size: 0.88rem;
-                line-height: 1.45;
-                margin-bottom: 14px;
-            }
-            .premium-points {
-                gap: 8px;
-            }
-            .premium-points li {
-                font-size: 0.82rem;
-                padding: 8px 10px;
             }
             .form-side {
                 padding: 20px 16px;
@@ -269,19 +184,10 @@
 <body>
 
 <div class="login-shell">
-    <div class="brand-side d-flex flex-column justify-content-center align-items-center">
-        <img class="brand-logo" src="<?= base_url('img/pic 1.png') ?>" alt="Traffic System Logo">
-        <h1>Traffic System</h1>
-        <p>Manage violations, payments, and enforcement with a premium-grade workflow.</p>
-        <!-- <ul class="premium-points">
-            <li><i class="bi bi-shield-check me-2"></i>Secure role-based dashboard access</li>
-            <li><i class="bi bi-graph-up-arrow me-2"></i>Real-time traffic violation tracking</li>
-            <li><i class="bi bi-receipt-cutoff me-2"></i>Fast digital payment and receipt flow</li>
-        </ul> -->
-    </div>
     <div class="form-side">
-        <div class="form-head">
-            <h2>Sign in</h2>
+        <div class="form-head text-center">
+            <img class="brand-logo" src="<?= base_url('img/pic 1.png') ?>" alt="Traffic System Logo">
+            <h2>Traffic System</h2>
             <p>Welcome back. Enter your credentials to continue.</p>
         </div>
 
@@ -334,6 +240,14 @@
                     </span>
                 </div>
             </div>
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe" style="border-color: #cbd5e0;">
+                    <label class="form-check-label text-muted small" for="rememberMe">Remember me</label>
+                </div>
+                <a href="<?= base_url('forgot-password') ?>" class="text-decoration-none small" style="color: #059669; font-weight: 600;">Forgot password?</a>
+            </div>
+
             <div class="d-grid gap-2 mt-4">
                 <button type="submit" class="btn btn-primary btn-login" id="submitBtn">
                     <span id="btnText">Sign In</span>

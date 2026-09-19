@@ -14,7 +14,8 @@ class ViolatorModel extends ViolatorRecord
     protected $protectFields    = true;
     protected $allowedFields    = [
         'ticket_id', 
-        'driver_name', 
+        'driver_name',
+        'license_number',
         'first_name',
         'last_name',
         'age',

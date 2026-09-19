@@ -20,7 +20,8 @@ class ViolationTypeModel extends Model
     protected $updatedField  = 'updated_at';
 
     protected $validationRules = [
-        'violation_name' => 'required|min_length[3]|is_unique[violation_types.violation_name]',
+        'id'             => 'permit_empty',
+        'violation_name' => 'required|min_length[3]|is_unique[violation_types.violation_name,id,{id}]',
         'description'    => 'permit_empty',
         'fine_amount'    => 'required|decimal',
         'points'         => 'permit_empty|integer',

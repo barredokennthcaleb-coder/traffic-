@@ -45,7 +45,6 @@
                             <th class="ps-4">Violation Name</th>
                             <th>Description</th>
                             <th>Fine Amount</th>
-                            <th>Points</th>
                             <th>Status</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
@@ -53,7 +52,7 @@
                     <tbody>
                         <?php if (empty($violationTypes)): ?>
                             <tr id="noDataRow">
-                                <td colspan="6" class="text-center py-5 text-muted">
+                                <td colspan="5" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No violation types found.
                                 </td>
@@ -63,8 +62,7 @@
                             <tr id="row-<?= $type['id'] ?>" class="violation-row">
                                 <td class="ps-4"><strong><?= esc($type['violation_name']) ?></strong></td>
                                 <td class="text-muted small"><?= esc($type['description'] ?? 'N/A') ?></td>
-                                <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3"><?= number_format($type['fine_amount'], 2) ?></span></td>
-                                <td><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3"><?= $type['points'] ?> pts</span></td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3">₱<?= number_format($type['fine_amount'], 2) ?></span></td>
                                 <td>
                                     <?php if ($type['status'] == 'active'): ?>
                                         <span class="badge bg-success rounded-pill px-3">Active</span>
@@ -113,21 +111,11 @@
                         <label class="form-label fw-bold">Description</label>
                         <textarea name="description" class="form-control shadow-sm" rows="2" placeholder="Brief description of the violation..."></textarea>
                     </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Fine Amount ($) *</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="fine_amount" class="form-control" step="0.01" min="0" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Points *</label>
-                                <input type="number" name="points" class="form-control shadow-sm" min="0" value="0" required>
-                            </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fine Amount (₱) *</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" name="fine_amount" class="form-control" step="0.01" min="0" required>
                         </div>
                     </div>
                     <div class="mb-0">
@@ -167,21 +155,11 @@
                         <label class="form-label fw-bold">Description</label>
                         <textarea name="description" id="edit_description" class="form-control shadow-sm" rows="2"></textarea>
                     </div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Fine Amount ($) *</label>
-                                <div class="input-group shadow-sm">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" name="fine_amount" id="edit_fine_amount" class="form-control" step="0.01" min="0" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Points *</label>
-                                <input type="number" name="points" id="edit_points" class="form-control shadow-sm" min="0" required>
-                            </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Fine Amount (₱) *</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text">₱</span>
+                            <input type="number" name="fine_amount" id="edit_fine_amount" class="form-control" step="0.01" min="0" required>
                         </div>
                     </div>
                     <div class="mb-0">
@@ -271,7 +249,7 @@
                     const tbody = document.querySelector('#violationTable tbody');
                     const row = tbody.insertRow();
                     row.id = 'noDataRow';
-                    row.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">No matching results found.</td>`;
+                    row.innerHTML = `<td colspan="5" class="text-center py-5 text-muted">No matching results found.</td>`;
                 }
             } else if (noDataRow) {
                 noDataRow.remove();
@@ -321,7 +299,6 @@
             document.getElementById('edit_violation_name').value = data.violation_name;
             document.getElementById('edit_description').value = data.description || '';
             document.getElementById('edit_fine_amount').value = data.fine_amount;
-            document.getElementById('edit_points').value = data.points;
             document.getElementById('edit_status').value = data.status;
             
             editModal.show();
@@ -354,9 +331,8 @@
                 row.classList.add('highlight');
                 row.cells[0].innerHTML = `<strong>${result.data.violation_name}</strong>`;
                 row.cells[1].textContent = result.data.description || 'N/A';
-                row.cells[2].innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-3">$${parseFloat(result.data.fine_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
-                row.cells[3].innerHTML = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3">${result.data.points} pts</span>`;
-                row.cells[4].innerHTML = result.data.status === 'active' 
+                row.cells[2].innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-3">₱${parseFloat(result.data.fine_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
+                row.cells[3].innerHTML = result.data.status === 'active' 
                     ? '<span class="badge bg-success rounded-pill px-3">Active</span>' 
                     : '<span class="badge bg-secondary rounded-pill px-3">Inactive</span>';
                 

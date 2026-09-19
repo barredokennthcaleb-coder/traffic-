@@ -59,12 +59,15 @@
                                 </td>
                                 <td><?= date('M d, Y', strtotime($violation['violation_date'])) ?></td>
                                 <td class="text-end">
+                                    <a href="<?= base_url('user/view/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-outline-primary me-1" title="View Ticket">
+                                        <i class="bi bi-eye me-1"></i> View Ticket
+                                    </a>
                                     <?php if ($violation['status'] == 'Pending'): ?>
-                                        <a href="/user/pay/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-success px-3">
+                                        <a href="<?= base_url('user/pay/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-success px-3">
                                             <i class="bi bi-credit-card me-1"></i> Pay Now
                                         </a>
                                     <?php elseif ($violation['status'] == 'Paid'): ?>
-                                        <a href="/user/receipt/<?= esc($violation['ticket_id']) ?>" class="btn btn-sm btn-info text-white px-3">
+                                        <a href="<?= base_url('user/receipt/' . esc($violation['ticket_id'])) ?>" class="btn btn-sm btn-info text-white px-3">
                                             <i class="bi bi-receipt me-1"></i> Receipt
                                         </a>
                                     <?php endif; ?>

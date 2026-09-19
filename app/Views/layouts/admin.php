@@ -282,8 +282,9 @@
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 46px rgba(42, 56, 119, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 24px 48px rgba(38, 54, 116, 0.2), 0 8px 16px rgba(38, 54, 116, 0.1);
+            border-color: rgba(255, 255, 255, 0.9);
         }
 
         .card-header {
@@ -384,9 +385,10 @@
 
         .premium-reveal {
             opacity: 0;
-            transform: translateY(14px) scale(0.99);
-            animation: premiumReveal 0.7s var(--ease-premium) forwards;
+            transform: translateY(24px);
+            animation: premiumReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             animation-delay: var(--reveal-delay, 0s);
+            will-change: transform, opacity;
         }
 
         .premium-pulse {
@@ -394,9 +396,13 @@
         }
 
         @keyframes premiumReveal {
-            to {
+            0% {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            100% {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
@@ -972,27 +978,36 @@
             }
         });
 
+        // Skip flash popups when in print mode
+        const _isPrintMode = new URLSearchParams(window.location.search).get('print') === '1';
+
         <?php if (session()->getFlashdata('success')): ?>
-            Toast.fire({
-                icon: 'success',
-                title: '<?= session()->getFlashdata('success') ?>'
-            });
+            if (!_isPrintMode) {
+                Toast.fire({
+                    icon: 'success',
+                    title: '<?= session()->getFlashdata('success') ?>'
+                });
+            }
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('error')): ?>
-            Toast.fire({
-                icon: 'error',
-                title: '<?= session()->getFlashdata('error') ?>'
-            });
+            if (!_isPrintMode) {
+                Toast.fire({
+                    icon: 'error',
+                    title: '<?= session()->getFlashdata('error') ?>'
+                });
+            }
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('errors')): ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                html: '<ul class="text-start mb-0 ps-3"><?php foreach (session()->getFlashdata('errors') as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?></ul>',
-                confirmButtonColor: 'var(--brand-primary)'
-            });
+            if (!_isPrintMode) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: '<ul class="text-start mb-0 ps-3"><?php foreach (session()->getFlashdata('errors') as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?></ul>',
+                    confirmButtonColor: 'var(--brand-primary)'
+                });
+            }
         <?php endif; ?>
     });
 </script>

@@ -35,15 +35,16 @@
                             <th>Receipt #</th>
                             <th>Driver</th>
                             <th>Violation</th>
+                            <th>Amount</th>
                             <th>Method</th>
-                            <th>Amount Paid</th>
+                            <th>Total Paid</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($payments)): ?>
                             <tr id="noDataRow">
-                                <td colspan="8" class="text-center py-5 text-muted">
+                                <td colspan="9" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No payment history found.
                                 </td>
@@ -63,13 +64,46 @@
                                     <div class="fw-bold"><?= esc($p['driver_name']) ?></div>
                                     <span class="badge bg-light text-dark border small font-monospace"><?= esc($p['license_plate']) ?></span>
                                 </td>
-                                <td class="small fw-semibold text-muted" data-label="Violation"><?= esc($p['violation_type']) ?></td>
+                                <td class="small fw-semibold text-dark" data-label="Violation">
+                                    <?php 
+                                    $rawTypes = !empty($p['concatenated_violations']) ? $p['concatenated_violations'] : $p['violation_type'];
+                                    $types = explode('||', $rawTypes);
+                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
+                                    foreach ($types as $t) {
+                                        $parts = explode('::', $t);
+                                        $vName = $parts[0];
+                                        echo '<li><i class="bi bi-dot me-1 text-primary"></i>' . esc($vName) . '</li>';
+                                    }
+                                    echo '</ul>';
+                                    ?>
+                                </td>
+                                <td class="small font-monospace text-muted" data-label="Amount">
+                                    <?php 
+                                    $rawTypes = !empty($p['concatenated_violations']) ? $p['concatenated_violations'] : $p['violation_type'];
+                                    $types = explode('||', $rawTypes);
+                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
+                                    foreach ($types as $t) {
+                                        $parts = explode('::', $t);
+                                        $vAmt  = isset($parts[1]) && $parts[1] !== '' ? (float)$parts[1] : null;
+                                        echo '<li>';
+                                        if ($vAmt !== null) {
+                                            echo '₱' . number_format($vAmt, 2);
+                                        } else {
+                                            echo '-';
+                                        }
+                                        echo '</li>';
+                                    }
+                                    echo '</ul>';
+                                    ?>
+                                </td>
                                 <td data-label="Method">
                                     <span class="badge bg-light text-dark border">
                                         <?= esc($p['payment_method']) ?>
                                     </span>
                                 </td>
-                                <td data-label="Amount Paid"><span class="text-success fw-bold">+<?= number_format($p['penalty_amount'], 2) ?></span></td>
+                                <td data-label="Total Paid">
+                                    <span class="fw-bold text-success font-monospace fs-6">+₱<?= number_format((float) ($p['total_penalty_sum'] ?? $p['penalty_amount'] ?? 0), 2) ?></span>
+                                </td>
                                 <td class="text-end pe-4" data-label="Actions">
                                     <div class="btn-group shadow-sm">
                                         <a href="<?= base_url('user/receipt/' . $p['ticket_id']) ?>" class="btn btn-sm btn-white border" title="View Receipt" target="_blank">

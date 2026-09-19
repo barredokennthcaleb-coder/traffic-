@@ -32,7 +32,6 @@
                         <?php $selectedRole = $selectedRole ?? ''; ?>
                         <option value="" <?= $selectedRole === '' ? 'selected' : '' ?>>All Roles</option>
                         <option value="admin" <?= $selectedRole === 'admin' ? 'selected' : '' ?>>Administrators</option>
-                        <option value="driver" <?= $selectedRole === 'driver' ? 'selected' : '' ?>>Drivers</option>
                         <option value="enforcer" <?= $selectedRole === 'enforcer' ? 'selected' : '' ?>>Traffic Enforcers</option>
                     </select>
                 </div>
@@ -235,14 +234,26 @@
                 <?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <p class="fw-bold">Reset password for <span id="resetUsername" class="text-primary"></span>?</p>
-                    <div class="alert alert-warning border-0 shadow-sm" role="alert">
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-shield-lock"></i></span>
+                            <input type="password" name="password" id="new_password" class="form-control" placeholder="Enter new password" required minlength="5">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 shadow-sm mb-0" role="alert">
                         <i class="bi bi-info-circle me-2"></i>
-                        A new random password will be generated. You will need to provide this to the user.
+                        Please enter the new password for this user. You will need to provide this password to the user manually.
                     </div>
                 </div>
                 <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning px-4 shadow-sm">Generate New Password</button>
+                    <button type="button" class="btn btn-link text-muted text-decoration-none" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning px-4 shadow-sm fw-bold">Reset Password</button>
                 </div>
             </form>
         </div>
@@ -303,10 +314,23 @@
                 const username = this.getAttribute('data-username');
                 
                 resetUsernameSpan.textContent = username;
+                document.getElementById('new_password').value = ''; // Clear previous input
                 resetPasswordForm.action = `<?= base_url('users/reset-password') ?>/${userId}`;
                 resetModal.show();
             });
         });
+
+        // Toggle Password Visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('new_password');
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('bi-eye');
+                this.querySelector('i').classList.toggle('bi-eye-slash');
+            });
+        }
 
         // Delete Confirmation
         const deleteButtons = document.querySelectorAll('.btn-delete');

@@ -1,117 +1,326 @@
+<?php
+// Try to format number to words, fallback if extension is not loaded
+$amountWords = '';
+try {
+    if(class_exists('NumberFormatter')) {
+        $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+        $amountWords = ucwords($f->format($violation['penalty_amount'])) . ' Pesos';
+    } else {
+        $amountWords = ''; // Fallback
+    }
+} catch (\Exception $e) {
+    $amountWords = '';
+}
+?>
 <?= $this->extend('layouts/admin') ?>
 
-<?= $this->section('title') ?>Payment Receipt - <?= $violation['receipt_number'] ?><?= $this->endSection() ?>
+<?= $this->section('title') ?>Official Receipt<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-
 <style>
+    .receipt-wrapper {
+        font-family: 'Times New Roman', Times, serif;
+        width: 100%;
+        max-width: 750px;
+        margin: 0 auto;
+        background: #fff;
+        color: #000;
+        padding: 20px;
+    }
+    .receipt-container {
+        border: 2px solid #000;
+        padding: 0;
+        background: #fff;
+    }
+    .receipt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 2px solid #000;
+    }
+    .receipt-header img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+    }
+    .header-text {
+        text-align: center;
+        flex-grow: 1;
+    }
+    .header-text h2 {
+        font-size: 26px;
+        font-weight: bold;
+        margin: 0;
+        letter-spacing: 1px;
+    }
+    .header-text h3 {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 4px 0;
+    }
+    .header-text p {
+        margin: 0;
+        font-size: 16px;
+    }
+    .row-flex {
+        display: flex;
+        border-bottom: 2px solid #000;
+    }
+    .col-flex {
+        padding: 10px;
+    }
+    .border-right-black {
+        border-right: 2px solid #000;
+    }
+    
+    .table-container {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-container th, .table-container td {
+        border: 1px solid #000;
+        padding: 8px 12px;
+    }
+    .table-container th {
+        border-top: 0;
+        border-bottom: 2px solid #000;
+        font-weight: normal;
+        font-size: 14px;
+        text-align: center;
+    }
+    .col-nature { width: 50%; border-left: 0; }
+    .col-account { width: 25%; text-align: center; }
+    .col-amount { width: 25%; border-right: 0; text-align: right; }
+    
+    .table-container td {
+        height: 35px; /* Empty rows */
+    }
+    
+    .total-row {
+        border-top: 2px solid #000 !important;
+        font-weight: bold;
+    }
+    .total-row td {
+        border-top: 2px solid #000 !important;
+    }
+    .amount-in-words {
+        padding: 8px;
+        border-bottom: 2px solid #000;
+    }
+    .payment-type-bank {
+        display: flex;
+        border-bottom: 2px solid #000;
+    }
+    .payment-checkboxes {
+        width: 35%;
+        padding: 12px;
+        border-right: 2px solid #000;
+    }
+    .bank-details {
+        width: 65%;
+        display: flex;
+        flex-direction: column;
+    }
+    .bank-header {
+        display: flex;
+        border-bottom: 1px solid #000;
+    }
+    .bank-header div {
+        flex: 1;
+        text-align: center;
+        padding: 6px;
+        font-size: 14px;
+    }
+    .bank-header div:not(:last-child) {
+        border-right: 1px solid #000;
+    }
+    .bank-inputs {
+        display: flex;
+        flex: 1;
+        min-height: 30px;
+    }
+    .bank-inputs div {
+        flex: 1;
+        border-right: 1px solid #000;
+    }
+    .bank-inputs div:last-child {
+        border-right: 0;
+    }
+    
+    .signature-section {
+        padding: 20px;
+    }
+    
     @media print {
-        .sidebar, .sidebar-toggle, .btn, .alert, .main-content h1, .breadcrumb {
-            display: none !important;
-        }
+        body { background: #fff !important; }
+        .no-print { display: none !important; }
         .main-content {
             margin-left: 0 !important;
             padding: 0 !important;
             width: 100% !important;
         }
-        .card {
-            border: 1px solid #dee2e6 !important;
-            box-shadow: none !important;
-        }
-        .container-fluid {
-            padding: 0 !important;
-        }
-        body {
-            background-color: white !important;
+        .sidebar, .navbar { display: none !important; }
+        .receipt-container {
+            border: 2px solid #000 !important;
         }
     }
 </style>
 
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <div class="text-center mb-4">
-                        <div class="bg-success bg-opacity-10 d-inline-flex p-3 rounded-circle mb-3">
-                            <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                        </div>
-                        <h3 class="mb-1">Payment Successful!</h3>
-                        <p class="text-muted mb-0">Thank you for your payment</p>
-                    </div>
+<div class="container-fluid py-4 no-print">
+    <div class="d-flex justify-content-between mb-3" style="max-width: 750px; margin: 0 auto;">
+        <a href="<?= base_url('user/dashboard') ?>" class="btn btn-secondary">Back to Dashboard</a>
+        <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Print Official Receipt</button>
+    </div>
+</div>
 
-                    <div class="bg-light p-4 rounded mb-4">
-                        <div class="row text-center">
-                            <div class="col-6 border-end">
-                                <small class="text-muted text-uppercase">Receipt Number</small>
-                                <h5 class="mb-0 mt-1"><?= esc($violation['receipt_number']) ?></h5>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-muted text-uppercase">Date Paid</small>
-                                <h5 class="mb-0 mt-1"><?= date('M d, Y', strtotime($violation['paid_date'])) ?></h5>
-                                <small class="text-muted"><?= date('h:i A', strtotime($violation['paid_date'])) ?></small>
-                            </div>
-                        </div>
-                    </div>
+<div class="receipt-wrapper">
+    <div class="receipt-container">
+        <!-- Header -->
+        <div class="receipt-header">
+            <img src="<?= base_url('img/pic 1.png') ?>" alt="Logo">
+            <div class="header-text">
+                <h2>OFFICIAL RECEIPT</h2>
+                <p>Republic of the Philippines</p>
+                <h3>OFFICE OF THE TREASURER</h3>
+                <p>City of Kabankalan</p>
+            </div>
+            <img src="<?= base_url('img/pic 1.png') ?>" alt="Logo">
+        </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <small class="text-muted text-uppercase">Ticket ID</small>
-                                <p class="mb-0 fw-semibold"><?= esc($violation['ticket_id']) ?></p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <small class="text-muted text-uppercase">Payment Method</small>
-                                <p class="mb-0 fw-semibold"><?= esc($violation['payment_method']) ?></p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <small class="text-muted text-uppercase">Driver Name</small>
-                                <p class="mb-0 fw-semibold"><?= esc($violation['driver_name']) ?></p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <small class="text-muted text-uppercase">License Plate</small>
-                                <p class="mb-0 fw-semibold"><?= esc($violation['license_plate']) ?></p>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="p-3 bg-light rounded">
-                                <small class="text-muted text-uppercase">Violation</small>
-                                <p class="mb-0 fw-semibold"><?= esc($violation['violation_type']) ?></p>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Form Info -->
+        <div class="row-flex">
+            <div class="col-flex border-right-black" style="width: 50%;">
+                <div style="font-size: 15px;">Accountable Form No. 51</div>
+                <div style="font-size: 15px;">Revised January, 1992</div>
+            </div>
+            <div class="col-flex" style="width: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 20px;">
+                ORIGINAL
+            </div>
+        </div>
 
-                    <div class="text-center p-4 bg-success text-white rounded mb-4">
-                        <small class="text-uppercase">Amount Paid</small>
-                        <h1 class="mb-0 display-4 fw-bold"><?= number_format($violation['penalty_amount'], 2) ?></h1>
-                    </div>
+        <!-- Date & No -->
+        <div class="row-flex">
+            <div class="col-flex border-right-black" style="width: 50%; display: flex; align-items: flex-end;">
+                <div style="width: 60px;">DATE</div>
+                <div style="flex: 1; text-align: center; border-bottom: 1px solid #000; font-size: 18px;">
+                    <?= date('M d, Y', strtotime($violation['paid_date'])) ?>
+                </div>
+            </div>
+            <div class="col-flex" style="width: 50%; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 20px; margin-right: 15px;">NO.</span>
+                <span style="color: red; font-size: 28px; font-weight: bold; letter-spacing: 2px; font-family: monospace;">
+                    <?= esc($violation['receipt_number']) ?>
+                </span>
+            </div>
+        </div>
 
-                    <div class="alert alert-success border-0 shadow-sm mb-4">
-                        <div class="d-flex">
-                            <i class="bi bi-shield-check me-3 mt-1"></i>
-                            <div>
-                                <strong>Official Receipt</strong>
-                                <p class="mb-0 text-muted small">This serves as your official receipt for the payment of the above violation. Please keep this for your records.</p>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Payor -->
+        <div class="row-flex">
+            <div class="col-flex border-right-black" style="width: 75%; display: flex; align-items: flex-end;">
+                <div style="width: 70px;">PAYOR</div>
+                <div style="flex: 1; border-bottom: 1px solid #000; padding-left: 10px; font-size: 18px; text-transform: uppercase;">
+                    <?= esc($violation['driver_name']) ?>
+                </div>
+            </div>
+            <div class="col-flex" style="width: 25%; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>FUND</div>
+                <div style="border-top: 1px solid #000; margin-top: 10px;"></div>
+            </div>
+        </div>
 
-                    <div class="d-flex gap-2">
-                        <button onclick="window.print()" class="btn btn-outline-primary flex-grow-1">
-                            <i class="bi bi-printer me-1"></i> Print Receipt
-                        </button>
-                        <a href="<?= base_url('user/dashboard') ?>" class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-house me-1"></i> Back to Dashboard
-                        </a>
+        <!-- Table -->
+        <table class="table-container">
+            <thead>
+                <tr>
+                    <th class="col-nature">NATURE OF COLLECTION</th>
+                    <th class="col-account">ACCOUNT<br>CODE</th>
+                    <th class="col-amount">AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-nature"><?= esc($violation['violation_type']) ?> - Ticket #<?= esc($violation['ticket_id']) ?></td>
+                    <td class="col-account"></td>
+                    <td class="col-amount"><?= number_format($violation['penalty_amount'], 2) ?></td>
+                </tr>
+                <?php for($i=0; $i<7; $i++): ?>
+                <tr>
+                    <td class="col-nature"></td>
+                    <td class="col-account"></td>
+                    <td class="col-amount"></td>
+                </tr>
+                <?php endfor; ?>
+                <tr class="total-row">
+                    <td class="col-nature" style="letter-spacing: 5px; text-align: center;">T O T A L</td>
+                    <td class="col-account"></td>
+                    <td class="col-amount" style="position: relative;">
+                        <span style="position: absolute; left: 12px; font-weight: normal;">₱</span>
+                        <?= number_format($violation['penalty_amount'], 2) ?>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Amount in Words -->
+        <div class="amount-in-words">
+            <div style="font-size: 14px; margin-bottom: 5px;">AMOUNT IN WORDS</div>
+            <div style="border-bottom: 1px solid #000; min-height: 25px; padding-left: 10px; text-transform: uppercase; font-size: 16px;">
+                <?= $amountWords ?>
+            </div>
+        </div>
+
+        <!-- Bank Details Section -->
+        <div class="payment-type-bank">
+            <div class="payment-checkboxes">
+                <div style="margin-bottom: 8px;">
+                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle; text-align:center; line-height:18px; font-weight:bold;">
+                        <?= strtolower($violation['payment_method'] ?? '') == 'cash' ? '✓' : '' ?>
+                    </span> Cash
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle;"></span> Check
+                </div>
+                <div>
+                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle;"></span> Money Order
+                </div>
+            </div>
+            <div class="bank-details">
+                <div class="bank-header">
+                    <div>DRAWEE<br>BANK</div>
+                    <div>NUMBER</div>
+                    <div>DATE</div>
+                </div>
+                <div class="bank-inputs">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="bank-inputs" style="border-top: 1px solid #000;">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature -->
+        <div class="signature-section">
+            <div style="font-size: 16px;">Received the amount stated above</div>
+            <div style="margin-top: 30px; padding-left: 50%;">
+                <div style="display:flex; align-items: flex-end;">
+                    <div style="margin-right: 15px; font-size: 18px;">By:</div>
+                    <div style="flex:1;">
+                        <div style="border-bottom: 1px solid #000; height: 30px;"></div>
+                        <div style="text-align: center; font-size: 14px; margin-top: 5px;">COLLECTING OFFICER</div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Footer Note -->
+        <div style="padding: 15px; font-size: 14px; border-top: 2px solid #000; text-align: center;">
+            NOTE: Write the number and date of this receipt on the back of check or money order received.
         </div>
     </div>
 </div>

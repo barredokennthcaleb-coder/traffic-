@@ -10,6 +10,8 @@ $routes->get('/', 'AuthController::login');
 // Auth Routes
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::loginPost');
+$routes->get('forgot-password', 'AuthController::forgotPassword');
+$routes->post('forgot-password', 'AuthController::forgotPasswordPost');
 $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::registerPost');
 $routes->get('logout', 'AuthController::logout');
@@ -18,6 +20,7 @@ $routes->get('logout', 'AuthController::logout');
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
     $routes->get('profile', 'Officer\OfficerController::profile');
+
     $routes->post('store', 'Officer\OfficerController::store');
     $routes->get('violations', 'Officer\OfficerController::violations');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
@@ -41,6 +44,7 @@ $routes->group('user', ['filter' => 'auth'], function($routes) {
 // Admin Routes
 $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('dashboard', 'Admin\AdminController::index');
+
     
     // User CRUD Routes
     $routes->get('users', 'Admin\UserController::index');
@@ -70,6 +74,10 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('violation-types/store', 'Admin\ViolationTypeController::store');
     $routes->post('violation-types/update', 'Admin\ViolationTypeController::update');
     $routes->get('violation-types/delete/(:num)', 'Admin\ViolationTypeController::delete/$1');
+
+    // Reports Routes
+    $routes->get('reports', 'Admin\AdminController::reports');
+    $routes->get('reports/export-csv', 'Admin\AdminController::exportReportCsv');
 });
 
 // Inspection Routes (Accessible by Admin and Officer)

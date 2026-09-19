@@ -246,11 +246,18 @@ class UserController extends BaseController
             return redirect()->back()->with('error', 'User not found.');
         }
 
-        // Generate a simple 8-character password for easier copying
-        $newPassword = substr(str_shuffle('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 8);
+        $newPassword = (string) $this->request->getPost('password');
+
+        if (empty($newPassword)) {
+            return redirect()->back()->with('error', 'Please enter a new password.');
+        }
+
+        if (strlen($newPassword) < 5) {
+            return redirect()->back()->with('error', 'Password must be at least 5 characters long.');
+        }
 
         if ($this->userModel->update($id, ['password' => $newPassword])) {
-            return redirect()->to(base_url('users') . ($user['role'] ? '?role=' . $user['role'] : ''))->with('success', "Password for <strong>{$user['username']}</strong> reset to: <strong class='text-danger'>{$newPassword}</strong>. Please copy this password now.");
+            return redirect()->to(base_url('users') . ($user['role'] ? '?role=' . $user['role'] : ''))->with('success', "Password for <strong>{$user['username']}</strong> has been reset successfully.");
         } else {
             return redirect()->back()->with('error', 'Failed to reset password.');
         }

@@ -68,7 +68,7 @@
                                     <td><?= date('M d, Y', strtotime($item['inspection_date'])) ?></td>
                                     <td class="text-end pe-4">
                                         <div class="btn-group shadow-sm">
-                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border" target="_blank" title="Print">
+                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Print">
                                                 <i class="bi bi-printer text-info"></i>
                                             </a>
                                             <a href="<?= base_url('inspections/edit/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Edit">

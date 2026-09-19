@@ -1,5 +1,6 @@
 <?php $role = session()->get('role'); ?>
 
+
 <!-- Sidebar -->
 <nav class="sidebar p-0">
     <div class="sidebar-toggle">
@@ -30,11 +31,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (uri_string() == 'penalties/all') ? 'active' : '' ?>" href="<?= base_url('penalties/all') ?>">
-                        <i class="bi bi-list-ul"></i>
-                        <span class="nav-text ms-2">Violators</span>
+                    <a class="nav-link <?= (uri_string() == 'reports' || strpos(uri_string(), 'reports') === 0) ? 'active' : '' ?>" href="<?= base_url('reports') ?>">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span class="nav-text ms-2">Reports</span>
                     </a>
                 </li>
+
+
                 <li class="nav-item">
                     <a class="nav-link <?= (uri_string() == 'violation-types' || strpos(uri_string(), 'violation-types/') === 0) ? 'active' : '' ?>" href="<?= base_url('violation-types') ?>">
                         <i class="bi bi-card-list"></i>
@@ -74,6 +77,7 @@
                         <span class="nav-text ms-2">My Profile</span>
                     </a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link <?= (uri_string() == 'officer/violations' || uri_string() == 'officer' || uri_string() == 'officer/') ? 'active' : '' ?>" href="<?= base_url('officer/violations') ?>">
                         <i class="bi bi-list-ul"></i>

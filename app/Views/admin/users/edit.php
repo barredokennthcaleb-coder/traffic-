@@ -88,7 +88,6 @@
                                 <select name="role" id="role" class="form-select" required>
                                     <option value="admin" <?= old('role', $user['role']) == 'admin' ? 'selected' : '' ?>>Admin</option>
                                     <option value="enforcer" <?= old('role', $user['role']) == 'enforcer' ? 'selected' : '' ?>>Traffic Enforcer</option>
-                                    <option value="driver" <?= old('role', $user['role']) == 'driver' ? 'selected' : '' ?>>Driver</option>
                                 </select>
                             </div>
 

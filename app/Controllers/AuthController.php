@@ -139,4 +139,39 @@ class AuthController extends BaseController
         $session->destroy();
         return redirect()->to(base_url('login'))->with('success', 'You have been logged out successfully.');
     }
+
+    public function forgotPassword()
+    {
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to(base_url('dashboard'));
+        }
+        return view('auth/forgot_password');
+    }
+
+    public function forgotPasswordPost()
+    {
+        $session = session();
+        $model = new UserModel();
+        $email = $this->request->getVar('email');
+
+        $user = $model->where('email', $email)->first();
+
+        if ($user) {
+            // In a real application, you would send a reset link via email.
+            // For this project, we will reset the password to the default password from .env
+            $defaultPassword = (string) (env('auth.defaultUserPassword') ?? '00000');
+            
+            $data = [
+                'password' => $defaultPassword
+            ];
+
+            if ($model->update($user['id'], $data)) {
+                return redirect()->back()->with('success', "Password has been reset to the default password ('{$defaultPassword}'). Please log in and change it immediately.");
+            } else {
+                return redirect()->back()->with('error', 'Failed to reset password. Please try again later.');
+            }
+        } else {
+            return redirect()->back()->with('error', 'No account found with that email address.');
+        }
+    }
 }

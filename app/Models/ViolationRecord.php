@@ -14,7 +14,8 @@ class ViolationRecord_Old extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'ticket_id', 
-        'driver_name', 
+        'driver_name',
+        'license_number',
         'first_name',
         'last_name',
         'age',
@@ -50,6 +51,7 @@ class ViolationRecord_Old extends Model
         'address'         => 'required|min_length[5]|max_length[255]',
         'driver_name'     => 'required|min_length[2]|max_length[255]',
         'license_plate'   => 'required|min_length[2]|max_length[20]',
+        'license_number'  => 'permit_empty|min_length[3]|max_length[50]',
         'officer_id'      => 'permit_empty|integer',
         'violation_type_id' => 'permit_empty|integer',
         'violation_type'  => 'required|min_length[2]|max_length[255]',
@@ -92,6 +94,10 @@ class ViolationRecord_Old extends Model
         'license_plate' => [
             'required' => 'License plate is required.',
             'min_length' => 'License plate must be at least 2 characters.',
+        ],
+        'license_number' => [
+            'min_length' => 'Driver license number must be at least 3 characters.',
+            'max_length' => 'Driver license number must not exceed 50 characters.',
         ],
         'violation_type' => [
             'required' => 'Violation type is required.',
@@ -221,6 +227,7 @@ class ViolationRecord_Old extends Model
                         ->like('violations.ticket_id', $keyword)
                         ->orLike('violations.driver_name', $keyword)
                         ->orLike('violations.license_plate', $keyword)
+                        ->orLike('violations.license_number', $keyword)
                         ->orLike('violations.violation_type', $keyword)
                         ->orLike('violations.receipt_number', $keyword)
                     ->groupEnd()

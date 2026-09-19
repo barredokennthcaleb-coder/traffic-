@@ -34,6 +34,7 @@
                             <th>Driver Information</th>
                             <th>Violation Type</th>
                             <th>Amount</th>
+                            <th>Total</th>
                             <th>Status</th>
                             <th>Date</th>
                             <th class="text-end pe-4">Actions</th>
@@ -42,7 +43,7 @@
                     <tbody>
                         <?php if (empty($violations)): ?>
                             <tr id="noDataRow">
-                                <td colspan="7" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No violation records found.
                                 </td>
@@ -55,8 +56,41 @@
                                     <div class="fw-bold"><?= esc($v['driver_name']) ?></div>
                                     <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><?= esc($v['license_plate']) ?></span>
                                 </td>
-                                <td class="small fw-semibold text-muted"><?= esc($v['violation_type']) ?></td>
-                                <td><span class="fw-bold text-danger"><?= number_format($v['penalty_amount'], 2) ?></span></td>
+                                <td class="small fw-semibold text-dark">
+                                    <?php 
+                                    $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : $v['violation_type'];
+                                    $types = explode('||', $rawTypes);
+                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
+                                    foreach ($types as $t) {
+                                        $parts = explode('::', $t);
+                                        $vName = $parts[0];
+                                        echo '<li><i class="bi bi-dot me-1 text-primary"></i>' . esc($vName) . '</li>';
+                                    }
+                                    echo '</ul>';
+                                    ?>
+                                </td>
+                                <td class="small font-monospace text-muted">
+                                    <?php 
+                                    $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : $v['violation_type'];
+                                    $types = explode('||', $rawTypes);
+                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
+                                    foreach ($types as $t) {
+                                        $parts = explode('::', $t);
+                                        $vAmt  = isset($parts[1]) && $parts[1] !== '' ? (float)$parts[1] : null;
+                                        echo '<li>';
+                                        if ($vAmt !== null) {
+                                            echo '₱' . number_format($vAmt, 2);
+                                        } else {
+                                            echo '-';
+                                        }
+                                        echo '</li>';
+                                    }
+                                    echo '</ul>';
+                                    ?>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-danger font-monospace fs-6">₱<?= number_format((float) ($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0), 2) ?></span>
+                                </td>
                                 <td>
                                     <?php if ($v['status'] == 'Pending'): ?>
                                         <span class="badge bg-warning rounded-pill px-3">Pending</span>

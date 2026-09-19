@@ -36,13 +36,17 @@ class OfficerController extends BaseController
         }
 
         $records = $this->violationRecord
+            ->select('ticket_id, status, SUM(penalty_amount) as penalty_amount')
             ->where('officer_id', $officerId)
-            ->orderBy('violation_date', 'DESC')
+            ->where('status !=', 'Cancelled')
+            ->groupBy('ticket_id, status')
             ->findAll();
 
         $totalAmount = array_sum(array_map(static function ($record) {
             return (float) ($record['penalty_amount'] ?? 0);
         }, $records));
+
+        $year = $this->request->getGet('year') ?? date('Y');
 
         $data = [
             'title'          => 'My Profile',
@@ -52,22 +56,11 @@ class OfficerController extends BaseController
             'paidCount'      => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
             'cancelledCount' => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
             'totalAmount'    => $totalAmount,
-            // Chart Data: Violations by Type
-            'violationsByType' => $this->violationRecord
-                ->select('violation_type, COUNT(*) as count')
-                ->where('officer_id', $officerId)
-                ->groupBy('violation_type')
-                ->orderBy('count', 'DESC')
-                ->limit(5)
-                ->findAll(),
-            // Chart Data: Monthly Trend (Current Year)
-            'monthlyTrend' => $this->violationRecord
-                ->select('MONTH(violation_date) as month, COUNT(*) as count')
-                ->where('officer_id', $officerId)
-                ->where('YEAR(violation_date)', date('Y'))
-                ->groupBy('MONTH(violation_date)')
-                ->orderBy('month', 'ASC')
-                ->findAll(),
+            'year'           => $year,
+            // New Analytics Data
+            'weekly_trend'       => $this->violationRecord->getWeeklyTrend(12, $officerId),
+            'monthly_breakdown'  => $this->violationRecord->getMonthlyBreakdown($year, $officerId),
+            'nature_summary'     => $this->violationRecord->getViolationNatureSummary($officerId),
         ];
 
         return view('officer/profile', $data);
@@ -132,14 +125,15 @@ class OfficerController extends BaseController
         $session = session();
 
         $rules = [
-            'first_name'        => 'required|min_length[2]|max_length[100]',
-            'last_name'         => 'required|min_length[2]|max_length[100]',
+            'first_name'        => 'required|max_length[100]',
+            'last_name'         => 'required|max_length[100]',
             'age'               => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
-            'address'           => 'required|min_length[5]|max_length[255]',
-            'license_plate'     => 'required|min_length[2]|max_length[20]',
+            'address'           => 'required|max_length[255]',
+            'license_plate'     => 'required|max_length[20]',
             'violation_type_id' => 'required',
             'location'          => 'permit_empty|max_length[255]',
             'notes'             => 'permit_empty|max_length[500]',
+            'violation_datetime'=> 'permit_empty|valid_date[Y-m-d\TH:i]',
         ];
 
         if (!$this->validate($rules)) {
@@ -160,14 +154,43 @@ class OfficerController extends BaseController
         }
 
         $firstName = trim((string) $this->request->getPost('first_name'));
+        $middleName = trim((string) $this->request->getPost('middle_name'));
         $lastName = trim((string) $this->request->getPost('last_name'));
         $licensePlate = strtoupper(trim((string) $this->request->getPost('license_plate')));
+        $licenseNumber = trim((string) $this->request->getPost('license_number'));
+        $mtopNumber = trim((string) $this->request->getPost('mtop_number'));
+        $ownerName = trim((string) $this->request->getPost('owner_name'));
+        $acknowledgment = trim((string) $this->request->getPost('acknowledgment'));
+        
+        $inputViolationDateTime = (string) ($this->request->getPost('violation_datetime') ?? '');
+        $resolvedViolationDate = date('Y-m-d H:i:s');
+        if ($inputViolationDateTime !== '') {
+            $parsed = strtotime($inputViolationDateTime);
+            if ($parsed !== false) {
+                $resolvedViolationDate = date('Y-m-d H:i:s', $parsed);
+            }
+        }
 
-        // Generate a single Ticket ID for all violations in this batch
-        $sharedTicketId = 'TKT-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        // Custom TCT Booklet Number or Auto-generated Ticket ID
+        $customTicketNo = trim((string) $this->request->getPost('custom_ticket_no'));
+        if (!empty($customTicketNo)) {
+            $sharedTicketId = strtoupper($customTicketNo);
+        } else {
+            $sharedTicketId = 'TKT-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+        }
+
+        $driverSignature = $this->request->getPost('driver_signature');
+        $officerSignature = $this->request->getPost('officer_signature');
+
+        $db = \Config\Database::connect();
+        if (!$db->fieldExists('driver_signature', 'violations')) {
+            $db->query("ALTER TABLE violations ADD COLUMN driver_signature LONGTEXT NULL");
+        }
+        if (!$db->fieldExists('officer_signature', 'violations')) {
+            $db->query("ALTER TABLE violations ADD COLUMN officer_signature LONGTEXT NULL");
+        }
 
         $firstInsertedId = null;
-        $db = \Config\Database::connect();
         $db->transStart();
 
         foreach ($violationTypeIds as $violationTypeId) {
@@ -177,21 +200,28 @@ class OfficerController extends BaseController
             $data = [
                 'ticket_id'        => $sharedTicketId,
                 'first_name'       => $firstName,
+                'middle_name'      => $middleName,
                 'last_name'        => $lastName,
                 'age'              => (int) $this->request->getPost('age'),
                 'address'          => trim((string) $this->request->getPost('address')),
-                'driver_name'      => trim($firstName . ' ' . $lastName),
+                'driver_name'      => trim($firstName . ' ' . $middleName . ' ' . $lastName),
+                'license_number'   => $licenseNumber,
                 'license_plate'    => $licensePlate,
+                'mtop_number'      => $mtopNumber,
+                'owner_name'       => $ownerName,
+                'acknowledgment'   => $acknowledgment,
                 'officer_id'       => $session->get('id'),
                 'violation_type_id' => (int) $violationTypeId,
                 'violation_type'   => $violationType['violation_name'],
                 'penalty_amount'   => (float) ($violationType['fine_amount'] ?? 0),
                 'points'           => (int) ($violationType['points'] ?? 0),
                 'status'           => 'Pending',
-                'violation_date'   => date('Y-m-d H:i:s'),
+                'violation_date'   => $resolvedViolationDate,
                 'created_by'       => $session->get('id'),
                 'location'         => trim($this->request->getPost('location') ?? ''),
                 'notes'            => trim($this->request->getPost('notes') ?? ''),
+                'driver_signature'  => $driverSignature ?: null,
+                'officer_signature' => $officerSignature ?: null,
             ];
 
             if ($this->violationRecord->save($data)) {
@@ -222,10 +252,11 @@ class OfficerController extends BaseController
             'title' => 'Violation',
             'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
             'violations' => $this->violationRecord
-                ->select('violations.*, GROUP_CONCAT(violation_type SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
+                ->select('violations.*, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) ORDER BY violation_date DESC SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum, MAX(violation_date) as max_violation_date')
                 ->where('officer_id', $officerId)
+                ->where('status !=', 'Cancelled')
                 ->groupBy('ticket_id')
-                ->orderBy('violation_date', 'DESC')
+                ->orderBy('MAX(violation_date)', 'DESC')
                 ->paginate(10, 'violations'),
             'pager' => $this->violationRecord->pager,
         ];
@@ -268,7 +299,35 @@ class OfficerController extends BaseController
         }
 
         $reason = $this->request->getPost('reason') ?? 'Cancelled by officer';
+        $ticketId = $violation['ticket_id'] ?? null;
 
+        // Cancel all violations sharing the same ticket_id
+        if ($ticketId) {
+            $siblingViolations = $this->violationRecord
+                ->where('ticket_id', $ticketId)
+                ->where('officer_id', $officerId)
+                ->where('status', 'Pending')
+                ->findAll();
+
+            $allSuccess = true;
+            foreach ($siblingViolations as $sibling) {
+                if (!$this->violationRecord->cancelViolation($sibling['id'], $reason)) {
+                    $allSuccess = false;
+                }
+            }
+
+            if ($allSuccess) {
+                $count = count($siblingViolations);
+                $msg = $count > 1
+                    ? "All {$count} violations under ticket {$ticketId} cancelled successfully."
+                    : 'Violation cancelled successfully.';
+                return redirect()->to(base_url('officer/violations'))->with('success', $msg);
+            } else {
+                return redirect()->back()->with('error', 'Failed to cancel some violations.');
+            }
+        }
+
+        // Fallback: cancel single violation if no ticket_id
         if ($this->violationRecord->cancelViolation($id, $reason)) {
             return redirect()->to(base_url('officer/violations'))->with('success', 'Violation cancelled successfully.');
         } else {
@@ -297,14 +356,20 @@ class OfficerController extends BaseController
         }
 
         $firstName = trim((string) $this->request->getPost('first_name'));
+        $middleName = trim((string) $this->request->getPost('middle_name'));
         $lastName = trim((string) $this->request->getPost('last_name'));
+        
+        $licenseNumber = trim((string) $this->request->getPost('license_number'));
+        $mtopNumber = trim((string) $this->request->getPost('mtop_number'));
+        $ownerName = trim((string) $this->request->getPost('owner_name'));
+        $acknowledgment = trim((string) $this->request->getPost('acknowledgment'));
 
         $rules = [
-            'first_name'    => 'required|min_length[2]|max_length[100]',
-            'last_name'     => 'required|min_length[2]|max_length[100]',
+            'first_name'    => 'required|max_length[100]',
+            'last_name'     => 'required|max_length[100]',
             'age'           => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
-            'address'       => 'required|min_length[5]|max_length[255]',
-            'license_plate' => 'required|min_length[2]|max_length[20]',
+            'address'       => 'required|max_length[255]',
+            'license_plate' => 'required|max_length[20]',
             'location'      => 'permit_empty|max_length[255]',
             'notes'         => 'permit_empty|max_length[500]',
         ];
@@ -316,11 +381,16 @@ class OfficerController extends BaseController
         $data = [
             'id'               => $id,
             'first_name'       => $firstName,
+            'middle_name'      => $middleName,
             'last_name'        => $lastName,
             'age'              => (int) $this->request->getPost('age'),
             'address'          => trim((string) $this->request->getPost('address')),
-            'driver_name'      => trim($firstName . ' ' . $lastName),
+            'driver_name'      => trim($firstName . ' ' . $middleName . ' ' . $lastName),
+            'license_number'   => $licenseNumber,
             'license_plate'    => strtoupper(trim((string) $this->request->getPost('license_plate'))),
+            'mtop_number'      => $mtopNumber,
+            'owner_name'       => $ownerName,
+            'acknowledgment'   => $acknowledgment,
             'violation_type_id'=> $violationTypeId,
             'violation_type'   => (string) ($violationType['violation_name'] ?? ''),
             'penalty_amount'   => (float) ($violationType['fine_amount'] ?? 0),
@@ -346,12 +416,18 @@ class OfficerController extends BaseController
             return redirect()->to(base_url('officer/violations'))->with('error', 'Violation record not found.');
         }
 
-        if (($violation['status'] ?? '') !== 'Pending') {
-            return redirect()->to(base_url('officer/violations'))->with('error', 'Only pending violations can be deleted.');
-        }
+        // Removed status check to allow deleting Paid/history violations
 
-        if ($this->violationRecord->delete($id)) {
-            return redirect()->to(base_url('officer/violations'))->with('success', 'Violation deleted successfully.');
+        $ticketId = $violation['ticket_id'] ?? null;
+        
+        if ($ticketId) {
+            // Delete all violations sharing the same ticket_id
+            $this->violationRecord->where('ticket_id', $ticketId)->where('officer_id', $officerId)->delete();
+            return redirect()->to(base_url('officer/violations'))->with('success', 'Violation ticket deleted successfully.');
+        } else {
+            if ($this->violationRecord->delete($id)) {
+                return redirect()->to(base_url('officer/violations'))->with('success', 'Violation deleted successfully.');
+            }
         }
 
         return redirect()->to(base_url('officer/violations'))->with('error', 'Failed to delete violation.');

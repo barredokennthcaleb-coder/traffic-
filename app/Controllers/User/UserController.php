@@ -61,9 +61,16 @@ class UserController extends BaseController
              return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this violation.');
         }
 
+        $allViolations = $this->violationRecord
+            ->select('violations.*, vt.violation_name')
+            ->join('violation_types vt', 'vt.id = violations.violation_type_id', 'left')
+            ->where('violations.ticket_id', $ticketId)
+            ->findAll();
+
         $data = [
-            'title' => 'Violation Details',
-            'violation' => $violation
+            'title'          => 'Violation Details',
+            'violation'      => $violation,
+            'all_violations' => $allViolations
         ];
 
         return view('user/view_violation', $data);
