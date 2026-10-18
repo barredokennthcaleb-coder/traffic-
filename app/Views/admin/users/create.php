@@ -80,7 +80,7 @@
         justify-content: space-between;
     }
 
-    /* Input Controls: Clean, pristine white blanks */
+    /* Input Controls: Pure Clean White Blanks */
     .field-group {
         position: relative;
         display: flex;
@@ -104,7 +104,7 @@
         padding-left: 42px;
         padding-right: 14px;
         border: 1.5px solid #e2e8f0;
-        background-color: #ffffff; /* Clean white blank */
+        background-color: #ffffff;
         border-radius: 11px;
         font-size: 0.9rem;
         color: #0f172a;
@@ -127,6 +127,20 @@
     .field-group:focus-within .field-icon {
         color: #2563eb;
         transform: translateY(-50%) scale(1.08);
+    }
+
+    /* Masked Secret Field: Suppresses Chrome Google Password Manager popup completely */
+    .masked-secret-field.is-masked {
+        -webkit-text-security: disc !important;
+        text-security: disc !important;
+        letter-spacing: 0.12em;
+        font-family: inherit;
+    }
+
+    .masked-secret-field:not(.is-masked) {
+        -webkit-text-security: none !important;
+        text-security: none !important;
+        letter-spacing: normal;
     }
 
     /* Toggle Password Button */
@@ -426,7 +440,7 @@
                 </div>
             <?php endif; ?>
 
-            <form action="<?= base_url('users/store') ?>" method="POST" id="userForm">
+            <form action="<?= base_url('users/store') ?>" method="POST" id="userForm" autocomplete="off">
                 <?= csrf_field() ?>
 
                 <?php
@@ -481,7 +495,7 @@
                         <div class="field-group">
                             <i class="bi bi-person field-icon"></i>
                             <input type="text" name="firstname" id="firstname" class="form-control"
-                                   required autocomplete="given-name"
+                                   required autocomplete="off"
                                    value="<?= old('firstname', $defaults['firstname']) ?>">
                         </div>
                     </div>
@@ -491,7 +505,7 @@
                         <div class="field-group">
                             <i class="bi bi-person field-icon"></i>
                             <input type="text" name="lastname" id="lastname" class="form-control"
-                                   required autocomplete="family-name"
+                                   required autocomplete="off"
                                    value="<?= old('lastname', $defaults['lastname']) ?>">
                         </div>
                     </div>
@@ -501,7 +515,7 @@
                         <div class="field-group">
                             <i class="bi bi-fonts field-icon"></i>
                             <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center"
-                                   maxlength="10" autocomplete="additional-name"
+                                   maxlength="10" autocomplete="off"
                                    value="<?= old('middle_initial', $defaults['middle_initial'] ?? '') ?>">
                         </div>
                     </div>
@@ -538,7 +552,7 @@
                     <div class="field-group">
                         <i class="bi bi-geo-alt field-icon"></i>
                         <input type="text" name="address" id="address" class="form-control"
-                               required autocomplete="street-address"
+                               required autocomplete="off"
                                value="<?= old('address', $defaults['address']) ?>">
                     </div>
                 </div>
@@ -578,7 +592,7 @@
                 </div>
 
                 <div class="row g-2.5 g-md-3 mb-2">
-                    <!-- Password 1 -->
+                    <!-- Password 1: Masked text field to suppress Chrome Password Manager popup -->
                     <div class="col-12 col-md-6">
                         <label for="password" class="form-label">
                             <span>Password <span class="text-danger">*</span></span>
@@ -586,8 +600,9 @@
                         </label>
                         <div class="field-group">
                             <i class="bi bi-lock field-icon"></i>
-                            <input type="password" name="password" id="password" class="form-control pe-5" 
-                                   required autocomplete="new-password">
+                            <input type="text" name="password" id="password" class="form-control pe-5 masked-secret-field is-masked" 
+                                   required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                   data-lpignore="true" data-1p-ignore="true">
                             <button class="field-eye-btn" type="button" id="togglePasswordBtn" aria-label="Toggle password visibility">
                                 <i class="bi bi-eye" id="togglePasswordIcon"></i>
                             </button>
@@ -602,8 +617,9 @@
                         </label>
                         <div class="field-group">
                             <i class="bi bi-shield-lock field-icon"></i>
-                            <input type="password" name="confirm_password" id="confirm_password" class="form-control pe-5" 
-                                   required autocomplete="new-password">
+                            <input type="text" name="confirm_password" id="confirm_password" class="form-control pe-5 masked-secret-field is-masked" 
+                                   required autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                   data-lpignore="true" data-1p-ignore="true">
                             <button class="field-eye-btn" type="button" id="toggleConfirmPasswordBtn" aria-label="Toggle confirm password visibility">
                                 <i class="bi bi-eye" id="toggleConfirmPasswordIcon"></i>
                             </button>
@@ -611,7 +627,7 @@
                     </div>
                 </div>
                 <div class="text-muted small mb-4" style="font-size: 0.75rem;">
-                    <i class="bi bi-info-circle me-1"></i> Enter the password above, then re-enter it to confirm the final password that will be used.
+                    <i class="bi bi-info-circle me-1"></i> Enter the password above, then re-enter to confirm the final password that will be used.
                 </div>
 
                 <!-- Footer Actions -->
@@ -638,35 +654,66 @@
 <?= $this->section('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Toggle Password 1 Visibility
         const passwordInput = document.getElementById('password');
         const toggleBtn = document.getElementById('togglePasswordBtn');
         const toggleIcon = document.getElementById('togglePasswordIcon');
 
-        if (toggleBtn && passwordInput && toggleIcon) {
-            toggleBtn.addEventListener('click', function () {
-                const isPassword = passwordInput.type === 'password';
-                passwordInput.type = isPassword ? 'text' : 'password';
-                toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
-            });
-        }
-
-        // Toggle Password 2 (Confirm) Visibility
         const confirmInput = document.getElementById('confirm_password');
         const toggleConfirmBtn = document.getElementById('toggleConfirmPasswordBtn');
         const toggleConfirmIcon = document.getElementById('toggleConfirmPasswordIcon');
 
+        const matchTag = document.getElementById('matchStatusTag');
+
+        // Check CSS -webkit-text-security support; fallback to type=password if missing
+        const supportsTextSecurity = ('webkitTextSecurity' in document.body.style) || 
+            (window.CSS && CSS.supports && (CSS.supports('-webkit-text-security', 'disc') || CSS.supports('text-security', 'disc')));
+
+        if (!supportsTextSecurity) {
+            if (passwordInput) passwordInput.type = 'password';
+            if (confirmInput) confirmInput.type = 'password';
+        }
+
+        // Toggle Password 1 Visibility
+        if (toggleBtn && passwordInput && toggleIcon) {
+            toggleBtn.addEventListener('click', function () {
+                if (supportsTextSecurity) {
+                    const isMasked = passwordInput.classList.contains('is-masked');
+                    if (isMasked) {
+                        passwordInput.classList.remove('is-masked');
+                        toggleIcon.className = 'bi bi-eye-slash';
+                    } else {
+                        passwordInput.classList.add('is-masked');
+                        toggleIcon.className = 'bi bi-eye';
+                    }
+                } else {
+                    const isPass = passwordInput.type === 'password';
+                    passwordInput.type = isPass ? 'text' : 'password';
+                    toggleIcon.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
+                }
+            });
+        }
+
+        // Toggle Password 2 (Confirm) Visibility
         if (toggleConfirmBtn && confirmInput && toggleConfirmIcon) {
             toggleConfirmBtn.addEventListener('click', function () {
-                const isPassword = confirmInput.type === 'password';
-                confirmInput.type = isPassword ? 'text' : 'password';
-                toggleConfirmIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+                if (supportsTextSecurity) {
+                    const isMasked = confirmInput.classList.contains('is-masked');
+                    if (isMasked) {
+                        confirmInput.classList.remove('is-masked');
+                        toggleConfirmIcon.className = 'bi bi-eye-slash';
+                    } else {
+                        confirmInput.classList.add('is-masked');
+                        toggleConfirmIcon.className = 'bi bi-eye';
+                    }
+                } else {
+                    const isPass = confirmInput.type === 'password';
+                    confirmInput.type = isPass ? 'text' : 'password';
+                    toggleConfirmIcon.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
+                }
             });
         }
 
         // Live Password Match Indicator
-        const matchTag = document.getElementById('matchStatusTag');
-
         function validatePasswordMatch() {
             if (!passwordInput || !confirmInput || !matchTag) return;
             const p1 = passwordInput.value;
@@ -740,7 +787,6 @@
                 }
             });
 
-            // Initial calculation if birthdate is present and age is empty
             if (birthdateInput.value && !ageInput.value) {
                 const computed = calculateAge(birthdateInput.value);
                 if (computed !== '') ageInput.value = computed;
@@ -758,17 +804,23 @@
                     input.value = '';
                     input.style.borderColor = '#e2e8f0';
                 });
+                if (passwordInput) {
+                    passwordInput.classList.add('is-masked');
+                    if (toggleIcon) toggleIcon.className = 'bi bi-eye';
+                }
+                if (confirmInput) {
+                    confirmInput.classList.add('is-masked');
+                    if (toggleConfirmIcon) toggleConfirmIcon.className = 'bi bi-eye';
+                }
                 if (matchTag) {
                     matchTag.style.display = 'none';
                     matchTag.className = 'match-status-tag';
                 }
-                // Reset role to default enforcer
                 roleCards.forEach(c => c.classList.remove('selected'));
                 const defaultCard = document.querySelector('.role-card-item[data-role="enforcer"]');
                 if (defaultCard) defaultCard.classList.add('selected');
                 if (roleInput) roleInput.value = 'enforcer';
 
-                // Subtle visual feedback
                 inputs[0]?.focus();
             });
         }
