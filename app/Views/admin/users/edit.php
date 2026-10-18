@@ -73,7 +73,7 @@
         justify-content: space-between;
     }
 
-    /* Clean Input Icons & Controls */
+    /* Input Controls */
     .field-group {
         position: relative;
         display: flex;
@@ -141,7 +141,7 @@
         color: #334155;
     }
 
-    /* Compact Role Selector */
+    /* Role Selector */
     .role-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -218,6 +218,28 @@
         letter-spacing: normal;
     }
 
+    .match-status-tag {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: none;
+    }
+
+    .match-status-tag.is-match {
+        display: inline-block;
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .match-status-tag.is-mismatch {
+        display: inline-block;
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
     .btn-submit-save {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border: none;
@@ -234,6 +256,10 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
         color: #ffffff;
+    }
+
+    .btn-submit-save:active {
+        transform: translateY(1px);
     }
 
     @media (max-width: 576px) {
@@ -267,7 +293,7 @@
                 </div>
                 <div>
                     <h5 class="fw-bold text-dark mb-0.5">Edit User Account</h5>
-                    <p class="text-muted small mb-0">Update credentials, system role, and personal details.</p>
+                    <p class="text-muted small mb-0">Update system role, personal details, and account credentials.</p>
                 </div>
             </div>
 
@@ -291,13 +317,12 @@
 
                 <?php $currentRoleVal = old('role', $user['role']); ?>
 
-                <!-- SECTION 1: Credentials & Role -->
+                <!-- 1. FIRST: SYSTEM ROLE -->
                 <div class="section-divider">
-                    <span class="section-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-shield-lock"></i></span>
-                    Account Credentials &amp; Role
+                    <span class="section-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-shield-check"></i></span>
+                    1. System Role &amp; Permissions
                 </div>
 
-                <!-- Role Selection -->
                 <div class="mb-3">
                     <label class="form-label">System Role <span class="text-danger">*</span></label>
                     <input type="hidden" name="role" id="roleInput" value="<?= esc($currentRoleVal) ?>">
@@ -308,7 +333,7 @@
                             </div>
                             <div>
                                 <div class="fw-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">Traffic Enforcer</div>
-                                <div class="text-muted" style="font-size: 0.74rem;">Issue citations & inspections</div>
+                                <div class="text-muted" style="font-size: 0.74rem;">Issue citations & roadside inspections</div>
                             </div>
                             <i class="bi bi-check-circle-fill role-check"></i>
                         </div>
@@ -319,73 +344,20 @@
                             </div>
                             <div>
                                 <div class="fw-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">Administrator</div>
-                                <div class="text-muted" style="font-size: 0.74rem;">Full system & staff controls</div>
+                                <div class="text-muted" style="font-size: 0.74rem;">Full system, reports & staff controls</div>
                             </div>
                             <i class="bi bi-check-circle-fill role-check"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Username & Email (Clean 2-Column Row) -->
-                <div class="row g-2.5 g-md-3 mb-3">
-                    <div class="col-12 col-md-6">
-                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                        <div class="field-group">
-                            <i class="bi bi-person field-icon"></i>
-                            <input type="text" name="username" id="username" class="form-control" 
-                                   placeholder="Username" required autocomplete="off"
-                                   value="<?= old('username', $user['username']) ?>">
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                        <div class="field-group">
-                            <i class="bi bi-envelope field-icon"></i>
-                            <input type="email" name="email" id="email" class="form-control" 
-                                   placeholder="user@example.com" required autocomplete="off"
-                                   value="<?= old('email', $user['email']) ?>">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Status & Password (2-Column Row) -->
-                <div class="row g-2.5 g-md-3 mb-3">
-                    <div class="col-12 col-md-6">
-                        <label for="status" class="form-label">Account Status <span class="text-danger">*</span></label>
-                        <div class="field-group">
-                            <i class="bi bi-activity field-icon"></i>
-                            <select name="status" id="status" class="form-select" required>
-                                <option value="active" <?= old('status', $user['status']) === 'active' ? 'selected' : '' ?>>Active</option>
-                                <option value="inactive" <?= old('status', $user['status']) === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                                <option value="suspended" <?= old('status', $user['status']) === 'suspended' ? 'selected' : '' ?>>Suspended</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-6">
-                        <label for="password" class="form-label">
-                            <span>New Password</span>
-                            <span class="text-muted fw-normal small" style="font-size: 0.72rem;">Optional</span>
-                        </label>
-                        <div class="field-group">
-                            <i class="bi bi-key field-icon"></i>
-                            <input type="password" name="password" id="password" class="form-control pe-5" 
-                                   placeholder="Leave blank to keep current" autocomplete="new-password">
-                            <button class="field-eye-btn" type="button" id="togglePasswordBtn" aria-label="Toggle password visibility">
-                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 2: Personal Information -->
+                <!-- 2. THEN: PERSONAL INFORMATION -->
                 <div class="section-divider">
                     <span class="section-icon bg-info bg-opacity-10 text-info"><i class="bi bi-person-lines-fill"></i></span>
-                    Personal Information
+                    2. Personal Information
                 </div>
 
-                <!-- First Name, Last Name, Middle Initial (Balanced 3-Column Row) -->
+                <!-- First Name, Last Name, Middle Initial -->
                 <div class="row g-2.5 g-md-3 mb-3">
                     <div class="col-12 col-sm-4 col-md-4">
                         <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
@@ -418,7 +390,7 @@
                     </div>
                 </div>
 
-                <!-- Birthdate & Age (2-Column Row) -->
+                <!-- Birthdate & Age (Auto-calculated) -->
                 <div class="row g-2.5 g-md-3 mb-3">
                     <div class="col-12 col-md-6">
                         <label for="birthdate" class="form-label">Birthdate <span class="text-danger">*</span></label>
@@ -432,7 +404,7 @@
                     <div class="col-12 col-md-6">
                         <label for="age" class="form-label">
                             <span>Age <span class="text-danger">*</span></span>
-                            <span class="calc-tag"><i class="bi bi-magic me-1"></i>Calculated</span>
+                            <span class="calc-tag"><i class="bi bi-magic me-1"></i>Auto-fills from birthdate</span>
                         </label>
                         <div class="field-group">
                             <i class="bi bi-hash field-icon"></i>
@@ -443,20 +415,96 @@
                     </div>
                 </div>
 
-                <!-- SECTION 3: Address -->
-                <div class="section-divider">
-                    <span class="section-icon bg-success bg-opacity-10 text-success"><i class="bi bi-geo-alt"></i></span>
-                    Location Details
-                </div>
-
-                <div class="mb-4">
+                <!-- Complete Address -->
+                <div class="mb-3">
                     <label for="address" class="form-label">Complete Address <span class="text-danger">*</span></label>
                     <div class="field-group">
                         <i class="bi bi-pin-map field-icon"></i>
                         <input type="text" name="address" id="address" class="form-control"
-                               placeholder="e.g. Brgy. Talubangi, Kabankalan City, Negros Occidental" required
+                               placeholder="Enter complete address" required
                                value="<?= old('address', $user['address'] ?? '') ?>">
                     </div>
+                </div>
+
+                <!-- 3. THEN: USERNAME & EMAIL + ACCOUNT STATUS -->
+                <div class="section-divider">
+                    <span class="section-icon bg-warning bg-opacity-10 text-dark"><i class="bi bi-person-circle"></i></span>
+                    3. Account Credentials
+                </div>
+
+                <div class="row g-2.5 g-md-3 mb-3">
+                    <div class="col-12 col-md-4">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-person field-icon"></i>
+                            <input type="text" name="username" id="username" class="form-control" 
+                                   placeholder="Username" required autocomplete="off"
+                                   value="<?= old('username', $user['username']) ?>">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-envelope field-icon"></i>
+                            <input type="email" name="email" id="email" class="form-control" 
+                                   placeholder="user@example.com" required autocomplete="off"
+                                   value="<?= old('email', $user['email']) ?>">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label for="status" class="form-label">Account Status <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-activity field-icon"></i>
+                            <select name="status" id="status" class="form-select" required>
+                                <option value="active" <?= old('status', $user['status']) === 'active' ? 'selected' : '' ?>>Active</option>
+                                <option value="inactive" <?= old('status', $user['status']) === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                                <option value="suspended" <?= old('status', $user['status']) === 'suspended' ? 'selected' : '' ?>>Suspended</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. LASTLY: PASSWORD WITH 2 CONFIRMATION FIELDS -->
+                <div class="section-divider">
+                    <span class="section-icon bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-key-fill"></i></span>
+                    4. Security &amp; Password <span class="text-muted fw-normal ms-1" style="font-size: 0.75rem; text-transform: none;">(Leave blank to keep current)</span>
+                </div>
+
+                <div class="row g-2.5 g-md-3 mb-2">
+                    <div class="col-12 col-md-6">
+                        <label for="password" class="form-label">
+                            <span>New Password</span>
+                            <span class="text-muted fw-normal small" style="font-size: 0.72rem;">Optional</span>
+                        </label>
+                        <div class="field-group">
+                            <i class="bi bi-lock field-icon"></i>
+                            <input type="password" name="password" id="password" class="form-control pe-5" 
+                                   placeholder="Enter new password" autocomplete="new-password">
+                            <button class="field-eye-btn" type="button" id="togglePasswordBtn" aria-label="Toggle password visibility">
+                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="confirm_password" class="form-label">
+                            <span>Confirm New Password</span>
+                            <span class="match-status-tag" id="matchStatusTag"></span>
+                        </label>
+                        <div class="field-group">
+                            <i class="bi bi-shield-lock field-icon"></i>
+                            <input type="password" name="confirm_password" id="confirm_password" class="form-control pe-5" 
+                                   placeholder="Re-enter to confirm" autocomplete="new-password">
+                            <button class="field-eye-btn" type="button" id="toggleConfirmPasswordBtn" aria-label="Toggle confirm password visibility">
+                                <i class="bi bi-eye" id="toggleConfirmPasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-muted small mb-4" style="font-size: 0.74rem;">
+                    <i class="bi bi-info-circle me-1"></i> If changing the password, enter the new password in both fields to confirm the final password.
                 </div>
 
                 <!-- Footer Actions -->
@@ -478,7 +526,7 @@
 <?= $this->section('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Toggle Password Visibility
+        // Toggle Password 1 Visibility
         const passwordInput = document.getElementById('password');
         const toggleBtn = document.getElementById('togglePasswordBtn');
         const toggleIcon = document.getElementById('togglePasswordIcon');
@@ -489,6 +537,50 @@
                 passwordInput.type = isPassword ? 'text' : 'password';
                 toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
             });
+        }
+
+        // Toggle Password 2 Visibility
+        const confirmInput = document.getElementById('confirm_password');
+        const toggleConfirmBtn = document.getElementById('toggleConfirmPasswordBtn');
+        const toggleConfirmIcon = document.getElementById('toggleConfirmPasswordIcon');
+
+        if (toggleConfirmBtn && confirmInput && toggleConfirmIcon) {
+            toggleConfirmBtn.addEventListener('click', function () {
+                const isPassword = confirmInput.type === 'password';
+                confirmInput.type = isPassword ? 'text' : 'password';
+                toggleConfirmIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        }
+
+        // Live Password Match Indicator
+        const matchTag = document.getElementById('matchStatusTag');
+
+        function validatePasswordMatch() {
+            if (!passwordInput || !confirmInput || !matchTag) return;
+            const p1 = passwordInput.value;
+            const p2 = confirmInput.value;
+
+            if (p2.length === 0) {
+                matchTag.className = 'match-status-tag';
+                matchTag.style.display = 'none';
+                confirmInput.style.borderColor = '';
+                return;
+            }
+
+            if (p1 === p2) {
+                matchTag.className = 'match-status-tag is-match';
+                matchTag.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Passwords match';
+                confirmInput.style.borderColor = '#10b981';
+            } else {
+                matchTag.className = 'match-status-tag is-mismatch';
+                matchTag.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i>Passwords do not match';
+                confirmInput.style.borderColor = '#ef4444';
+            }
+        }
+
+        if (passwordInput && confirmInput) {
+            passwordInput.addEventListener('input', validatePasswordMatch);
+            confirmInput.addEventListener('input', validatePasswordMatch);
         }
 
         // Role Cards Selection

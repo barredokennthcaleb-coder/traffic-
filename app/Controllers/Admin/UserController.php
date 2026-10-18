@@ -127,6 +127,7 @@ class UserController extends BaseController
             'email'    => 'required|valid_email|is_unique[users.email]',
             // allow shorter password when default env password is used
             'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
+            'confirm_password' => 'matches[password]',
             'role'     => 'permit_empty|in_list[admin,driver,enforcer]',
         ];
 
@@ -199,6 +200,7 @@ class UserController extends BaseController
 
         if ($this->request->getPost('password')) {
             $rules['password'] = 'min_length[8]';
+            $rules['confirm_password'] = 'matches[password]';
         }
 
         if (!$this->validate($rules)) {
