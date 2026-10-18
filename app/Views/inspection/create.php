@@ -14,45 +14,58 @@
         color: #000000;
         max-width: 210mm;
         min-height: 297mm;
-        padding: 20mm;
+        padding: 18mm 20mm;
         margin: 0 auto;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
         border: 1px solid #d9d9d9;
         border-radius: 4px;
         position: relative;
         font-family: 'Times New Roman', Times, serif;
+        box-sizing: border-box;
     }
 
     .header-container {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 25px;
+        margin-bottom: 22px;
         position: relative;
+        min-height: 85px;
     }
 
     .header-logo-left {
         position: absolute;
-        left: 0;
-        height: 80px;
+        left: 10px;
+        top: 0;
+        height: 75px;
         width: auto;
     }
 
     .header-logo-right {
         position: absolute;
-        right: 0;
-        height: 80px;
+        right: 10px;
+        top: 0;
+        height: 85px;
         width: auto;
+        object-fit: contain;
     }
 
     .header-text {
         text-align: center;
         line-height: 1.25;
+        font-family: 'Times New Roman', Times, serif;
     }
 
-    .header-text h4 {
+    .header-text p {
+        margin-bottom: 1px;
+        font-size: 0.95rem;
+    }
+
+    .header-text h5 {
         margin: 2px 0;
         font-weight: bold;
+        font-size: 1.08rem;
+        letter-spacing: 0.3px;
         font-family: 'Times New Roman', Times, serif;
     }
 
@@ -60,22 +73,28 @@
         text-align: center;
         text-decoration: underline;
         font-weight: bold;
-        font-size: 1.25rem;
-        margin-bottom: 35px;
+        font-size: 1.2rem;
+        margin-top: 10px;
+        margin-bottom: 25px;
+        letter-spacing: 0.8px;
         font-family: 'Times New Roman', Times, serif;
-        letter-spacing: 0.5px;
     }
 
     .form-info {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         font-family: 'Times New Roman', Times, serif;
+        font-size: 0.98rem;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: baseline;
+        margin-bottom: 10px;
     }
 
     .info-label {
         font-weight: bold;
         white-space: nowrap;
-        margin-right: 10px;
-        font-size: 1.05rem;
         font-family: 'Times New Roman', Times, serif;
     }
 
@@ -83,11 +102,11 @@
         flex-grow: 1;
         min-width: 0;
         border: none;
-        border-bottom: 1.5px solid #000000;
+        border-bottom: 1px solid #000000;
         border-radius: 0;
         padding: 2px 6px;
         font-family: 'Times New Roman', Times, serif;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
         background: transparent;
         color: #000000;
         outline: none;
@@ -99,42 +118,44 @@
         background-color: rgba(37, 99, 235, 0.04);
     }
 
-    .checklist {
-        display: flex;
-        flex-wrap: wrap;
-        margin-bottom: 35px;
+    .checklist-section {
+        margin-bottom: 30px;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 0.96rem;
     }
 
-    .check-item {
-        width: 100%;
+    .check-row {
         display: flex;
         align-items: flex-start;
-        margin-bottom: 11px;
-        font-size: 1.05rem;
-        font-family: 'Times New Roman', Times, serif;
+        margin-bottom: 9px;
+    }
+
+    .check-cell {
+        display: flex;
+        align-items: center;
+        padding-right: 10px;
         cursor: pointer;
         user-select: none;
-        padding: 2px 4px;
         border-radius: 4px;
+        padding: 3px 6px;
         transition: background-color 0.15s;
     }
 
-    .check-item:hover {
-        background-color: rgba(0, 0, 0, 0.03);
+    .check-cell:hover {
+        background-color: rgba(37, 99, 235, 0.05);
     }
 
-    .check-item.half { width: 50%; }
-    .check-item.third { width: 33.333%; }
+    .check-cell.full { width: 100%; }
+    .check-cell.half { width: 50%; }
+    .check-cell.third { width: 33.333%; }
 
     /* Custom Document Checkbox */
     .doc-checkbox {
         position: relative;
-        width: 18px;
-        height: 18px;
-        margin-right: 12px;
-        margin-top: 3px;
+        width: 17px;
+        height: 17px;
+        margin-right: 10px;
         flex-shrink: 0;
-        cursor: pointer;
     }
 
     .doc-checkbox input[type="checkbox"] {
@@ -153,8 +174,8 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 18px;
-        height: 18px;
+        width: 17px;
+        height: 17px;
         border: 1.5px solid #000;
         background-color: #fff;
         display: flex;
@@ -167,40 +188,35 @@
     .doc-checkbox input[type="checkbox"]:checked ~ .box::after {
         content: '✓';
         font-weight: bold;
-        font-size: 16px;
+        font-size: 15px;
         line-height: 1;
         color: #000;
     }
 
-    .check-item:hover .doc-checkbox .box {
+    .check-cell:hover .doc-checkbox .box {
         border-color: #2563eb;
     }
 
-    .doc-checkbox input[type="checkbox"]:focus ~ .box {
-        outline: 2px solid #2563eb;
-        outline-offset: 1px;
-    }
-
     .signature-section {
-        margin-top: 60px;
+        margin-top: 35px;
         font-family: 'Times New Roman', Times, serif;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
     }
 
-    .sig-field {
+    .sig-row {
         display: flex;
-        align-items: center;
-        margin-bottom: 12px;
+        align-items: baseline;
+        margin-bottom: 10px;
     }
 
     .sig-line-input {
         border: none;
-        border-bottom: 1.5px solid #000;
+        border-bottom: 1px solid #000;
         border-radius: 0;
         width: 250px;
         padding: 2px 8px;
         font-family: 'Times New Roman', Times, serif;
-        font-size: 1.05rem;
+        font-size: 0.98rem;
         background: transparent;
         color: #000;
         outline: none;
@@ -213,23 +229,24 @@
 
     .officer-block {
         text-align: center;
-        margin-top: 80px;
+        margin-top: 45px;
         float: right;
-        width: 300px;
+        min-width: 260px;
         font-family: 'Times New Roman', Times, serif;
     }
 
     .officer-name {
         font-weight: bold;
-        text-decoration: underline;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         text-transform: uppercase;
         margin-bottom: 2px;
+        letter-spacing: 0.5px;
         font-family: 'Times New Roman', Times, serif;
     }
 
     .officer-title {
         font-style: italic;
+        font-size: 0.92rem;
         margin-bottom: 0;
         font-family: 'Times New Roman', Times, serif;
     }
@@ -260,11 +277,22 @@
             justify-content: space-around;
         }
 
-        .header-text h4 {
-            font-size: 1rem;
+        .info-row {
+            flex-direction: column;
+            align-items: stretch;
         }
 
-        .check-item.half, .check-item.third {
+        .info-underline, .paper-input {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-bottom: 6px;
+        }
+
+        .check-row {
+            flex-direction: column;
+        }
+
+        .check-cell.half, .check-cell.third {
             width: 100%;
         }
 
@@ -287,215 +315,268 @@
             <i class="bi bi-arrow-left me-1"></i> Back to Inspections
         </a>
         <div class="d-flex gap-2">
-            <a href="<?= base_url('inspections') ?>" class="btn btn-light btn-sm px-3">Cancel</a>
+            <a href="<?= base_url('inspections') ?>" class="btn btn-light btn-sm px-3 border shadow-sm">Cancel</a>
             <button type="submit" form="inspectionForm" class="btn btn-primary btn-sm px-4 shadow-sm">
                 <i class="bi bi-check2-circle me-1"></i> Save Inspection Report
             </button>
         </div>
     </div>
 
+    <?php if (session()->getFlashdata('errors')): ?>
+        <div class="alert alert-danger mx-auto mb-3 shadow-sm" style="max-width: 210mm;">
+            <ul class="mb-0 ps-3">
+                <?php foreach (session()->getFlashdata('errors') as $err): ?>
+                    <li><?= esc($err) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
     <form action="<?= base_url('inspections/store') ?>" method="POST" id="inspectionForm">
         <?= csrf_field() ?>
 
         <div class="paper-card">
-            <!-- Header matching print format -->
+            <!-- Header matching official format -->
             <div class="header-container">
-                <img src="<?= base_url('img/pic-1.png') ?>" alt="Logo" class="header-logo-left">
+                <img src="<?= base_url('img/pic-1.png') ?>" alt="City of Kabankalan Seal" class="header-logo-left">
                 <div class="header-text">
                     <p class="mb-0">Republic of the Philippines</p>
                     <p class="mb-0">Province of Negros Occidental</p>
-                    <h4>CITY TRAFFIC MANAGEMENT OFFICE</h4>
+                    <h5 class="mb-0">CITY TRAFFIC MANAGEMENT OFFICE</h5>
                     <p class="mb-0">City of Kabankalan</p>
                 </div>
-                <img src="<?= base_url('img/pic-1.png') ?>" alt="Logo" class="header-logo-right">
+                <img src="<?= base_url('img/ctramo-logo.png') ?>" alt="CTRAMO Logo" class="header-logo-right">
             </div>
 
-            <!-- Report Title -->
+            <!-- Title -->
             <div class="report-title">INSPECTION REPORT</div>
 
-            <!-- Form Info matching print format -->
+            <!-- Form Info Section matching paper format -->
             <div class="form-info">
-                <div class="d-flex align-items-baseline mb-2">
-                    <span class="info-label">MTOP #:</span>
-                    <input type="text" name="mtop_no" class="paper-input" required value="<?= old('mtop_no') ?>" placeholder="Enter MTOP Number" autocomplete="off">
+                <!-- Line 1: MTOP # and Route -->
+                <div class="info-row">
+                    <span class="info-label me-2">MTOP #:</span>
+                    <input type="text" name="mtop_no" class="paper-input me-4" style="max-width: 220px;" required value="<?= old('mtop_no') ?>" placeholder="e.g. 1234" autocomplete="off">
+                    <span class="info-label me-2">Route:</span>
+                    <input type="text" name="route" class="paper-input" value="<?= old('route') ?>" placeholder="e.g. Suay/Ilog or City Proper" autocomplete="off">
                 </div>
-                <div class="d-flex align-items-baseline mb-2">
-                    <span class="info-label">Name of Operator:</span>
-                    <input type="text" name="operator_name" class="paper-input" required value="<?= old('operator_name') ?>" placeholder="Enter Operator Name" autocomplete="off">
+
+                <!-- Line 2: Name of Operator and Cellphone # DRIVER -->
+                <div class="info-row">
+                    <span class="info-label me-2">Name of Operator:</span>
+                    <input type="text" name="operator_name" class="paper-input me-4" required value="<?= old('operator_name') ?>" placeholder="Enter Operator Name" autocomplete="off">
+                    <span class="info-label me-2">Cellphone # DRIVER:</span>
+                    <input type="text" name="driver_cellphone" class="paper-input" style="max-width: 220px;" value="<?= old('driver_cellphone') ?>" placeholder="09123456789" autocomplete="off">
                 </div>
-                <div class="row mb-2">
-                    <div class="col-6 d-flex align-items-baseline">
-                        <span class="info-label">Cellphone# Operator:</span>
-                        <input type="text" name="operator_cellphone" class="paper-input" value="<?= old('operator_cellphone') ?>" placeholder="09123456789" autocomplete="off">
-                    </div>
-                    <div class="col-6 d-flex align-items-baseline">
-                        <span class="info-label">Cellphone # Driver:</span>
-                        <input type="text" name="driver_cellphone" class="paper-input" value="<?= old('driver_cellphone') ?>" placeholder="09123456789" autocomplete="off">
-                    </div>
+
+                <!-- Line 3: Cellphone# Operator and Prof. License# -->
+                <div class="info-row">
+                    <span class="info-label me-2">Cellphone# Operator:</span>
+                    <input type="text" name="operator_cellphone" class="paper-input me-4" style="max-width: 260px;" value="<?= old('operator_cellphone') ?>" placeholder="09123456789" autocomplete="off">
+                    <span class="info-label me-2">Prof. License#:</span>
+                    <input type="text" name="driver_license_no" class="paper-input" value="<?= old('driver_license_no') ?>" placeholder="License Number" autocomplete="off">
                 </div>
-                <div class="d-flex align-items-baseline mb-2">
-                    <span class="info-label">Make /Type of MV:</span>
-                    <input type="text" name="mv_make_type" class="paper-input" value="<?= old('mv_make_type') ?>" placeholder="e.g. Honda TMX / Tricycle" autocomplete="off">
+
+                <!-- Line 4: Name of DRIVER -->
+                <div class="info-row">
+                    <span class="info-label me-2">Name of DRIVER:</span>
+                    <input type="text" name="driver_name" class="paper-input" value="<?= old('driver_name') ?>" placeholder="Enter Driver Name" autocomplete="off">
+                </div>
+
+                <!-- Line 5: Make/Type and Color -->
+                <div class="info-row">
+                    <span class="info-label me-2">Make/Type:</span>
+                    <input type="text" name="mv_make_type" class="paper-input me-4" value="<?= old('mv_make_type') ?>" placeholder="e.g. Honda TMX / Tricycle" autocomplete="off">
+                    <span class="info-label me-2">Color:</span>
+                    <input type="text" name="body_color" class="paper-input" style="max-width: 250px;" value="<?= old('body_color') ?>" placeholder="e.g. Blue" autocomplete="off">
                 </div>
             </div>
 
-            <!-- Checklist matching print format layout & order -->
-            <div class="checklist">
-                <!-- Row 1: Full width -->
-                <label class="check-item" for="cert_attendance">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="cert_attendance" id="cert_attendance" <?= old('cert_attendance') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Cert. of Attendance of the Driver (CTRAMO Seminar).</span>
-                </label>
+            <!-- Checklist Section matching paper layout & wording -->
+            <div class="checklist-section">
+                <!-- 1: Full width -->
+                <div class="check-row">
+                    <label class="check-cell full" for="cert_attendance">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="cert_attendance" id="cert_attendance" <?= old('cert_attendance') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Cert. of Attendance of the driver (CTRAMO Seminar)</span>
+                    </label>
+                </div>
 
-                <!-- Row 2: Half width -->
-                <label class="check-item half" for="outside_route">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="outside_route" id="outside_route" <?= old('outside_route') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Outside route</span>
-                </label>
-                <label class="check-item half" for="mtop_8x16_route">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="mtop_8x16_route" id="mtop_8x16_route" <?= old('mtop_8x16_route') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>MTOP # 8 x 16 Su-ay/Ilog route (Fixed)</span>
-                </label>
+                <!-- 2: Two columns -->
+                <div class="check-row">
+                    <label class="check-cell half" for="outside_route">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="outside_route" id="outside_route" <?= old('outside_route') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Outside route</span>
+                    </label>
+                    <label class="check-cell half" for="mtop_8x16_route">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="mtop_8x16_route" id="mtop_8x16_route" <?= old('mtop_8x16_route') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>MTOP # 8 x 16 Suay/Ilog route (Fixed)</span>
+                    </label>
+                </div>
 
-                <!-- Row 3: Half width -->
-                <label class="check-item half" for="city_proper">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="city_proper" id="city_proper" <?= old('city_proper') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>City Proper</span>
-                </label>
-                <label class="check-item half" for="mtop_8x8_route">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="mtop_8x8_route" id="mtop_8x8_route" <?= old('mtop_8x8_route') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>MTOP # 8x8 City Proper/Outside Route (Fixed)</span>
-                </label>
+                <!-- 3: Left column -->
+                <div class="check-row">
+                    <label class="check-cell half" for="outside_route_8x8">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="outside_route_8x8" id="outside_route_8x8" <?= old('outside_route_8x8') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Outside route 8X8 (Fixed)</span>
+                    </label>
+                    <div class="check-cell half"></div>
+                </div>
 
-                <!-- Row 4: Full width -->
-                <label class="check-item" for="trash_can">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="trash_can" id="trash_can" <?= old('trash_can') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Trash Can</span>
-                </label>
+                <!-- 4: Two columns -->
+                <div class="check-row">
+                    <label class="check-cell half" for="city_proper">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="city_proper" id="city_proper" <?= old('city_proper') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>City Proper</span>
+                    </label>
+                    <label class="check-cell half" for="mtop_8x8_route">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="mtop_8x8_route" id="mtop_8x8_route" <?= old('mtop_8x8_route') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>MTOP # 8 x 8 City Proper (Fixed)</span>
+                    </label>
+                </div>
 
-                <!-- Row 5: Full width -->
-                <label class="check-item" for="mtop_dashboard">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="mtop_dashboard" id="mtop_dashboard" <?= old('mtop_dashboard') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>MTOP # dash board/Name of operator's</span>
-                </label>
+                <!-- 5: Full width -->
+                <div class="check-row">
+                    <label class="check-cell full" for="trash_can">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="trash_can" id="trash_can" <?= old('trash_can') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Trash Can</span>
+                    </label>
+                </div>
 
-                <!-- Row 6: Third width -->
-                <label class="check-item third" for="signal_light_left">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="signal_light_left" id="signal_light_left" <?= old('signal_light_left') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Signal light/left</span>
-                </label>
-                <label class="check-item third" for="signal_light_right">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="signal_light_right" id="signal_light_right" <?= old('signal_light_right') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Signal light/right</span>
-                </label>
-                <label class="check-item third" for="head_light">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="head_light" id="head_light" <?= old('head_light') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Head light</span>
-                </label>
+                <!-- 6: Full width -->
+                <div class="check-row">
+                    <label class="check-cell full" for="mtop_dashboard">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="mtop_dashboard" id="mtop_dashboard" <?= old('mtop_dashboard') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>MTOP # dash board/Name of operator's</span>
+                    </label>
+                </div>
 
-                <!-- Row 7: Third width -->
-                <label class="check-item third" for="stop_light">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="stop_light" id="stop_light" <?= old('stop_light') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>stop light</span>
-                </label>
-                <label class="check-item third" for="side_mirror">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="side_mirror" id="side_mirror" <?= old('side_mirror') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Side Mirror left &amp; right</span>
-                </label>
-                <label class="check-item third" for="horn">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="horn" id="horn" <?= old('horn') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Horn</span>
-                </label>
+                <!-- 7: Three columns -->
+                <div class="check-row">
+                    <label class="check-cell third" for="signal_light_left">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="signal_light_left" id="signal_light_left" <?= old('signal_light_left') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Signal light/left</span>
+                    </label>
+                    <label class="check-cell third" for="signal_light_right">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="signal_light_right" id="signal_light_right" <?= old('signal_light_right') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Signal light/right</span>
+                    </label>
+                    <label class="check-cell third" for="head_light">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="head_light" id="head_light" <?= old('head_light') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Head light</span>
+                    </label>
+                </div>
 
-                <!-- Row 8: Third width -->
-                <label class="check-item third" for="standard_muffler">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="standard_muffler" id="standard_muffler" <?= old('standard_muffler') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Standard Muffler</span>
-                </label>
-                <label class="check-item third" for="color_coding">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="color_coding" id="color_coding" <?= old('color_coding') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Color coding</span>
-                </label>
-                <label class="check-item third" for="tarifa">
-                    <div class="doc-checkbox">
-                        <input type="checkbox" name="tarifa" id="tarifa" <?= old('tarifa') ? 'checked' : '' ?>>
-                        <div class="box"></div>
-                    </div>
-                    <span>Tarifa</span>
-                </label>
+                <!-- 8: Three columns -->
+                <div class="check-row">
+                    <label class="check-cell third" for="stop_light">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="stop_light" id="stop_light" <?= old('stop_light') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Stop light</span>
+                    </label>
+                    <label class="check-cell third" for="side_mirror">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="side_mirror" id="side_mirror" <?= old('side_mirror') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Side Mirror left &amp; right</span>
+                    </label>
+                    <label class="check-cell third" for="horn">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="horn" id="horn" <?= old('horn') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Horn</span>
+                    </label>
+                </div>
+
+                <!-- 9: Three columns -->
+                <div class="check-row">
+                    <label class="check-cell third" for="standard_muffler">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="standard_muffler" id="standard_muffler" <?= old('standard_muffler') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Standard Muffler</span>
+                    </label>
+                    <label class="check-cell third" for="color_coding">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="color_coding" id="color_coding" <?= old('color_coding') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Color coding</span>
+                    </label>
+                    <label class="check-cell third" for="tarifa">
+                        <div class="doc-checkbox">
+                            <input type="checkbox" name="tarifa" id="tarifa" <?= old('tarifa') ? 'checked' : '' ?>>
+                            <div class="box"></div>
+                        </div>
+                        <span>Tarifa</span>
+                    </label>
+                </div>
             </div>
 
-            <!-- Signatures Section matching print format -->
+            <!-- Signatures Section -->
             <div class="signature-section">
                 <?php 
                     $inspectorVal = old('inspected_by') ?? session()->get('name') ?? session()->get('username') ?? '';
                 ?>
-                <div class="sig-field">
-                    <span class="info-label">Inspected by:</span>
+                <div class="sig-row">
+                    <span class="info-label me-2">Inspected by:</span>
                     <input type="text" name="inspected_by" class="sig-line-input" required value="<?= esc($inspectorVal) ?>" placeholder="Officer Name" autocomplete="off">
                 </div>
-                <div class="sig-field">
-                    <span class="info-label">Date:</span>
-                    <input type="date" name="inspection_date" class="sig-line-input" required value="<?= old('inspection_date') ?? date('Y-m-d') ?>">
+                <div class="sig-row">
+                    <span class="info-label me-2">Date:</span>
+                    <input type="date" name="inspection_date" class="sig-line-input" style="width: 220px;" required value="<?= old('inspection_date') ?? date('Y-m-d') ?>">
                 </div>
             </div>
 
-            <!-- Officer Block matching print format -->
+            <!-- Officer Signatory Block (matching paper document) -->
             <div class="officer-block">
-                <p class="officer-name">CHRISTINO P. BANDICO</p>
-                <p class="officer-title">Traffic Operation Officer II</p>
+                <p class="officer-name">LLACH T. ANZURES</p>
+                <p class="officer-title">Administrative Aide VI</p>
             </div>
 
-            <div class="clearfix"></div>
+            <div style="clear: both;"></div>
         </div>
 
         <div class="toolbar-container px-2 mt-3 justify-content-end">
-            <a href="<?= base_url('inspections') ?>" class="btn btn-light btn-sm px-3 me-2">Cancel</a>
+            <a href="<?= base_url('inspections') ?>" class="btn btn-light btn-sm px-3 me-2 border shadow-sm">Cancel</a>
             <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm">
                 <i class="bi bi-check2-circle me-1"></i> Save Inspection Report
             </button>

@@ -406,14 +406,8 @@
         title: 'Payment Settled!',
         text: '<?= session()->getFlashdata('payment_settled') ?>',
         icon: 'success',
-        confirmButtonColor: '#0d6efd',
-        confirmButtonText: 'OK',
-        showClass: {
-            popup: 'animate__animated animate__bounceIn'
-        },
-        hideClass: {
-            popup: 'animate__animated animate__fadeOutUp'
-        }
+        confirmButtonColor: '#3b82f6',
+        confirmButtonText: '<i class="bi bi-check2 me-1"></i> Great'
     });
     <?php endif; ?>
 </script>

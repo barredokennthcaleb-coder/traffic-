@@ -53,7 +53,7 @@
         <ul class="nav flex-column sidebar-nav flex-grow-1 px-2">
             <?php if ($role === 'admin'): ?>
                 <li class="nav-item mb-1">
-                    <a class="nav-link <?= (uri_string() == 'dashboard') ? 'active' : '' ?>" href="<?= base_url('dashboard') ?>">
+                    <a class="nav-link <?= (uri_string() == 'dashboard') ? 'active' : '' ?>" href="<?= base_url('dashboard') ?>" onclick="try{localStorage.removeItem('admin_analytics_hidden');}catch(e){}">
                         <i class="bi bi-speedometer2 nav-icon"></i>
                         <span class="nav-text ms-2">Dashboard</span>
                     </a>

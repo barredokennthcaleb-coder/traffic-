@@ -440,8 +440,8 @@
 
         .premium-reveal {
             opacity: 0;
-            transform: translateY(24px);
-            animation: premiumReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform: translateY(12px);
+            animation: premiumReveal 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             animation-delay: var(--reveal-delay, 0s);
             will-change: transform, opacity;
         }
@@ -453,7 +453,7 @@
         @keyframes premiumReveal {
             0% {
                 opacity: 0;
-                transform: translateY(24px);
+                transform: translateY(12px);
             }
             100% {
                 opacity: 1;
@@ -989,6 +989,339 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PREMIUM ULTRA-SMOOTH & RESPONSIVE SWEETALERT2 STYLING
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Smooth Backdrop with subtle glassmorphic blur */
+        .swal2-container {
+            z-index: 999999 !important;
+            padding: 1rem !important;
+            backdrop-filter: blur(8px) saturate(130%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
+            transition: background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        backdrop-filter 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .swal2-container.swal2-backdrop-show {
+            background: rgba(15, 23, 42, 0.45) !important;
+        }
+        :root[data-theme="dark"] .swal2-container.swal2-backdrop-show {
+            background: rgba(0, 0, 0, 0.65) !important;
+        }
+
+        /* Hardware-accelerated smooth spring animations */
+        @keyframes swal2SmoothIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.88) translateY(16px);
+                filter: blur(4px);
+            }
+            65% {
+                opacity: 1;
+                transform: scale(1.015) translateY(-2px);
+                filter: blur(0px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes swal2SmoothOut {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.92) translateY(10px);
+                filter: blur(2px);
+            }
+        }
+
+        .swal2-popup:not(.swal2-toast).swal2-show {
+            animation: swal2SmoothIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            will-change: transform, opacity, filter;
+        }
+        .swal2-popup:not(.swal2-toast).swal2-hide {
+            animation: swal2SmoothOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            will-change: transform, opacity, filter;
+        }
+
+        /* Modern Glass Card */
+        .swal2-popup:not(.swal2-toast) {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border-radius: 22px !important;
+            padding: 2rem 2rem 1.6rem !important;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.22),
+                        0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            max-width: 480px !important;
+            width: 100% !important;
+        }
+
+        :root[data-theme="dark"] .swal2-popup:not(.swal2-toast) {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65),
+                        0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        /* Typography */
+        .swal2-title {
+            font-weight: 700 !important;
+            font-size: 1.35rem !important;
+            line-height: 1.3 !important;
+            letter-spacing: -0.02em !important;
+            color: inherit !important;
+            padding: 0.6rem 0 0 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 0.95rem !important;
+            color: #475569 !important;
+            line-height: 1.55 !important;
+            margin: 0.85rem 0 1.25rem !important;
+        }
+        :root[data-theme="dark"] .swal2-html-container {
+            color: #94a3b8 !important;
+        }
+
+        /* Refined Icons with soft pulsing rings */
+        .swal2-icon {
+            margin: 0.5rem auto 0.6rem !important;
+            border-width: 2.5px !important;
+            transform: scale(0.96);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        .swal2-popup:hover .swal2-icon {
+            transform: scale(1.04);
+        }
+
+        /* Success Icon */
+        .swal2-icon.swal2-success {
+            border-color: #10b981 !important;
+            color: #10b981 !important;
+        }
+        .swal2-icon.swal2-success [class^='swal2-success-line'] {
+            background-color: #10b981 !important;
+        }
+        .swal2-icon.swal2-success .swal2-success-ring {
+            border-color: rgba(16, 185, 129, 0.25) !important;
+        }
+
+        /* Warning Icon */
+        .swal2-icon.swal2-warning {
+            border-color: #f59e0b !important;
+            color: #f59e0b !important;
+        }
+
+        /* Error Icon */
+        .swal2-icon.swal2-error {
+            border-color: #ef4444 !important;
+            color: #ef4444 !important;
+        }
+        .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+            background-color: #ef4444 !important;
+        }
+
+        /* Info Icon */
+        .swal2-icon.swal2-info {
+            border-color: #3b82f6 !important;
+            color: #3b82f6 !important;
+        }
+
+        /* Buttons & Actions */
+        .swal2-actions {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 12px !important;
+            margin: 1.25rem 0 0 0 !important;
+            width: 100% !important;
+        }
+
+        .swal2-styled {
+            border-radius: 12px !important;
+            padding: 0.65rem 1.4rem !important;
+            font-weight: 600 !important;
+            font-size: 0.92rem !important;
+            letter-spacing: 0.01em !important;
+            transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+                        background-color 0.18s ease !important;
+            border: none !important;
+            box-shadow: none !important;
+            min-height: 42px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .swal2-styled:hover {
+            transform: translateY(-1.5px) !important;
+        }
+        .swal2-styled:active {
+            transform: scale(0.97) !important;
+        }
+        .swal2-styled:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+        }
+
+        /* Confirm button */
+        .swal2-styled.swal2-confirm {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32) !important;
+        }
+        .swal2-styled.swal2-confirm:hover {
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.44) !important;
+        }
+
+        /* Cancel button */
+        .swal2-styled.swal2-cancel {
+            background: #f1f5f9 !important;
+            color: #475569 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        .swal2-styled.swal2-cancel:hover {
+            background: #e2e8f0 !important;
+            color: #1e293b !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+        }
+        :root[data-theme="dark"] .swal2-styled.swal2-cancel {
+            background: #334155 !important;
+            color: #e2e8f0 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+        }
+        :root[data-theme="dark"] .swal2-styled.swal2-cancel:hover {
+            background: #475569 !important;
+            color: #ffffff !important;
+        }
+
+        /* ── TOAST NOTIFICATIONS (SMOOTH SLIDE & GLOW) ── */
+        @keyframes toastSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(45px) scale(0.92);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+        @keyframes toastSlideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(45px) scale(0.92);
+            }
+        }
+
+        .swal2-popup.swal2-toast {
+            border-radius: 16px !important;
+            padding: 0.8rem 1.15rem !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #0f172a !important;
+            box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.16),
+                        0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+            backdrop-filter: blur(14px) !important;
+            -webkit-backdrop-filter: blur(14px) !important;
+            border: 1px solid rgba(226, 232, 240, 0.85) !important;
+            font-family: 'Inter', sans-serif !important;
+            overflow: hidden !important;
+        }
+        .swal2-popup.swal2-toast.swal2-show {
+            animation: toastSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+        .swal2-popup.swal2-toast.swal2-hide {
+            animation: toastSlideOut 0.24s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+        }
+
+        :root[data-theme="dark"] .swal2-popup.swal2-toast {
+            background: rgba(30, 41, 59, 0.94) !important;
+            color: #f8fafc !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.55),
+                        0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .swal2-popup.swal2-toast .swal2-title {
+            font-size: 0.92rem !important;
+            font-weight: 600 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            color: inherit !important;
+            letter-spacing: -0.01em !important;
+        }
+
+        .swal2-popup.swal2-toast .swal2-icon {
+            margin: 0 10px 0 0 !important;
+            width: 26px !important;
+            height: 26px !important;
+            border-width: 2px !important;
+        }
+
+        .swal2-popup.swal2-toast .swal2-timer-progress-bar {
+            background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%) !important;
+            height: 3px !important;
+            border-radius: 0 0 16px 16px !important;
+        }
+
+        /* ── RESPONSIVE ADAPTATIONS (MOBILE DEVICES) ── */
+        @media (max-width: 576px) {
+            .swal2-container {
+                padding: 12px !important;
+            }
+            .swal2-popup:not(.swal2-toast) {
+                width: 100% !important;
+                max-width: calc(100vw - 24px) !important;
+                margin: auto !important;
+                padding: 1.4rem 1.15rem 1.25rem !important;
+                border-radius: 18px !important;
+            }
+            .swal2-title {
+                font-size: 1.2rem !important;
+            }
+            .swal2-html-container {
+                font-size: 0.88rem !important;
+                margin: 0.6rem 0 1rem !important;
+            }
+            .swal2-icon {
+                transform: scale(0.85);
+                margin: 0.25rem auto 0.4rem !important;
+            }
+            .swal2-actions {
+                flex-direction: column !important;
+                gap: 8px !important;
+                margin-top: 1rem !important;
+                width: 100% !important;
+            }
+            .swal2-styled {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0.72rem 1rem !important;
+                font-size: 0.94rem !important;
+                min-height: 44px !important;
+            }
+            /* Toast positioning on mobile */
+            .swal2-container.swal2-top-end,
+            .swal2-container.swal2-top {
+                padding: 10px !important;
+            }
+            .swal2-popup.swal2-toast {
+                width: calc(100vw - 20px) !important;
+                margin: 0 auto !important;
+                border-radius: 14px !important;
+            }
+        }
     </style>
 </head>
 <body class="role-<?= esc($layoutRole) ?>">
@@ -1061,18 +1394,44 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Flash Message Handler
+        // Global Enhanced Toast Mixin
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
             showConfirmButton: false,
-            timer: 3000,
+            timer: 3200,
             timerProgressBar: true,
+            showClass: { popup: 'swal2-show' },
+            hideClass: { popup: 'swal2-hide' },
             didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+                // Also support touch devices smoothly
+                toast.addEventListener('touchstart', Swal.stopTimer, { passive: true });
+                toast.addEventListener('touchend', Swal.resumeTimer, { passive: true });
             }
         });
+
+        // Make Toast globally accessible for any page/AJAX
+        window.Toast = Toast;
+        window.AppToast = Toast;
+
+        // Unified Smooth Confirm Dialog Helper
+        window.AppConfirm = function(options) {
+            return Swal.fire({
+                title: options.title || 'Are you sure?',
+                text: options.text || '',
+                html: options.html || undefined,
+                icon: options.icon || 'warning',
+                showCancelButton: true,
+                confirmButtonText: options.confirmText || '<i class="bi bi-check2 me-1"></i> Confirm',
+                cancelButtonText: options.cancelText || 'Cancel',
+                confirmButtonColor: options.confirmColor || '#3b82f6',
+                reverseButtons: true,
+                focusCancel: true,
+                ...options
+            });
+        };
 
         // Skip flash popups when in print mode
         const _isPrintMode = new URLSearchParams(window.location.search).get('print') === '1';
@@ -1081,7 +1440,7 @@
             if (!_isPrintMode) {
                 Toast.fire({
                     icon: 'success',
-                    title: '<?= session()->getFlashdata('success') ?>'
+                    title: '<?= addslashes(session()->getFlashdata('success')) ?>'
                 });
             }
         <?php endif; ?>
@@ -1090,7 +1449,7 @@
             if (!_isPrintMode) {
                 Toast.fire({
                     icon: 'error',
-                    title: '<?= session()->getFlashdata('error') ?>'
+                    title: '<?= addslashes(session()->getFlashdata('error')) ?>'
                 });
             }
         <?php endif; ?>
@@ -1099,9 +1458,18 @@
             if (!_isPrintMode) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Validation Error',
-                    html: '<ul class="text-start mb-0 ps-3"><?php foreach (session()->getFlashdata('errors') as $error): ?><li><?= esc($error) ?></li><?php endforeach; ?></ul>',
-                    confirmButtonColor: 'var(--brand-primary)'
+                    title: 'Please Check Your Input',
+                    html: `
+                        <div class="text-start p-2 rounded-3 bg-light border" style="max-height: 220px; overflow-y: auto;">
+                            <ul class="mb-0 ps-3 text-danger small">
+                                <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                                    <li class="py-1"><?= esc($error) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    `,
+                    confirmButtonText: 'Understood',
+                    confirmButtonColor: '#3b82f6'
                 });
             }
         <?php endif; ?>

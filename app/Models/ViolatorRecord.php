@@ -498,6 +498,11 @@ class ViolatorRecord extends Model
 
     /**
      * Get violation nature summary with counts, revenue, and percentage share.
+     *
+     * Fields returned per row:
+     *  - total_amount   : SUM of penalty_amount for Paid+Pending (assessed total)
+     *  - paid_amount    : SUM of penalty_amount for Paid ONLY (collected revenue — matches KPI card)
+     *  - pending_amount : SUM of penalty_amount for Pending ONLY
      */
     public function getViolationNatureSummary($officerId = null)
     {
@@ -505,28 +510,34 @@ class ViolatorRecord extends Model
         $builder->select("IFNULL(vt.violation_name, violations.violation_type) as violation_type,
             COUNT(*) as count,
             IFNULL(SUM(violations.penalty_amount), 0) as total_amount,
+            IFNULL(SUM(CASE WHEN violations.status = 'Paid'    THEN violations.penalty_amount ELSE 0 END), 0) as paid_amount,
+            IFNULL(SUM(CASE WHEN violations.status = 'Pending' THEN violations.penalty_amount ELSE 0 END), 0) as pending_amount,
             IFNULL(AVG(violations.penalty_amount), 0) as avg_amount,
-            SUM(CASE WHEN violations.status = 'Paid' THEN 1 ELSE 0 END) as paid_count,
+            SUM(CASE WHEN violations.status = 'Paid'    THEN 1 ELSE 0 END) as paid_count,
             SUM(CASE WHEN violations.status = 'Pending' THEN 1 ELSE 0 END) as pending_count");
         $builder->join('violation_types vt', 'vt.id = violations.violation_type_id', 'left');
+
+        $builder->where('violations.status !=', 'Cancelled');
 
         if ($officerId !== null) {
             $builder->where('violations.officer_id', $officerId);
         }
 
-        $builder->groupBy('violations.violation_type_id, violations.violation_type, vt.violation_name');
+        $builder->groupBy('IFNULL(vt.violation_name, violations.violation_type)');
         $builder->orderBy('count', 'DESC');
         $rows = $builder->get()->getResultArray();
 
         // Calculate percentage share
         $total = array_sum(array_column($rows, 'count'));
         foreach ($rows as &$row) {
-            $row['count']         = (int) $row['count'];
-            $row['total_amount']  = (float) $row['total_amount'];
-            $row['avg_amount']    = (float) $row['avg_amount'];
-            $row['paid_count']    = (int) $row['paid_count'];
-            $row['pending_count'] = (int) $row['pending_count'];
-            $row['percentage']    = $total > 0 ? round(($row['count'] / $total) * 100, 1) : 0;
+            $row['count']          = (int)   $row['count'];
+            $row['total_amount']   = (float) $row['total_amount'];
+            $row['paid_amount']    = (float) $row['paid_amount'];
+            $row['pending_amount'] = (float) $row['pending_amount'];
+            $row['avg_amount']     = (float) $row['avg_amount'];
+            $row['paid_count']     = (int)   $row['paid_count'];
+            $row['pending_count']  = (int)   $row['pending_count'];
+            $row['percentage']     = $total > 0 ? round(($row['count'] / $total) * 100, 1) : 0;
         }
 
         return $rows;

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <defs>
+    <!-- 8-point badge star path -->
+    <path id="star-ray" d="M 100,12 L 109,55 L 100,50 L 91,55 Z" fill="#222" stroke="#111" stroke-width="1"/>
+  </defs>
+
+  <!-- Star Rays Background (8 major points + 8 minor points) -->
+  <g id="star-badge" fill="#2d3748" stroke="#1a202c">
+    <!-- 8 Major Points -->
+    <polygon points="100,10 114,56 160,26 136,70 188,78 147,104 182,138 134,142 148,190 108,162 100,208 92,162 52,190 66,142 18,138 53,104 12,78 64,70 40,26 86,56" fill="#1e293b" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+    
+    <!-- Outer scalloped / faceted rays -->
+    <circle cx="100" cy="109" r="62" fill="#0f172a" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="100" cy="109" r="58" fill="none" stroke="#e2e8f0" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <circle cx="100" cy="109" r="54" fill="#1e293b"/>
+  </g>
+
+  <!-- Curved text banner / ring -->
+  <path id="text-arc-top" d="M 52,109 A 48,48 0 0,1 148,109" fill="none"/>
+  <text font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="7.5" fill="#ffffff" letter-spacing="0.5">
+    <textPath href="#text-arc-top" startOffset="50%" text-anchor="middle">CITY TRAFFIC MGMT OFFICE</textPath>
+  </text>
+
+  <path id="text-arc-bottom" d="M 148,111 A 48,48 0 0,1 52,111" fill="none"/>
+  <text font-family="'Arial Black', Arial, sans-serif" font-weight="900" font-size="8" fill="#ffffff" letter-spacing="1">
+    <textPath href="#text-arc-bottom" startOffset="50%" text-anchor="middle">KABANKALAN</textPath>
+  </text>
+
+  <!-- Inner Center Badge -->
+  <circle cx="100" cy="109" r="34" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+  
+  <!-- Scales of Justice / Monument Graphic in center -->
+  <g transform="translate(100, 109) scale(0.65)" stroke="#0f172a" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center pole -->
+    <line x1="0" y1="-28" x2="0" y2="24"/>
+    <!-- Top finial -->
+    <polygon points="0,-32 -4,-28 4,-28" fill="#0f172a"/>
+    <!-- Beam -->
+    <line x1="-22" y1="-14" x2="22" y2="-14"/>
+    <!-- Left Scale -->
+    <line x1="-22" y1="-14" x2="-28" y2="0"/>
+    <line x1="-22" y1="-14" x2="-16" y2="0"/>
+    <path d="M -31,0 Q -22,8 -13,0 Z" fill="#0f172a"/>
+    <!-- Right Scale -->
+    <line x1="22" y1="-14" x2="16" y2="0"/>
+    <line x1="22" y1="-14" x2="28" y2="0"/>
+    <path d="M 13,0 Q 22,8 31,0 Z" fill="#0f172a"/>
+    <!-- Base -->
+    <path d="M -14,24 L 14,24" stroke-width="3"/>
+    <path d="M -18,28 L 18,28" stroke-width="4"/>
+  </g>
+
+  <!-- Bottom bold CTRAMO wordmark -->
+  <g transform="translate(100, 230)">
+    <!-- Outline ribbon banner effect -->
+    <path d="M -70,-22 L -82,-12 L -70,-2 L 70,-2 L 82,-12 L 70,-22 Z" fill="#0f172a"/>
+    <text x="0" y="-7" font-family="'Arial Black', 'Impact', sans-serif" font-weight="900" font-size="16" fill="#ffffff" text-anchor="middle" letter-spacing="3.5">CTRAMO</text>
+  </g>
+</svg>

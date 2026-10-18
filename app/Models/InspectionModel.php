@@ -14,12 +14,17 @@ class InspectionModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'mtop_no',
+        'route',
         'operator_name',
         'operator_cellphone',
+        'driver_name',
+        'driver_license_no',
         'driver_cellphone',
         'mv_make_type',
+        'body_color',
         'cert_attendance',
         'outside_route',
+        'outside_route_8x8',
         'city_proper',
         'trash_can',
         'mtop_8x16_route',

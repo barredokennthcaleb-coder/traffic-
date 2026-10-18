@@ -19,6 +19,11 @@ class CreateInspectionsTable extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => '50',
             ],
+            'route' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
             'operator_name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '255',
@@ -26,6 +31,16 @@ class CreateInspectionsTable extends Migration
             'operator_cellphone' => [
                 'type'       => 'VARCHAR',
                 'constraint' => '20',
+                'null'       => true,
+            ],
+            'driver_name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
+            'driver_license_no' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
                 'null'       => true,
             ],
             'driver_cellphone' => [
@@ -38,6 +53,11 @@ class CreateInspectionsTable extends Migration
                 'constraint' => '255',
                 'null'       => true,
             ],
+            'body_color' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '100',
+                'null'       => true,
+            ],
             // Checkboxes
             'cert_attendance' => [
                 'type'    => 'TINYINT',
@@ -45,6 +65,11 @@ class CreateInspectionsTable extends Migration
                 'default' => 0,
             ],
             'outside_route' => [
+                'type'    => 'TINYINT',
+                'constraint' => 1,
+                'default' => 0,
+            ],
+            'outside_route_8x8' => [
                 'type'    => 'TINYINT',
                 'constraint' => 1,
                 'default' => 0,

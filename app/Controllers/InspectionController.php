@@ -49,7 +49,7 @@ class InspectionController extends BaseController
         
         // Handle checkboxes
         $checkboxes = [
-            'cert_attendance', 'outside_route', 'city_proper', 'trash_can',
+            'cert_attendance', 'outside_route', 'outside_route_8x8', 'city_proper', 'trash_can',
             'mtop_8x16_route', 'mtop_8x8_route', 'mtop_dashboard',
             'signal_light_left', 'signal_light_right', 'head_light',
             'stop_light', 'side_mirror', 'horn', 'standard_muffler',
@@ -99,7 +99,7 @@ class InspectionController extends BaseController
 
         // Handle checkboxes
         $checkboxes = [
-            'cert_attendance', 'outside_route', 'city_proper', 'trash_can',
+            'cert_attendance', 'outside_route', 'outside_route_8x8', 'city_proper', 'trash_can',
             'mtop_8x16_route', 'mtop_8x8_route', 'mtop_dashboard',
             'signal_light_left', 'signal_light_right', 'head_light',
             'stop_light', 'side_mirror', 'horn', 'standard_muffler',

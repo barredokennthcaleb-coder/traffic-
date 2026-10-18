@@ -57,27 +57,26 @@
     </div>
 
     <!-- ═══ ANALYTICS TOGGLE BAR ════════════════════════════════════ -->
-    <div class="admin-analytics-toggle-bar d-flex align-items-center justify-content-between mb-3 premium-reveal" style="--reveal-delay:0.1s">
-        <div class="d-flex align-items-center gap-2">
-            <span class="admin-analytics-toggle-label">
-                <i class="bi bi-bar-chart-line me-1 text-primary"></i>
-                <span class="fw-bold" style="font-size:0.92rem;">Dashboard Analytics</span>
-            </span>
-            <span class="admin-analytics-visible-pill" id="adminAnalyticsVisiblePill">Visible</span>
-        </div>
-        <button type="button" id="adminAnalyticsToggleBtn" class="btn-admin-analytics-toggle" title="Toggle Analytics">
+    <div class="admin-analytics-toggle-bar d-flex align-items-center gap-2 mb-3">
+        <span class="admin-analytics-toggle-label">
+            <i class="bi bi-bar-chart-line me-1 text-primary"></i>
+            <span class="fw-bold" style="font-size:0.95rem;">Dashboard Analytics</span>
+        </span>
+        <button type="button" id="adminAnalyticsToggleBtn" class="btn-admin-analytics-toggle ms-1" title="Toggle Analytics">
             <i class="bi bi-eye-slash me-1" id="adminAnalyticsToggleIcon"></i>
             <span id="adminAnalyticsToggleText">Hide</span>
         </button>
+        <span class="admin-analytics-visible-pill" id="adminAnalyticsVisiblePill"></span>
     </div>
 
     <!-- ═══ ANALYTICS SECTION ══════════════════════════════════════ -->
     <div id="adminAnalyticsSection" class="admin-analytics-section-wrap">
+    <div class="admin-analytics-inner">
     <!-- Quick Statistics -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <a href="<?= base_url('penalties/all') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.1s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.04s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -103,7 +102,7 @@
         
         <div class="col-md-3">
             <a href="<?= base_url('penalties/history') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.2s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.07s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -128,7 +127,7 @@
         </div>
         <div class="col-md-3">
             <a href="<?= base_url('penalties') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.3s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.10s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
                 <div class="card-body p-3 p-xl-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -158,7 +157,7 @@
         <div class="col-md-3">
             <button type="button" class="d-block w-100 border-0 p-0 bg-transparent text-start h-100"
                 data-bs-toggle="modal" data-bs-target="#topRankingsModal">
-            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.4s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.13s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -194,7 +193,7 @@
     <div class="row g-4 mb-4">
         <!-- Weekly Trend -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.5s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.15s;">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend (Last 12 Weeks)</h5>
                 </div>
@@ -206,7 +205,7 @@
         
         <!-- Monthly Breakdown -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.6s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.17s;">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
                 </div>
@@ -219,30 +218,92 @@
 
     <!-- Analytics Charts Row 2: Nature of Violation and Status/Roles -->
     <div class="row g-4 mb-4">
-        <!-- Nature of Violation -->
+        <!-- Nature of Violation (Real-Time) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.7s;">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-diagram-3 me-2 text-info"></i>Nature of Violation</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <canvas id="natureBarChart" height="350"></canvas>
+            <div class="card border-0 shadow-sm h-100 premium-reveal" id="natureViolationCard" style="--reveal-delay: 0.19s;">
+
+                <!-- ── Card Header ── -->
+                <div class="card-header bg-white py-3 border-bottom-0">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-diagram-3 fs-5 text-info"></i>
+                            <h5 class="mb-0 fw-bold">Nature of Violation</h5>
+                            <!-- Live Pulse -->
+                            <span class="nature-live-badge" id="natureLiveBadge" title="Auto-refreshes every 30 seconds">
+                                <span class="nature-live-dot"></span> LIVE
+                            </span>
                         </div>
-                        <div class="col-md-4 d-flex align-items-center justify-content-center">
-                            <div style="width: 100%; max-width: 300px;">
-                                <canvas id="natureDoughnutChart"></canvas>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- Mode Toggle -->
+                            <div class="btn-group btn-group-sm shadow-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary active" id="btnNatureCount" title="View by incident count">
+                                    <i class="bi bi-hash"></i> Incidents
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="btnNatureRevenue" title="View by revenue">
+                                    <i class="bi bi-cash"></i> Revenue (₱)
+                                </button>
+                            </div>
+                            <!-- Manual Refresh -->
+                            <button class="btn btn-sm btn-light border shadow-sm" id="btnNatureRefresh" title="Refresh now">
+                                <i class="bi bi-arrow-clockwise" id="natureRefreshIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── KPI Summary Strip ── -->
+                    <div class="d-flex gap-2 mt-3 flex-wrap" id="natureKpiStrip"></div>
+
+                    <!-- ── Search Bar ── -->
+                    <div class="mt-2 position-relative">
+                        <i class="bi bi-search position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+                        <input type="text" id="natureSearchInput"
+                            class="form-control form-control-sm ps-4 border-0 bg-light rounded-pill"
+                            placeholder="Search violation type…"
+                            style="font-size:0.82rem;">
+                    </div>
+
+                    <!-- ── Last Updated ── -->
+                    <div class="mt-1 text-end" style="font-size:0.72rem; color:#94a3b8;">
+                        <i class="bi bi-clock me-1"></i>
+                        Last updated: <span id="natureLastUpdated">—</span>
+                        &nbsp;·&nbsp; <span id="natureRecordCount">0</span> violation type(s)
+                    </div>
+                </div>
+
+                <!-- ── Spike Alert Banner (hidden by default) ── -->
+                <div id="natureSpikeAlert" class="nature-spike-alert d-none mx-3 mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <span id="natureSpikeMsg">A spike was detected!</span>
+                </div>
+
+                <!-- ── Chart Body ── -->
+                <div class="card-body pt-2">
+                    <div class="row align-items-start g-3">
+                        <!-- Bar Chart -->
+                        <div class="col-md-7">
+                            <div style="position: relative; height: 340px;">
+                                <canvas id="natureBarChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Doughnut + Scrollable Legend -->
+                        <div class="col-md-5">
+                            <div class="d-flex flex-column align-items-center gap-2">
+                                <div style="width:200px; height:200px; position:relative;">
+                                    <canvas id="natureDoughnutChart"></canvas>
+                                </div>
+                                <!-- Scrollable Legend -->
+                                <div class="nature-legend-scroll w-100" id="natureLegendContainer"></div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
         <!-- Status and Role Combined Column -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.8s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.21s;">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold" id="rightChartTitle">
                         <i class="bi bi-pie-chart me-2 text-success"></i>Violator Status
@@ -264,7 +325,8 @@
             </div>
         </div>
     </div>
-    </div> <!-- End Collapsible Analytics Wrapper -->
+    </div>
+    </div> <!-- End Collapsible Analytics Inner & Wrapper -->
 
 <!-- Top Rankings Modal -->
 <div class="modal fade" id="topRankingsModal" tabindex="-1" aria-labelledby="topRankingsModalLabel" aria-hidden="true">
@@ -550,72 +612,370 @@
             }
         });
 
-        // --- Nature of Violation Charts ---
-        const natureData = <?= json_encode($nature_summary) ?>;
-        const natureLabels = natureData.map(n => n.violation_type);
-        const natureCounts = natureData.map(n => n.count);
-        const natureRevenue = natureData.map(n => n.total_amount);
-        
-        // Generate distinct colors based on existing theme
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'];
-        
-        // Horizontal Bar Chart
-        new Chart(document.getElementById('natureBarChart'), {
-            type: 'bar',
-            data: {
-                labels: natureLabels,
-                datasets: [
-                    {
-                        label: 'Total Incidents',
-                        data: natureCounts,
-                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                indexAxis: 'y', // Makes it horizontal
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { beginAtZero: true, grid: gridOptions },
-                    y: { grid: { display: false } }
-                }
-            }
-        });
+        // ═══════════════════════════════════════════════════════════════
+        // NATURE OF VIOLATION — REAL-TIME ENGINE
+        // ═══════════════════════════════════════════════════════════════
+        const NATURE_API_URL   = '<?= base_url('api/nature-summary') ?>';
+        const NATURE_REFRESH_MS = 30000; // 30 seconds
 
-        // Doughnut Chart (Percentage Share)
-        new Chart(document.getElementById('natureDoughnutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: natureLabels,
-                datasets: [{
-                    data: natureCounts,
-                    backgroundColor: colors.slice(0, natureLabels.length),
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '70%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) label += ': ';
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return label + value + ' (' + percentage + '%)';
+        // Full extended palette for all violation types
+        const naturePalette = [
+            '#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899',
+            '#ef4444','#8b5cf6','#14b8a6','#f97316','#84cc16',
+            '#0ea5e9','#a855f7','#22c55e','#fb923c','#e11d48',
+            '#7c3aed','#0891b2','#059669','#d97706','#db2777'
+        ];
+
+        let natureMode         = 'count';   // 'count' | 'revenue'
+        let natureLiveData     = <?= json_encode($nature_summary ?? []) ?>;
+        let naturePrevData     = null;       // previous fetch for spike detection
+        let natureBarInstance  = null;
+        let natureDoughnutInstance = null;
+        let natureFilterText   = '';
+        let natureRefreshTimer = null;
+
+        // ── Helpers ────────────────────────────────────────────────────
+        function natureFmt(val, mode) {
+            return mode === 'revenue'
+                ? '₱' + Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : Number(val).toLocaleString('en-PH');
+        }
+
+        function natureVal(row, mode) {
+            // Revenue mode uses paid_amount ONLY (matches the KPI card "Total Revenue")
+            // Incidents mode uses count
+            return mode === 'revenue' ? (parseFloat(row.paid_amount) || 0) : (parseInt(row.count) || 0);
+        }
+
+        // ── KPI Summary Strip ──────────────────────────────────────────
+        function renderNatureKpi(data) {
+            const strip = document.getElementById('natureKpiStrip');
+            if (!strip || !data.length) return;
+
+            const totalInc   = data.reduce((s, d) => s + (parseInt(d.count) || 0), 0);
+            const totalPaid  = data.reduce((s, d) => s + (parseFloat(d.paid_amount) || 0), 0);
+            const totalPend  = data.reduce((s, d) => s + (parseFloat(d.pending_amount) || 0), 0);
+            const topType    = [...data].sort((a,b) => natureVal(b, natureMode) - natureVal(a, natureMode))[0];
+            const typeCount  = data.length;
+
+            strip.innerHTML = `
+                <div class="nature-kpi-chip" title="Total distinct violation types">
+                    <i class="bi bi-list-ul text-primary"></i>
+                    <span class="fw-bold">${typeCount}</span>
+                    <span class="text-muted">Types</span>
+                </div>
+                <div class="nature-kpi-chip" title="Total recorded violations">
+                    <i class="bi bi-exclamation-circle text-warning"></i>
+                    <span class="fw-bold">${totalInc.toLocaleString('en-PH')}</span>
+                    <span class="text-muted">Incidents</span>
+                </div>
+                <div class="nature-kpi-chip" title="Collected revenue from Paid violations (matches Total Revenue KPI)">
+                    <i class="bi bi-cash-stack text-success"></i>
+                    <span class="fw-bold">₱${Number(totalPaid).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span class="text-muted">Revenue (Paid)</span>
+                </div>
+                <div class="nature-kpi-chip" title="Outstanding fines from Pending violations">
+                    <i class="bi bi-hourglass-split text-warning"></i>
+                    <span class="fw-bold" style="color: #b45309;">₱${Number(totalPend).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span class="text-muted">Pending</span>
+                </div>
+                ${topType ? `
+                <div class="nature-kpi-chip nature-kpi-top" title="Top violation by ${natureMode === 'revenue' ? 'collected revenue' : 'incidents'}">
+                    <i class="bi bi-trophy-fill text-danger"></i>
+                    <span class="fw-bold text-truncate" style="max-width:140px;" title="${topType.violation_type}">${topType.violation_type}</span>
+                    <span class="text-muted">Top</span>
+                </div>` : ''}
+            `;
+        }
+
+        // ── Spike Detection ────────────────────────────────────────────
+        function detectSpike(prev, curr) {
+            if (!prev || !prev.length) return null;
+            const prevMap = {};
+            prev.forEach(r => { prevMap[r.violation_type] = parseInt(r.count) || 0; });
+            let worst = null, worstDelta = 0;
+            curr.forEach(r => {
+                const old = prevMap[r.violation_type] || 0;
+                const now = parseInt(r.count) || 0;
+                if (old > 0 && now > old) {
+                    const delta = now - old;
+                    if (delta > worstDelta) { worstDelta = delta; worst = r.violation_type; }
+                } else if (old === 0 && now > 2) {
+                    if (now > worstDelta) { worstDelta = now; worst = r.violation_type; }
+                }
+            });
+            return worst ? { type: worst, delta: worstDelta } : null;
+        }
+
+        function showSpikeAlert(spike) {
+            const el  = document.getElementById('natureSpikeAlert');
+            const msg = document.getElementById('natureSpikeMsg');
+            if (!el || !spike) { if (el) el.classList.add('d-none'); return; }
+            msg.textContent = `⚠ Spike detected: "${spike.type}" increased by ${spike.delta} incident${spike.delta > 1 ? 's' : ''} since last refresh.`;
+            el.classList.remove('d-none');
+            setTimeout(() => el.classList.add('d-none'), 12000);
+        }
+
+        // ── Trend Badge helper ─────────────────────────────────────────
+        function trendBadge(prev, curr) {
+            if (prev === null) return '';
+            if (curr > prev) return `<span class="badge bg-danger-subtle text-danger ms-1" style="font-size:0.6rem;">▲ +${curr - prev}</span>`;
+            if (curr < prev) return `<span class="badge bg-success-subtle text-success ms-1" style="font-size:0.6rem;">▼ -${prev - curr}</span>`;
+            return '';
+        }
+
+        // ── Build prev count map ───────────────────────────────────────
+        function buildPrevMap(data) {
+            const m = {};
+            if (data) data.forEach(r => { m[r.violation_type] = parseInt(r.count) || 0; });
+            return m;
+        }
+
+        // ── Main Render ────────────────────────────────────────────────
+        function renderNatureCharts(data, prevData) {
+            if (!data || data.length === 0) return;
+            const prevMap = buildPrevMap(prevData);
+
+            // Apply search filter
+            const filter = natureFilterText.toLowerCase().trim();
+            const filtered = filter
+                ? data.filter(d => d.violation_type.toLowerCase().includes(filter))
+                : data;
+
+            // Sort by active mode
+            const sortedData = [...filtered].sort((a, b) => natureVal(b, natureMode) - natureVal(a, natureMode));
+
+            // Update meta
+            const countEl = document.getElementById('natureRecordCount');
+            if (countEl) countEl.textContent = data.length;
+
+            renderNatureKpi(data);
+
+            // ── 1. Horizontal Bar Chart ────────────────────────────────
+            const barLabels = sortedData.map(d => d.violation_type);
+            const barValues = sortedData.map(d => natureVal(d, natureMode));
+            const barColors = sortedData.map((_, i) => naturePalette[i % naturePalette.length]);
+
+            if (natureBarInstance) natureBarInstance.destroy();
+            const barCtx = document.getElementById('natureBarChart').getContext('2d');
+            natureBarInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: barLabels,
+                    datasets: [{
+                        label: natureMode === 'revenue' ? 'Collected Revenue (₱)' : 'Total Incidents',
+                        data: barValues,
+                        backgroundColor: barColors.map(c => c + 'cc'),
+                        borderColor: barColors,
+                        borderWidth: 1.5,
+                        borderRadius: 5,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 600, easing: 'easeInOutQuart' },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 11 }, padding: 6 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const row = sortedData[ctx.dataIndex];
+                                    const pct = row ? Math.round((natureVal(row, natureMode) / sortedData.reduce((s,r) => s+natureVal(r,natureMode),0)) * 100) : 0;
+                                    return ` ${natureFmt(ctx.parsed.x, natureMode)} (${pct}%)`;
+                                },
+                                afterLabel: ctx => {
+                                    const row = sortedData[ctx.dataIndex];
+                                    if (!row) return '';
+                                    const parts = [];
+                                    if (natureMode === 'count') {
+                                        parts.push(`Paid: ${row.paid_count || 0}`, `Pending: ${row.pending_count || 0}`);
+                                    } else {
+                                        // Revenue mode: show collected vs outstanding
+                                        parts.push(
+                                            `Collected: ₱${Number(row.paid_amount || 0).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}`,
+                                            `Pending:   ₱${Number(row.pending_amount || 0).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}`
+                                        );
+                                    }
+                                    const old = prevMap[row.violation_type];
+                                    if (old !== undefined && old !== parseInt(row.count)) {
+                                        const diff = parseInt(row.count) - old;
+                                        parts.push(`Change: ${diff > 0 ? '+' : ''}${diff} since last refresh`);
+                                    }
+                                    return parts;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: gridOptions,
+                            ticks: { callback: v => natureMode === 'revenue' ? '₱' + Number(v).toLocaleString() : v }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11 },
+                                callback: function(val, idx) {
+                                    const lbl = barLabels[idx] || '';
+                                    return lbl.length > 24 ? lbl.substring(0, 22) + '…' : lbl;
+                                }
                             }
                         }
                     }
                 }
+            });
+
+            // ── 2. Full-Ring Doughnut (all violation types, unique colors) ──
+            const doughnutLabels = sortedData.map(d => d.violation_type);
+            const doughnutValues = sortedData.map(d => natureVal(d, natureMode));
+            const totalSum = doughnutValues.reduce((a, b) => a + b, 0);
+
+            if (natureDoughnutInstance) natureDoughnutInstance.destroy();
+            const dCtx = document.getElementById('natureDoughnutChart').getContext('2d');
+            natureDoughnutInstance = new Chart(dCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: doughnutLabels,
+                    datasets: [{
+                        data: doughnutValues,
+                        backgroundColor: doughnutLabels.map((_, i) => naturePalette[i % naturePalette.length]),
+                        borderWidth: 2.5,
+                        borderColor: '#ffffff',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '62%',
+                    animation: { animateRotate: true, duration: 800, easing: 'easeInOutQuart' },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    const val = ctx.parsed;
+                                    const pct = totalSum > 0 ? Math.round((val / totalSum) * 100) : 0;
+                                    return ` ${ctx.label}: ${natureFmt(val, natureMode)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ── 3. Scrollable Legend ───────────────────────────────────
+            const legendBox = document.getElementById('natureLegendContainer');
+            if (legendBox) {
+                let html = '';
+                doughnutLabels.forEach((lbl, idx) => {
+                    const val    = doughnutValues[idx];
+                    const pct    = totalSum > 0 ? Math.round((val / totalSum) * 100) : 0;
+                    const col    = naturePalette[idx % naturePalette.length];
+                    const row    = sortedData[idx];
+                    const oldCnt = prevMap[lbl];
+                    const trend  = (oldCnt !== undefined && natureMode === 'count') ? trendBadge(oldCnt, parseInt(row.count) || 0) : '';
+                    const isTop  = idx === 0 ? 'fw-bold' : '';
+                    const paidPending = natureMode === 'count'
+                        ? `<span class="text-muted" style="font-size:0.64rem;">Paid: ${row.paid_count||0} &bull; Pend: ${row.pending_count||0}</span>`
+                        : `<span class="text-muted" style="font-size:0.64rem;">Pend: ₱${Number(row.pending_amount||0).toLocaleString('en-PH')}</span>`;
+                    html += `
+                    <div class="nature-legend-row ${idx === 0 ? 'nature-legend-top' : ''}" title="${lbl}">
+                        <div class="d-flex align-items-center gap-1 text-truncate" style="max-width:160px;">
+                            <span class="nature-legend-dot" style="background:${col}"></span>
+                            <span class="text-truncate ${isTop} text-dark" style="font-size:0.78rem;">${lbl}</span>
+                            ${trend}
+                        </div>
+                        <div class="text-end" style="flex-shrink:0;">
+                            <div class="fw-bold" style="font-size:0.78rem;">${natureFmt(val, natureMode)}</div>
+                            ${paidPending}
+                            <span class="badge rounded-pill" style="background:${col}22; color:${col}; font-size:0.6rem;">${pct}%</span>
+                        </div>
+                    </div>`;
+                });
+                legendBox.innerHTML = html || '<p class="text-muted small text-center py-3">No violations match your search.</p>';
             }
-        });
+        }
+
+        // ── Fetch & Refresh ────────────────────────────────────────────
+        function natureSetRefreshing(on) {
+            const icon = document.getElementById('natureRefreshIcon');
+            const badge = document.getElementById('natureLiveBadge');
+            if (icon) icon.className = on ? 'bi bi-arrow-clockwise nature-spinning' : 'bi bi-arrow-clockwise';
+            if (badge) badge.classList.toggle('nature-live-syncing', on);
+        }
+
+        async function natureFetch() {
+            natureSetRefreshing(true);
+            try {
+                const res  = await fetch(NATURE_API_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const json = await res.json();
+                if (json.status === 'ok') {
+                    const spike = detectSpike(natureLiveData, json.data);
+                    naturePrevData = natureLiveData;
+                    natureLiveData = json.data;
+
+                    renderNatureCharts(natureLiveData, naturePrevData);
+                    showSpikeAlert(spike);
+
+                    const el = document.getElementById('natureLastUpdated');
+                    if (el) el.textContent = new Date().toLocaleTimeString('en-PH');
+                }
+            } catch(e) {
+                console.warn('Nature summary fetch error:', e);
+            } finally {
+                natureSetRefreshing(false);
+            }
+        }
+
+        // Initial render with server-side data
+        renderNatureCharts(natureLiveData, null);
+        const initialUpdated = document.getElementById('natureLastUpdated');
+        if (initialUpdated) initialUpdated.textContent = new Date().toLocaleTimeString('en-PH');
+
+        // Start auto-refresh
+        natureRefreshTimer = setInterval(natureFetch, NATURE_REFRESH_MS);
+
+        // Manual refresh button
+        const btnRefresh = document.getElementById('btnNatureRefresh');
+        if (btnRefresh) btnRefresh.addEventListener('click', natureFetch);
+
+        // Search filter
+        const searchInput = document.getElementById('natureSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                natureFilterText = this.value;
+                renderNatureCharts(natureLiveData, naturePrevData);
+            });
+        }
+
+        // Mode Toggles
+        const btnCount   = document.getElementById('btnNatureCount');
+        const btnRevenue = document.getElementById('btnNatureRevenue');
+        if (btnCount && btnRevenue) {
+            btnCount.addEventListener('click', function() {
+                if (natureMode === 'count') return;
+                natureMode = 'count';
+                btnCount.classList.add('active');
+                btnRevenue.classList.remove('active');
+                renderNatureCharts(natureLiveData, naturePrevData);
+            });
+            btnRevenue.addEventListener('click', function() {
+                if (natureMode === 'revenue') return;
+                natureMode = 'revenue';
+                btnRevenue.classList.add('active');
+                btnCount.classList.remove('active');
+                renderNatureCharts(natureLiveData, naturePrevData);
+            });
+        }
 
         // --- Secondary Chart Controller (Status and Roles) ---
         const statusData = <?= json_encode($status_distribution) ?>;
@@ -690,47 +1050,44 @@
 </script>
 
 <style>
-/* ── ADMIN ANALYTICS TOGGLE BAR ─────────────────────────── */
+/* ── ADMIN ANALYTICS TOGGLE BAR (SEAMLESS INLINE) ───────── */
 .admin-analytics-toggle-bar {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 0.65rem 1.1rem;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-    transition: all 0.2s ease;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 0.2rem;
 }
 .admin-analytics-toggle-label {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    color: #1e293b;
+    gap: 0.35rem;
+    color: var(--text-strong, #1e293b);
+    font-size: 0.95rem;
+    font-weight: 700;
 }
 .admin-analytics-visible-pill {
-    display: inline-flex;
-    align-items: center;
+    display: none;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    padding: 0.2rem 0.55rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 20px;
-    background: rgba(16, 185, 129, 0.12);
-    color: #047857;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    transition: all 0.25s ease;
+    background: rgba(148, 163, 184, 0.14);
+    color: #64748b;
+    border: 1px solid rgba(148, 163, 184, 0.3);
 }
 .admin-analytics-visible-pill.hidden-state {
-    background: rgba(148, 163, 184, 0.12);
-    color: #64748b;
-    border-color: rgba(148, 163, 184, 0.3);
+    display: inline-flex;
+    align-items: center;
 }
 .btn-admin-analytics-toggle {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.35rem;
     font-size: 0.82rem;
     font-weight: 600;
-    padding: 0.38rem 0.85rem;
+    padding: 0.38rem 0.9rem;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
@@ -744,39 +1101,137 @@
     border-color: #bfdbfe;
     color: #2563eb;
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.12);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
 }
-.btn-admin-analytics-toggle.is-hidden {
-    background: #f0fdf4;
-    border-color: #86efac;
-    color: #059669;
-}
-.btn-admin-analytics-toggle.is-hidden:hover {
-    background: #dcfce7;
-    border-color: #4ade80;
-    color: #047857;
-}
-/* ── SMOOTH COLLAPSE ────────────────────────────────────── */
+.btn-admin-analytics-toggle:active { transform: scale(0.97); }
+.btn-admin-analytics-toggle.is-hidden { background: #f0fdf4; border-color: #86efac; color: #059669; }
+.btn-admin-analytics-toggle.is-hidden:hover { background: #dcfce7; border-color: #4ade80; color: #047857; }
+
+/* ── ZERO-LAG CSS GRID COLLAPSE & EXPAND ANIMATION ────── */
 .admin-analytics-section-wrap {
-    overflow: hidden;
-    transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    max-height: 6000px;
-    opacity: 1;
-    transform: translateY(0);
-    transform-origin: top center;
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 1; transform: translateY(0); transform-origin: top center;
+    will-change: grid-template-rows, opacity, transform;
 }
 .admin-analytics-section-wrap.analytics-collapsed {
-    max-height: 0 !important;
-    opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
+    grid-template-rows: 0fr; opacity: 0; transform: translateY(-6px); pointer-events: none;
+}
+.admin-analytics-inner { overflow: hidden; min-height: 0; }
+
+/* ════════════════════════════════════════════════════════════
+   NATURE OF VIOLATION — REAL-TIME UI
+   ════════════════════════════════════════════════════════════ */
+
+/* Live Badge */
+.nature-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #16a34a;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    border-radius: 20px;
+    padding: 0.18rem 0.55rem;
+    cursor: default;
+    user-select: none;
+    transition: opacity 0.3s;
+}
+.nature-live-badge.nature-live-syncing { opacity: 0.55; }
+.nature-live-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #16a34a;
+    animation: nature-pulse 1.4s ease-in-out infinite;
+}
+@keyframes nature-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.75); }
+}
+
+/* Spin animation for refresh icon */
+@keyframes nature-spin { to { transform: rotate(360deg); } }
+.nature-spinning { animation: nature-spin 0.7s linear infinite; display: inline-block; }
+
+/* KPI Chips */
+.nature-kpi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+.nature-kpi-top {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+}
+
+/* Spike Alert Banner */
+.nature-spike-alert {
+    background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.55rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #92400e;
+    margin-bottom: 0.5rem;
+    animation: slideInDown 0.4s ease;
+}
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollable Legend */
+.nature-legend-scroll {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+}
+.nature-legend-scroll::-webkit-scrollbar { width: 4px; }
+.nature-legend-scroll::-webkit-scrollbar-track { background: transparent; }
+.nature-legend-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+/* Legend Rows */
+.nature-legend-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 0.3rem 0.4rem;
+    border-radius: 6px;
+    transition: background 0.15s;
+    cursor: default;
+}
+.nature-legend-row:hover { background: #f8fafc; }
+.nature-legend-top { background: #fafaf5; }
+.nature-legend-dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
 }
 </style>
 
 <script>
-// ═══ ADMIN ANALYTICS SECTION TOGGLE ══════════════════════
+// ═══ ADMIN ANALYTICS SECTION TOGGLE (ZERO-DELAY & SMOOTH ANIMATION) ═══
 (function () {
     const STORAGE_KEY = 'admin_analytics_hidden';
     const section = document.getElementById('adminAnalyticsSection');
@@ -787,38 +1242,50 @@
 
     if (!section || !btn) return;
 
+    // Direct landing or clicking on Dashboard resets hidden state so the dashboard opens visibly with no delay
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+    } catch(e) {}
+
     function setHidden(hidden, animate) {
         if (hidden) {
-            if (!animate) {
-                section.style.transition = 'none';
-                section.classList.add('analytics-collapsed');
-                requestAnimationFrame(() => { section.style.transition = ''; });
-            } else {
-                section.classList.add('analytics-collapsed');
+            section.classList.add('analytics-collapsed');
+            if (icon) icon.className = 'bi bi-eye me-1';
+            if (text) text.textContent = 'Show';
+            if (pill) {
+                pill.textContent = 'Hidden';
+                pill.classList.add('hidden-state');
             }
-            icon.className   = 'bi bi-eye me-1';
-            text.textContent = 'Show';
-            pill.textContent = 'Hidden';
-            pill.classList.add('hidden-state');
             btn.classList.add('is-hidden');
-            localStorage.setItem(STORAGE_KEY, '1');
+            try { localStorage.setItem(STORAGE_KEY, '1'); } catch(e) {}
         } else {
             section.classList.remove('analytics-collapsed');
-            icon.className   = 'bi bi-eye-slash me-1';
-            text.textContent = 'Hide';
-            pill.textContent = 'Visible';
-            pill.classList.remove('hidden-state');
+            if (icon) icon.className = 'bi bi-eye-slash me-1';
+            if (text) text.textContent = 'Hide';
+            if (pill) {
+                pill.textContent = '';
+                pill.classList.remove('hidden-state');
+            }
             btn.classList.remove('is-hidden');
-            localStorage.removeItem(STORAGE_KEY);
+            try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+
+            // Smoothly redraw & scale charts to ensure exact crisp bounds
+            setTimeout(function () {
+                window.dispatchEvent(new Event('resize'));
+            }, 80);
+            setTimeout(function () {
+                window.dispatchEvent(new Event('resize'));
+            }, 360);
         }
     }
 
-    // On load — no animation
-    setHidden(localStorage.getItem(STORAGE_KEY) === '1', false);
+    // Always start visible immediately without flash or delay
+    setHidden(false, false);
 
-    // Click — animated
+    // Interactive animated click
     btn.addEventListener('click', function () {
-        setHidden(!section.classList.contains('analytics-collapsed'), true);
+        const isCollapsed = section.classList.contains('analytics-collapsed');
+        setHidden(!isCollapsed, true);
     });
 })();
 </script>

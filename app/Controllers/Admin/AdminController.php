@@ -88,6 +88,25 @@ class AdminController extends BaseController
         return view('admin/main/dashboard', $data);
     }
 
+    /**
+     * JSON API: Returns the violation nature summary for real-time chart polling.
+     */
+    public function natureSummaryJson()
+    {
+        $data = $this->violationRecord->getViolationNatureSummary();
+
+        // Attach a server timestamp so the client knows how fresh the data is
+        return $this->response
+            ->setContentType('application/json')
+            ->setJSON([
+                'status'     => 'ok',
+                'updated_at' => date('Y-m-d H:i:s'),
+                'data'       => $data,
+                'total'      => array_sum(array_column($data, 'count')),
+                'top'        => !empty($data) ? $data[0] : null,
+            ]);
+    }
+
     public function reports()
     {
         $periodType = $this->request->getGet('period_type') ?? 'weekly';

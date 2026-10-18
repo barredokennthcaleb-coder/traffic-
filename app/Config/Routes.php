@@ -83,6 +83,9 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     // Reports Routes
     $routes->get('reports', 'Admin\AdminController::reports');
     $routes->get('reports/export-csv', 'Admin\AdminController::exportReportCsv');
+
+    // Real-time API Routes (JSON)
+    $routes->get('api/nature-summary', 'Admin\AdminController::natureSummaryJson');
 });
 
 // Inspection Routes (Accessible by Admin and Officer)

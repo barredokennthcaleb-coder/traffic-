@@ -37,7 +37,9 @@
                     <thead class="table-light">
                         <tr>
                             <th class="ps-4">MTOP #</th>
+                            <th>Route</th>
                             <th>Operator</th>
+                            <th>Driver</th>
                             <th>MV Make/Type</th>
                             <th>Inspected By</th>
                             <th>Date</th>
@@ -47,7 +49,7 @@
                     <tbody>
                         <?php if (empty($inspections)): ?>
                             <tr>
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
                                     <div class="empty-state">
                                         <i class="bi bi-file-earmark-text display-4 text-muted"></i>
                                         <h6 class="mt-3">No Inspection Reports Found</h6>
@@ -58,20 +60,38 @@
                         <?php else: ?>
                             <?php foreach ($inspections as $item): ?>
                                 <tr>
-                                    <td class="ps-4 font-monospace fw-bold"><?= esc($item['mtop_no']) ?></td>
+                                    <td class="ps-4 font-monospace fw-bold text-primary"><?= esc($item['mtop_no']) ?></td>
+                                    <td>
+                                        <?php if (!empty($item['route'])): ?>
+                                            <span class="badge bg-light text-dark border"><?= esc($item['route']) ?></span>
+                                        <?php else: ?>
+                                            <span class="text-muted small">—</span>
+                                        <?php endif; ?>
+                                    </td>
                                     <td>
                                         <div class="fw-semibold"><?= esc($item['operator_name']) ?></div>
-                                        <small class="text-muted"><?= esc($item['operator_cellphone']) ?></small>
+                                        <small class="text-muted"><?= esc($item['operator_cellphone'] ?? '') ?></small>
                                     </td>
-                                    <td><?= esc($item['mv_make_type']) ?></td>
+                                    <td>
+                                        <div class="fw-semibold"><?= esc($item['driver_name'] ?? '—') ?></div>
+                                        <?php if (!empty($item['driver_license_no'])): ?>
+                                            <small class="text-muted">Lic: <?= esc($item['driver_license_no']) ?></small>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div><?= esc($item['mv_make_type'] ?? '—') ?></div>
+                                        <?php if (!empty($item['body_color'])): ?>
+                                            <small class="text-muted">Color: <?= esc($item['body_color']) ?></small>
+                                        <?php endif; ?>
+                                    </td>
                                     <td><?= esc($item['inspected_by']) ?></td>
                                     <td><?= date('M d, Y', strtotime($item['inspection_date'])) ?></td>
                                     <td class="text-end pe-4">
                                         <div class="btn-group shadow-sm">
-                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Print">
+                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Print Report">
                                                 <i class="bi bi-printer text-info"></i>
                                             </a>
-                                            <a href="<?= base_url('inspections/edit/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Edit">
+                                            <a href="<?= base_url('inspections/edit/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Edit Report">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-white border btn-delete" data-id="<?= $item['id'] ?>" title="Delete">
@@ -94,27 +114,7 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Delete Inspection</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <p>Are you sure you want to delete this inspection report? This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer bg-light border-0">
-                <form id="deleteForm" method="POST">
-                    <?= csrf_field() ?>
-                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger px-4 shadow-sm">Delete Permanently</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <style>
     .btn-white { background: #fff; }
@@ -126,14 +126,34 @@
 <?= $this->section('scripts') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const deleteForm = document.getElementById('deleteForm');
-
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', function() {
                 const id = this.dataset.id;
-                deleteForm.action = `<?= base_url('inspections/delete') ?>/${id}`;
-                deleteModal.show();
+                (window.AppConfirm || Swal.fire)({
+                    title: 'Delete Inspection Report?',
+                    text: 'Are you sure you want to delete this inspection report? This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-trash3 me-1"></i> Yes, Delete',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#ef4444',
+                    reverseButtons: true
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `<?= base_url('inspections/delete') ?>/${id}`;
+                        
+                        const csrf = document.createElement('input');
+                        csrf.type = 'hidden';
+                        csrf.name = '<?= csrf_token() ?>';
+                        csrf.value = '<?= csrf_hash() ?>';
+                        
+                        form.appendChild(csrf);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                });
             });
         });
     });
