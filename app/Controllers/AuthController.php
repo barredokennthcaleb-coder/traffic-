@@ -48,11 +48,12 @@ class AuthController extends BaseController
         if ($user) {
             if (password_verify($password, $user['password'])) {
                 $sessionData = [
-                    'id'       => $user['id'],
-                    'username' => $user['username'],
-                    'email'    => $user['email'],
-                    'role'     => $user['role'],
-                    'isLoggedIn' => true,
+                    'id'            => $user['id'],
+                    'username'      => $user['username'],
+                    'email'         => $user['email'],
+                    'role'          => $user['role'],
+                    'profile_image' => $user['profile_image'] ?? null,
+                    'isLoggedIn'    => true,
                 ];
                 $session->set($sessionData);
                 $session->setFlashdata('success', 'Welcome back!');

@@ -201,14 +201,14 @@
                 <div class="receipt-container">
                     <!-- Header -->
                     <div class="receipt-header">
-                        <img src="<?= base_url('img/pic 1.png') ?>" alt="Logo">
+                        <img src="<?= base_url('img/pic-1.png') ?>" alt="Logo">
                         <div class="header-text">
                             <h2>OFFICIAL RECEIPT</h2>
                             <p>Republic of the Philippines</p>
                             <h3>OFFICE OF THE TREASURER</h3>
                             <p>City of Kabankalan</p>
                         </div>
-                        <img src="<?= base_url('img/pic 1.png') ?>" alt="Logo">
+                        <img src="<?= base_url('img/pic-1.png') ?>" alt="Logo">
                     </div>
 
                     <!-- Form Info -->

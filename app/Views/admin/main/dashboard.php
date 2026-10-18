@@ -6,18 +6,24 @@
 
 <div class="container-fluid py-4">
     <!-- Header with Year Filter & Generate Report Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 premium-reveal" style="--reveal-delay: 0s;">
         <div>
-            <h4 class="mb-1 text-primary fw-bold"><i class="bi bi-speedometer2 me-2"></i>Dashboard &amp; Analytics</h4>
+            <h4 class="mb-1 fw-bold" style="color: var(--text-strong);"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard &amp; Analytics</h4>
             <p class="text-muted mb-0 small">Comprehensive insights into system activity, violation trends, and revenue.</p>
+            <div id="liveClock" class="d-inline-flex align-items-center gap-2 mt-1 px-3 py-1 rounded-pill small fw-semibold" style="background: rgba(99,102,241,0.1); color: var(--brand-primary); font-size: 0.78rem;">
+                <i class="bi bi-clock-fill"></i> <span id="clockText">Loading...</span>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <!-- Generate Reports Dropdown Button -->
-            <div class="dropdown">
-                <button class="btn btn-primary btn-sm shadow-sm dropdown-toggle fw-bold px-3 py-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <!-- Generate Reports Split Button -->
+            <div class="btn-group shadow-sm">
+                <a href="<?= base_url('reports') ?>" class="btn btn-primary btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Generate Reports
+                </a>
+                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split px-2" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 220px;">
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 220px; z-index: 1050;">
                     <li><h6 class="dropdown-header text-uppercase fw-bold text-muted px-2" style="font-size: 0.7rem;">Quick Reports</h6></li>
                     <li>
                         <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= base_url('reports?period_type=weekly') ?>">
@@ -50,21 +56,38 @@
         </div>
     </div>
 
+    <!-- ═══ ANALYTICS TOGGLE BAR ════════════════════════════════════ -->
+    <div class="admin-analytics-toggle-bar d-flex align-items-center justify-content-between mb-3 premium-reveal" style="--reveal-delay:0.1s">
+        <div class="d-flex align-items-center gap-2">
+            <span class="admin-analytics-toggle-label">
+                <i class="bi bi-bar-chart-line me-1 text-primary"></i>
+                <span class="fw-bold" style="font-size:0.92rem;">Dashboard Analytics</span>
+            </span>
+            <span class="admin-analytics-visible-pill" id="adminAnalyticsVisiblePill">Visible</span>
+        </div>
+        <button type="button" id="adminAnalyticsToggleBtn" class="btn-admin-analytics-toggle" title="Toggle Analytics">
+            <i class="bi bi-eye-slash me-1" id="adminAnalyticsToggleIcon"></i>
+            <span id="adminAnalyticsToggleText">Hide</span>
+        </button>
+    </div>
+
+    <!-- ═══ ANALYTICS SECTION ══════════════════════════════════════ -->
+    <div id="adminAnalyticsSection" class="admin-analytics-section-wrap">
     <!-- Quick Statistics -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <a href="<?= base_url('penalties/all') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.1s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 25px -5px rgba(99, 102, 241, 0.4), 0 8px 10px -6px rgba(99, 102, 241, 0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.1s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Violations</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder"><?= number_format($summary['total_violations']) ?></h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_violations'] ?>" data-prefix="" data-suffix="">0</h3>
                         </div>
-                        <div class="bg-white bg-opacity-25 rounded p-2 d-inline-flex">
-                            <i class="bi bi-file-earmark-text text-white fs-5 lh-1"></i>
+                        <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-file-earmark-text text-white fs-4 lh-1"></i>
                         </div>
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
@@ -80,17 +103,17 @@
         
         <div class="col-md-3">
             <a href="<?= base_url('penalties/history') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.2s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%); transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 25px -5px rgba(16, 185, 129, 0.4), 0 8px 10px -6px rgba(16, 185, 129, 0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.2s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Revenue</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder">₱<?= number_format($summary['total_collected'], 2) ?></h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_collected'] ?>" data-prefix="₱" data-suffix="" data-decimals="2">₱0.00</h3>
                         </div>
-                        <div class="bg-white bg-opacity-25 rounded p-2 d-inline-flex">
-                            <i class="bi bi-cash-stack text-white fs-5 lh-1"></i>
+                        <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-cash-stack text-white fs-4 lh-1"></i>
                         </div>
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
@@ -105,17 +128,17 @@
         </div>
         <div class="col-md-3">
             <a href="<?= base_url('penalties') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.3s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 25px -5px rgba(6, 182, 212, 0.4), 0 8px 10px -6px rgba(6, 182, 212, 0.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.3s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
                 <div class="card-body p-3 p-xl-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Collection Rate</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder"><?= $summary['collection_rate'] ?>%</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['collection_rate'] ?>" data-prefix="" data-suffix="%">0%</h3>
                         </div>
-                        <div class="bg-white bg-opacity-25 rounded p-2 d-inline-flex">
-                            <i class="bi bi-pie-chart text-white fs-5 lh-1"></i>
+                        <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                            <i class="bi bi-pie-chart text-white fs-4 lh-1"></i>
                         </div>
                     </div>
                     
@@ -135,9 +158,7 @@
         <div class="col-md-3">
             <button type="button" class="d-block w-100 border-0 p-0 bg-transparent text-start h-100"
                 data-bs-toggle="modal" data-bs-target="#topRankingsModal">
-            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.4s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .3s cubic-bezier(0.4, 0, 0.2, 1);"
-                onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 25px -5px rgba(245, 158, 11, 0.4), 0 8px 10px -6px rgba(245, 158, 11, 0.2)'"
-                onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.4s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -243,103 +264,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Recent Activity -->
-    <div class="card border-0 shadow-sm premium-reveal" style="--reveal-delay: 0.9s;">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <div>
-                <h5 class="mb-0 fw-bold"><i class="bi bi-activity me-2 text-primary"></i>Recent Violators</h5>
-                <?php if (!empty($recent_violations)): ?>
-                <small class="text-muted" style="font-size:0.78rem;">Showing last <?= count($recent_violations) ?> records &mdash; click a row to view details</small>
-                <?php endif; ?>
-            </div>
-            <a href="<?= base_url('penalties/all') ?>" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-list-ul me-1"></i>View All
-            </a>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Ticket ID</th>
-                            <th>Driver</th>
-                            <th>Violations</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th class="pe-4">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($recent_violations)): ?>
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
-                                    No recent violations found.
-                                </td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($recent_violations as $v):
-                                $rowId = $v['id'] ?? null;
-                                $rowUrl = $rowId ? base_url('penalties/view/' . $rowId) : base_url('penalties/all');
-                                // Build tooltip: breakdown of per-violation amounts
-                                $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : $v['violation_type'];
-                                $types    = explode('||', $rawTypes);
-                                $breakdown = [];
-                                foreach ($types as $t) {
-                                    $parts = explode('::', $t);
-                                    $vName = trim($parts[0]);
-                                    $vAmt  = isset($parts[1]) && $parts[1] !== '' ? '₱' . number_format((float)$parts[1], 2) : '—';
-                                    $breakdown[] = $vName . ': ' . $vAmt;
-                                }
-                                $tooltipText = implode(' | ', $breakdown);
-                            ?>
-                            <tr style="cursor:pointer; transition: background .15s;"
-                                onclick="window.location='<?= $rowUrl ?>'"
-                                title="Click to view details">
-                                <td class="ps-4">
-                                    <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-2 font-monospace small"><?= esc($v['ticket_id'] ?? '#'.$v['id']) ?></span>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-dark"><?= esc($v['driver_name']) ?></div>
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace" style="font-size:0.7rem;"><?= esc($v['license_plate']) ?></span>
-                                </td>
-                                <td class="small text-dark" style="max-width:220px;">
-                                    <?php
-                                    echo '<ul class="list-unstyled mb-0">';
-                                    foreach ($types as $t) {
-                                        $parts = explode('::', $t);
-                                        echo '<li class="d-flex align-items-center gap-1"><i class="bi bi-dot text-primary fs-6 lh-1"></i><span>' . esc(trim($parts[0])) . '</span></li>';
-                                    }
-                                    echo '</ul>';
-                                    ?>
-                                </td>
-                                <td>
-                                    <span class="fw-bold text-danger font-monospace"
-                                          data-bs-toggle="tooltip"
-                                          data-bs-placement="top"
-                                          title="<?= esc($tooltipText) ?>">
-                                        ₱<?= number_format((float) ($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0), 2) ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <?php if ($v['status'] == 'Pending'): ?>
-                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 rounded-pill">Pending</span>
-                                    <?php elseif ($v['status'] == 'Paid'): ?>
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 rounded-pill">Paid</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-3 rounded-pill">Cancelled</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-muted small pe-4 text-nowrap"><?= date('M d, Y', strtotime($v['violation_date'])) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    </div> <!-- End Collapsible Analytics Wrapper -->
 
 <!-- Top Rankings Modal -->
 <div class="modal fade" id="topRankingsModal" tabindex="-1" aria-labelledby="topRankingsModalLabel" aria-hidden="true">
@@ -465,6 +390,46 @@
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
             new bootstrap.Tooltip(el);
         });
+
+        // === Live Clock ===
+        function updateClock() {
+            const now = new Date();
+            const opts = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const el = document.getElementById('clockText');
+            if (el) el.textContent = now.toLocaleString('en-PH', opts);
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // === Count-Up Animation ===
+        function countUp(el) {
+            const target    = parseFloat(el.dataset.target) || 0;
+            const prefix    = el.dataset.prefix  || '';
+            const suffix    = el.dataset.suffix  || '';
+            const decimals  = parseInt(el.dataset.decimals || '0');
+            const duration  = 1400;
+            const step      = 16;
+            const steps     = Math.ceil(duration / step);
+            let current     = 0;
+            const increment = target / steps;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) { current = target; clearInterval(timer); }
+                el.textContent = prefix + (decimals > 0 ? current.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : Math.round(current).toLocaleString('en-PH')) + suffix;
+            }, step);
+        }
+
+        // Trigger count-up when visible
+        const kpiObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    countUp(entry.target);
+                    kpiObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.kpi-countup').forEach(el => kpiObserver.observe(el));
 
         // Shared Chart Settings
         Chart.defaults.font.family = "'Inter', sans-serif";
@@ -722,5 +687,139 @@
         document.getElementById('btnStatus').addEventListener('click', showStatusChart);
         document.getElementById('btnRole').addEventListener('click', showRoleChart);
     });
+</script>
+
+<style>
+/* ── ADMIN ANALYTICS TOGGLE BAR ─────────────────────────── */
+.admin-analytics-toggle-bar {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.65rem 1.1rem;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s ease;
+}
+.admin-analytics-toggle-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #1e293b;
+}
+.admin-analytics-visible-pill {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    transition: all 0.25s ease;
+}
+.admin-analytics-visible-pill.hidden-state {
+    background: rgba(148, 163, 184, 0.12);
+    color: #64748b;
+    border-color: rgba(148, 163, 184, 0.3);
+}
+.btn-admin-analytics-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.38rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+.btn-admin-analytics-toggle:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.12);
+}
+.btn-admin-analytics-toggle.is-hidden {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #059669;
+}
+.btn-admin-analytics-toggle.is-hidden:hover {
+    background: #dcfce7;
+    border-color: #4ade80;
+    color: #047857;
+}
+/* ── SMOOTH COLLAPSE ────────────────────────────────────── */
+.admin-analytics-section-wrap {
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 6000px;
+    opacity: 1;
+    transform: translateY(0);
+    transform-origin: top center;
+}
+.admin-analytics-section-wrap.analytics-collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+}
+</style>
+
+<script>
+// ═══ ADMIN ANALYTICS SECTION TOGGLE ══════════════════════
+(function () {
+    const STORAGE_KEY = 'admin_analytics_hidden';
+    const section = document.getElementById('adminAnalyticsSection');
+    const btn     = document.getElementById('adminAnalyticsToggleBtn');
+    const icon    = document.getElementById('adminAnalyticsToggleIcon');
+    const text    = document.getElementById('adminAnalyticsToggleText');
+    const pill    = document.getElementById('adminAnalyticsVisiblePill');
+
+    if (!section || !btn) return;
+
+    function setHidden(hidden, animate) {
+        if (hidden) {
+            if (!animate) {
+                section.style.transition = 'none';
+                section.classList.add('analytics-collapsed');
+                requestAnimationFrame(() => { section.style.transition = ''; });
+            } else {
+                section.classList.add('analytics-collapsed');
+            }
+            icon.className   = 'bi bi-eye me-1';
+            text.textContent = 'Show';
+            pill.textContent = 'Hidden';
+            pill.classList.add('hidden-state');
+            btn.classList.add('is-hidden');
+            localStorage.setItem(STORAGE_KEY, '1');
+        } else {
+            section.classList.remove('analytics-collapsed');
+            icon.className   = 'bi bi-eye-slash me-1';
+            text.textContent = 'Hide';
+            pill.textContent = 'Visible';
+            pill.classList.remove('hidden-state');
+            btn.classList.remove('is-hidden');
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    }
+
+    // On load — no animation
+    setHidden(localStorage.getItem(STORAGE_KEY) === '1', false);
+
+    // Click — animated
+    btn.addEventListener('click', function () {
+        setHidden(!section.classList.contains('analytics-collapsed'), true);
+    });
+})();
 </script>
 <?= $this->endSection() ?>

@@ -20,20 +20,28 @@ class UserController extends BaseController
     public function index()
     {
         $role = (string) ($this->request->getGet('role') ?? '');
-        $allowedRoles = ['admin', 'driver', 'enforcer'];
+        $allowedRoles = ['admin', 'enforcer'];
 
         $usersQuery = $this->userModel;
         if ($role !== '' && in_array($role, $allowedRoles, true)) {
             $usersQuery = $usersQuery->where('role', $role);
         } else {
             $role = '';
+            $usersQuery = $usersQuery->whereIn('role', $allowedRoles);
         }
 
+        $stats = [
+            'total'    => (new UserModel())->whereIn('role', ['admin', 'enforcer'])->countAllResults(),
+            'admin'    => (new UserModel())->where('role', 'admin')->countAllResults(),
+            'enforcer' => (new UserModel())->where('role', 'enforcer')->countAllResults(),
+        ];
+
         $data = [
-            'title' => 'User Management',
+            'title'        => 'User Management',
             'selectedRole' => $role,
-            'users' => $usersQuery->paginate(10, 'users'),
-            'pager' => $this->userModel->pager,
+            'stats'        => $stats,
+            'users'        => $usersQuery->paginate(10, 'users'),
+            'pager'        => $this->userModel->pager,
         ];
         return view('admin/users/index', $data);
     }
@@ -89,15 +97,15 @@ class UserController extends BaseController
         $data = [
             'title' => 'Create New User',
             'defaults' => [
-                'username'  => (string) (env('auth.defaultAdminUsername') ?? ''),
+                'username'  => '',
                 'firstname' => '',
                 'lastname'  => '',
                 'middle_initial' => '',
                 'age'       => '',
                 'birthdate' => '',
                 'address'   => '',
-                'password'  => (string) (env('auth.defaultAdminPassword') ?? env('auth.defaultUserPassword') ?? ''),
-                'role'      => 'driver',
+                'password'  => '',
+                'role'      => 'enforcer',
             ],
         ];
         return view('admin/users/create', $data);

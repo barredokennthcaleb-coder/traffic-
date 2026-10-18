@@ -16,10 +16,15 @@ $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::registerPost');
 $routes->get('logout', 'AuthController::logout');
 
+// Public Portal Route
+$routes->get('lookup', 'LookupController::index');
+
 // Officer Routes
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
     $routes->get('profile', 'Officer\OfficerController::profile');
+    $routes->post('profile/photo', 'Officer\OfficerController::updateProfilePhoto');
+    $routes->post('profile/photo/remove', 'Officer\OfficerController::removeProfilePhoto');
 
     $routes->post('store', 'Officer\OfficerController::store');
     $routes->get('violations', 'Officer\OfficerController::violations');

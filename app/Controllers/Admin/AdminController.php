@@ -97,17 +97,25 @@ class AdminController extends BaseController
         $startDate  = $this->request->getGet('start_date');
         $endDate    = $this->request->getGet('end_date');
 
-        // Auto-calculate start and end date if empty
-        if (empty($startDate) || empty($endDate)) {
-            if ($periodType === 'monthly') {
-                $month = $this->request->getGet('month') ?? date('m');
-                $year  = $this->request->getGet('year') ?? date('Y');
-                $startDate = date('Y-m-d', strtotime("$year-$month-01"));
-                $endDate   = date('Y-m-t', strtotime($startDate));
-            } else { // weekly
-                $weekRef   = $this->request->getGet('start_date') ?: date('Y-m-d');
-                $startDate = date('Y-m-d', strtotime('monday this week', strtotime($weekRef)));
-                $endDate   = date('Y-m-d', strtotime('sunday this week', strtotime($weekRef)));
+        // Robust date calculation based on period type
+        if ($periodType === 'monthly') {
+            $month     = $this->request->getGet('month') ?? date('m');
+            $year      = $this->request->getGet('year')  ?? date('Y');
+            $startDate = date('Y-m-d', strtotime("$year-$month-01"));
+            $endDate   = date('Y-m-t', strtotime($startDate));
+        } elseif ($periodType === 'weekly') {
+            $weekRef   = $this->request->getGet('start_date') ?: date('Y-m-d');
+            // Fix: PHP 'monday this week' skips ahead when today IS Monday.
+            // Use 'monday this week' anchored from the day before to be safe.
+            $ts        = strtotime($weekRef);
+            $dow       = (int) date('N', $ts); // 1=Mon ... 7=Sun
+            $startDate = date('Y-m-d', strtotime('-' . ($dow - 1) . ' days', $ts));
+            $endDate   = date('Y-m-d', strtotime('+' . (7 - $dow) . ' days', $ts));
+        } else {
+            // custom range
+            if (empty($startDate) || empty($endDate)) {
+                $startDate = date('Y-m-01');
+                $endDate   = date('Y-m-t');
             }
         }
 
@@ -120,6 +128,8 @@ class AdminController extends BaseController
             'status_filter'=> $status,
             'type_filter'  => $typeId,
             'all_types'    => $allTypes,
+            'start_date'   => $startDate,
+            'end_date'     => $endDate,
             'month'        => date('m', strtotime($startDate)),
             'year'         => date('Y', strtotime($startDate)),
         ]);
@@ -135,15 +145,19 @@ class AdminController extends BaseController
         $startDate  = $this->request->getGet('start_date');
         $endDate    = $this->request->getGet('end_date');
 
-        if (empty($startDate) || empty($endDate)) {
-            if ($periodType === 'monthly') {
-                $month = $this->request->getGet('month') ?? date('m');
-                $year  = $this->request->getGet('year') ?? date('Y');
-                $startDate = date('Y-m-d', strtotime("$year-$month-01"));
-                $endDate   = date('Y-m-t', strtotime($startDate));
-            } else {
-                $startDate = date('Y-m-d', strtotime('monday this week'));
-                $endDate   = date('Y-m-d', strtotime('sunday this week'));
+        if ($periodType === 'monthly') {
+            $month = $this->request->getGet('month') ?? date('m');
+            $year  = $this->request->getGet('year') ?? date('Y');
+            $startDate = date('Y-m-d', strtotime("$year-$month-01"));
+            $endDate   = date('Y-m-t', strtotime($startDate));
+        } elseif ($periodType === 'weekly') {
+            $weekRef   = $this->request->getGet('start_date') ?: date('Y-m-d');
+            $startDate = date('Y-m-d', strtotime('monday this week', strtotime($weekRef)));
+            $endDate   = date('Y-m-d', strtotime('sunday this week', strtotime($weekRef)));
+        } else {
+            if (empty($startDate) || empty($endDate)) {
+                $startDate = date('Y-m-01');
+                $endDate   = date('Y-m-t');
             }
         }
 

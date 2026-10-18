@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Traffic System</title>
+    <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
+    <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -186,7 +188,7 @@
 <div class="login-shell">
     <div class="form-side">
         <div class="form-head text-center">
-            <img class="brand-logo" src="<?= base_url('img/pic 1.png') ?>" alt="Traffic System Logo">
+            <img class="brand-logo" src="<?= base_url('img/pic-1.png') ?>" alt="Traffic System Logo">
             <h2>Traffic System</h2>
             <p>Welcome back. Enter your credentials to continue.</p>
         </div>
@@ -212,7 +214,7 @@
             </div>
         <?php endif; ?>
 
-        <form action="/login" method="POST" id="loginForm" novalidate>
+        <form action="<?= base_url('login') ?>" method="POST" id="loginForm">
             <?= csrf_field() ?>
             <div class="mb-4">
                 <label for="email" class="form-label">Email Address</label>
@@ -279,8 +281,28 @@
         }
     }
 
-    document.getElementById('loginForm').addEventListener('submit', function() {
-        const email = document.getElementById('email').value;
+    function resetLoginBtn() {
+        const btn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('btnSpinner');
+        if (btn && btnText && spinner) {
+            btn.disabled = false;
+            btnText.textContent = 'Sign In';
+            spinner.classList.add('d-none');
+        }
+    }
+
+    window.addEventListener('pageshow', resetLoginBtn);
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if (!email || !password) {
+            resetLoginBtn();
+            return;
+        }
+
         if (email) {
             saveEmail(email);
         }

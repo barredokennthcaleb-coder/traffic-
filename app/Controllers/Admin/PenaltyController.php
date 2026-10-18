@@ -32,15 +32,64 @@ class PenaltyController extends BaseController
 
     public function all()
     {
+        $search = $this->request->getGet('search');
+        $status = $this->request->getGet('status');
+
+        $builder = $this->violationRecord->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
+            ->join('users', 'users.id = violations.officer_id', 'left')
+            ->groupBy('violations.ticket_id')
+            ->orderBy('violations.violation_date', 'DESC');
+
+        if (!empty($search)) {
+            $builder->groupStart()
+                ->like('violations.ticket_id', $search)
+                ->orLike('violations.driver_name', $search)
+                ->orLike('violations.license_plate', $search)
+                ->groupEnd();
+        }
+
+        if (!empty($status)) {
+            $builder->where('violations.status', $status);
+        } else {
+            $builder->where('violations.status !=', 'Cancelled');
+        }
+        
+        // Calculate true totals for the stat pills using a FRESH independent query
+        // (avoids model shared-state contamination from the main query above)
+        $db = \Config\Database::connect();
+        $statsQuery = $db->table('violations')
+            ->select('status, COUNT(DISTINCT ticket_id) as count');
+
+        if (!empty($search)) {
+            $statsQuery->groupStart()
+                ->like('ticket_id', $search)
+                ->orLike('driver_name', $search)
+                ->orLike('license_plate', $search)
+                ->groupEnd();
+        }
+
+        $statsResults = $statsQuery->groupBy('status')->get()->getResultArray();
+
+        $total_pending = 0;
+        $total_paid = 0;
+        $total_cancelled = 0;
+        foreach ($statsResults as $row) {
+            if ($row['status'] === 'Pending')   $total_pending   = (int) $row['count'];
+            if ($row['status'] === 'Paid')      $total_paid      = (int) $row['count'];
+            if ($row['status'] === 'Cancelled') $total_cancelled = (int) $row['count'];
+        }
+        $total_tickets = $total_pending + $total_paid + $total_cancelled;
+
         $data = [
             'title' => 'All Violations',
-            'violations' => $this->violationRecord->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
-                                                   ->join('users', 'users.id = violations.officer_id', 'left')
-                                                   ->where('violations.status !=', 'Cancelled')
-                                                   ->groupBy('violations.ticket_id')
-                                                   ->orderBy('violations.violation_date', 'DESC')
-                                                   ->paginate(10, 'all'),
+            'violations' => $builder->paginate(10, 'all'),
             'pager' => $this->violationRecord->pager,
+            'search' => $search,
+            'status' => $status,
+            'total_tickets' => $total_tickets,
+            'total_pending' => $total_pending,
+            'total_paid' => $total_paid,
+            'total_cancelled' => $total_cancelled,
         ];
         return view('admin/penalties/all', $data);
     }

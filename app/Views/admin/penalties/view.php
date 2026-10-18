@@ -76,7 +76,7 @@
         <!-- Header -->
         <div class="tct-header-area">
             <div class="tct-seal-box">
-                <img src="<?= base_url('img/pic 1.png') ?>" alt="Kabankalan City Logo" class="tct-seal-img">
+                <img src="<?= base_url('img/pic-1.png') ?>" alt="Kabankalan City Logo" class="tct-seal-img">
             </div>
             <div class="tct-header-text">
                 <div class="tct-rep">Republic of the Philippines</div>
@@ -483,10 +483,18 @@
             max-width: 100%;
             border: 2px solid #000;
             box-shadow: none;
-            padding: 20px 25px;
+            padding: 18px 22px;
+            zoom: 0.85;
+            margin: 0 auto !important;
+        }
+        @supports not (zoom: 0.85) {
+            .tct-official-card {
+                transform: scale(0.85);
+                transform-origin: top center;
+            }
         }
         @page {
-            margin: 10mm 15mm;
+            margin: 6mm 8mm;
             size: A4 portrait;
         }
     }

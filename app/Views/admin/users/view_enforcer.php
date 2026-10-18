@@ -26,6 +26,26 @@
                     <h6 class="mb-0">Enforcer Profile</h6>
                 </div>
                 <div class="card-body">
+                    <?php 
+                        $enfImg = !empty($user['profile_image']) && is_file(FCPATH . 'uploads/profile/' . $user['profile_image'])
+                            ? base_url('uploads/profile/' . $user['profile_image'])
+                            : null;
+                        $enfInitials = strtoupper(substr((string) ($user['username'] ?? 'E'), 0, 1));
+                    ?>
+                    <div class="text-center mb-4 pb-3 border-bottom">
+                        <div class="mx-auto position-relative" style="width: 88px; height: 88px;">
+                            <?php if ($enfImg): ?>
+                                <img src="<?= esc($enfImg) ?>" alt="Enforcer photo" class="w-100 h-100 rounded-circle border shadow-sm" style="object-fit: cover;">
+                            <?php else: ?>
+                                <div class="w-100 h-100 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold fs-3 shadow-sm">
+                                    <?= esc($enfInitials) ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <h6 class="mt-2 mb-0 fw-bold"><?= esc(trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? '')) ?: $user['username']) ?></h6>
+                        <small class="text-muted">@<?= esc($user['username']) ?></small>
+                    </div>
+
                     <div class="mb-3">
                         <small class="text-muted text-uppercase d-block">Username</small>
                         <span class="fw-semibold"><?= esc($user['username']) ?></span>

@@ -35,11 +35,12 @@ class OfficerController extends BaseController
             return redirect()->to(base_url('officer'))->with('error', 'Officer profile not found.');
         }
 
+        // Group by ticket_id only to get one row per unique ticket (not per ticket+status combo)
         $records = $this->violationRecord
             ->select('ticket_id, status, SUM(penalty_amount) as penalty_amount')
             ->where('officer_id', $officerId)
             ->where('status !=', 'Cancelled')
-            ->groupBy('ticket_id, status')
+            ->groupBy('ticket_id')
             ->findAll();
 
         $totalAmount = array_sum(array_map(static function ($record) {
@@ -68,29 +69,43 @@ class OfficerController extends BaseController
 
     public function updateProfilePhoto()
     {
+        $isAjax = $this->request->isAJAX() || $this->request->hasHeader('X-Requested-With');
         $officerId = (int) session()->get('id');
         $officer = $this->userModel->find($officerId);
 
         if (!$officer) {
+            if ($isAjax) {
+                return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Officer profile not found.']);
+            }
             return redirect()->to(base_url('officer/profile'))->with('error', 'Officer profile not found.');
         }
 
         $rules = [
-            'profile_photo' => 'uploaded[profile_photo]|is_image[profile_photo]|mime_in[profile_photo,image/jpg,image/jpeg,image/png,image/webp]|max_size[profile_photo,2048]',
+            'profile_photo' => 'uploaded[profile_photo]|is_image[profile_photo]|mime_in[profile_photo,image/jpg,image/jpeg,image/png,image/webp]|max_size[profile_photo,10240]',
         ];
 
         if (!$this->validate($rules)) {
             $errors = $this->validator->getErrors();
-            return redirect()->to(base_url('officer/profile'))->with('error', $errors['profile_photo'] ?? 'Invalid image upload.');
+            $msg = $errors['profile_photo'] ?? 'Invalid image upload. Please choose a valid JPG, PNG, or WEBP under 10MB.';
+            if ($isAjax) {
+                return $this->response->setStatusCode(422)->setJSON(['status' => 'error', 'message' => $msg]);
+            }
+            return redirect()->to(base_url('officer/profile'))->with('error', $msg);
         }
 
         $file = $this->request->getFile('profile_photo');
         if (!$file || !$file->isValid()) {
+            if ($isAjax) {
+                return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Failed to upload profile photo.']);
+            }
             return redirect()->to(base_url('officer/profile'))->with('error', 'Failed to upload profile photo.');
         }
 
         $uploadPath = FCPATH . 'uploads/profile/';
         if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
+            if ($isAjax) {
+                return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'Cannot create upload directory.']);
+            }
             return redirect()->to(base_url('officer/profile'))->with('error', 'Cannot create upload directory.');
         }
 
@@ -98,6 +113,9 @@ class OfficerController extends BaseController
         $newName = 'officer_' . $officerId . '_' . time() . '.' . strtolower($extension);
 
         if (!$file->move($uploadPath, $newName, true)) {
+            if ($isAjax) {
+                return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'Unable to save uploaded photo.']);
+            }
             return redirect()->to(base_url('officer/profile'))->with('error', 'Unable to save uploaded photo.');
         }
 
@@ -114,10 +132,64 @@ class OfficerController extends BaseController
             if (is_file($newPath)) {
                 @unlink($newPath);
             }
+            if ($isAjax) {
+                return $this->response->setStatusCode(500)->setJSON(['status' => 'error', 'message' => 'Failed to update profile record in database.']);
+            }
             return redirect()->to(base_url('officer/profile'))->with('error', 'Failed to update profile photo.');
         }
 
+        // Sync session so topbar and layout update immediately
+        session()->set('profile_image', $newName);
+        $photoUrl = base_url('uploads/profile/' . $newName);
+
+        if ($isAjax) {
+            return $this->response->setJSON([
+                'status'    => 'success',
+                'message'   => 'Profile photo updated successfully.',
+                'photo_url' => $photoUrl,
+                'csrf_token'=> csrf_token(),
+                'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
         return redirect()->to(base_url('officer/profile'))->with('success', 'Profile photo updated successfully.');
+    }
+
+    public function removeProfilePhoto()
+    {
+        $isAjax = $this->request->isAJAX() || $this->request->hasHeader('X-Requested-With');
+        $officerId = (int) session()->get('id');
+        $officer = $this->userModel->find($officerId);
+
+        if (!$officer) {
+            if ($isAjax) {
+                return $this->response->setStatusCode(404)->setJSON(['status' => 'error', 'message' => 'Officer profile not found.']);
+            }
+            return redirect()->to(base_url('officer/profile'))->with('error', 'Officer profile not found.');
+        }
+
+        $oldImage = trim((string) ($officer['profile_image'] ?? ''));
+        if ($oldImage !== '') {
+            $oldPath = FCPATH . 'uploads/profile/' . $oldImage;
+            if (is_file($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
+
+        $this->userModel->update($officerId, ['profile_image' => null]);
+        session()->remove('profile_image');
+
+        if ($isAjax) {
+            return $this->response->setJSON([
+                'status'    => 'success',
+                'message'   => 'Profile photo removed.',
+                'initials'  => strtoupper(substr((string) ($officer['username'] ?? 'O'), 0, 1)),
+                'csrf_token'=> csrf_token(),
+                'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        return redirect()->to(base_url('officer/profile'))->with('success', 'Profile photo removed successfully.');
     }
 
     public function store()
@@ -248,17 +320,37 @@ class OfficerController extends BaseController
     {
         $officerId = (int) session()->get('id');
 
+        // Retrieve summary statistics for officer's violations
+        $summaryRecords = $this->violationRecord
+            ->select('ticket_id, status, violation_date, SUM(penalty_amount) as penalty_amount')
+            ->where('officer_id', $officerId)
+            ->where('status !=', 'Cancelled')
+            ->groupBy('ticket_id')
+            ->findAll();
+
+        $totalTickets = count($summaryRecords);
+        $pendingCount = count(array_filter($summaryRecords, static fn($r) => ($r['status'] ?? '') === 'Pending'));
+        $paidCount    = count(array_filter($summaryRecords, static fn($r) => ($r['status'] ?? '') === 'Paid'));
+        $todayDate    = date('Y-m-d');
+        $todayTickets = count(array_filter($summaryRecords, static fn($r) => !empty($r['violation_date']) && strpos($r['violation_date'], $todayDate) === 0));
+        $totalFines   = array_sum(array_map(static fn($r) => (float)($r['penalty_amount'] ?? 0), $summaryRecords));
+
         $data = [
-            'title' => 'Violation',
+            'title'          => 'Violation',
             'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
-            'violations' => $this->violationRecord
+            'violations'     => $this->violationRecord
                 ->select('violations.*, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) ORDER BY violation_date DESC SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum, MAX(violation_date) as max_violation_date')
                 ->where('officer_id', $officerId)
                 ->where('status !=', 'Cancelled')
                 ->groupBy('ticket_id')
                 ->orderBy('MAX(violation_date)', 'DESC')
                 ->paginate(10, 'violations'),
-            'pager' => $this->violationRecord->pager,
+            'pager'          => $this->violationRecord->pager,
+            'totalTickets'   => $totalTickets,
+            'pendingCount'   => $pendingCount,
+            'paidCount'      => $paidCount,
+            'todayTickets'   => $todayTickets,
+            'totalFines'     => $totalFines,
         ];
         return view('officer/index', $data);
     }
