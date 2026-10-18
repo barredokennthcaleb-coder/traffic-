@@ -5,11 +5,11 @@
 <?= $this->section('content') ?>
 
 <style>
-    /* Entrance Animation */
-    @keyframes fadeSlideUp {
+    /* Smooth Entrance */
+    @keyframes fadeSlideIn {
         from {
             opacity: 0;
-            transform: translateY(16px);
+            transform: translateY(14px);
         }
         to {
             opacity: 1;
@@ -17,32 +17,171 @@
         }
     }
 
-    .form-container-card {
-        animation: fadeSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-        background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.85);
-        border-radius: 20px;
-        box-shadow: 0 12px 36px -8px rgba(15, 23, 42, 0.08);
-        overflow: hidden;
+    .form-wrapper {
+        max-width: 860px;
+        margin: 0 auto;
+        animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
-    /* Section Headers */
-    .form-section-title {
+    .form-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 8px 30px -6px rgba(15, 23, 42, 0.07);
+        padding: 2rem 2.25rem;
+        transition: box-shadow 0.25s ease;
+    }
+
+    /* Section Subheadings */
+    .section-divider {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 0.95rem;
+        font-size: 0.82rem;
         font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #475569;
+        margin-top: 1.75rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
         border-bottom: 1px solid #f1f5f9;
     }
 
-    .form-section-icon {
+    .section-divider:first-of-type {
+        margin-top: 0.5rem;
+    }
+
+    .section-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+
+    /* Labels */
+    .form-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Clean Input Icons & Controls */
+    .field-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .field-group .field-icon {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.95rem;
+        pointer-events: none;
+        transition: color 0.2s ease;
+        z-index: 3;
+    }
+
+    .field-group .form-control {
+        height: 42px;
+        padding-left: 38px;
+        padding-right: 14px;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        color: #0f172a;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .field-group .form-control:hover {
+        border-color: #cbd5e1;
+    }
+
+    .field-group .form-control:focus {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        outline: none;
+    }
+
+    .field-group:focus-within .field-icon {
+        color: #2563eb;
+    }
+
+    /* Toggle Password Button */
+    .field-eye-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        padding: 6px 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 4;
+        transition: color 0.18s ease;
+    }
+
+    .field-eye-btn:hover {
+        color: #334155;
+    }
+
+    /* Compact Role Selector */
+    .role-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .role-card-item {
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 10px 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        user-select: none;
+        position: relative;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .role-card-item:hover {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .role-card-item.selected.is-enforcer {
+        border-color: #2563eb;
+        background: linear-gradient(145deg, #eff6ff 0%, #ffffff 100%);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+    }
+
+    .role-card-item.selected.is-admin {
+        border-color: #dc2626;
+        background: linear-gradient(145deg, #fef2f2 0%, #ffffff 100%);
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+    }
+
+    .role-card-item .role-badge-icon {
         width: 32px;
         height: 32px;
-        border-radius: 9px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -50,403 +189,280 @@
         flex-shrink: 0;
     }
 
-    /* Input Controls */
-    .form-group-wrap {
-        position: relative;
-    }
-
-    .form-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 6px;
-    }
-
-    .input-icon-group {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-
-    .input-icon-group .input-icon {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
+    .role-card-item .role-check {
+        margin-left: auto;
         font-size: 1rem;
-        pointer-events: none;
+        color: #cbd5e1;
         transition: color 0.2s ease;
-        z-index: 4;
     }
 
-    .input-icon-group .form-control,
-    .input-icon-group .form-select {
-        padding-left: 42px;
-        height: 46px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        background-color: #f8fafc;
-        font-size: 0.92rem;
-        color: #0f172a;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    .role-card-item.selected.is-enforcer .role-check {
+        color: #2563eb;
     }
 
-    .input-icon-group .form-control:focus,
-    .input-icon-group .form-select:focus {
-        background-color: #ffffff;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    .role-card-item.selected.is-admin .role-check {
+        color: #dc2626;
     }
 
-    .input-icon-group .form-control:focus ~ .input-icon {
-        color: #3b82f6;
-    }
-
-    /* Eye toggle inside input */
-    .btn-toggle-eye {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: transparent;
-        color: #94a3b8;
-        padding: 4px;
-        cursor: pointer;
-        z-index: 5;
-        transition: color 0.18s ease;
-    }
-
-    .btn-toggle-eye:hover {
-        color: #334155;
-    }
-
-    /* Role Choice Cards */
-    .role-choice-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-    }
-
-    .role-choice-card {
-        border: 2px solid #e2e8f0;
-        background: #f8fafc;
-        border-radius: 14px;
-        padding: 14px 16px;
-        cursor: pointer;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        user-select: none;
-        position: relative;
-    }
-
-    .role-choice-card:hover {
-        background: #ffffff;
-        border-color: #cbd5e1;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
-    }
-
-    .role-choice-card.selected.admin-card {
-        border-color: #dc2626;
-        background: linear-gradient(145deg, #fef2f2 0%, #ffffff 100%);
-        box-shadow: 0 6px 18px rgba(220, 38, 38, 0.15);
-    }
-
-    .role-choice-card.selected.enforcer-card {
-        border-color: #2563eb;
-        background: linear-gradient(145deg, #eff6ff 0%, #ffffff 100%);
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.15);
-    }
-
-    .role-choice-card .check-circle {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 2px solid #cbd5e1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-        color: transparent;
-        transition: all 0.2s ease;
-    }
-
-    .role-choice-card.selected .check-circle {
-        color: #ffffff;
-    }
-
-    .role-choice-card.selected.admin-card .check-circle {
-        background: #dc2626;
-        border-color: #dc2626;
-    }
-
-    .role-choice-card.selected.enforcer-card .check-circle {
-        background: #2563eb;
-        border-color: #2563eb;
-    }
-
-    /* Auto-calc helper pill */
-    .auto-badge {
-        font-size: 0.7rem;
-        background: #ecfdf5;
-        color: #059669;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        padding: 2px 7px;
-        border-radius: 999px;
+    /* Auto-calc Age Badge */
+    .calc-tag {
+        font-size: 0.68rem;
         font-weight: 600;
-        margin-left: 6px;
+        color: #059669;
+        background: #ecfdf5;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 1px 6px;
+        border-radius: 6px;
+        text-transform: none;
+        letter-spacing: normal;
     }
 
     /* Buttons */
-    .btn-create-submit {
+    .btn-submit-save {
         background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
-        padding: 10px 24px;
-        border-radius: 12px;
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+        font-size: 0.9rem;
+        padding: 9px 24px;
+        border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .btn-create-submit:hover {
+    .btn-submit-save:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
         color: #ffffff;
     }
 
-    .btn-create-submit:active {
-        transform: translateY(1px) scale(0.98);
+    .btn-submit-save:active {
+        transform: translateY(1px);
     }
 
     @media (max-width: 576px) {
-        .role-choice-grid {
+        .form-card {
+            padding: 1.25rem 1rem;
+            border-radius: 14px;
+        }
+
+        .role-grid {
             grid-template-columns: 1fr;
         }
     }
 </style>
 
 <div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-9 col-xl-8">
-            <!-- Breadcrumb Navigation -->
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <a href="<?= base_url('users') ?>" class="btn btn-sm btn-white border rounded-3 text-secondary shadow-sm">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Users
-                </a>
-                <span class="text-muted small">/</span>
-                <span class="text-dark small fw-semibold">New Account Registration</span>
+    <div class="form-wrapper">
+        <!-- Top Navigation -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <a href="<?= base_url('users') ?>" class="btn btn-sm btn-light border text-secondary px-3 py-1.5" style="border-radius: 8px;">
+                <i class="bi bi-arrow-left me-1"></i> Back to Users
+            </a>
+            <span class="text-muted small">New System Account</span>
+        </div>
+
+        <!-- Form Card Container -->
+        <div class="form-card">
+            <!-- Header -->
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; font-size: 1.3rem;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-dark mb-0.5">Create New User</h5>
+                    <p class="text-muted small mb-0">Register a new administrator or traffic enforcer in the system.</p>
+                </div>
             </div>
 
-            <!-- Main Form Card -->
-            <div class="form-container-card">
-                <div class="p-4 p-md-5">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <div>
-                            <h4 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2">
-                                <i class="bi bi-person-plus-fill text-primary"></i> Create New User
-                            </h4>
-                            <p class="text-muted small mb-0">Fill in the required information to register a new administrator or enforcer.</p>
+            <!-- Validation Errors -->
+            <?php if (session()->getFlashdata('errors')): ?>
+                <div class="alert alert-danger border-0 shadow-sm mb-3 py-2.5 px-3" style="border-radius: 10px;" role="alert">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                        <strong class="small">Please correct the following:</strong>
+                    </div>
+                    <ul class="mb-0 ps-4 small text-danger">
+                        <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                            <li><?= esc($error) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <form action="<?= base_url('users/store') ?>" method="POST" id="userForm">
+                <?= csrf_field() ?>
+
+                <?php
+                    $defaults = $defaults ?? ['username' => '', 'firstname' => '', 'lastname' => '', 'middle_initial' => '', 'age' => '', 'birthdate' => '', 'address' => '', 'password' => '', 'role' => 'enforcer'];
+                    $currentRoleVal = old('role', $defaults['role'] ?? 'enforcer');
+                ?>
+
+                <!-- SECTION 1: Credentials & Role -->
+                <div class="section-divider">
+                    <span class="section-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-shield-lock"></i></span>
+                    Account Credentials &amp; Role
+                </div>
+
+                <!-- Role Selection -->
+                <div class="mb-3">
+                    <label class="form-label">System Role <span class="text-danger">*</span></label>
+                    <input type="hidden" name="role" id="roleInput" value="<?= esc($currentRoleVal) ?>">
+                    <div class="role-grid">
+                        <div class="role-card-item is-enforcer <?= $currentRoleVal === 'enforcer' ? 'selected' : '' ?>" data-role="enforcer">
+                            <div class="role-badge-icon bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">Traffic Enforcer</div>
+                                <div class="text-muted" style="font-size: 0.74rem;">Issue citations & inspections</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check"></i>
+                        </div>
+
+                        <div class="role-card-item is-admin <?= $currentRoleVal === 'admin' ? 'selected' : '' ?>" data-role="admin">
+                            <div class="role-badge-icon bg-danger bg-opacity-10 text-danger">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark" style="font-size: 0.88rem; line-height: 1.2;">Administrator</div>
+                                <div class="text-muted" style="font-size: 0.74rem;">Full system & staff controls</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill role-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Username & Email (Clean 2-Column Row) -->
+                <div class="row g-2.5 g-md-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-person field-icon"></i>
+                            <input type="text" name="username" id="username" class="form-control" 
+                                   placeholder="Username" required autocomplete="off"
+                                   value="<?= old('username', $defaults['username']) ?>">
                         </div>
                     </div>
 
-                    <?php if (session()->getFlashdata('errors')): ?>
-                        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" style="border-radius: 14px;" role="alert">
-                            <div class="d-flex align-items-start">
-                                <i class="bi bi-exclamation-triangle-fill fs-5 me-2 mt-0.5"></i>
-                                <div>
-                                    <h6 class="fw-bold mb-1">Please correct the following errors:</h6>
-                                    <ul class="mb-0 ps-3 small">
-                                        <?php foreach (session()->getFlashdata('errors') as $error): ?>
-                                            <li><?= esc($error) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            </div>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="col-12 col-md-6">
+                        <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-envelope field-icon"></i>
+                            <input type="email" name="email" id="email" class="form-control" 
+                                   placeholder="user@example.com" required autocomplete="off"
+                                   value="<?= old('email') ?>">
                         </div>
-                    <?php endif; ?>
-
-                    <form action="<?= base_url('users/store') ?>" method="POST" id="createUserForm">
-                        <?= csrf_field() ?>
-
-                        <?php
-                            $defaults = $defaults ?? ['username' => '', 'firstname' => '', 'lastname' => '', 'middle_initial' => '', 'age' => '', 'birthdate' => '', 'address' => '', 'password' => '', 'role' => 'enforcer'];
-                            $currentRoleVal = old('role', $defaults['role'] ?? 'enforcer');
-                        ?>
-
-                        <!-- SECTION 1: Credentials & Role -->
-                        <div class="form-section-title">
-                            <div class="form-section-icon bg-primary bg-opacity-10 text-primary">
-                                <i class="bi bi-shield-lock-fill"></i>
-                            </div>
-                            <span>Account Credentials & Role</span>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <!-- Role Choice (Interactive Cards) -->
-                            <div class="col-12">
-                                <label class="form-label">System Role <span class="text-danger">*</span></label>
-                                <input type="hidden" name="role" id="roleInput" value="<?= esc($currentRoleVal) ?>">
-                                <div class="role-choice-grid">
-                                    <div class="role-choice-card enforcer-card <?= $currentRoleVal === 'enforcer' ? 'selected' : '' ?>" data-role="enforcer">
-                                        <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                            <i class="bi bi-person-badge"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold text-dark fs-6 lh-sm">Traffic Enforcer</div>
-                                            <small class="text-muted" style="font-size: 0.76rem;">Issues citations & road inspections</small>
-                                        </div>
-                                        <div class="check-circle"><i class="bi bi-check-lg"></i></div>
-                                    </div>
-
-                                    <div class="role-choice-card admin-card <?= $currentRoleVal === 'admin' ? 'selected' : '' ?>" data-role="admin">
-                                        <div class="bg-danger text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                            <i class="bi bi-shield-check"></i>
-                                        </div>
-                                        <div>
-                                            <div class="fw-bold text-dark fs-6 lh-sm">Administrator</div>
-                                            <small class="text-muted" style="font-size: 0.76rem;">Full system, reports & staff control</small>
-                                        </div>
-                                        <div class="check-circle"><i class="bi bi-check-lg"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-person input-icon"></i>
-                                    <input type="text" name="username" id="username" class="form-control" 
-                                           placeholder="e.g. enforcer_mark" required autocomplete="off"
-                                           value="<?= old('username', $defaults['username']) ?>">
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-envelope input-icon"></i>
-                                    <input type="email" name="email" id="email" class="form-control" 
-                                           placeholder="e.g. mark@gmail.com" required autocomplete="off"
-                                           value="<?= old('email') ?>">
-                                </div>
-                            </div>
-
-                            <div class="col-md-12">
-                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-key input-icon"></i>
-                                    <input type="password" name="password" id="password" class="form-control pe-5" 
-                                           placeholder="Enter secure password (min. 5 chars)" autocomplete="new-password"
-                                           value="<?= esc($defaults['password']) ?>">
-                                    <button class="btn-toggle-eye" type="button" id="togglePasswordBtn" aria-label="Show or hide password">
-                                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
-                                    </button>
-                                </div>
-                                <div class="form-text small text-muted mt-1">Leave blank to use the system default password if configured.</div>
-                            </div>
-                        </div>
-
-                        <!-- SECTION 2: Personal Information -->
-                        <div class="form-section-title mt-4">
-                            <div class="form-section-icon bg-info bg-opacity-10 text-info">
-                                <i class="bi bi-person-lines-fill"></i>
-                            </div>
-                            <span>Personal Information</span>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-5">
-                                <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-card-text input-icon"></i>
-                                    <input type="text" name="firstname" id="firstname" class="form-control"
-                                           placeholder="First name" required
-                                           value="<?= old('firstname', $defaults['firstname']) ?>">
-                                </div>
-                            </div>
-
-                            <div class="col-md-5">
-                                <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-card-text input-icon"></i>
-                                    <input type="text" name="lastname" id="lastname" class="form-control"
-                                           placeholder="Last name" required
-                                           value="<?= old('lastname', $defaults['lastname']) ?>">
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label for="middle_initial" class="form-label">M.I.</label>
-                                <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center"
-                                       placeholder="M.I." maxlength="10" style="height: 46px; border-radius: 12px;"
-                                       value="<?= old('middle_initial', $defaults['middle_initial'] ?? '') ?>">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="birthdate" class="form-label">Birthdate <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-calendar-event input-icon"></i>
-                                    <input type="date" name="birthdate" id="birthdate" class="form-control" required
-                                           value="<?= old('birthdate', $defaults['birthdate'] ?? '') ?>">
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="age" class="form-label d-flex align-items-center">
-                                    Age <span class="text-danger ms-1">*</span>
-                                    <span class="auto-badge" id="autoAgeBadge"><i class="bi bi-magic me-1"></i>Auto-fills from birthdate</span>
-                                </label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-hash input-icon"></i>
-                                    <input type="number" name="age" id="age" class="form-control"
-                                           min="1" max="120" step="1" placeholder="Calculated automatically" required
-                                           value="<?= old('age', (string) $defaults['age']) ?>">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SECTION 3: Address & Location -->
-                        <div class="form-section-title mt-4">
-                            <div class="form-section-icon bg-success bg-opacity-10 text-success">
-                                <i class="bi bi-geo-alt-fill"></i>
-                            </div>
-                            <span>Address & Location</span>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-12">
-                                <label for="address" class="form-label">Residential Address <span class="text-danger">*</span></label>
-                                <div class="input-icon-group">
-                                    <i class="bi bi-pin-map input-icon"></i>
-                                    <input type="text" name="address" id="address" class="form-control"
-                                           placeholder="Enter street, barangay, city (e.g. Brgy. Talubangi, Kabankalan City)" required
-                                           value="<?= old('address', $defaults['address']) ?>">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Controls -->
-                        <div class="d-flex justify-content-between align-items-center border-top pt-4 mt-5">
-                            <a href="<?= base_url('users') ?>" class="btn btn-light border px-4 py-2.5 rounded-3 fw-semibold">
-                                <i class="bi bi-x-circle me-1.5"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-create-submit">
-                                <i class="bi bi-check2-circle me-1.5"></i> Create User Account
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <span>Password <span class="text-danger">*</span></span>
+                        <span class="text-muted fw-normal small" style="font-size: 0.72rem;">Min. 5 characters</span>
+                    </label>
+                    <div class="field-group">
+                        <i class="bi bi-key field-icon"></i>
+                        <input type="password" name="password" id="password" class="form-control pe-5" 
+                               placeholder="Enter secure password" autocomplete="new-password"
+                               value="<?= esc($defaults['password']) ?>">
+                        <button class="field-eye-btn" type="button" id="togglePasswordBtn" aria-label="Toggle password visibility">
+                            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Personal Information -->
+                <div class="section-divider">
+                    <span class="section-icon bg-info bg-opacity-10 text-info"><i class="bi bi-person-lines-fill"></i></span>
+                    Personal Information
+                </div>
+
+                <!-- First Name, Last Name, Middle Initial (Balanced 3-Column Row) -->
+                <div class="row g-2.5 g-md-3 mb-3">
+                    <div class="col-12 col-sm-4 col-md-4">
+                        <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-card-text field-icon"></i>
+                            <input type="text" name="firstname" id="firstname" class="form-control"
+                                   placeholder="First name" required
+                                   value="<?= old('firstname', $defaults['firstname']) ?>">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-4 col-md-4">
+                        <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-card-text field-icon"></i>
+                            <input type="text" name="lastname" id="lastname" class="form-control"
+                                   placeholder="Last name" required
+                                   value="<?= old('lastname', $defaults['lastname']) ?>">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-sm-4 col-md-4">
+                        <label for="middle_initial" class="form-label">Middle Initial <span class="text-muted fw-normal">(Optional)</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-fonts field-icon"></i>
+                            <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center text-sm-start"
+                                   placeholder="M.I." maxlength="10"
+                                   value="<?= old('middle_initial', $defaults['middle_initial'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Birthdate & Age (2-Column Row) -->
+                <div class="row g-2.5 g-md-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label for="birthdate" class="form-label">Birthdate <span class="text-danger">*</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-calendar-event field-icon"></i>
+                            <input type="date" name="birthdate" id="birthdate" class="form-control" required
+                                   value="<?= old('birthdate', $defaults['birthdate'] ?? '') ?>">
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="age" class="form-label">
+                            <span>Age <span class="text-danger">*</span></span>
+                            <span class="calc-tag"><i class="bi bi-magic me-1"></i>Calculated</span>
+                        </label>
+                        <div class="field-group">
+                            <i class="bi bi-hash field-icon"></i>
+                            <input type="number" name="age" id="age" class="form-control"
+                                   min="1" max="120" step="1" placeholder="Auto-calculated from birthdate" required
+                                   value="<?= old('age', (string) $defaults['age']) ?>">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: Address -->
+                <div class="section-divider">
+                    <span class="section-icon bg-success bg-opacity-10 text-success"><i class="bi bi-geo-alt"></i></span>
+                    Location Details
+                </div>
+
+                <div class="mb-4">
+                    <label for="address" class="form-label">Complete Address <span class="text-danger">*</span></label>
+                    <div class="field-group">
+                        <i class="bi bi-pin-map field-icon"></i>
+                        <input type="text" name="address" id="address" class="form-control"
+                               placeholder="e.g. Brgy. Talubangi, Kabankalan City, Negros Occidental" required
+                               value="<?= old('address', $defaults['address']) ?>">
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-4">
+                    <a href="<?= base_url('users') ?>" class="btn btn-light border px-3.5 py-2 text-secondary" style="border-radius: 9px; font-weight: 500;">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-submit-save">
+                        <i class="bi bi-check2-circle me-1.5"></i> Save &amp; Create Account
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -469,8 +485,8 @@
             });
         }
 
-        // Interactive Role Selection Cards
-        const roleCards = document.querySelectorAll('.role-choice-card');
+        // Role Cards Selection
+        const roleCards = document.querySelectorAll('.role-card-item');
         const roleInput = document.getElementById('roleInput');
 
         roleCards.forEach(card => {
@@ -483,7 +499,7 @@
             });
         });
 
-        // Smart Automatic Age Calculation from Birthdate
+        // Automatic Age Calculation from Birthdate
         const birthdateInput = document.getElementById('birthdate');
         const ageInput = document.getElementById('age');
 
@@ -504,17 +520,17 @@
 
         if (birthdateInput && ageInput) {
             birthdateInput.addEventListener('change', function () {
-                const computedAge = calculateAge(this.value);
-                if (computedAge !== '') {
-                    ageInput.value = computedAge;
+                const computed = calculateAge(this.value);
+                if (computed !== '') {
+                    ageInput.value = computed;
                     ageInput.style.backgroundColor = '#ecfdf5';
                     setTimeout(() => {
                         ageInput.style.backgroundColor = '';
-                    }, 500);
+                    }, 400);
                 }
             });
 
-            // If birthdate is already prefilled (e.g. from old input) and age is empty, compute it
+            // Initial calculation if birthdate is present and age is empty
             if (birthdateInput.value && !ageInput.value) {
                 const computed = calculateAge(birthdateInput.value);
                 if (computed !== '') ageInput.value = computed;
