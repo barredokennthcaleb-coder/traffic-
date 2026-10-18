@@ -5,11 +5,11 @@
 <?= $this->section('content') ?>
 
 <style>
-    /* Smooth Entrance */
+    /* Smooth Entrance & Keyframes */
     @keyframes fadeSlideIn {
         from {
             opacity: 0;
-            transform: translateY(14px);
+            transform: translateY(16px);
         }
         to {
             opacity: 1;
@@ -17,19 +17,25 @@
         }
     }
 
+    @keyframes pulseSuccess {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+        100% { transform: scale(1); }
+    }
+
     .form-wrapper {
         max-width: 860px;
         margin: 0 auto;
-        animation: fadeSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: fadeSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
 
     .form-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        box-shadow: 0 8px 30px -6px rgba(15, 23, 42, 0.07);
-        padding: 2rem 2.25rem;
-        transition: box-shadow 0.25s ease;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.06), 0 4px 10px -3px rgba(15, 23, 42, 0.03);
+        padding: 2.25rem 2.5rem;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Section Subheadings */
@@ -37,7 +43,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
@@ -49,7 +55,7 @@
     }
 
     .section-divider:first-of-type {
-        margin-top: 0.5rem;
+        margin-top: 0.25rem;
     }
 
     .section-icon {
@@ -60,20 +66,21 @@
         align-items: center;
         justify-content: center;
         font-size: 0.85rem;
+        transition: transform 0.2s ease;
     }
 
     /* Labels */
     .form-label {
-        font-size: 0.8rem;
+        font-size: 0.82rem;
         font-weight: 600;
         color: #334155;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
         display: flex;
         align-items: center;
         justify-content: space-between;
     }
 
-    /* Input Controls */
+    /* Input Controls: Pure Clean White Blanks */
     .field-group {
         position: relative;
         display: flex;
@@ -82,46 +89,50 @@
 
     .field-group .field-icon {
         position: absolute;
-        left: 13px;
+        left: 14px;
         top: 50%;
         transform: translateY(-50%);
         color: #94a3b8;
         font-size: 0.95rem;
         pointer-events: none;
-        transition: color 0.2s ease;
+        transition: color 0.2s ease, transform 0.2s ease;
         z-index: 3;
     }
 
     .field-group .form-control,
     .field-group .form-select {
-        height: 42px;
-        padding-left: 38px;
+        height: 44px;
+        padding-left: 42px;
         padding-right: 14px;
-        border: 1px solid #e2e8f0;
-        background-color: #f8fafc;
-        border-radius: 10px;
-        font-size: 0.88rem;
+        border: 1.5px solid #e2e8f0;
+        background-color: #ffffff; /* Clean white blank */
+        border-radius: 11px;
+        font-size: 0.9rem;
         color: #0f172a;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .field-group .form-control:hover,
     .field-group .form-select:hover {
         border-color: #cbd5e1;
+        background-color: #ffffff;
     }
 
     .field-group .form-control:focus,
     .field-group .form-select:focus {
         background-color: #ffffff;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         outline: none;
     }
 
     .field-group:focus-within .field-icon {
         color: #2563eb;
+        transform: translateY(-50%) scale(1.08);
     }
 
+    /* Toggle Password Button */
     .field-eye-btn {
         position: absolute;
         right: 8px;
@@ -130,92 +141,107 @@
         background: transparent;
         border: none;
         color: #94a3b8;
-        padding: 6px 8px;
-        border-radius: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
         cursor: pointer;
         z-index: 4;
-        transition: color 0.18s ease;
+        transition: all 0.18s ease;
     }
 
     .field-eye-btn:hover {
-        color: #334155;
+        color: #1e293b;
+        background: #f1f5f9;
     }
 
     /* Role Selector */
     .role-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 12px;
     }
 
     .role-card-item {
         border: 1.5px solid #e2e8f0;
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 10px 14px;
+        background: #ffffff;
+        border-radius: 13px;
+        padding: 12px 16px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         user-select: none;
         position: relative;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .role-card-item:hover {
-        border-color: #cbd5e1;
-        background: #ffffff;
-        transform: translateY(-1px);
+        border-color: #94a3b8;
+        background: #fafafa;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.08);
     }
 
     .role-card-item.selected.is-enforcer {
         border-color: #2563eb;
-        background: linear-gradient(145deg, #eff6ff 0%, #ffffff 100%);
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+        background: linear-gradient(145deg, #f0f7ff 0%, #ffffff 100%);
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.14);
     }
 
     .role-card-item.selected.is-admin {
         border-color: #dc2626;
-        background: linear-gradient(145deg, #fef2f2 0%, #ffffff 100%);
-        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.12);
+        background: linear-gradient(145deg, #fff5f5 0%, #ffffff 100%);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.14);
     }
 
     .role-card-item .role-badge-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1rem;
+        font-size: 1.05rem;
         flex-shrink: 0;
+        transition: transform 0.2s ease;
+    }
+
+    .role-card-item:hover .role-badge-icon {
+        transform: scale(1.06);
     }
 
     .role-card-item .role-check {
         margin-left: auto;
-        font-size: 1rem;
+        font-size: 1.1rem;
         color: #cbd5e1;
-        transition: color 0.2s ease;
+        transition: all 0.2s ease;
     }
 
     .role-card-item.selected.is-enforcer .role-check {
         color: #2563eb;
+        transform: scale(1.1);
     }
 
     .role-card-item.selected.is-admin .role-check {
         color: #dc2626;
+        transform: scale(1.1);
     }
 
+    /* Badges & Feedback */
     .calc-tag {
-        font-size: 0.68rem;
+        font-size: 0.7rem;
         font-weight: 600;
         color: #059669;
         background: #ecfdf5;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        padding: 1px 6px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        padding: 2px 7px;
         border-radius: 6px;
         text-transform: none;
         letter-spacing: normal;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: background 0.2s ease;
     }
 
     .match-status-tag {
@@ -224,6 +250,7 @@
         padding: 2px 8px;
         border-radius: 6px;
         display: none;
+        transition: all 0.2s ease;
     }
 
     .match-status-tag.is-match {
@@ -231,6 +258,7 @@
         background: #ecfdf5;
         color: #059669;
         border: 1px solid rgba(16, 185, 129, 0.3);
+        animation: pulseSuccess 0.25s ease;
     }
 
     .match-status-tag.is-mismatch {
@@ -240,21 +268,47 @@
         border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
+    /* Buttons */
+    .btn-action-cancel {
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 9px 18px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-action-cancel:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #1e293b;
+    }
+
     .btn-submit-save {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
         font-size: 0.9rem;
-        padding: 9px 24px;
-        border-radius: 10px;
+        padding: 10px 24px;
+        border-radius: 11px;
         box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
         transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn-submit-save:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
         color: #ffffff;
     }
 
@@ -262,26 +316,62 @@
         transform: translateY(1px);
     }
 
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1.75rem 1.25rem;
+            border-radius: 16px;
+        }
+
+        .footer-action-bar {
+            flex-direction: column-reverse;
+            gap: 12px;
+        }
+
+        .btn-action-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-submit-save {
+            width: 100%;
+            justify-content: center;
+            padding: 11px 20px;
+        }
+    }
+
     @media (max-width: 576px) {
         .form-card {
-            padding: 1.25rem 1rem;
+            padding: 1.25rem 0.95rem;
             border-radius: 14px;
         }
 
         .role-grid {
             grid-template-columns: 1fr;
+            gap: 9px;
+        }
+
+        .field-group .form-control,
+        .field-group .form-select {
+            height: 44px;
+            font-size: 16px; /* Smooth mobile typing without iOS auto-zoom */
+        }
+
+        .section-divider {
+            font-size: 0.75rem;
+            margin-top: 1.35rem;
         }
     }
 </style>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-3 py-md-4">
     <div class="form-wrapper">
         <!-- Top Navigation -->
-        <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 px-1">
             <a href="<?= base_url('users') ?>" class="btn btn-sm btn-light border text-secondary px-3 py-1.5" style="border-radius: 8px;">
                 <i class="bi bi-arrow-left me-1"></i> Back to Users
             </a>
-            <span class="text-muted small">Edit: <?= esc($user['username']) ?></span>
+            <span class="text-muted small fw-medium">Edit: <?= esc($user['username']) ?></span>
         </div>
 
         <!-- Form Card Container -->
@@ -359,32 +449,32 @@
 
                 <!-- First Name, Last Name, Middle Initial -->
                 <div class="row g-2.5 g-md-3 mb-3">
-                    <div class="col-12 col-sm-4 col-md-4">
+                    <div class="col-12 col-sm-6 col-md-5">
                         <label for="firstname" class="form-label">First Name <span class="text-danger">*</span></label>
                         <div class="field-group">
-                            <i class="bi bi-card-text field-icon"></i>
+                            <i class="bi bi-person field-icon"></i>
                             <input type="text" name="firstname" id="firstname" class="form-control"
-                                   placeholder="First name" required
+                                   required autocomplete="given-name"
                                    value="<?= old('firstname', $user['firstname'] ?? '') ?>">
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-4 col-md-4">
+                    <div class="col-12 col-sm-6 col-md-5">
                         <label for="lastname" class="form-label">Last Name <span class="text-danger">*</span></label>
                         <div class="field-group">
-                            <i class="bi bi-card-text field-icon"></i>
+                            <i class="bi bi-person field-icon"></i>
                             <input type="text" name="lastname" id="lastname" class="form-control"
-                                   placeholder="Last name" required
+                                   required autocomplete="family-name"
                                    value="<?= old('lastname', $user['lastname'] ?? '') ?>">
                         </div>
                     </div>
 
-                    <div class="col-12 col-sm-4 col-md-4">
-                        <label for="middle_initial" class="form-label">Middle Initial <span class="text-muted fw-normal">(Optional)</span></label>
+                    <div class="col-12 col-sm-12 col-md-2">
+                        <label for="middle_initial" class="form-label">M.I. <span class="text-muted fw-normal small">(Optional)</span></label>
                         <div class="field-group">
                             <i class="bi bi-fonts field-icon"></i>
-                            <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center text-sm-start"
-                                   placeholder="M.I." maxlength="10"
+                            <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center"
+                                   maxlength="10" autocomplete="additional-name"
                                    value="<?= old('middle_initial', $user['middle_initial'] ?? '') ?>">
                         </div>
                     </div>
@@ -404,12 +494,12 @@
                     <div class="col-12 col-md-6">
                         <label for="age" class="form-label">
                             <span>Age <span class="text-danger">*</span></span>
-                            <span class="calc-tag"><i class="bi bi-magic me-1"></i>Auto-fills from birthdate</span>
+                            <span class="calc-tag"><i class="bi bi-magic"></i>Auto-fills from birthdate</span>
                         </label>
                         <div class="field-group">
                             <i class="bi bi-hash field-icon"></i>
                             <input type="number" name="age" id="age" class="form-control"
-                                   min="1" max="120" step="1" placeholder="Calculated from birthdate" required
+                                   min="1" max="120" step="1" required
                                    value="<?= old('age', $user['age'] ?? '') ?>">
                         </div>
                     </div>
@@ -419,14 +509,14 @@
                 <div class="mb-3">
                     <label for="address" class="form-label">Complete Address <span class="text-danger">*</span></label>
                     <div class="field-group">
-                        <i class="bi bi-pin-map field-icon"></i>
+                        <i class="bi bi-geo-alt field-icon"></i>
                         <input type="text" name="address" id="address" class="form-control"
-                               placeholder="Enter complete address" required
+                               required autocomplete="street-address"
                                value="<?= old('address', $user['address'] ?? '') ?>">
                     </div>
                 </div>
 
-                <!-- 3. THEN: USERNAME & EMAIL + ACCOUNT STATUS -->
+                <!-- 3. THEN: USERNAME & EMAIL + STATUS -->
                 <div class="section-divider">
                     <span class="section-icon bg-warning bg-opacity-10 text-dark"><i class="bi bi-person-circle"></i></span>
                     3. Account Credentials
@@ -436,9 +526,9 @@
                     <div class="col-12 col-md-4">
                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                         <div class="field-group">
-                            <i class="bi bi-person field-icon"></i>
+                            <i class="bi bi-person-badge field-icon"></i>
                             <input type="text" name="username" id="username" class="form-control" 
-                                   placeholder="Username" required autocomplete="off"
+                                   required autocomplete="off"
                                    value="<?= old('username', $user['username']) ?>">
                         </div>
                     </div>
@@ -448,7 +538,7 @@
                         <div class="field-group">
                             <i class="bi bi-envelope field-icon"></i>
                             <input type="email" name="email" id="email" class="form-control" 
-                                   placeholder="user@example.com" required autocomplete="off"
+                                   required autocomplete="off"
                                    value="<?= old('email', $user['email']) ?>">
                         </div>
                     </div>
@@ -481,7 +571,7 @@
                         <div class="field-group">
                             <i class="bi bi-lock field-icon"></i>
                             <input type="password" name="password" id="password" class="form-control pe-5" 
-                                   placeholder="Enter new password" autocomplete="new-password">
+                                   autocomplete="new-password">
                             <button class="field-eye-btn" type="button" id="togglePasswordBtn" aria-label="Toggle password visibility">
                                 <i class="bi bi-eye" id="togglePasswordIcon"></i>
                             </button>
@@ -496,24 +586,24 @@
                         <div class="field-group">
                             <i class="bi bi-shield-lock field-icon"></i>
                             <input type="password" name="confirm_password" id="confirm_password" class="form-control pe-5" 
-                                   placeholder="Re-enter to confirm" autocomplete="new-password">
+                                   autocomplete="new-password">
                             <button class="field-eye-btn" type="button" id="toggleConfirmPasswordBtn" aria-label="Toggle confirm password visibility">
                                 <i class="bi bi-eye" id="toggleConfirmPasswordIcon"></i>
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="text-muted small mb-4" style="font-size: 0.74rem;">
+                <div class="text-muted small mb-4" style="font-size: 0.75rem;">
                     <i class="bi bi-info-circle me-1"></i> If changing the password, enter the new password in both fields to confirm the final password.
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-4">
-                    <a href="<?= base_url('users') ?>" class="btn btn-light border px-3.5 py-2 text-secondary" style="border-radius: 9px; font-weight: 500;">
-                        Cancel
+                <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-4 footer-action-bar">
+                    <a href="<?= base_url('users') ?>" class="btn-action-cancel">
+                        <i class="bi bi-x-circle"></i> Cancel
                     </a>
                     <button type="submit" class="btn btn-submit-save">
-                        <i class="bi bi-check2-circle me-1.5"></i> Update Account
+                        <i class="bi bi-check2-circle"></i> Update Account
                     </button>
                 </div>
             </form>
@@ -563,7 +653,7 @@
             if (p2.length === 0) {
                 matchTag.className = 'match-status-tag';
                 matchTag.style.display = 'none';
-                confirmInput.style.borderColor = '';
+                confirmInput.style.borderColor = '#e2e8f0';
                 return;
             }
 
@@ -623,7 +713,7 @@
                     ageInput.value = computed;
                     ageInput.style.backgroundColor = '#ecfdf5';
                     setTimeout(() => {
-                        ageInput.style.backgroundColor = '';
+                        ageInput.style.backgroundColor = '#ffffff';
                     }, 400);
                 }
             });
