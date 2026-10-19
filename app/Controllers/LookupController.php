@@ -64,6 +64,9 @@ class LookupController extends Controller
             }
         }
 
+        $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $this->response->setHeader('Pragma', 'no-cache');
+
         return view('lookup/index', [
             'query'    => $queryStr,
             'searched' => $searched,

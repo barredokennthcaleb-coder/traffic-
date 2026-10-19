@@ -61,95 +61,63 @@
 
                             <!-- Section 1: Driver & Vehicle Details -->
                             <div class="tct-doc-section">
-                                <div class="row align-items-center mb-2">
-                                    <div class="col-6">
-                                        <span class="tct-bold-label">TO:</span>
+                                <div class="tct-row mb-2">
+                                    <span class="tct-bold-label">TO:</span>
+                                </div>
+
+                                <div class="tct-row mb-2 align-items-end">
+                                    <span class="tct-bold-label me-2">Driver's Name:</span>
+                                    <input type="text" name="driver_full_name" id="driver_full_name" 
+                                           class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                           placeholder="Masha Tabu Batongbakal" required 
+                                           value="<?= old('first_name') ? trim(old('first_name') . ' ' . old('middle_name') . ' ' . old('last_name')) : '' ?>">
+                                    <input type="hidden" name="first_name" id="first_name" value="<?= old('first_name') ?>">
+                                    <input type="hidden" name="middle_name" id="middle_name" value="<?= old('middle_name') ?>">
+                                    <input type="hidden" name="last_name" id="last_name" value="<?= old('last_name') ?>">
+                                </div>
+
+                                <div class="tct-row mb-2 align-items-end">
+                                    <span class="tct-bold-label me-2">Address:</span>
+                                    <input type="text" name="address" id="address" 
+                                           class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                           placeholder="bocana ilog" required 
+                                           value="<?= old('address') ?>">
+                                    <input type="hidden" name="age" id="age" value="<?= old('age') ?: '25' ?>">
+                                </div>
+
+                                <div class="tct-row mb-2 align-items-end">
+                                    <div class="d-flex flex-1 align-items-end me-3">
+                                        <span class="tct-bold-label me-1">DL/Permit No.</span>
+                                        <input type="text" name="license_number" id="license_number" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               placeholder="no" value="<?= old('license_number') ?>">
                                     </div>
-                                    <div class="col-6 text-end">
-                                        <div class="d-inline-flex align-items-center">
-                                            <span class="tct-bold-label text-danger me-1">TCT No.</span>
-                                            <input type="text" name="custom_ticket_no" id="custom_ticket_no" class="form-control form-control-sm tct-input text-danger fw-bold font-monospace"
-                                                   style="width: 140px; font-size: 0.9rem;" placeholder="2024-0030268" value="<?= old('custom_ticket_no') ?>">
-                                        </div>
+                                    <div class="d-flex flex-1 align-items-end me-3">
+                                        <span class="tct-bold-label me-1">Plate#</span>
+                                        <input type="text" name="license_plate" id="license_plate" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               placeholder="890" required value="<?= old('license_plate') ?>">
+                                    </div>
+                                    <div class="d-flex flex-1 align-items-end">
+                                        <span class="tct-bold-label me-1">MTOP#</span>
+                                        <input type="text" name="mtop_number" id="mtop_number" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               placeholder="m789" value="<?= old('mtop_number') ?>">
                                     </div>
                                 </div>
 
-                                <div class="row g-2 mb-2 align-items-end">
-                                    <div class="col-12 col-md-auto">
-                                        <span class="tct-bold-label">Driver's Name <span class="text-danger">*</span></span>
+                                <div class="tct-row align-items-end">
+                                    <div class="d-flex flex-1 align-items-end me-3">
+                                        <span class="tct-bold-label me-1">Owner:</span>
+                                        <input type="text" name="owner_name" id="owner_name" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               placeholder="no" value="<?= old('owner_name') ?>">
                                     </div>
-                                    <div class="col-md">
-                                        <div class="row g-2">
-                                            <div class="col-4">
-                                                <input type="text" name="first_name" id="first_name" class="form-control form-control-sm tct-input"
-                                                       placeholder="First" required pattern="[A-Za-z\s\-']{1,100}"
-                                                       value="<?= old('first_name') ?>">
-                                                <span class="tct-sub-label d-block text-center">(first)</span>
-                                            </div>
-                                            <div class="col-4">
-                                                <input type="text" name="middle_name" id="middle_name" class="form-control form-control-sm tct-input"
-                                                       placeholder="Middle" pattern="[A-Za-z\s\-']{0,100}"
-                                                       value="<?= old('middle_name') ?>">
-                                                <span class="tct-sub-label d-block text-center">(middle)</span>
-                                            </div>
-                                            <div class="col-4">
-                                                <input type="text" name="last_name" id="last_name" class="form-control form-control-sm tct-input"
-                                                       placeholder="Last" required pattern="[A-Za-z\s\-']{1,100}"
-                                                       value="<?= old('last_name') ?>">
-                                                <span class="tct-sub-label d-block text-center">(last)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-2 mb-2 align-items-center">
-                                    <div class="col-md-8">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-2">Address <span class="text-danger">*</span>:</span>
-                                            <input type="text" name="address" id="address" class="form-control form-control-sm tct-input flex-1"
-                                                   required value="<?= old('address') ?>" placeholder="Driver address">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-2">Age <span class="text-danger">*</span>:</span>
-                                            <input type="number" name="age" id="age" class="form-control form-control-sm tct-input flex-1"
-                                                   min="16" max="120" required value="<?= old('age') ?>" placeholder="Age">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-2 mb-2 align-items-center">
-                                    <div class="col-md-4">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-1">DL/Permit No.:</span>
-                                            <input type="text" name="license_number" id="license_number" class="form-control form-control-sm tct-input flex-1"
-                                                   maxlength="50" value="<?= old('license_number') ?>">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-1">Plate# <span class="text-danger">*</span>:</span>
-                                            <input type="text" name="license_plate" id="license_plate" class="form-control form-control-sm tct-input flex-1"
-                                                   required maxlength="20" value="<?= old('license_plate') ?>">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-1">MTOP#:</span>
-                                            <input type="text" name="mtop_number" id="mtop_number" class="form-control form-control-sm tct-input flex-1"
-                                                   value="<?= old('mtop_number') ?>">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-2 align-items-center">
-                                    <div class="col-12">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-2">Owner:</span>
-                                            <input type="text" name="owner_name" id="owner_name" class="form-control form-control-sm tct-input flex-1"
-                                                   value="<?= old('owner_name') ?>" placeholder="Vehicle Owner Name">
-                                        </div>
+                                    <div class="d-flex flex-1 align-items-end">
+                                        <span class="tct-bold-label me-1">Address</span>
+                                        <input type="text" name="owner_address" id="owner_address" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               placeholder="bocana ilog" value="<?= old('owner_address') ?>">
                                     </div>
                                 </div>
                             </div>
@@ -158,72 +126,67 @@
                             <div class="tct-doc-section">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
-                                    <button type="button" class="btn btn-xs btn-outline-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addViolationTypeModal">
-                                        <i class="bi bi-plus-circle me-1"></i> New Type
-                                    </button>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-dark border fw-bold" id="fineBadge" style="font-size: 0.82rem;">Fine: ₱<span id="penalty_amount_display">0.00</span></span>
+                                        <button type="button" class="btn btn-xs btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addViolationTypeModal">
+                                            <i class="bi bi-plus-circle me-1"></i> New Type
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="tct-sec-notice text-center mb-3">
                                     You are hereby charged/cited for comitting the violations marked "x" hereunder:
                                 </div>
 
-                                <div class="tct-checklist" id="violationChecklist">
+                                <div class="tct-checklist-container">
                                     <?php foreach ($violationTypes as $type): ?>
                                         <?php $isChecked = in_array((string)$type['id'], (array)old('violation_type_id', []), true); ?>
-                                        <label class="tct-check-item">
-                                            <input type="checkbox" name="violation_type_id[]" class="violation-check"
+                                        <label class="tct-check-label">
+                                            <input type="checkbox" name="violation_type_id[]" class="violation-check d-none"
                                                    value="<?= $type['id'] ?>"
                                                    data-amount="<?= $type['fine_amount'] ?>"
                                                    data-points="<?= $type['points'] ?>"
                                                    <?= $isChecked ? 'checked' : '' ?>>
-                                            <span><?= esc($type['violation_name']) ?></span>
+                                            <div class="tct-box <?= $isChecked ? 'is-checked' : '' ?>">
+                                                <span class="tct-box-x"><?= $isChecked ? 'X' : '' ?></span>
+                                            </div>
+                                            <span class="tct-item-text"><?= esc($type['violation_name']) ?></span>
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
-
-                                <div class="mt-3 p-2 bg-light border rounded d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <span class="tct-bold-label me-2">Penalty Amount:</span>
-                                        <span class="fw-bold text-danger fs-5">₱<span id="penalty_amount_display">0.00</span></span>
-                                        <input type="hidden" id="penalty_amount" value="0.00">
-                                    </div>
-                                    <div class="text-muted small" id="violationInfo">Select violation(s) above</div>
-                                </div>
+                                <input type="hidden" id="penalty_amount" value="0.00">
                             </div>
 
                             <!-- Section 3: Place, Date & Legal Notice -->
                             <div class="tct-doc-section">
-                                <div class="row g-2 mb-3">
-                                    <div class="col-md-7">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-2">Place <span class="text-danger">*</span>:</span>
-                                            <input type="text" name="location" id="location" class="form-control form-control-sm tct-input flex-1"
-                                                   required list="locationOptions" placeholder="e.g. Ceres Terminal, Biyarin, or specific address..."
-                                                   value="<?= esc(old('location')) ?>">
-                                            <datalist id="locationOptions">
-                                                <option value="Ceres Terminal, Kabankalan City">
-                                                <option value="Biyarin, Kabankalan City">
-                                                <?php
-                                                $barangays = [
-                                                    'Barangay 1 (Poblacion)', 'Barangay 2 (Poblacion)', 'Barangay 3 (Poblacion)', 'Barangay 4 (Poblacion)',
-                                                    'Barangay 5 (Poblacion)', 'Barangay 6 (Poblacion)', 'Barangay 7 (Poblacion)', 'Barangay 8 (Poblacion)',
-                                                    'Barangay 9 (Poblacion)', 'Bantayan', 'Binicuil', 'Camansi', 'Camingawan', 'Camugao', 'Carol-an',
-                                                    'Daan Banua', 'Hilamonan', 'Inapoy', 'Linao', 'Locotan', 'Magballo', 'Oringao', 'Orong',
-                                                    'Pinaguinpinan', 'Salong', 'Tabugon', 'Tagoc', 'Tagukon', 'Talubangi', 'Tampalon', 'Tan-Awan', 'Tapi'
-                                                ];
-                                                foreach ($barangays as $brgy):
-                                                ?>
-                                                <option value="<?= esc($brgy) ?>, Kabankalan City">
-                                                <?php endforeach; ?>
-                                            </datalist>
-                                        </div>
+                                <div class="tct-row align-items-end mb-3">
+                                    <div class="d-flex flex-1 align-items-end me-4">
+                                        <span class="tct-bold-label me-1">Place:</span>
+                                        <input type="text" name="location" id="location" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold"
+                                               required list="locationOptions" placeholder="Biyarin, Kabankalan City"
+                                               value="<?= esc(old('location')) ?>">
+                                        <datalist id="locationOptions">
+                                            <option value="Ceres Terminal, Kabankalan City">
+                                            <option value="Biyarin, Kabankalan City">
+                                            <?php
+                                            $barangays = [
+                                                'Barangay 1 (Poblacion)', 'Barangay 2 (Poblacion)', 'Barangay 3 (Poblacion)', 'Barangay 4 (Poblacion)',
+                                                'Barangay 5 (Poblacion)', 'Barangay 6 (Poblacion)', 'Barangay 7 (Poblacion)', 'Barangay 8 (Poblacion)',
+                                                'Barangay 9 (Poblacion)', 'Bantayan', 'Binicuil', 'Camansi', 'Camingawan', 'Camugao', 'Carol-an',
+                                                'Daan Banua', 'Hilamonan', 'Inapoy', 'Linao', 'Locotan', 'Magballo', 'Oringao', 'Orong',
+                                                'Pinaguinpinan', 'Salong', 'Tabugon', 'Tagoc', 'Tagukon', 'Talubangi', 'Tampalon', 'Tan-Awan', 'Tapi'
+                                            ];
+                                            foreach ($barangays as $brgy):
+                                            ?>
+                                            <option value="<?= esc($brgy) ?>, Kabankalan City">
+                                            <?php endforeach; ?>
+                                        </datalist>
                                     </div>
-                                    <div class="col-md-5">
-                                        <div class="d-flex align-items-center">
-                                            <span class="tct-bold-label me-2">Date &amp; Time:</span>
-                                            <input type="datetime-local" name="violation_datetime" id="violation_datetime"
-                                                   class="form-control form-control-sm tct-input flex-1"
-                                                   value="<?= old('violation_datetime') ?>">
-                                        </div>
+                                    <div class="d-flex flex-1 align-items-end">
+                                        <span class="tct-bold-label me-1">Date &amp; Time</span>
+                                        <input type="datetime-local" name="violation_datetime" id="violation_datetime"
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold"
+                                               value="<?= old('violation_datetime') ?: date('Y-m-d\TH:i') ?>">
                                     </div>
                                 </div>
 
@@ -232,64 +195,79 @@
                                 </div>
                             </div>
 
-                            <!-- Section 4: Acknowledgment, Notes & Signatures -->
+                            <!-- Section 4: Acknowledgment & Signatures -->
                             <div class="tct-doc-section border-bottom-0 pb-0">
                                 <div class="tct-ack-heading mb-2">I HEREBY ACKNOWLEDGE RECEIPT OF THIS TCT.</div>
-                                <div class="d-flex gap-4 mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="acknowledgment" id="ackAdmitted" value="Admitted" <?= old('acknowledgment') === 'Admitted' ? 'checked' : '' ?>>
-                                        <label class="form-check-label fw-semibold" for="ackAdmitted">Admitted</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="acknowledgment" id="ackProtest" value="Under Protest" <?= old('acknowledgment') === 'Under Protest' ? 'checked' : '' ?>>
-                                        <label class="form-check-label fw-semibold" for="ackProtest">Under Protest</label>
-                                    </div>
+
+                                <div class="d-flex gap-5 mb-4">
+                                    <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
+                                        <input type="radio" name="acknowledgment" id="ackAdmitted" value="Admitted" class="d-none" <?= old('acknowledgment', 'Admitted') === 'Admitted' ? 'checked' : '' ?>>
+                                        <div class="tct-box me-2 tct-ack-box <?= old('acknowledgment', 'Admitted') === 'Admitted' ? 'is-checked' : '' ?>" id="ackAdmittedBox">
+                                            <span class="tct-box-x"><?= old('acknowledgment', 'Admitted') === 'Admitted' ? 'X' : '' ?></span>
+                                        </div>
+                                        <span class="fw-bold">Admitted</span>
+                                    </label>
+                                    <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
+                                        <input type="radio" name="acknowledgment" id="ackProtest" value="Under Protest" class="d-none" <?= old('acknowledgment') === 'Under Protest' ? 'checked' : '' ?>>
+                                        <div class="tct-box me-2 tct-ack-box <?= old('acknowledgment') === 'Under Protest' ? 'is-checked' : '' ?>" id="ackProtestBox">
+                                            <span class="tct-box-x"><?= old('acknowledgment') === 'Under Protest' ? 'X' : '' ?></span>
+                                        </div>
+                                        <span class="fw-bold">Under Protest</span>
+                                    </label>
                                 </div>
 
-                                <!-- Mobile Touch Signature Pads -->
-                                <div class="row g-3 my-2">
-                                    <div class="col-md-6">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <label class="tct-bold-label mb-0" style="font-size: 0.82rem;">
-                                                <i class="bi bi-fingerprint text-primary me-1"></i>Driver Signature (Touch/Finger Pad)
-                                            </label>
-                                            <button type="button" class="btn btn-link text-danger p-0" id="clearDriverSigBtn" style="font-size: 0.75rem; text-decoration: none;">Clear</button>
-                                        </div>
-                                        <div class="position-relative">
-                                            <canvas id="driverSigCanvas" width="320" height="90" style="border: 1.5px solid #000; background: #fff; width: 100%; height: 90px; touch-action: none; cursor: crosshair; border-radius: 4px;"></canvas>
-                                        </div>
-                                        <input type="hidden" name="driver_signature" id="driver_signature">
+                                <!-- Driver Signature Area (Centered Line) -->
+                                <div class="tct-driver-signature-area text-center mb-4">
+                                    <div class="tct-sig-wrapper mx-auto position-relative" style="width: 280px; height: 55px;">
+                                        <canvas id="driverSigCanvas" width="280" height="55" 
+                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 55px; touch-action: none; cursor: crosshair; z-index: 2; background: transparent;"></canvas>
+                                        <div class="tct-sig-underline w-100" style="position: absolute; bottom: 0; left: 0;"></div>
                                     </div>
-
-                                    <div class="col-md-6">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <label class="tct-bold-label mb-0" style="font-size: 0.82rem;">
-                                                <i class="bi bi-pen text-primary me-1"></i>Officer Signature (Touch/Finger Pad)
-                                            </label>
-                                            <button type="button" class="btn btn-link text-danger p-0" id="clearOfficerSigBtn" style="font-size: 0.75rem; text-decoration: none;">Clear</button>
-                                        </div>
-                                        <div class="position-relative">
-                                            <canvas id="officerSigCanvas" width="320" height="90" style="border: 1.5px solid #000; background: #fff; width: 100%; height: 90px; touch-action: none; cursor: crosshair; border-radius: 4px;"></canvas>
-                                        </div>
-                                        <input type="hidden" name="officer_signature" id="officer_signature">
+                                    <div class="d-flex justify-content-center align-items-center gap-2 mt-1">
+                                        <span class="tct-sub-label">Signature of the Driver</span>
+                                        <button type="button" class="btn btn-link text-danger p-0 small" id="clearDriverSigBtn" style="font-size: 0.72rem; text-decoration: none;">(Clear)</button>
                                     </div>
+                                    <input type="hidden" name="driver_signature" id="driver_signature">
                                 </div>
 
-                                <div class="mt-3 mb-2">
-                                    <label for="notes" class="tct-bold-label mb-1">Notes / Remarks:</label>
-                                    <textarea name="notes" id="notes" class="form-control form-control-sm" rows="2" placeholder="Optional remarks"><?= old('notes') ?></textarea>
+                                <!-- Officer Signature Area (Rectangular Box) -->
+                                <div class="tct-officer-signature-area mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <div class="tct-sub-label">Printed Name and Signature of Apprehending Officer.</div>
+                                        <button type="button" class="btn btn-link text-danger p-0 small" id="clearOfficerSigBtn" style="font-size: 0.72rem; text-decoration: none;">(Clear)</button>
+                                    </div>
+                                    <div class="tct-officer-box position-relative" style="border: 1.5px solid #000; height: 60px; width: 100%; display: flex; align-items: center; justify-content: center; background: #fff;">
+                                        <canvas id="officerSigCanvas" width="500" height="60" 
+                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; touch-action: none; cursor: crosshair; z-index: 2; background: transparent;"></canvas>
+                                    </div>
+                                    <input type="hidden" name="officer_signature" id="officer_signature">
+                                </div>
+
+                                <div class="mt-2 mb-2">
+                                    <label for="notes" class="tct-sub-label mb-1">Notes / Remarks (Optional):</label>
+                                    <input type="text" name="notes" id="notes" class="form-control form-control-sm tct-input" placeholder="Optional remarks" value="<?= old('notes') ?>">
+                                </div>
+                            </div>
+
+                            <!-- Footer Area matching Ticket Format -->
+                            <div class="tct-footer-area d-flex justify-content-between align-items-center pt-2">
+                                <div class="tct-driver-copy-tag">Driver's Copy</div>
+                                <div class="tct-number-tag d-flex align-items-center">
+                                    <span class="me-1">TCT No.</span>
+                                    <input type="text" name="custom_ticket_no" id="custom_ticket_no" 
+                                           class="form-control form-control-sm tct-input tct-red-no p-0 border-0 text-end"
+                                           style="width: 175px; background: transparent;"
+                                           placeholder="2024-2026-7890" 
+                                           value="<?= old('custom_ticket_no') ?>">
                                 </div>
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                                <span class="tct-driver-copy-tag text-muted">Driver's Copy &bull; Ticket Creation</span>
-                                <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary btn-sm px-4" id="submitPrintBtn" name="print_ticket" value="1">
-                                        <i class="bi bi-printer me-1"></i> Save &amp; Print Ticket
-                                    </button>
-                                </div>
+                            <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-3">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm px-4 shadow-sm" id="submitPrintBtn" name="print_ticket" value="1">
+                                    <i class="bi bi-printer me-1"></i> Save &amp; Print Ticket
+                                </button>
                             </div>
 
                         </div>
@@ -619,91 +597,48 @@
 
                         <!-- Section 1: Driver & Vehicle Details -->
                         <div class="tct-doc-section">
-                            <div class="row align-items-center mb-2">
-                                <div class="col-6">
-                                    <span class="tct-bold-label">TO:</span>
-                                </div>
-                                <div class="col-6 text-end">
-                                    <div class="d-inline-flex align-items-center">
-                                        <span class="tct-bold-label text-danger me-1">TCT No.</span>
-                                        <span id="edit_ticket_no_display" class="font-monospace text-danger fw-bold fs-6"></span>
-                                    </div>
+                            <div class="tct-row mb-2">
+                                <span class="tct-bold-label">TO:</span>
+                            </div>
+
+                            <div class="tct-row mb-2 align-items-end">
+                                <span class="tct-bold-label me-2">Driver's Name:</span>
+                                <div class="d-flex flex-1 align-items-end gap-2">
+                                    <input type="text" name="first_name" id="edit_first_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="First" required>
+                                    <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Middle">
+                                    <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Last" required>
                                 </div>
                             </div>
 
-                            <div class="row g-2 mb-2 align-items-end">
-                                <div class="col-12 col-md-auto">
-                                    <span class="tct-bold-label">Driver's Name <span class="text-danger">*</span></span>
+                            <div class="tct-row mb-2 align-items-end">
+                                <span class="tct-bold-label me-2">Address:</span>
+                                <input type="text" name="address" id="edit_address" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Driver address" required>
+                                <input type="hidden" name="age" id="edit_age" value="25">
+                            </div>
+
+                            <div class="tct-row mb-2 align-items-end">
+                                <div class="d-flex flex-1 align-items-end me-3">
+                                    <span class="tct-bold-label me-1">DL/Permit No.</span>
+                                    <input type="text" name="license_number" id="edit_license_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
                                 </div>
-                                <div class="col-md">
-                                    <div class="row g-2">
-                                        <div class="col-4">
-                                            <input type="text" name="first_name" id="edit_first_name" class="form-control form-control-sm tct-input"
-                                                   placeholder="First" required pattern="[A-Za-z\s\-']{1,100}">
-                                            <span class="tct-sub-label d-block text-center">(first)</span>
-                                        </div>
-                                        <div class="col-4">
-                                            <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input"
-                                                   placeholder="Middle" pattern="[A-Za-z\s\-']{0,100}">
-                                            <span class="tct-sub-label d-block text-center">(middle)</span>
-                                        </div>
-                                        <div class="col-4">
-                                            <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input"
-                                                   placeholder="Last" required pattern="[A-Za-z\s\-']{1,100}">
-                                            <span class="tct-sub-label d-block text-center">(last)</span>
-                                        </div>
-                                    </div>
+                                <div class="d-flex flex-1 align-items-end me-3">
+                                    <span class="tct-bold-label me-1">Plate#</span>
+                                    <input type="text" name="license_plate" id="edit_license_plate" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="890" required>
+                                </div>
+                                <div class="d-flex flex-1 align-items-end">
+                                    <span class="tct-bold-label me-1">MTOP#</span>
+                                    <input type="text" name="mtop_number" id="edit_mtop_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="m789">
                                 </div>
                             </div>
 
-                            <div class="row g-2 mb-2 align-items-center">
-                                <div class="col-md-8">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-2">Address <span class="text-danger">*</span>:</span>
-                                        <input type="text" name="address" id="edit_address" class="form-control form-control-sm tct-input flex-1"
-                                               required placeholder="Driver address">
-                                    </div>
+                            <div class="tct-row align-items-end">
+                                <div class="d-flex flex-1 align-items-end me-3">
+                                    <span class="tct-bold-label me-1">Owner:</span>
+                                    <input type="text" name="owner_name" id="edit_owner_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-2">Age <span class="text-danger">*</span>:</span>
-                                        <input type="number" name="age" id="edit_age" class="form-control form-control-sm tct-input flex-1"
-                                               min="16" max="120" required placeholder="Age">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-2 mb-2 align-items-center">
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-1">DL/Permit No.:</span>
-                                        <input type="text" name="license_number" id="edit_license_number" class="form-control form-control-sm tct-input flex-1"
-                                               maxlength="50" placeholder="License No">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-1">Plate# <span class="text-danger">*</span>:</span>
-                                        <input type="text" name="license_plate" id="edit_license_plate" class="form-control form-control-sm tct-input flex-1"
-                                               required maxlength="20" placeholder="Plate Number">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-1">MTOP#:</span>
-                                        <input type="text" name="mtop_number" id="edit_mtop_number" class="form-control form-control-sm tct-input flex-1"
-                                               placeholder="MTOP #">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row g-2 align-items-center">
-                                <div class="col-12">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-2">Owner:</span>
-                                        <input type="text" name="owner_name" id="edit_owner_name" class="form-control form-control-sm tct-input flex-1"
-                                               placeholder="Vehicle Owner Name">
-                                    </div>
+                                <div class="d-flex flex-1 align-items-end">
+                                    <span class="tct-bold-label me-1">Address</span>
+                                    <input type="text" name="owner_address" id="edit_owner_address" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="bocana ilog">
                                 </div>
                             </div>
                         </div>
@@ -1891,6 +1826,86 @@
         letter-spacing: 0.05em;
         text-transform: uppercase;
     }
+    .tct-row {
+        display: flex;
+        width: 100%;
+    }
+    .flex-1 {
+        flex: 1;
+    }
+    .tct-checklist-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 5px 12px;
+    }
+    .tct-check-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin-bottom: 2px;
+        user-select: none;
+    }
+    .tct-box {
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #000;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.85rem;
+        font-family: monospace;
+        line-height: 1;
+        margin-right: 10px;
+        flex-shrink: 0;
+        background: #fff;
+        color: #000;
+    }
+    .tct-box.is-checked {
+        background: #000;
+        color: #fff;
+    }
+    .tct-box-x {
+        display: inline-block;
+        line-height: 1;
+    }
+    .tct-item-text {
+        font-family: Arial, sans-serif;
+        font-size: 0.92rem;
+    }
+    .tct-sig-underline {
+        width: 260px;
+        border-bottom: 1.5px solid #000;
+        height: 35px;
+    }
+    .tct-officer-box {
+        border: 1.5px solid #000;
+        height: 60px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+    }
+    .officer-printed-name {
+        font-weight: bold;
+        font-size: 1.05rem;
+        text-transform: uppercase;
+        font-family: Arial, sans-serif;
+        letter-spacing: 0.05em;
+    }
+    .tct-number-tag {
+        font-weight: bold;
+        font-size: 1.15rem;
+        font-family: Arial, sans-serif;
+    }
+    .tct-red-no {
+        color: #dc3545;
+        font-family: 'Courier New', monospace;
+        font-size: 1.25rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+    }
     .tct-input {
         border: none;
         border-bottom: 1.5px solid #000;
@@ -1933,34 +1948,80 @@
     function updateFineAmount() {
         const checks = document.querySelectorAll('.violation-check:checked');
         let totalAmount = 0;
-        let details = [];
         Array.from(checks).forEach(check => {
             totalAmount += parseFloat(check.dataset.amount || 0);
-            const label = check.closest('label')?.querySelector('span')?.textContent || 'Violation';
-            details.push(`<strong>${label}</strong>`);
         });
         
         const penaltyInput = document.getElementById('penalty_amount');
         if (penaltyInput) penaltyInput.value = totalAmount.toFixed(2);
         
         const disp = document.getElementById('penalty_amount_display');
-        if (disp) disp.textContent = totalAmount.toFixed(2);
-
-        const violationInfo = document.getElementById('violationInfo');
-        if (violationInfo) {
-            if (details.length > 0) {
-                violationInfo.innerHTML = `${details.join(', ')}`;
-            } else {
-                violationInfo.textContent = 'Select violation(s) above';
-            }
-        }
+        if (disp) disp.textContent = totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Checkbox violations logic
+    // Checkbox violations logic & authentic [X] toggle
     document.querySelectorAll('.violation-check').forEach(check => {
-        check.addEventListener('change', updateFineAmount);
+        check.addEventListener('change', function() {
+            const box = this.closest('label')?.querySelector('.tct-box');
+            if (box) {
+                if (this.checked) {
+                    box.classList.add('is-checked');
+                    box.innerHTML = '<span class="tct-box-x">X</span>';
+                } else {
+                    box.classList.remove('is-checked');
+                    box.innerHTML = '';
+                }
+            }
+            updateFineAmount();
+        });
     });
     updateFineAmount();
+
+    // Acknowledgment [X] toggle for Admitted / Under Protest
+    document.querySelectorAll('input[name="acknowledgment"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('.tct-ack-box').forEach(b => {
+                b.classList.remove('is-checked');
+                b.innerHTML = '';
+            });
+            const curBox = this.closest('label')?.querySelector('.tct-ack-box');
+            if (curBox && this.checked) {
+                curBox.classList.add('is-checked');
+                curBox.innerHTML = '<span class="tct-box-x">X</span>';
+            }
+        });
+    });
+
+    // Sync Driver Name input to hidden first_name, middle_name, last_name
+    const driverFullNameInput = document.getElementById('driver_full_name');
+    function syncDriverName() {
+        if (!driverFullNameInput) return;
+        const val = driverFullNameInput.value.trim();
+        const parts = val.split(/\s+/).filter(Boolean);
+        const fName = document.getElementById('first_name');
+        const mName = document.getElementById('middle_name');
+        const lName = document.getElementById('last_name');
+
+        if (parts.length === 0) {
+            if (fName) fName.value = '';
+            if (mName) mName.value = '';
+            if (lName) lName.value = '';
+        } else if (parts.length === 1) {
+            if (fName) fName.value = parts[0];
+            if (mName) mName.value = '';
+            if (lName) lName.value = parts[0];
+        } else if (parts.length === 2) {
+            if (fName) fName.value = parts[0];
+            if (mName) mName.value = '';
+            if (lName) lName.value = parts[1];
+        } else {
+            if (fName) fName.value = parts[0];
+            if (mName) mName.value = parts.slice(1, -1).join(' ');
+            if (lName) lName.value = parts[parts.length - 1];
+        }
+    }
+    driverFullNameInput?.addEventListener('input', syncDriverName);
+    driverFullNameInput?.addEventListener('change', syncDriverName);
 
     // Signature Pad Initialization (Touch & Mouse friendly for Mobile Phones)
     function setupSignaturePad(canvasId, hiddenInputId, clearBtnId) {
@@ -2038,7 +2099,8 @@
         setupSignaturePad('officerSigCanvas', 'officer_signature', 'clearOfficerSigBtn');
     });
 
-    document.getElementById('violationForm').addEventListener('submit', function(e) {
+    document.getElementById('violationForm')?.addEventListener('submit', function(e) {
+        syncDriverName();
         const hasSelectedViolation = document.querySelectorAll('.violation-check:checked').length > 0;
         if (!hasSelectedViolation) {
             e.preventDefault();
@@ -2046,8 +2108,10 @@
             return;
         }
         const printBtn = document.getElementById('submitPrintBtn');
-        printBtn.disabled = true;
-        printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+        if (printBtn) {
+            printBtn.disabled = true;
+            printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+        }
     });
 
     const firstNameInput = document.getElementById('first_name');

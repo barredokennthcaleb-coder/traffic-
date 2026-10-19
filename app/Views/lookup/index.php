@@ -80,13 +80,19 @@
             margin: 0 auto;
         }
 
+        .search-input-wrapper {
+            position: relative;
+            flex: 1 1 auto;
+        }
+
         .search-input-group .form-control {
             background: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: #ffffff;
             font-size: 1.05rem;
-            padding: 0.9rem 1.2rem;
+            padding: 0.9rem 2.8rem 0.9rem 1.2rem;
             border-radius: 14px 0 0 14px;
+            transition: all 0.2s ease;
         }
 
         .search-input-group .form-control::placeholder {
@@ -100,6 +106,30 @@
             color: #ffffff;
         }
 
+        .btn-clear-input {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 5;
+        }
+
+        .btn-clear-input:hover {
+            color: #f1f5f9;
+            transform: translateY(-50%) scale(1.15);
+        }
+
         .btn-search {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
@@ -108,18 +138,35 @@
             font-size: 1rem;
             padding: 0 1.8rem;
             border-radius: 0 14px 14px 0;
-            transition: all 0.25s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-search:hover {
             filter: brightness(1.1);
             transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
             color: #ffffff;
+        }
+
+        .btn-search:active {
+            transform: translateY(0) scale(0.98);
         }
 
         .results-container {
             max-width: 1080px;
             margin: 2rem auto 0;
+            animation: fadeInSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .stat-card {
@@ -128,11 +175,13 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 18px;
             padding: 1.25rem;
-            transition: transform 0.25s ease;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 12px 25px -6px rgba(0, 0, 0, 0.35);
         }
 
         .stat-icon {
@@ -236,6 +285,39 @@
             background: rgba(255, 255, 255, 0.12);
             color: #ffffff;
         }
+
+        @media (max-width: 768px) {
+            .portal-header {
+                padding: 1.5rem 1rem 1rem;
+            }
+            .hero-title {
+                font-size: 1.55rem;
+            }
+            .hero-subtitle {
+                font-size: 0.88rem;
+            }
+            .search-card {
+                padding: 1.25rem;
+                border-radius: 18px;
+            }
+            .search-input-group {
+                flex-direction: column;
+                gap: 0.6rem;
+            }
+            .search-input-wrapper .form-control {
+                border-radius: 12px !important;
+            }
+            .btn-search {
+                border-radius: 12px !important;
+                padding: 0.8rem 1.5rem;
+                width: 100%;
+            }
+            .table-glass thead th,
+            .table-glass tbody td {
+                padding: 0.75rem 0.85rem;
+                font-size: 0.82rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -262,19 +344,30 @@
     <div class="container">
         <!-- Search Card -->
         <div class="search-card">
-            <form action="<?= base_url('lookup') ?>" method="GET">
+            <form action="<?= base_url('lookup') ?>" method="GET" id="searchForm" autocomplete="off">
                 <label for="query" class="form-label text-white-50 fw-semibold mb-2" style="font-size: 0.9rem;">
                     Search by Plate Number, Ticket #, or Violator's Name
                 </label>
                 <div class="input-group search-input-group">
-                    <input type="text" 
-                           id="query" 
-                           name="query" 
-                           class="form-control" 
-                           placeholder="Enter Plate No. (e.g. MYOP09) or Name (e.g. Kenneth Barredo)..."
-                           value="<?= esc($query) ?>"
-                           required
-                           autofocus>
+                    <div class="search-input-wrapper">
+                        <input type="text" 
+                               id="query" 
+                               name="query" 
+                               class="form-control" 
+                               placeholder="Enter Plate No. (e.g. MYOP09) or Name (e.g. Kenneth Barredo)..."
+                               value="<?= esc($query) ?>"
+                               autocomplete="off"
+                               required
+                               autofocus>
+                        <button type="button" 
+                                id="clearQueryBtn" 
+                                class="btn-clear-input" 
+                                title="Clear search" 
+                                aria-label="Clear search"
+                                style="<?= empty($query) ? 'display: none;' : '' ?>">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
+                    </div>
                     <button type="submit" class="btn btn-search">
                         <i class="bi bi-search me-1"></i> Search
                     </button>
@@ -422,5 +515,67 @@
         <?php endif; ?>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const queryInput = document.getElementById('query');
+            const clearBtn = document.getElementById('clearQueryBtn');
+
+            // Toggle clear button on user typing
+            if (queryInput && clearBtn) {
+                queryInput.addEventListener('input', function () {
+                    clearBtn.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+                });
+
+                // Clear button click handler
+                clearBtn.addEventListener('click', function () {
+                    queryInput.value = '';
+                    clearBtn.style.display = 'none';
+                    queryInput.focus();
+                    <?php if ($searched): ?>
+                    // If results are currently showing, return to the fresh blank search page
+                    window.location.href = "<?= base_url('lookup') ?>";
+                    <?php endif; ?>
+                });
+            }
+
+            // Clean the browser address bar back to base /lookup without reloading.
+            // This ensures that when the user presses Browser Refresh (F5 / Ctrl+R / Reload button),
+            // the browser reloads clean /lookup with an empty search box and no stale search query!
+            if (window.history && window.history.replaceState && window.location.search) {
+                window.history.replaceState(null, document.title, window.location.pathname);
+            }
+        });
+
+        // Safeguard for browser reload / refresh:
+        // Detects if the page was refreshed. If any query string was still in the reload request,
+        // it immediately cleans to base pathname, wipes the input to blank, and sets focus to type again.
+        window.addEventListener('pageshow', function () {
+            let isReload = false;
+            try {
+                const nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
+                if (nav && nav.length > 0 && nav[0].type === 'reload') {
+                    isReload = true;
+                } else if (window.performance && window.performance.navigation && window.performance.navigation.type === 1) {
+                    isReload = true;
+                }
+            } catch (e) {}
+
+            if (isReload) {
+                if (window.location.search) {
+                    window.location.replace(window.location.pathname);
+                    return;
+                }
+                const queryInput = document.getElementById('query');
+                if (queryInput) {
+                    queryInput.value = '';
+                    queryInput.focus();
+                }
+                const clearBtn = document.getElementById('clearQueryBtn');
+                if (clearBtn) {
+                    clearBtn.style.display = 'none';
+                }
+            }
+        });
+    </script>
 </body>
 </html>
