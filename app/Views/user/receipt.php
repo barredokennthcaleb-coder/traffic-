@@ -1,10 +1,27 @@
 <?php
+// One receipt line per violation; a legacy single-row ticket still prints once.
+$receiptLines = $infractions ?? [];
+
+if ($receiptLines === []) {
+    $receiptLines = [[
+        'violation_type' => $violation['violation_type'] ?? '',
+        'penalty_amount' => $violation['penalty_amount'] ?? 0,
+        'ticket_id'      => $violation['ticket_id'] ?? '',
+    ]];
+}
+
+$receiptTotal = array_sum(array_map(
+    static fn($line) => (float) $line['penalty_amount'],
+    $receiptLines
+));
+$blankRows = max(0, 8 - count($receiptLines));
+
 // Try to format number to words, fallback if extension is not loaded
 $amountWords = '';
 try {
     if(class_exists('NumberFormatter')) {
         $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
-        $amountWords = ucwords($f->format($violation['penalty_amount'])) . ' Pesos';
+        $amountWords = ucwords($f->format($receiptTotal)) . ' Pesos';
     } else {
         $amountWords = ''; // Fallback
     }
@@ -239,12 +256,16 @@ try {
                 </tr>
             </thead>
             <tbody>
+                <?php foreach ($receiptLines as $index => $line): ?>
                 <tr>
-                    <td class="col-nature"><?= esc($violation['violation_type']) ?> - Ticket #<?= esc($violation['ticket_id']) ?></td>
+                    <td class="col-nature">
+                        <?= esc($line['violation_type']) ?><?= $index === 0 ? ' - Ticket #' . esc($line['ticket_id'] ?? $violation['ticket_id']) : '' ?>
+                    </td>
                     <td class="col-account"></td>
-                    <td class="col-amount"><?= number_format($violation['penalty_amount'], 2) ?></td>
+                    <td class="col-amount"><?= number_format((float) $line['penalty_amount'], 2) ?></td>
                 </tr>
-                <?php for($i=0; $i<7; $i++): ?>
+                <?php endforeach; ?>
+                <?php for($i=0; $i<$blankRows; $i++): ?>
                 <tr>
                     <td class="col-nature"></td>
                     <td class="col-account"></td>
@@ -256,7 +277,7 @@ try {
                     <td class="col-account"></td>
                     <td class="col-amount" style="position: relative;">
                         <span style="position: absolute; left: 12px; font-weight: normal;">₱</span>
-                        <?= number_format($violation['penalty_amount'], 2) ?>
+                        <?= number_format($receiptTotal, 2) ?>
                     </td>
                 </tr>
             </tbody>

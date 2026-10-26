@@ -54,6 +54,11 @@
             <i class="bi bi-arrow-left me-1"></i> Back
         </a>
         <div class="d-flex gap-2">
+            <?php if (! empty($violation['violator_id'])): ?>
+                <a href="<?= base_url('penalties/violator/' . (int) $violation['violator_id']) ?>" class="btn btn-outline-dark btn-sm shadow-sm">
+                    <i class="bi bi-person-vcard me-1"></i> Violator Profile
+                </a>
+            <?php endif; ?>
             <?php if (($violation['status'] ?? '') === 'Pending'): ?>
                 <a href="<?= base_url('penalties/pay/' . $violation['id']) ?>" class="btn btn-success btn-sm shadow-sm">
                     <i class="bi bi-cash-coin me-1"></i> Record Payment
@@ -93,9 +98,25 @@
                 <span class="tct-bold-label">TO:</span>
             </div>
             
-            <div class="tct-row mb-2 align-items-end">
-                <span class="tct-bold-label me-2">Driver's Name:</span>
-                <span class="tct-field-underline flex-1"><?= esc($violation['driver_name'] ?? trim(($violation['first_name'] ?? '') . ' ' . ($violation['middle_name'] ?? '') . ' ' . ($violation['last_name'] ?? ''))) ?></span>
+            <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
+                <div class="flex-1 d-flex flex-column" style="min-width: 0;">
+                    <?php $tctName = tct_split_name($violation['first_name'] ?? null, $violation['middle_name'] ?? null, $violation['last_name'] ?? null, $violation['driver_name'] ?? null); ?>
+                    <div class="d-flex w-100" style="min-width: 0; gap: 4px; align-items: flex-start;">
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['first']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(First)</span>
+                        </div>
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['middle']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
+                        </div>
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['last']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tct-row mb-2 align-items-end">
@@ -125,7 +146,7 @@
                 </div>
                 <div class="d-flex flex-1 align-items-end">
                     <span class="tct-bold-label me-1">Address</span>
-                    <span class="tct-field-underline flex-1"><?= esc($violation['address'] ?? '—') ?></span>
+                    <span class="tct-field-underline flex-1"><?= esc(trim((string) ($violation['owner_address'] ?? '')) !== '' ? $violation['owner_address'] : ($violation['address'] ?? '—')) ?></span>
                 </div>
             </div>
         </div>
@@ -217,18 +238,10 @@
         </div>
 
         <!-- Footer -->
-        <?php 
-            $tNo = esc($violation['ticket_id'] ?? '0000000');
-            if (strpos($tNo, 'TKT-') === 0 || strpos($tNo, '2024-') === false) {
-                $tNoDisplay = '2024-' . str_replace('TKT-', '', $tNo);
-            } else {
-                $tNoDisplay = $tNo;
-            }
-        ?>
         <div class="tct-footer-area d-flex justify-content-between align-items-center pt-2">
             <div class="tct-driver-copy-tag">Driver's Copy</div>
             <div class="tct-number-tag">
-                TCT No. <span class="tct-red-no"><?= $tNoDisplay ?></span>
+                TCT No. <?= format_tct_number_display($violation['ticket_id'] ?? null, (int) ($violation['id'] ?? 0), $violation['violation_date'] ?? null) ?>
             </div>
         </div>
 
@@ -462,6 +475,13 @@
 
     /* Print styling */
     @media print {
+        /* Keep the ticket shading on paper: the black "X" boxes that mark each
+           charged violation are background paints, which browsers drop by
+           default in print. */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
         .no-print,
         .sidebar, .sidebar-toggle, .mobile-topbar,
         .desktop-header, .breadcrumb, .btn,
@@ -484,12 +504,12 @@
             border: 2px solid #000;
             box-shadow: none;
             padding: 18px 22px;
-            zoom: 0.85;
+            zoom: 0.9;
             margin: 0 auto !important;
         }
-        @supports not (zoom: 0.85) {
+        @supports not (zoom: 0.9) {
             .tct-official-card {
-                transform: scale(0.85);
+                transform: scale(0.9);
                 transform-origin: top center;
             }
         }

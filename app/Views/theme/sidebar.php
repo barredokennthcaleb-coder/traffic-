@@ -97,7 +97,7 @@
 
             <?php elseif ($role === 'enforcer'): ?>
                 <li class="nav-item mb-1">
-                    <a class="nav-link <?= (uri_string() == 'officer/violations' || uri_string() == 'officer' || uri_string() == 'officer/') ? 'active' : '' ?>" href="<?= base_url('officer/violations') ?>">
+                    <a class="nav-link <?= (uri_string() == 'officer/violations' || uri_string() == 'officer' || uri_string() == 'officer/' || strpos(uri_string(), 'officer/violator-profile/') === 0) ? 'active' : '' ?>" href="<?= base_url('officer/violations') ?>">
                         <i class="bi bi-list-ul nav-icon"></i>
                         <span class="nav-text ms-2">Violations</span>
                     </a>
@@ -208,6 +208,10 @@
     color: #fff;
     background: rgba(255, 255, 255, 0.08);
     transform: translateX(4px);
+}
+.sidebar-nav .nav-link:active {
+    transform: scale(0.97) translateX(2px);
+    background: rgba(255, 255, 255, 0.18);
 }
 .sidebar-nav .nav-link.active {
     color: #fff;

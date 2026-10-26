@@ -25,11 +25,23 @@ $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('profile', 'Officer\OfficerController::profile');
     $routes->post('profile/photo', 'Officer\OfficerController::updateProfilePhoto');
     $routes->post('profile/photo/remove', 'Officer\OfficerController::removeProfilePhoto');
+    $routes->post('profile/update', 'Officer\OfficerController::updateProfile');
+    $routes->post('profile/update-station', 'Officer\OfficerController::updateAssignedStation');
+    $routes->post('profile/confirm-area', 'Officer\OfficerController::confirmAssignedArea');
+    $routes->post('profile/duty-status', 'Officer\OfficerController::updateDutyStatus');
 
     $routes->post('store', 'Officer\OfficerController::store');
+    $routes->get('next-tct-number', 'Officer\OfficerController::nextTctNumber');
     $routes->get('violations', 'Officer\OfficerController::violations');
+    $routes->get('violator-records', 'Officer\OfficerController::violatorRecordsApi');
+    $routes->get('violator-profile/(:num)', 'Officer\OfficerController::violatorProfile/$1');
+    $routes->get('violator/(:any)', 'Officer\OfficerController::violatorRecord/$1');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
+    $routes->get('tct/(:num)', 'Officer\OfficerController::tct/$1');
     $routes->post('update/(:num)', 'Officer\OfficerController::update/$1');
+    $routes->post('update-violation/(:num)', 'Officer\OfficerController::updateViolation/$1');
+    $routes->post('add-violation', 'Officer\OfficerController::addViolationToTicket');
+    $routes->post('delete-violation/(:num)', 'Officer\OfficerController::deleteViolationItem/$1');
     $routes->post('delete/(:num)', 'Officer\OfficerController::delete/$1');
     $routes->post('cancel/(:num)', 'Officer\OfficerController::cancel/$1');
     $routes->post('violation-types/store', 'Officer\OfficerController::storeViolationType');
@@ -73,6 +85,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
     $routes->get('penalties/reverse/(:num)', 'Admin\PenaltyController::reverse/$1');
     $routes->get('penalties/search', 'Admin\PenaltyController::search');
+    $routes->get('penalties/violator-records', 'Officer\OfficerController::violatorRecordsApi');
+    $routes->get('penalties/violator/(:num)', 'Admin\PenaltyController::violatorProfile/$1');
 
     // Violation Types Routes
     $routes->get('violation-types', 'Admin\ViolationTypeController::index');
@@ -82,6 +96,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
 
     // Reports Routes
     $routes->get('reports', 'Admin\AdminController::reports');
+    $routes->get('reports/violations', 'Admin\AdminController::violationsReport');
+    $routes->get('reports/violations-export-csv', 'Admin\AdminController::exportViolationsCsv');
     $routes->get('reports/export-csv', 'Admin\AdminController::exportReportCsv');
 
     // Real-time API Routes (JSON)

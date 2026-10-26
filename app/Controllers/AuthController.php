@@ -10,17 +10,7 @@ class AuthController extends BaseController
     public function login()
     {
         if (session()->get('isLoggedIn')) {
-            $role = session()->get('role');
-            if ($role === 'admin') {
-                return redirect()->to(base_url('dashboard'));
-            } elseif ($role === 'enforcer') {
-                return redirect()->to(base_url('officer'));
-            } elseif ($role === 'driver' || $role === 'user') {
-                return redirect()->to(base_url('user/dashboard'));
-            } else {
-                session()->destroy();
-                return redirect()->to(base_url('login'))->with('error', 'This account role is not allowed to sign in.');
-            }
+            return $this->redirectByRole((string) session()->get('role'));
         }
         return view('auth/login');
     }
@@ -45,38 +35,25 @@ class AuthController extends BaseController
 
         $user = $model->where('email', $email)->first();
 
-        if ($user) {
-            if (password_verify($password, $user['password'])) {
-                $sessionData = [
-                    'id'            => $user['id'],
-                    'username'      => $user['username'],
-                    'email'         => $user['email'],
-                    'role'          => $user['role'],
-                    'profile_image' => $user['profile_image'] ?? null,
-                    'isLoggedIn'    => true,
-                ];
-                $session->set($sessionData);
-                $session->setFlashdata('success', 'Welcome back!');
-                
-                // Redirect based on role
-                if ($user['role'] === 'admin') {
-                    return redirect()->to(base_url('dashboard'));
-                } elseif ($user['role'] === 'enforcer') {
-                    return redirect()->to(base_url('officer'));
-                } elseif ($user['role'] === 'driver' || $user['role'] === 'user') {
-                    return redirect()->to(base_url('user/dashboard'));
-                } else {
-                    $session->destroy();
-                    return redirect()->to(base_url('login'))->with('error', 'This account role is not allowed to sign in.');
-                }
-            } else {
-                $session->setFlashdata('warning', 'Incorrect password. Please try again.');
-                return redirect()->back()->withInput();
-            }
-        } else {
-            $session->setFlashdata('error', 'No account found with that email address.');
+        // A wrong email and a wrong password return the same message so the
+        // form never reveals which accounts exist.
+        if (! $user || ! password_verify($password, (string) $user['password'])) {
+            $session->setFlashdata('error', 'The password you entered is incorrect.');
             return redirect()->back()->withInput();
         }
+
+        $sessionData = [
+            'id'            => $user['id'],
+            'username'      => $user['username'],
+            'email'         => $user['email'],
+            'role'          => $user['role'],
+            'profile_image' => $user['profile_image'] ?? null,
+            'isLoggedIn'    => true,
+        ];
+        $session->set($sessionData);
+        $session->setFlashdata('success', 'Welcome back!');
+
+        return $this->redirectByRole((string) $user['role']);
     }
 
     public function register()
@@ -135,10 +112,31 @@ class AuthController extends BaseController
 
     public function logout()
     {
-        $session = session();
-        $username = $session->get('username');
-        $session->destroy();
+        session()->destroy();
         return redirect()->to(base_url('login'))->with('success', 'You have been logged out successfully.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // Private Helpers
+    // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns the correct redirect response for a given user role.
+     * Centralises the role→URL mapping so login() and loginPost() share
+     * one implementation instead of copy-pasting the same if/elseif block.
+     */
+    private function redirectByRole(string $role): \CodeIgniter\HTTP\RedirectResponse
+    {
+        return match ($role) {
+            'admin'           => redirect()->to(base_url('dashboard')),
+            'enforcer'        => redirect()->to(base_url('officer')),
+            'driver', 'user'  => redirect()->to(base_url('user/dashboard')),
+            default           => (function () {
+                session()->destroy();
+                return redirect()->to(base_url('login'))
+                    ->with('error', 'This account role is not allowed to sign in.');
+            })(),
+        };
     }
 
     public function forgotPassword()

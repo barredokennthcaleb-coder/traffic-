@@ -317,16 +317,113 @@
                 padding: 0.75rem 0.85rem;
                 font-size: 0.82rem;
             }
+
+            /* ── ONE CITATION PER CARD ──
+               A seven-column table cannot be read on a phone without dragging
+               it sideways, so each record becomes its own card: ticket number
+               and status on top, then the details underneath. Every field is
+               still shown, with its column name as the label. */
+            .lookup-table-head {
+                flex-wrap: wrap;
+                gap: 0.5rem 0.75rem;
+            }
+            .lookup-table-title {
+                font-size: 1rem !important;
+                line-height: 1.35;
+            }
+            .lookup-table {
+                min-width: 0;
+            }
+            .lookup-table thead {
+                display: none;
+            }
+            .lookup-table,
+            .lookup-table tbody {
+                display: block;
+            }
+            .lookup-table tr {
+                display: flex;
+                flex-wrap: wrap;
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 14px;
+                padding: 8px 0;
+                margin: 0 10px 12px;
+            }
+            .lookup-table tbody tr:last-child {
+                margin-bottom: 0;
+            }
+            .lookup-table tbody td {
+                flex: 1 1 100%;
+                border: 0 !important;
+                padding: 7px 14px !important;
+                text-align: left;
+            }
+            .lookup-table tbody td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 0.64rem;
+                font-weight: 700;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: #94a3b8;
+                margin-bottom: 2px;
+            }
+            .lookup-table td[data-label="Ticket #"]       { order: 1; flex: 1 1 45%; }
+            .lookup-table td[data-label="Status"]         { order: 2; flex: 1 1 55%; text-align: right; }
+            .lookup-table td[data-label="Violator / Driver"] { order: 3; }
+            .lookup-table td[data-label="Plate Number"]   { order: 4; }
+            .lookup-table td[data-label="Violation Type"] { order: 5; }
+            .lookup-table td[data-label="Date & Time"]    { order: 6; flex: 1 1 50%; }
+            .lookup-table td[data-label="Fine Amount"]    { order: 7; flex: 1 1 50%; }
+            .lookup-table td[data-label="Status"] .small  { display: block; }
+        }
+
+        /* Compact stats and header on the smallest phones */
+        @media (max-width: 576px) {
+            .portal-header {
+                padding: 1.4rem 0.85rem 0.9rem;
+            }
+            .hero-title {
+                font-size: 1.35rem;
+            }
+            .hero-subtitle {
+                font-size: 0.84rem;
+            }
+            .brand-badge {
+                width: 60px;
+                height: 60px;
+                border-radius: 16px;
+            }
+            .search-card {
+                padding: 1.1rem;
+            }
+            .results-container {
+                margin-top: 1.25rem;
+            }
+            .stat-card {
+                padding: 0.9rem 1rem;
+                border-radius: 14px;
+            }
+            .stat-card:hover {
+                transform: none;
+            }
+            .stat-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 1.05rem;
+                border-radius: 10px;
+            }
+            .stat-card .fs-3 {
+                font-size: 1.35rem !important;
+            }
         }
     </style>
 </head>
 <body>
 
     <!-- Top Bar Navigation -->
-    <div class="container py-3 d-flex justify-content-between align-items-center">
-        <a href="<?= base_url('login') ?>" class="nav-back-btn">
-            <i class="bi bi-arrow-left me-1"></i> Back to System Sign In
-        </a>
+    <div class="container py-3 d-flex justify-content-end align-items-center">
         <span class="text-white-50 small"><i class="bi bi-shield-check text-success me-1"></i> Public Official Verification Portal</span>
     </div>
 
@@ -428,14 +525,14 @@
 
                     <!-- Records Table -->
                     <div class="table-glass mb-4">
-                        <div class="p-3 px-4 bg-dark bg-opacity-40 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10">
-                            <span class="fw-bold text-light fs-5">
+                        <div class="lookup-table-head p-3 px-4 bg-dark bg-opacity-40 d-flex justify-content-between align-items-center border-bottom border-white border-opacity-10">
+                            <span class="lookup-table-title fw-bold text-light fs-5">
                                 <i class="bi bi-card-checklist text-success me-2"></i>Citation History Results for "<span class="text-success"><?= esc($query) ?></span>"
                             </span>
                             <span class="badge bg-secondary text-light px-3 py-2" style="font-size:0.8rem"><?= count($records) ?> Item<?= count($records) > 1 ? 's' : '' ?> Found</span>
                         </div>
                         <div class="table-responsive">
-                            <table class="table align-middle">
+                            <table class="table align-middle lookup-table">
                                 <thead>
                                     <tr>
                                         <th>Ticket #</th>
@@ -454,32 +551,32 @@
                                             $badgeClass = $st === 'paid' ? 'badge-paid' : ($st === 'cancelled' ? 'badge-cancelled' : 'badge-pending');
                                         ?>
                                         <tr>
-                                            <td class="fw-bold text-success">
+                                            <td class="fw-bold text-success" data-label="Ticket #">
                                                 <?= esc($r['ticket_id'] ?? 'N/A') ?>
                                             </td>
-                                            <td>
+                                            <td data-label="Violator / Driver">
                                                 <div class="fw-bold text-light"><?= esc($r['driver_name'] ?? ($r['first_name'] . ' ' . $r['last_name'])) ?></div>
                                                 <small class="text-white-50"><?= esc($r['address'] ?? 'No Address') ?></small>
                                             </td>
-                                            <td>
+                                            <td data-label="Plate Number">
                                                 <span class="badge bg-dark border border-secondary text-light px-2 py-1" style="letter-spacing:0.05em">
                                                     <?= esc(strtoupper($r['license_plate'] ?? '-')) ?>
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td data-label="Violation Type">
                                                 <div class="text-light fw-medium"><?= esc($r['violation_type'] ?? 'Traffic Violation') ?></div>
                                                 <?php if (!empty($r['location'])): ?>
                                                     <small class="text-white-50"><i class="bi bi-geo-alt me-1"></i><?= esc($r['location']) ?></small>
                                                 <?php endif; ?>
                                             </td>
-                                            <td>
+                                            <td data-label="Date &amp; Time">
                                                 <div class="text-light small"><?= esc(date('M d, Y', strtotime($r['violation_date'] ?? $r['created_at']))) ?></div>
                                                 <small class="text-white-50"><?= esc(date('h:i A', strtotime($r['violation_date'] ?? $r['created_at']))) ?></small>
                                             </td>
-                                            <td class="fw-bold text-light">
+                                            <td class="fw-bold text-light" data-label="Fine Amount">
                                                 ₱<?= number_format((float)($r['penalty_amount'] ?? 0), 2) ?>
                                             </td>
-                                            <td>
+                                            <td data-label="Status">
                                                 <span class="badge-status <?= $badgeClass ?>">
                                                     <?php if ($st === 'paid'): ?>
                                                         <i class="bi bi-check-circle-fill me-1"></i>PAID

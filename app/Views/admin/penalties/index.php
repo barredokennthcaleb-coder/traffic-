@@ -7,7 +7,7 @@
 <div class="container-fluid py-4">
     <div class="row mb-4 align-items-center">
         <div class="col-md-4">
-            <h4 class="mb-0"><i class="bi bi-hourglass-split me-2 text-warning"></i>Payment Penalties</h4>
+            <h4 class="mb-0"><i class="bi bi-hourglass-split me-2" style="color: #2563eb;"></i>Payment Penalties</h4>
         </div>
         <div class="col-md-5">
             <div class="input-group shadow-sm">
@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="col-md-3 text-end">
-            <a href="<?= base_url('penalties/history') ?>" class="btn btn-outline-primary shadow-sm">
+            <a href="<?= base_url('penalties/history') ?>" class="btn shadow-sm" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: 2px solid #2563eb; font-weight: 600;">
                 <i class="bi bi-clock-history me-1"></i> Payment History
             </a>
         </div>
@@ -55,63 +55,76 @@
                             $i = ($currentPage - 1) * $perPage + 1;
                             ?>
                             <?php foreach ($pending_violations as $v): ?>
+                            <?php
+                                $fullName = trim(($v['first_name'] ?? '') . ' ' . ($v['last_name'] ?? ''));
+                                $dName    = !empty($fullName) ? $fullName : ($v['driver_name'] ?? 'Unknown');
+                                $plate    = trim($v['license_plate'] ?? '');
+                                $skipPlate = in_array(strtolower($plate), ['no', 'none', 'n/a', '-', '']);
+                                $dl       = trim($v['license_number'] ?? '');
+                                $skipDl   = in_array(strtolower($dl), ['no', 'none', 'n/a', '-', '']);
+                                $totalAmt = (float)($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0);
+                                $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : ($v['violation_type'] ?? '-');
+                                $types    = explode('||', $rawTypes);
+                            ?>
                             <tr class="pending-row">
-                                <td class="ps-4 text-muted small"><?= $i++ ?></td>
-                                <td><span class="pn-ticket-pill font-monospace"><?= esc($v['ticket_id'] ?? 'N/A') ?></span></td>
-                                <td>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <?php
-                                            $dName = $v['driver_name'] ?? 'Unknown';
-                                            $colors = ['#6366f1','#3b82f6','#0ea5e9','#10b981','#f59e0b','#8b5cf6','#ef4444'];
-                                            $bg = $colors[abs(crc32($dName)) % count($colors)];
-                                            $init = strtoupper(substr($dName, 0, 1));
-                                        ?>
-                                        <div class="pn-avatar" style="background:<?= $bg ?>"><?= $init ?></div>
-                                        <div>
-                                            <div class="fw-bold"><?= esc($dName) ?></div>
-                                            <span class="pn-plate-pill font-monospace"><?= esc($v['license_plate']) ?></span>
+                                <td class="ps-4 text-muted small col-index" data-label="#"><?= $i++ ?></td>
+                                <td data-label="Ticket ID">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <span class="ticket-id-pill font-monospace" title="Click to copy" onclick="copyTicketId('<?= esc($v['ticket_id'] ?? '') ?>', this)">
+                                            <i class="bi bi-ticket-perforated me-1"></i><?= esc($v['ticket_id'] ?? 'N/A') ?>
+                                            <i class="bi bi-clipboard ms-1 opacity-75 copy-icon" style="font-size: 0.75rem;"></i>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td data-label="Driver & Vehicle">
+                                    <div>
+                                        <div class="driver-name-text lh-sm"><?= esc($dName) ?></div>
+                                        <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+                                            <?php if (!$skipPlate): ?>
+                                                <span class="plate-pill font-monospace" style="font-size: 0.74rem;">
+                                                    <i class="bi bi-car-front-fill me-1"></i><?= esc($plate) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                            <?php if (!$skipDl): ?>
+                                                <span class="dl-pill font-monospace" title="Driver License / Permit">
+                                                    DL: <?= esc($dl) ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="small fw-semibold text-dark">
-                                    <?php 
-                                    $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : $v['violation_type'];
-                                    $types = explode('||', $rawTypes);
-                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
-                                    foreach ($types as $t) {
-                                        $parts = explode('::', $t);
-                                        $vName = $parts[0];
-                                        echo '<li><i class="bi bi-exclamation-circle-fill text-warning me-1" style="font-size:0.75rem;"></i>' . esc($vName) . '</li>';
-                                    }
-                                    echo '</ul>';
-                                    ?>
+                                <td class="small fw-semibold" data-label="Violations">
+                                    <div class="d-flex flex-column gap-1">
+                                        <?php foreach ($types as $t): ?>
+                                            <?php 
+                                                $parts = explode('::', $t);
+                                                $vName = $parts[0];
+                                            ?>
+                                            <div class="violation-chip"><span class="violation-dot">&bull;</span><?= esc($vName) ?></div>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </td>
-                                <td class="small font-monospace text-muted">
-                                    <?php 
-                                    $rawTypes = !empty($v['concatenated_violations']) ? $v['concatenated_violations'] : $v['violation_type'];
-                                    $types = explode('||', $rawTypes);
-                                    echo '<ul class="list-unstyled mb-0 gap-1 d-flex flex-column">';
-                                    foreach ($types as $t) {
-                                        $parts = explode('::', $t);
-                                        $vAmt  = isset($parts[1]) && $parts[1] !== '' ? (float)$parts[1] : null;
-                                        echo '<li>';
-                                        if ($vAmt !== null) {
-                                            echo '₱' . number_format($vAmt, 2);
-                                        } else {
-                                            echo '-';
-                                        }
-                                        echo '</li>';
-                                    }
-                                    echo '</ul>';
-                                    ?>
+                                <td class="small font-monospace" data-label="Amount">
+                                    <div class="d-flex flex-column gap-1">
+                                        <?php foreach ($types as $t): ?>
+                                            <?php 
+                                                $parts = explode('::', $t);
+                                                $vAmt  = isset($parts[1]) && $parts[1] !== '' ? (float)$parts[1] : null;
+                                            ?>
+                                            <div class="amount-text"><?= $vAmt !== null ? '₱' . number_format($vAmt, 2) : '-' ?></div>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </td>
-                                <td>
-                                    <span class="pn-total-fine font-monospace">₱<?= number_format((float) ($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0), 2) ?></span>
+                                <td data-label="Total Amount">
+                                    <span class="total-fine-badge total-fine-pending">₱<?= number_format($totalAmt, 2) ?></span>
                                 </td>
-                                <td class="text-muted small" style="white-space:nowrap;">
-                                    <i class="bi bi-calendar3 me-1" style="font-size:0.8rem;"></i><?= date('M d, Y', strtotime($v['violation_date'])) ?>
+                                <td class="small" data-label="Date Issued" style="white-space:nowrap;">
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <i class="bi bi-calendar3 text-primary" style="font-size:0.8rem; flex-shrink: 0;"></i>
+                                        <span><?= date('M d, Y', strtotime($v['violation_date'])) ?></span>
+                                    </div>
                                 </td>
-                                <td class="text-end pe-4">
+                                <td class="text-end pe-4 col-actions" data-label="Actions">
                                     <div class="pn-action-group">
                                         <a href="<?= base_url('penalties/pay/' . $v['id']) ?>" class="pn-action-btn pn-action--pay" title="Record Payment">
                                             <i class="bi bi-cash-coin"></i>
@@ -171,96 +184,167 @@
 </div>
 
 <style>
-/* ── PENALTIES TABLE – FULL UPGRADE ──────────────────────────── */
+/* ── PENALTIES TABLE – MODERN & CLEAN ──────────────────────────── */
 #pendingTable thead th {
-    background: #1e293b;
-    color: #e2e8f0;
-    font-size: 0.72rem;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.9rem 1rem;
-    border-bottom: 2px solid #334155;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1rem;
+    border-bottom: 2px solid #e2e8f0;
     white-space: nowrap;
 }
 #pendingTable thead th:first-child { padding-left: 1.5rem; }
 #pendingTable thead th:last-child  { padding-right: 1.5rem; }
 #pendingTable tbody td {
-    padding: 0.9rem 1rem;
+    padding: 0.85rem 1rem;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: middle;
     font-size: 0.88rem;
-    transition: background 0.18s ease;
 }
-/* Pending rows: vivid amber inset bar AT REST (inset works on collapsed borders) */
+/* Pending rows: smooth hover lift */
 .pending-row {
-    background: rgba(254,252,232,0.5);
-    box-shadow: inset 5px 0 0 #f59e0b, inset 8px 0 14px rgba(245,158,11,0.09);
-    transition: background  0.28s cubic-bezier(0.34,1.56,0.64,1),
-                box-shadow  0.28s cubic-bezier(0.34,1.56,0.64,1),
-                transform   0.28s cubic-bezier(0.34,1.56,0.64,1);
+    background: #ffffff;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .pending-row:hover {
-    background: #fffbeb !important;
-    box-shadow: inset 6px 0 0 #f59e0b,
-                inset 12px 0 22px rgba(245,158,11,0.15),
-                0 4px 24px rgba(245,158,11,0.13);
-    transform: translateX(4px);
+    background: #f8fafc;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
 }
-/* Ticket pill */
-.pn-ticket-pill {
-    display: inline-block;
-    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-    border: 1.5px solid #fcd34d;
-    color: #92400e;
+
+/* Driver & Vehicle */
+.driver-name-text {
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.93rem;
+    letter-spacing: -0.01em;
+}
+
+/* Ticket ID Glass Pill */
+.ticket-id-pill {
+    background: #f0f7ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 0.25rem 0.65rem;
     border-radius: 8px;
-    padding: 3px 10px;
-    font-size: 0.79rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-}
-/* Avatar */
-.pn-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    color: #fff;
-    font-size: 0.84rem;
-    font-weight: 700;
-    display: flex;
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    letter-spacing: 0.02em;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+.ticket-id-pill:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
+}
+.ticket-id-pill.copied {
+    background: #dcfce7 !important;
+    border-color: #86efac !important;
+    color: #15803d !important;
+    box-shadow: 0 0 10px rgba(22, 163, 74, 0.2) !important;
+}
+
+/* Vehicle Plate & DL Pills */
+.plate-pill {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 6px;
+    padding: 0.18rem 0.55rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    transition: all 0.2s ease;
+}
+.plate-pill i {
+    color: #2563eb !important;
+    margin-right: 0.25rem;
+}
+.plate-pill:hover {
+    background: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #000000 !important;
+}
+.dl-pill {
+    background: #f8fafc;
+    color: #0f172a;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 0.18rem 0.55rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Violation Infraction Chip */
+.violation-chip {
+    font-size: 0.81rem;
+    color: #1e293b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 0.22rem 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.35;
+    font-weight: 500;
+    word-break: break-word;
+    transition: all 0.18s ease;
+}
+.violation-chip .violation-dot {
+    color: #ef4444;
+    font-size: 1.15rem;
+    line-height: 0.9;
+    margin-right: 5px;
+    font-weight: bold;
+}
+.pending-row:hover .violation-chip {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Amount text */
+.amount-text {
+    color: #475569;
+    font-family: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+/* Total fine – warm amber for pending */
+.total-fine-badge {
+    font-size: 0.88rem;
+    font-weight: 800;
+    font-family: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    display: inline-block;
     transition: transform 0.2s ease;
 }
-.pending-row:hover .pn-avatar { transform: scale(1.08); }
-/* Plate pill */
-.pn-plate-pill {
-    display: inline-block;
-    background: #0f172a;
-    color: #f8fafc;
-    border-radius: 5px;
-    padding: 1px 7px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    margin-top: 3px;
-    letter-spacing: 0.04em;
+.total-fine-pending {
+    color: #b45309;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
 }
-/* Total fine – amber since all are pending */
-.pn-total-fine {
-    font-weight: 800;
-    font-size: 0.95rem;
-    color: #92400e;
-    background: rgba(245,158,11,0.10);
-    border: 1.5px solid rgba(245,158,11,0.30);
-    border-radius: 8px;
-    padding: 0.2rem 0.55rem;
-    display: inline-block;
-    transition: transform 0.18s ease;
+.pending-row:hover .total-fine-badge {
+    transform: scale(1.03);
 }
-.pending-row:hover .pn-total-fine { transform: scale(1.03); }
+
 /* Action buttons */
 .pn-action-group {
     display: flex;
@@ -291,28 +375,45 @@
 .pn-action--cancel:hover { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
 .pn-action--delete { color: #ef4444; border-color: #fca5a5; }
 .pn-action--delete:hover { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
+
 /* Responsive mobile cards */
-@media (max-width: 767px) {
-    #pendingTable thead { display: none; }
+@media (max-width: 768px) {
+    #pendingTable thead { display: none !important; }
     #pendingTable tbody tr {
-        display: block;
-        margin-bottom: 0.75rem;
-        border-radius: 12px;
-        border: 1px solid #fcd34d;
-        border-left: 4px solid #f59e0b !important;
-        box-shadow: 0 2px 8px rgba(245,158,11,0.08);
+        display: block !important;
+        margin-bottom: 0.85rem !important;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 8px rgba(15,23,42,0.06) !important;
         transform: none !important;
+        padding: 0.4rem 0 !important;
+        background: #ffffff !important;
     }
     #pendingTable tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 0.82rem;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        padding: 0.55rem 1rem !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 0.84rem !important;
+        color: #1e293b !important;
     }
-    #pendingTable tbody td:last-child { border-bottom: none; }
-    #pendingTable tbody td:first-child { display: none; }
+    #pendingTable tbody td:last-child { border-bottom: none !important; }
+    #pendingTable tbody td.col-index { display: none !important; }
+    #pendingTable tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        flex-shrink: 0;
+        margin-right: 0.75rem;
+        margin-top: 2px;
+    }
+    #pendingTable tbody td.col-actions {
+        justify-content: flex-end !important;
+    }
 }
 </style>
 
@@ -320,6 +421,20 @@
 
 <?= $this->section('scripts') ?>
 <script>
+    // ── 1-CLICK COPY TICKET ID ──────────────────────────────────
+    window.copyTicketId = function(ticketId, el) {
+        if (!ticketId || ticketId === 'N/A') return;
+        navigator.clipboard.writeText(ticketId).then(() => {
+            el.classList.add('copied');
+            const originalHTML = el.innerHTML;
+            el.innerHTML = `<i class="bi bi-check2 text-success me-1"></i>Copied!`;
+            setTimeout(() => {
+                el.innerHTML = originalHTML;
+                el.classList.remove('copied');
+            }, 1800);
+        }).catch(() => {});
+    };
+
     // Live Search Filtering
     document.getElementById('searchInput').addEventListener('keyup', function() {
         const keyword = this.value.toLowerCase();

@@ -5,13 +5,61 @@
 <?= $this->section('content') ?>
 <div class="container-fluid py-4">
     <?php
-        $fullName = trim((string) (($officer['firstname'] ?? '') . ' ' . ($officer['lastname'] ?? '')));
+        $mi = !empty($officer['middle_initial']) ? trim((string) $officer['middle_initial']) : '';
+        if ($mi !== '' && strlen($mi) === 1) {
+            $mi .= '.';
+        }
+        
+        $fullName = trim((string) (($officer['firstname'] ?? '') . ' ' . ($mi !== '' ? $mi . ' ' : '') . ($officer['lastname'] ?? '')));
         $displayName = $fullName !== '' ? $fullName : (string) ($officer['username'] ?? 'Officer');
         $initials = strtoupper(substr((string) $displayName, 0, 1));
         $hasProfileFile = !empty($officer['profile_image']) && is_file(FCPATH . 'uploads/profile/' . $officer['profile_image']);
         $profileImage = $hasProfileFile ? base_url('uploads/profile/' . $officer['profile_image']) : null;
         $totalTickets  = count($records);
         $collectionPct = $totalTickets > 0 ? round(($paidCount / $totalTickets) * 100) : 0;
+
+        // Assigned jurisdiction panel: duty station, station areas and Google Map target
+        $station = trim((string) ($assignedStation ?? ''));
+
+        $loggedAreas = [];
+        foreach (($areas ?? []) as $areaRow) {
+            $areaLabel = trim((string) ($areaRow['location'] ?? ''));
+            if ($areaLabel !== '') {
+                $loggedAreas[] = [
+                    'label' => $areaLabel,
+                    'count' => (int) ($areaRow['count'] ?? 0),
+                ];
+            }
+        }
+
+        // Station coverage areas this officer has not logged citations in yet
+        $coverageAreas = [];
+        foreach (kabankalan_areas() as $barangay) {
+            $alreadyLogged = false;
+            foreach ($loggedAreas as $loggedArea) {
+                if (stripos($loggedArea['label'], $barangay) !== false) {
+                    $alreadyLogged = true;
+                    break;
+                }
+            }
+            if (! $alreadyLogged) {
+                $coverageAreas[] = $barangay . ', Kabankalan City';
+            }
+        }
+
+        // Area the officer confirmed as their assigned jurisdiction; falls back
+        // to their most frequent citation area.
+        $confirmedArea = trim((string) ($assignedArea ?? ''));
+        $cardLocation  = $confirmedArea !== '' ? $confirmedArea : trim((string) $topLocation);
+
+        $mapQuery = $cardLocation;
+        if ($mapQuery === '') {
+            $mapQuery = $station !== '' ? $station : 'Kabankalan City, Negros Occidental';
+        }
+        $selectedArea = $confirmedArea !== '' ? $confirmedArea : $mapQuery;
+        $mapSearch = $mapQuery . ', Philippines';
+        $mapEmbed  = 'https://www.google.com/maps?q=' . rawurlencode($mapSearch) . '&hl=en&output=embed';
+        $mapLink   = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($mapSearch);
     ?>
 
     <?php if (session()->getFlashdata('success')): ?>
@@ -27,7 +75,19 @@
         </div>
     <?php endif; ?>
 
-    <!-- ═══ HERO BANNER ════════════════════════════════════════════ -->
+    <?php if (session()->has('errors')): ?>
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Update failed:</strong>
+            <ul class="mb-0 mt-1 small">
+                <?php foreach (session('errors') as $error): ?>
+                    <li><?= esc($error) ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- ═══ HERO BANNER WITH REAL-TIME OPERATIONAL HUD ═════════ -->
     <div class="profile-hero mb-4 premium-reveal" style="--reveal-delay:0.05s">
         <div class="hero-orb hero-orb-1"></div>
         <div class="hero-orb hero-orb-2"></div>
@@ -60,24 +120,43 @@
                 <span class="hero-status-dot <?= ($officer['status'] ?? '') === 'active' ? 'dot-active' : 'dot-inactive' ?>"></span>
             </div>
 
-            <!-- Info -->
+            <!-- Officer Identity -->
             <div class="profile-hero-info">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h2 class="hero-name mb-0"><?= esc($displayName) ?></h2>
-                    <span class="hero-role-badge"><i class="bi bi-shield-check me-1"></i>Traffic Enforcer</span>
+                    <span class="badge bg-white text-primary fw-bold px-2.5 py-1 rounded-pill shadow-sm" style="font-size:0.75rem;">
+                        <i class="bi bi-shield-check me-1"></i><?= esc($badgeNumber) ?>
+                    </span>
+                    <span class="hero-role-badge"><i class="bi bi-person-badge me-1"></i>Traffic Enforcer</span>
                 </div>
                 <div class="hero-meta">
-                    <span><i class="bi bi-person me-1"></i><?= esc($officer['username'] ?? '-') ?></span>
+                    <span><i class="bi bi-person me-1"></i>@<?= esc($officer['username'] ?? '-') ?></span>
                     <span><i class="bi bi-envelope me-1"></i><?= esc($officer['email'] ?? '-') ?></span>
                     <span>
                         <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;vertical-align:middle;color:<?= ($officer['status'] ?? '') === 'active' ? '#4ade80' : '#94a3b8' ?>"></i>
-                        <?= ucfirst(esc($officer['status'] ?? 'unknown')) ?>
+                        <?= ucfirst(esc($officer['status'] ?? 'Active')) ?>
                     </span>
                 </div>
             </div>
 
+            <!-- Middle: Real-Time Field Status HUD -->
+            <div class="hero-duty-hud d-none d-lg-flex ms-lg-auto me-lg-3">
+                <div class="hud-status-badge">
+                    <span class="live-radar-dot"></span>
+                    <span class="fw-bold tracking-wider">ON ACTIVE FIELD DUTY</span>
+                </div>
+                <div class="hud-time-wrap">
+                    <i class="bi bi-clock-history me-1.5 text-warning"></i>
+                    <span id="livePstClock" class="fw-bold font-monospace">--:--:-- PST</span>
+                </div>
+                <div class="hud-sector-text">
+                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
+                    <span>CTRAMO &middot; <?= esc($topLocation) ?></span>
+                </div>
+            </div>
+
             <!-- Photo upload actions -->
-            <div class="hero-upload-wrap ms-auto">
+            <div class="hero-upload-wrap">
                 <form id="profilePhotoForm" action="<?= base_url('officer/profile/photo') ?>" method="POST" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <input type="file" id="hero_photo_input" name="profile_photo" class="d-none"
@@ -100,267 +179,543 @@
         </div>
     </div>
 
-    <!-- ═══ ANALYTICS TOGGLE BAR ════════════════════════════════════ -->
-    <div class="analytics-toggle-bar d-flex align-items-center justify-content-between mb-3 premium-reveal" style="--reveal-delay:0.12s">
-        <div class="d-flex align-items-center gap-2">
-            <span class="analytics-toggle-label">
-                <i class="bi bi-bar-chart-line me-1 text-primary"></i>
-                <span class="fw-bold" style="font-size:0.92rem;">My Analytics</span>
-            </span>
-            <span class="analytics-visible-pill" id="analyticsVisiblePill">Visible</span>
-        </div>
-        <button type="button" id="analyticsToggleBtn" class="btn-analytics-toggle" title="Toggle Analytics">
-            <i class="bi bi-eye-slash me-1" id="analyticsToggleIcon"></i>
-            <span id="analyticsToggleText">Hide</span>
-        </button>
-    </div>
-
-    <!-- ═══ ANALYTICS SECTION ═══════════════════════════════════════ -->
-    <div id="analyticsSection" class="analytics-section-wrap">
-
-
-    <!-- ═══ SETTLEMENT EFFICIENCY BANNER ════════════════════════════ -->
-    <div class="card border-0 shadow-sm mb-4 efficiency-card premium-reveal" style="--reveal-delay:0.15s">
-        <div class="card-body py-3 px-4">
-            <div class="row align-items-center g-3">
-                <div class="col-12 col-lg-5">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-bold d-flex align-items-center text-dark" style="font-size:0.92rem">
-                            <i class="bi bi-shield-check me-2 text-primary fs-5"></i>Settlement Efficiency
+    <!-- ═══ REAL-TIME OPERATIONAL METRICS STRIP ═════════════════════ -->
+    <div class="row g-3 mb-4 premium-reveal" style="--reveal-delay:0.1s">
+        <!-- Live Duty Status (opens the duty status switcher) -->
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card is-clickable <?= $dutyStatus === 'On Break' ? 'duty-on-break' : ($dutyStatus === 'Off Duty' ? 'duty-off-duty' : '') ?>" id="dutyStatusCard"
+                 role="button" tabindex="0"
+                 data-bs-toggle="modal" data-bs-target="#dutyStatusModal" aria-controls="dutyStatusModal"
+                 title="Click to change your duty status">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="op-icon-box bg-success-subtle text-success">
+                        <i class="bi bi-broadcast fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.68rem; letter-spacing: 0.05em;">Field Status</small>
+                        <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size:0.95rem;">
+                            <span class="live-pulse-indicator" id="dutyStatusDot"></span>
+                            <span id="dutyStatusValue"><?= esc($dutyStatus) ?></span>
                         </span>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold"><?= $collectionPct ?>%</span>
+                        <small class="text-muted d-block" style="font-size:0.72rem;">Call Sign: Unit #<?= esc($officer['id']) ?></small>
                     </div>
-                    <div class="coll-track">
-                        <div class="coll-fill" style="width:<?= $collectionPct ?>%"></div>
-                    </div>
+                    <i class="bi bi-chevron-down op-card-caret text-success"></i>
                 </div>
-                <div class="col-12 col-lg-7">
-                    <div class="d-flex flex-wrap align-items-center justify-content-lg-end gap-2">
-                        <div class="eff-pill">
-                            <span class="eff-dot bg-primary"></span>
-                            <span class="eff-label">Total Issued:</span>
-                            <span class="eff-val"><?= $totalTickets ?></span>
-                        </div>
-                        <div class="eff-pill">
-                            <span class="eff-dot bg-success"></span>
-                            <span class="eff-label">Settled:</span>
-                            <span class="eff-val text-success"><?= $paidCount ?></span>
-                        </div>
-                        <div class="eff-pill">
-                            <span class="eff-dot bg-warning"></span>
-                            <span class="eff-label">Pending:</span>
-                            <span class="eff-val text-warning"><?= $pendingCount ?></span>
-                        </div>
-                        <div class="eff-pill">
-                            <span class="eff-dot bg-info"></span>
-                            <span class="eff-label">Fines Assessed:</span>
-                            <span class="eff-val text-dark">₱<?= number_format((float) $totalAmount, 0) ?></span>
-                        </div>
+            </div>
+        </div>
+
+        <!-- Patrol Jurisdiction (opens the station areas + Google Map modal) -->
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card jurisdiction-card"
+                 role="button" tabindex="0"
+                 data-bs-toggle="modal" data-bs-target="#jurisdictionModal" aria-controls="jurisdictionModal"
+                 title="Click to view assigned station areas and map">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="op-icon-box bg-danger-subtle text-danger">
+                        <i class="bi bi-geo-alt-fill fs-4"></i>
                     </div>
+                    <div class="flex-grow-1">
+                        <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.68rem; letter-spacing: 0.05em;">Assigned Jurisdiction</small>                        <span class="fw-bold text-dark text-truncate d-block" id="jurisdictionCardValue" style="font-size: 0.95rem; max-width: 100%;" title="<?= esc($cardLocation) ?>">
+                            <?= esc($cardLocation) ?>
+                        </span>
+                        <?php if ($confirmedArea !== ''): ?>
+                            <small class="text-success d-block fw-semibold" style="font-size:0.7rem;">
+                                <i class="bi bi-check2-circle me-1"></i>Confirmed assigned area
+                            </small>
+                        <?php else: ?>
+                            <small class="text-success d-block fw-semibold" style="font-size:0.7rem;">
+                                <i class="bi bi-shield-check me-1"></i>Traffic Safety Guide
+                            </small>
+                        <?php endif; ?>
+                        <small class="text-warning fw-semibold d-none" style="font-size:0.7rem;" id="jurisdictionCardPending">
+                            <i class="bi bi-hourglass-split me-1"></i>Not yet confirmed
+                        </small>
+                    </div>
+                    <i class="bi bi-chevron-down jurisdiction-caret text-danger"></i>
+                </div>
+            </div>
+        </div>        <!-- Primary Offense Apprehended (opens the offense breakdown) -->
+        <div class="col-sm-6 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card is-clickable" id="offenseBreakdownCard"
+                 role="button" tabindex="0"
+                 data-bs-toggle="modal" data-bs-target="#offenseBreakdownModal" aria-controls="offenseBreakdownModal"
+                 title="Click to see every offense you have handled">
+                <div class="card-body p-3 d-flex align-items-center gap-3">
+                    <div class="op-icon-box bg-warning-subtle text-warning-emphasis">
+                        <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.68rem; letter-spacing: 0.05em;">Top Offense Handled</small>
+                        <span class="fw-bold text-dark text-truncate d-block" style="font-size: 0.95rem; max-width: 100%;" title="<?= esc($topOffense) ?>"><?= esc($topOffense) ?></span>
+                        <small class="text-muted d-block" style="font-size:0.72rem;">Primary enforcement focus</small>
+                    </div>
+                    <i class="bi bi-chevron-down op-card-caret text-warning-emphasis"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ═══ CHARTS ROW 1 ═══════════════════════════════════════════ -->
+    <!-- ═══ ASSIGNED JURISDICTION MODAL: STATION AREAS + GOOGLE MAP ════════
+         Sits outside the metrics row: premium-reveal leaves a transform on
+         that row, which would trap the modal's fixed positioning and z-index. -->
+    <div class="modal fade" id="jurisdictionModal" tabindex="-1" aria-labelledby="jurisdictionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable jurisdiction-dialog">
+            <div class="modal-content jurisdiction-panel">
+                <div class="modal-header border-bottom border-light">
+                    <div class="d-flex justify-content-between align-items-start gap-2 w-100">
+                        <div class="min-w-0">
+                            <small id="jurisdictionModalLabel" class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">Assigned Duty Station</small>
+                            <span class="fw-bold text-dark d-block text-truncate" style="font-size: 0.9rem;" title="<?= esc($station !== '' ? $station : 'CTRAMO Kabankalan') ?>">
+                                <i class="bi bi-building me-1 text-danger"></i><?= esc($station !== '' ? $station : 'CTRAMO Kabankalan') ?>
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold" style="font-size:0.62rem;">
+                                <i class="bi bi-shield-check me-1"></i>ASSIGNED
+                            </span>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">
+                            Areas of Station Assigned
+                        </small>
+                        <?php if ($confirmedArea !== ''): ?>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-bold" style="font-size:0.6rem;">
+                                <i class="bi bi-check2-circle me-1"></i>CONFIRMED
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="jurisdiction-area-list d-flex flex-column gap-1.5 mb-3" role="list">
+                        <?php foreach ($loggedAreas as $areaItem): ?>
+                            <button type="button" class="jurisdiction-area-item<?= $areaItem['label'] === $selectedArea ? ' is-active' : '' ?>" role="listitem"
+                                    data-area="<?= esc($areaItem['label']) ?>">
+                                <span class="text-truncate"><i class="bi bi-geo-alt-fill me-1 text-danger"></i><?= esc($areaItem['label']) ?></span>
+                                <span class="area-count"><?= $areaItem['count'] ?> citation<?= $areaItem['count'] === 1 ? '' : 's' ?></span>
+                            </button>
+                        <?php endforeach; ?>
+                        <?php foreach ($coverageAreas as $areaItem): ?>
+                            <button type="button" class="jurisdiction-area-item" role="listitem" data-area="<?= esc($areaItem) ?>">
+                                <span class="text-truncate"><i class="bi bi-pin-map-fill me-1 text-secondary"></i><?= esc($areaItem) ?></span>
+                                <span class="area-count">coverage</span>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="jurisdiction-map-frame rounded-3 border border-light shadow-sm overflow-hidden" style="height: 220px;">
+                        <iframe id="jurisdictionMap" title="Assigned jurisdiction map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                                src="<?= esc($mapEmbed) ?>"></iframe>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+                        <small class="text-muted text-truncate" style="font-size: 0.68rem;" id="jurisdictionMapLabel" title="<?= esc($mapSearch) ?>">
+                            <i class="bi bi-pin-angle-fill me-1"></i><?= esc($mapSearch) ?>
+                        </small>                            <a id="jurisdictionMapLink" href="<?= esc($mapLink) ?>" target="_blank" rel="noopener noreferrer"
+                           class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold flex-shrink-0" style="font-size: 0.68rem;">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Google Maps 2026
+                        </a>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-light d-flex justify-content-between align-items-center gap-2">
+                    <small class="text-muted text-truncate" style="font-size: 0.7rem;">
+                        <i class="bi bi-pin-angle-fill me-1"></i>Selected: <span id="selectedAreaLabel"><?= esc($selectedArea !== '' ? $selectedArea . ', Philippines' : 'none') ?></span>
+                    </small>
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold flex-shrink-0" id="confirmAreaBtn" title="Confirm this area as your assigned jurisdiction">
+                        <i class="bi bi-check2-circle me-1"></i><?= $confirmedArea !== '' ? 'Update Assigned Area' : 'Confirm Assigned Area' ?>
+                    </button>
+                </div>
+
+                <form id="confirmAreaForm" action="<?= base_url('officer/profile/confirm-area') ?>" method="POST" class="d-none">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="assigned_area" id="assignedAreaInput" value="<?= esc($confirmedArea) ?>">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ DUTY STATUS MODAL: SWITCH THE FIELD STATUS ══════════ -->
+    <div class="modal fade" id="dutyStatusModal" tabindex="-1" aria-labelledby="dutyStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered jurisdiction-dialog">
+            <div class="modal-content jurisdiction-panel">
+                <div class="modal-header border-bottom border-light">
+                    <div class="d-flex justify-content-between align-items-start gap-2 w-100">
+                        <div class="min-w-0">
+                            <small id="dutyStatusModalLabel" class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">Field Status</small>
+                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">
+                                <i class="bi bi-broadcast me-1 text-success"></i>Set your duty status
+                            </span>
+                        </div>
+                        <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <form id="dutyStatusForm" action="<?= base_url('officer/profile/duty-status') ?>" method="POST">
+                    <?= csrf_field() ?>
+                    <div class="modal-body">
+                        <?php
+                        $dutyDescriptions = [
+                            'Active Patrol' => 'On the road and writing citations now.',
+                            'On Break'      => 'Paused for a moment — not taking assignments.',
+                            'Off Duty'      => 'Shift finished for now.',
+                        ];
+                        ?>
+                        <div class="d-flex flex-column gap-2" role="radiogroup" aria-labelledby="dutyStatusModalLabel">
+                            <?php foreach ($dutyStatuses as $dutyIndex => $dutyOption): ?>
+                            <label class="duty-option<?= $dutyOption === $dutyStatus ? ' is-selected' : '' ?>" for="duty_option_<?= $dutyIndex ?>"
+                                   data-status="<?= esc($dutyOption) ?>">
+                                <input type="radio" class="d-none" name="duty_status" id="duty_option_<?= $dutyIndex ?>"
+                                       value="<?= esc($dutyOption) ?>" <?= $dutyOption === $dutyStatus ? 'checked' : '' ?>>
+                                <span class="duty-option-dot duty-dot-<?= strtolower(str_replace(' ', '-', $dutyOption)) ?>"></span>
+                                <span class="flex-grow-1 min-w-0">
+                                    <span class="fw-bold text-dark d-block" style="font-size:0.88rem;"><?= esc($dutyOption) ?></span>
+                                    <small class="text-muted d-block" style="font-size:0.7rem;"><?= esc($dutyDescriptions[$dutyOption] ?? '') ?></small>
+                                </span>
+                                <i class="bi bi-check2-circle duty-option-check"></i>
+                            </label>
+                            <?php endforeach; ?>
+                        </div>
+                        <small class="text-muted d-block mt-3" style="font-size:0.7rem;">
+                            <i class="bi bi-info-circle me-1"></i>Saved to your officer record, so it survives a sign-out.
+                        </small>
+                    </div>
+                    <div class="modal-footer border-top border-light">
+                        <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold">
+                            <i class="bi bi-check2-circle me-1"></i>Save Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ OFFENSE BREAKDOWN MODAL: EVERY OFFENSE HANDLED ══════ -->
+    <div class="modal fade" id="offenseBreakdownModal" tabindex="-1" aria-labelledby="offenseBreakdownModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable jurisdiction-dialog">
+            <div class="modal-content jurisdiction-panel">
+                <div class="modal-header border-bottom border-light">
+                    <div class="d-flex justify-content-between align-items-start gap-2 w-100">
+                        <div class="min-w-0">
+                            <small id="offenseBreakdownModalLabel" class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">Top Offense Handled</small>
+                            <span class="fw-bold text-dark d-block text-truncate" style="font-size: 0.9rem;" title="<?= esc($topOffense) ?>">
+                                <i class="bi bi-exclamation-triangle-fill me-1 text-warning-emphasis"></i><?= esc($topOffense) ?>
+                            </span>
+                        </div>
+                        <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">
+                            Offenses you have handled
+                        </small>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1 fw-bold" style="font-size:0.6rem;">
+                            <?= count($offenseBreakdown) ?> type<?= count($offenseBreakdown) === 1 ? '' : 's' ?>
+                        </span>
+                    </div>
+
+                    <?php if (empty($offenseBreakdown)): ?>
+                        <p class="text-muted mb-0" style="font-size:0.8rem;">
+                            <i class="bi bi-inbox me-1"></i>No citations recorded yet — your tally appears here after your first ticket.
+                        </p>
+                    <?php else: ?>
+                        <div class="offense-breakdown-list d-flex flex-column gap-2">
+                            <?php foreach ($offenseBreakdown as $offenseIndex => $offenseRow):
+                                $offenseCount = (int) $offenseRow['count'];
+                                $offenseShare  = $offenseTotal > 0 ? round(($offenseCount * 100) / $offenseTotal, 1) : 0;
+                            ?>
+                            <div class="offense-breakdown-item<?= $offenseIndex === 0 ? ' is-top' : '' ?>">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-1">
+                                    <span class="fw-semibold text-dark text-truncate" style="font-size:0.82rem;" title="<?= esc($offenseRow['violation_type']) ?>">
+                                        <span class="offense-rank">#<?= $offenseIndex + 1 ?></span><?= esc($offenseRow['violation_type']) ?>
+                                    </span>
+                                    <span class="flex-shrink-0 fw-bold" style="font-size:0.78rem;">
+                                        <?= $offenseCount ?> <span class="text-muted fw-semibold"><?= $offenseShare ?>%</span>
+                                    </span>
+                                </div>
+                                <div class="offense-share-track">
+                                    <div class="offense-share-fill" style="width: <?= min(100, (int) round($offenseShare)) ?>%;"></div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <div class="modal-footer border-top border-light d-flex justify-content-between align-items-center gap-2">
+                    <small class="text-muted text-truncate" style="font-size:0.7rem;">
+                        <i class="bi bi-clipboard-check me-1"></i><?= number_format($offenseTotal) ?> infraction<?= $offenseTotal === 1 ? '' : 's' ?> logged in total
+                    </small>
+                    <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold flex-shrink-0" data-bs-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ OFFICER CREDENTIALS & PERFORMANCE ROW ═══════════════════ -->
     <div class="row g-4 mb-4">
-        <div class="col-lg-6 premium-reveal" style="--reveal-delay:0.25s">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white border-bottom border-light">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend <small class="fw-normal text-muted">(Last 12 Weeks)</small></h6>
-                </div>
-                <div class="card-body"><div style="position:relative;height:290px;"><canvas id="weeklyChart"></canvas></div></div>
-            </div>
-        </div>
-        <div class="col-lg-6 premium-reveal" style="--reveal-delay:0.3s">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white border-bottom border-light">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h6>
-                    <form method="GET" class="m-0">
-                        <select name="year" class="form-select form-select-sm border-0 bg-light" style="width:85px;" onchange="this.form.submit()">
-                            <?php $currentYear = date('Y'); ?>
-                            <?php for($y = $currentYear; $y >= $currentYear - 4; $y--): ?>
-                                <option value="<?= $y ?>" <?= ($year == $y) ? 'selected' : '' ?>><?= $y ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </form>
-                </div>
-                <div class="card-body"><div style="position:relative;height:290px;"><canvas id="monthlyChart"></canvas></div></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ NATURE OF VIOLATIONS ════════════════════════════════════ -->
-    <?php
-        $natureSorted = $nature_summary ?? [];
-        usort($natureSorted, static fn($a, $b) => ($b['count'] ?? 0) <=> ($a['count'] ?? 0));
-        $totalNatureIncidents = array_sum(array_column($natureSorted, 'count'));
-        $topNature = array_slice($natureSorted, 0, 5);
-        $totalNatureFines = array_sum(array_column($natureSorted, 'total_amount'));
-    ?>
-    <div class="row g-4 premium-reveal" style="--reveal-delay:0.35s">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center bg-white border-bottom border-light">
-                    <h6 class="mb-0 fw-bold"><i class="bi bi-diagram-3 me-2 text-info"></i>Nature of Violations</h6>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1">
-                        <?= $totalNatureIncidents ?> Total Incidents
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="row g-4 align-items-stretch">
-                        <div class="col-lg-7">
-                            <div style="position:relative; min-height:330px; height:100%;">
-                                <canvas id="natureBarChart"></canvas>
-                            </div>
+        <!-- Official CTRAMO Deputized Credential Card -->
+        <div class="col-md-6 premium-reveal" style="--reveal-delay:0.15s">
+            <div class="card border-0 shadow-sm h-100 rounded-4 enforcer-cred-card">
+                <div class="card-header bg-white py-3 border-bottom border-light d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="<?= base_url('img/pic-1.png') ?>" alt="City Seal" style="width: 24px; height: 24px; object-fit: contain;">
+                        <div>
+                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.92rem;">
+                                CTRAMO Law Enforcement Credentials
+                            </h6>
+                            <small class="text-muted" style="font-size: 0.7rem;">C.O. # 2023-006 &middot; Office of the City Mayor</small>
                         </div>
-                        <div class="col-lg-5">
-                            <div class="top-offenses-panel p-3 rounded-4 h-100 d-flex flex-column justify-content-between">
-                                <div>
-                                    <div class="d-flex align-items-center justify-content-between mb-3">
-                                        <span class="fw-bold text-dark" style="font-size:0.9rem">
-                                            <i class="bi bi-fire me-1 text-danger"></i>Top Most Frequent Infractions
-                                        </span>
-                                        <small class="text-muted fw-semibold">Ranked</small>
-                                    </div>
-                                    <div class="top-offenses-list">
-                                        <?php if (empty($topNature)): ?>
-                                            <div class="text-muted text-center py-4 small">No violations recorded yet.</div>
-                                        <?php else: ?>
-                                            <?php foreach($topNature as $idx => $item): 
-                                                $count = (int) ($item['count'] ?? 0);
-                                                $pct = $totalNatureIncidents > 0 ? round(($count / $totalNatureIncidents) * 100) : 0;
-                                                $rankClass = match($idx) {
-                                                    0 => 'rank-badge-1',
-                                                    1 => 'rank-badge-2',
-                                                    2 => 'rank-badge-3',
-                                                    default => 'rank-badge-other'
-                                                };
-                                                $barClass = match($idx) {
-                                                    0 => 'bg-danger',
-                                                    1 => 'bg-warning',
-                                                    2 => 'bg-info',
-                                                    default => 'bg-primary'
-                                                };
-                                            ?>
-                                                <div class="mb-3">
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <span class="text-truncate fw-semibold small pe-2" style="max-width: 210px;" title="<?= esc($item['violation_type']) ?>">
-                                                            <span class="rank-badge <?= $rankClass ?> me-1"><?= $idx + 1 ?></span>
-                                                            <?= esc($item['violation_type']) ?>
-                                                        </span>
-                                                        <span class="small fw-bold text-dark">
-                                                            <?= $count ?> <span class="text-muted fw-normal" style="font-size:0.75rem">(<?= $pct ?>%)</span>
-                                                        </span>
-                                                    </div>
-                                                    <div class="progress" style="height: 6px; border-radius: 99px; background: rgba(226,232,240,0.8);">
-                                                        <div class="progress-bar <?= $barClass ?>" style="width: <?= $pct ?>%; border-radius: 99px;"></div>
-                                                    </div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                <div class="pt-3 mt-2 border-top border-light-subtle d-flex justify-content-between align-items-center">
-                                    <span class="small text-muted">Total Violations Assessed:</span>
-                                    <span class="fw-bold text-dark fs-6">₱<?= number_format((float)$totalNatureFines, 0) ?></span>
-                                </div>
-                            </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
+                            <?= esc($badgeNumber) ?>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#editCredentialsModal" title="Edit your credentials or fix errors">
+                            <i class="bi bi-pencil-square me-1"></i>Edit
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Full Legal Name</small>
+                            <span class="fw-bold text-dark fs-6"><?= esc($displayName) ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Enforcer Badge Number</small>
+                            <span class="fw-bold text-primary"><?= esc($badgeNumber) ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Designation / Title</small>
+                            <span class="fw-semibold text-dark">Traffic Law Enforcement Officer II</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Deputation Order</small>
+                            <span class="text-dark">Kabankalan Ordinance 2023-006</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">System Username</small>
+                            <span class="fw-semibold text-secondary">@<?= esc($officer['username'] ?? '-') ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Official Email</small>
+                            <span class="text-dark"><?= esc($officer['email'] ?? '-') ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Age</small>
+                            <span class="text-dark"><?= !empty($officer['age']) ? esc($officer['age']) : '-' ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Address</small>
+                            <span class="text-dark"><?= esc($officer['address'] ?? '-') ?></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.7rem;">Authority Status</small>
+                            <span class="badge <?= ($officer['status'] ?? '') === 'active' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-secondary' ?> rounded-pill px-2.5 py-1">
+                                <i class="bi bi-shield-fill-check me-1"></i>Active &amp; Deputized
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Citation Enforcement & Performance Record -->
+        <div class="col-md-6 premium-reveal" style="--reveal-delay:0.2s">
+            <div class="card border-0 shadow-sm h-100 rounded-4 record-card">
+                <div class="card-header bg-white py-3 border-bottom border-light">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.92rem;">
+                                <i class="bi bi-card-checklist me-1.5 text-success"></i>Citation Enforcement Record
+                            </h6>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                Apprehension logs registered by this officer &middot; <?= esc($enforcementDateNote) ?>
+                            </small>
+                        </div>
+                        <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
+                            <?= $totalTickets ?> Record<?= $totalTickets === 1 ? '' : 's' ?>
+                        </span>
+                    </div>
+
+                    <!-- Period switch: each window starts from zero on its own -->
+                    <div class="cfr-period-switch mt-2" role="group" aria-label="Enforcement record period">
+                        <?php
+                        $periodOptions = [
+                            'week'  => ['label' => 'This Week',  'title' => 'Citations issued this week – starts again from zero every Monday'],
+                            'month' => ['label' => 'This Month', 'title' => 'Citations issued this month – starts again from zero on the 1st'],
+                            'year'  => ['label' => 'This Year',  'title' => 'Citations issued this year – starts again from zero every January'],
+                            'all'   => ['label' => 'All Time',   'title' => 'Lifetime total for this officer – never resets'],
+                        ];
+                        foreach ($periodOptions as $periodKey => $periodOption):
+                            $isActive = $enforcementPeriod === $periodKey;
+                        ?>
+                            <a href="<?= base_url('officer/profile?period=' . $periodKey) ?>"
+                               class="cfr-period-btn<?= $isActive ? ' active' : '' ?>"
+                               title="<?= esc($periodOption['title']) ?>"
+                               <?= $isActive ? 'aria-current="page"' : '' ?>><?= esc($periodOption['label']) ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <!-- 4 Metric Tiles -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-4">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle">
+                                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Total Issued</small>
+                                    <span class="fs-4 fw-bold text-dark"><?= $totalTickets ?></span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle">
+                                    <small class="text-success-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Settled / Paid</small>
+                                    <span class="fs-4 fw-bold text-success"><?= $paidCount ?></span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle">
+                                    <small class="text-warning-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Pending Fines</small>
+                                    <span class="fs-4 fw-bold text-warning-emphasis"><?= $pendingCount ?></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settlement Efficiency Progress Gauge -->
+                        <div class="p-3 rounded-3 bg-light-subtle border border-light-subtle mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1.5">
+                                <span class="fw-semibold text-dark" style="font-size:0.8rem;">
+                                    <i class="bi bi-shield-check text-success me-1"></i>Settlement Clearance Rate
+                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.75rem;">
+                                    <?= $collectionPct ?>%
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 99px; background: rgba(226,232,240,0.8);">
+                                <div class="progress-bar bg-success" style="width: <?= $collectionPct ?>%; border-radius: 99px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Fines & Action Link -->
+                    <div class="pt-3 border-top border-light-subtle d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.68rem;">Total Fines Assessed</small>
+                            <span class="fs-5 fw-bold text-primary">₱<?= number_format((float) $totalAmount, 2) ?></span>
+                        </div>
+                        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-primary btn-sm px-3.5 py-1.5 rounded-pill fw-semibold">
+                            <i class="bi bi-card-checklist me-1"></i>Open Violations Registry
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    </div> <!-- End Analytics Section -->
+</div>
+
+<!-- Edit Credentials Modal -->
+<div class="modal fade" id="editCredentialsModal" tabindex="-1" aria-labelledby="editCredentialsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom border-light p-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle p-2 rounded-3 text-primary">
+                        <i class="bi bi-pencil-square fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0" id="editCredentialsModalLabel">Update Official Credentials</h5>
+                        <small class="text-muted">Modify your public profile and contact information.</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('officer/profile/update') ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark small">First Name</label>
+                            <input type="text" name="firstname" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['firstname'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark small">Last Name</label>
+                            <input type="text" name="lastname" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['lastname'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-dark small">Middle Initial</label>
+                            <input type="text" name="middle_initial" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['middle_initial'] ?? '') ?>" maxlength="10">
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold text-dark small">Official Email</label>
+                            <input type="email" name="email" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['email'] ?? '') ?>" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-dark small">Age</label>
+                            <input type="number" name="age" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['age'] ?? '') ?>" min="18" max="120">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark small">Address</label>
+                            <input type="text" name="address" class="form-control form-control-lg rounded-3 fs-6" value="<?= esc($officer['address'] ?? '') ?>" placeholder="Personal address">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-light rounded-3 border border-light-subtle">
+                        <div class="d-flex gap-2 text-muted">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <small>Sensitive fields like <strong>Badge Number</strong> and <strong>Username</strong> are managed by the administration and cannot be changed here.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <style>
-/* ── ANALYTICS TOGGLE BAR ───────────────────────────────── */
-.analytics-toggle-bar {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 0.65rem 1.1rem;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-    transition: all 0.2s ease;
-}
-.analytics-toggle-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #1e293b;
-}
-.analytics-visible-pill {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 0.2rem 0.55rem;
-    border-radius: 20px;
-    background: rgba(16, 185, 129, 0.12);
-    color: #047857;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    transition: all 0.25s ease;
-}
-.analytics-visible-pill.hidden-state {
-    background: rgba(148, 163, 184, 0.12);
-    color: #64748b;
-    border-color: rgba(148, 163, 184, 0.3);
-}
-.btn-analytics-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 0.38rem 0.85rem;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #f8fafc;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-    white-space: nowrap;
-}
-.btn-analytics-toggle:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #2563eb;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.12);
-}
-.btn-analytics-toggle.is-hidden {
-    background: #f0fdf4;
-    border-color: #86efac;
-    color: #059669;
-}
-.btn-analytics-toggle.is-hidden:hover {
-    background: #dcfce7;
-    border-color: #4ade80;
-    color: #047857;
-}
-
-/* ── SMOOTH ANALYTICS SECTION COLLAPSE ─────────────────── */
-.analytics-section-wrap {
-    overflow: hidden;
-    transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-                opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    max-height: 4000px;
-    opacity: 1;
-    transform: translateY(0);
-    transform-origin: top center;
-}
-.analytics-section-wrap.analytics-collapsed {
-    max-height: 0 !important;
-    opacity: 0;
-    transform: translateY(-8px);
-    pointer-events: none;
-}
-
+    /* Citation enforcement period switch (Week / Month / Year / All Time) */
+    .cfr-period-switch {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 3px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+    }
+    .cfr-period-btn {
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #64748b;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .cfr-period-btn:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+    .cfr-period-btn.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
+    }
+    @media (max-width: 575.98px) {
+        .cfr-period-switch { width: 100%; }
+        .cfr-period-btn { flex: 1 1 auto; text-align: center; }
+    }
 /* ── HERO ─────────────────────────────────────────────────── */
 .profile-hero {
     position: relative;
@@ -480,9 +835,9 @@
     letter-spacing: -0.03em;
 }
 .hero-role-badge {
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #34d399;
+    background: rgba(4, 47, 34, 0.55);
+    border: 1px solid rgba(167, 243, 208, 0.45);
+    color: #a7f3d0;
     font-size: 0.73rem;
     font-weight: 700;
     padding: 0.3rem 0.75rem;
@@ -625,55 +980,326 @@
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
-/* ── EFFICIENCY BANNER ────────────────────────────────────── */
-.efficiency-card {
-    border-radius: 18px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0 !important;
+
+/* ── OPERATIONAL FIELD HUD ───────────────────────────────── */
+.hero-duty-hud {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
-.eff-pill {
+.hud-status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 0.42rem 0.9rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 99px;
-    font-size: 0.82rem;
-    color: #475569;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: #4ade80;
+    text-transform: uppercase;
 }
-.eff-dot {
-    width: 8px;
-    height: 8px;
+.live-radar-dot {
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    flex-shrink: 0;
+    background: #4ade80;
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    animation: radarPulse 1.8s infinite;
 }
-.eff-label {
-    font-weight: 500;
+@keyframes radarPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(74, 222, 128, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+    }
 }
-.eff-val {
-    font-weight: 700;
+.hud-time-wrap {
+    font-size: 0.88rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+}
+.hud-sector-text {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
 }
 
-/* ── TOP OFFENSES RANKING ─────────────────────────────────── */
-.top-offenses-panel {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
+/* ── OPERATIONAL STATUS STRIP ────────────────────────────── */
+.op-status-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f1f5f9 !important;
 }
-.rank-badge {
+.op-status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
+}
+.op-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.live-pulse-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+    animation: radarPulse 1.8s infinite;
+}
+
+/* ── JURISDICTION CARD: STATION AREAS + GOOGLE MAP ───── */
+.jurisdiction-card {
+    cursor: pointer;
+}
+.jurisdiction-card:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+.jurisdiction-caret {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+.jurisdiction-card.is-open .jurisdiction-caret {
+    transform: rotate(180deg);
+}
+
+/* ── CLICKABLE STATUS CARDS: DUTY STATUS + OFFENSE BREAKDOWN ─ */
+.op-status-card.is-clickable {
+    cursor: pointer;
+}
+.op-status-card.is-clickable:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+.op-card-caret {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+.op-status-card.is-open .op-card-caret {
+    transform: rotate(180deg);
+}
+
+/* The pulse dot follows the saved duty status */
+.op-status-card.duty-on-break .live-pulse-indicator {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.9);
+}
+.op-status-card.duty-off-duty .live-pulse-indicator {
+    background: #94a3b8;
+    box-shadow: none;
+    animation: none;
+}
+
+/* Duty status choices */
+.duty-option {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 0;
+    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+}
+.duty-option:hover {
+    border-color: #bfdbfe;
+    background: #f8fafc;
+}
+.duty-option.is-selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.duty-option-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+.duty-dot-on-break {
+    background: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+}
+.duty-dot-off-duty {
+    background: #94a3b8;
+    box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
+}
+.duty-option-check {
+    color: #2563eb;
+    opacity: 0;
+    transform: scale(0.7);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.duty-option.is-selected .duty-option-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Offense breakdown */
+.offense-breakdown-item {
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    background: #fff;
+}
+.offense-breakdown-item.is-top {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+.offense-rank {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    font-size: 0.72rem;
+    min-width: 1.5rem;
+    height: 1.15rem;
+    margin-right: 0.4rem;
+    padding: 0 0.35rem;
+    border-radius: 6px;
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.66rem;
     font-weight: 800;
+    vertical-align: middle;
 }
-.rank-badge-1 { background: #fee2e2; color: #ef4444; }
-.rank-badge-2 { background: #fef3c7; color: #d97706; }
-.rank-badge-3 { background: #e0f2fe; color: #0284c7; }
-.rank-badge-other { background: #f1f5f9; color: #64748b; }
+.offense-breakdown-item.is-top .offense-rank {
+    background: #f59e0b;
+    color: #fff;
+}
+.offense-share-track {
+    height: 6px;
+    border-radius: 99px;
+    background: #eef2f7;
+    overflow: hidden;
+}
+.offense-share-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    transition: width 0.4s ease;
+}
+.offense-breakdown-item.is-top .offense-share-fill {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+:root[data-theme="dark"] .offense-breakdown-item {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+:root[data-theme="dark"] .offense-breakdown-item.is-top {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+}
+:root[data-theme="dark"] .offense-share-track {
+    background: rgba(255, 255, 255, 0.08);
+}
+:root[data-theme="dark"] .offense-rank {
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+:root[data-theme="dark"] .duty-option {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+:root[data-theme="dark"] .duty-option:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+:root[data-theme="dark"] .duty-option.is-selected {
+    background: rgba(37, 99, 235, 0.16);
+}
+.jurisdiction-dialog {
+    max-width: 420px;
+}
+.jurisdiction-panel {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+.jurisdiction-panel .modal-body {
+    padding: 1rem 1.1rem 1.1rem;
+}
+.jurisdiction-area-list {
+    max-height: 200px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.jurisdiction-area-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #eef2f7;
+    border-radius: 10px;
+    background: #fff;
+    color: #1e293b;
+    font-size: 0.76rem;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.jurisdiction-area-item:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+.jurisdiction-area-item.is-active {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+.jurisdiction-area-item .area-count {
+    flex-shrink: 0;
+    font-size: 0.63rem;
+    font-weight: 700;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 999px;
+    padding: 0.1rem 0.45rem;
+    white-space: nowrap;
+}
+.jurisdiction-area-item.is-active .area-count {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+.jurisdiction-map-frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ── ENFORCER CREDENTIAL CARD ────────────────────────────── */
+.enforcer-cred-card {
+    border-top: 3px solid #2563eb !important;
+}
+.tct-red-no {
+    color: #dc2626 !important;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -708,18 +1334,306 @@
     }
 }
 
+/* ── PRINT ────────────────────────────────────────────────────────
+   The banner is a blue gradient carrying white ink. Paper has no
+   gradient, so the officer's name, e-mail and duty HUD all printed
+   white-on-white — the sheet looked empty. Flatten it for print. */
 @media print {
     .sidebar,.sidebar-toggle,.btn,.alert { display:none !important; }
     .main-content { margin-left:0 !important; width:100% !important; padding:0 !important; }
+
+    .profile-hero {
+        background: #fff !important;
+        border: 1px solid #94a3b8 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 10px 0 !important;
+    }
+    .profile-hero-content {
+        gap: 1rem;
+    }
+    .hero-orb,
+    .hero-status-dot,
+    .avatar-hover-overlay,
+    .hero-upload-wrap,
+    .live-pulse-indicator,
+    .avatar-upload-spinner,
+    .hud-status-badge .live-radar-dot {
+        display: none !important;
+    }
+    .hero-name,
+    .hero-meta,
+    .hero-meta *,
+    .hero-role-badge,
+    .hud-status-badge,
+    .hud-status-badge *,
+    .hud-time-wrap,
+    .hud-time-wrap *,
+    .hud-sector-text,
+    .hud-sector-text *,
+    .profile-hero-avatar-initials {
+        color: #0f172a !important;
+    }
+    .hero-role-badge,
+    .hero-duty-hud {
+        background: #fff !important;
+        border: 1px solid #0f172a !important;
+        border-radius: 6px !important;
+    }
+    .avatar-display-container {
+        background: #e2e8f0 !important;
+        border: 1px solid #94a3b8 !important;
+    }
+    .op-status-card,
+    .record-card {
+        border: 1px solid #cbd5e1 !important;
+    }
+}
+
+/* ── DARK THEME LEGIBILITY ─────────────────────────────────────
+   Labels on this page hardcode the light-theme ink colour (.text-dark),
+   which disappears on the dark surface, so they follow the layout tokens
+   instead. Light theme renders exactly as before. */
+:root[data-theme="dark"] .text-dark {
+    color: var(--text-strong) !important;
+}
+/* Long jurisdiction / offence names shrink and ellipsis inside the card
+   instead of pushing past its edge. */
+.op-status-card .flex-grow-1 {
+    min-width: 0;
+}
+.op-status-card .text-truncate {
+    max-width: 100%;
+    white-space: normal;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.25;
+}
+
+/* ── MOBILE SPACING: the record card ──────────────────────────────
+   On a phone the header badge crowded the title and the registry
+   button sat on top of the total-fines figure. Spacing only: each
+   part gets its own line and the tiles get a little more room. */
+@media (max-width: 575.98px) {
+    .record-card > .card-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .record-card > .card-body {
+        padding: 1rem !important;
+    }
+    .record-card .row.g-3 {
+        --bs-gutter-x: 0.6rem;
+        --bs-gutter-y: 0.6rem;
+    }
+    .record-card .row.g-3 > [class*="col-"] > div {
+        padding: 0.65rem 0.5rem !important;
+    }
+    .record-card .row.g-3 small {
+        line-height: 1.2;
+    }
+    .record-card .row.g-3 .fs-4 {
+        font-size: 1.35rem !important;
+    }
+    .record-card > .card-body > .pt-3.border-top {
+        flex-wrap: wrap;
+        gap: 0.65rem;
+    }
+    .record-card > .card-body > .pt-3.border-top .btn {
+        width: 100%;
+    }
+}
+/* …but the light tiles on this page stay light, so their ink stays dark. */
+:root[data-theme="dark"] .bg-light .text-dark,
+:root[data-theme="dark"] .bg-light-subtle .text-dark {
+    color: #212529 !important;
+}
+:root[data-theme="dark"] .op-status-card {
+    border-color: var(--border-soft) !important;
 }
 </style>
 
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+    // ═══ JURISDICTION AREAS + GOOGLE MAP LOOKUP ══════════════
+    const jurMap = document.getElementById('jurisdictionMap');
+    const jurMapLink = document.getElementById('jurisdictionMapLink');
+    const jurMapLabel = document.getElementById('jurisdictionMapLabel');
+
+    function googleMapsUrl(path, query) {
+        return path + encodeURIComponent(query + ', Philippines');
+    }
+
+    document.querySelectorAll('.jurisdiction-area-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const area = (item.getAttribute('data-area') || '').trim();
+            if (!area) return;
+
+            document.querySelectorAll('.jurisdiction-area-item.is-active').forEach(function (active) {
+                active.classList.remove('is-active');
+            });
+            item.classList.add('is-active');
+
+            if (jurMap) {
+                jurMap.src = googleMapsUrl('https://www.google.com/maps?q=', area) + '&hl=en&output=embed';
+            }
+            if (jurMapLink) {
+                jurMapLink.href = googleMapsUrl('https://www.google.com/maps/search/?api=1&query=', area);
+            }
+            if (jurMapLabel) {
+                jurMapLabel.innerHTML = '<i class="bi bi-pin-angle-fill me-1"></i>';
+                jurMapLabel.appendChild(document.createTextNode(area + ', Philippines'));
+                jurMapLabel.title = area + ', Philippines';
+            }
+        });
+    });
+
+    // Reflect the open modal on the card's chevron
+    const jurisdictionModal = document.getElementById('jurisdictionModal');
+    const jurisdictionCard = document.querySelector('.jurisdiction-card');
+    if (jurisdictionModal && jurisdictionCard) {
+        jurisdictionModal.addEventListener('show.bs.modal', function () {
+            jurisdictionCard.classList.add('is-open');
+        });
+        jurisdictionModal.addEventListener('hide.bs.modal', function () {
+            jurisdictionCard.classList.remove('is-open');
+        });
+    }
+
+    // Chevron feedback + keyboard activation for the two clickable status cards
+    [['dutyStatusCard', 'dutyStatusModal'], ['offenseBreakdownCard', 'offenseBreakdownModal']].forEach(function (pair) {
+        const card  = document.getElementById(pair[0]);
+        const modal = document.getElementById(pair[1]);
+        if (!card || !modal) return;
+
+        modal.addEventListener('show.bs.modal', function () { card.classList.add('is-open'); });
+        modal.addEventListener('hide.bs.modal', function () { card.classList.remove('is-open'); });
+
+        card.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                card.click();
+            }
+        });
+    });
+
+    // Reopening the duty modal starts from the status actually saved on the
+    // record, so a choice made but never saved never sticks around.
+    const savedDutyStatus = <?= json_encode($dutyStatus) ?>;
+    const dutyStatusModalEl = document.getElementById('dutyStatusModal');
+    if (dutyStatusModalEl) {
+        dutyStatusModalEl.addEventListener('show.bs.modal', function () {
+            document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (option) {
+                const input = option.querySelector('input[type="radio"]');
+                const selected = !!input && input.value === savedDutyStatus;
+                if (input) input.checked = selected;
+                option.classList.toggle('is-selected', selected);
+            });
+        });
+
+        document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (option) {
+            option.addEventListener('click', function () {
+                document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (other) {
+                    other.classList.toggle('is-selected', other === option);
+                });
+            });
+        });
+    }
+
+    // ═══ CONFIRM ASSIGNED AREA ══════════════════════════════════
+    const initialJurisdictionValue = <?= json_encode($cardLocation) ?>;
+    const confirmAreaBtn = document.getElementById('confirmAreaBtn');
+    const confirmAreaForm = document.getElementById('confirmAreaForm');
+    const assignedAreaInput = document.getElementById('assignedAreaInput');
+    const selectedAreaLabel = document.getElementById('selectedAreaLabel');
+    const jurisdictionCardValue = document.getElementById('jurisdictionCardValue');
+    const jurisdictionCardPending = document.getElementById('jurisdictionCardPending');
+
+    function selectedJurisdictionArea() {
+        const active = document.querySelector('#jurisdictionModal .jurisdiction-area-item.is-active');
+        return active ? (active.getAttribute('data-area') || '').trim() : '';
+    }
+
+    function escapeJurisdictionText(value) {
+        return value.replace(/[&<>"']/g, function (ch) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+        });
+    }
+
+    // Picking an area immediately reflects it in the Assigned Jurisdiction card;
+    // Confirm is what makes it permanent.
+    document.querySelectorAll('.jurisdiction-area-item').forEach(function (item) {
+        item.addEventListener('click', function () {
+            const area = (item.getAttribute('data-area') || '').trim();
+            if (!area) return;
+
+            if (selectedAreaLabel) {
+                selectedAreaLabel.textContent = area + ', Philippines';
+            }
+
+            if (jurisdictionCardValue) {
+                jurisdictionCardValue.textContent = area;
+                jurisdictionCardValue.title = area;
+            }
+
+            if (jurisdictionCardPending) {
+                jurisdictionCardPending.classList.toggle('d-none', area === initialJurisdictionValue);
+            }
+        });
+    });
+
+    if (confirmAreaBtn) {
+        confirmAreaBtn.addEventListener('click', function () {
+            const area = selectedJurisdictionArea();
+
+            if (!area) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No area selected',
+                        text: 'Pick an area from the list first.',
+                        confirmButtonColor: '#2563eb'
+                    });
+                } else {
+                    window.alert('Please select an area from the list first.');
+                }
+                return;
+            }
+
+            const submitChoice = function () {
+                if (!assignedAreaInput || !confirmAreaForm) return;
+                assignedAreaInput.value = area;
+                confirmAreaForm.submit();
+            };
+
+            if (typeof Swal === 'undefined') {
+                if (window.confirm('Set "' + area + '" as your assigned jurisdiction?')) {
+                    submitChoice();
+                }
+                return;
+            }
+
+            Swal.fire({
+                icon: 'question',
+                title: 'Confirm assigned area',
+                html: 'Set <strong>' + escapeJurisdictionText(area) + '</strong> as your assigned jurisdiction?',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, confirm area',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#2563eb'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    submitChoice();
+                }
+            });
+        });
+    }
 
     // ═══ AUTOMATIC PROFILE PHOTO UPLOAD & PREVIEW ══════════════
     const photoInput = document.getElementById('hero_photo_input');
@@ -925,280 +1839,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ═══ ANIMATED KPI COUNTERS ═════════════════════════════════
-    document.querySelectorAll('.pkpi-value[data-count]').forEach(el => {
-        const target = parseInt(el.getAttribute('data-count'), 10);
-        if (isNaN(target)) return;
-        let start = null;
-        const step = ts => {
-            if (!start) start = ts;
-            const p = Math.min((ts - start) / 1000, 1);
-            el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * target);
-            if (p < 1) requestAnimationFrame(step);
+    // ═══ LIVE PHILIPPINE STANDARD TIME (PST) TICKER ═══════════
+    function updateLiveClock() {
+        const el = document.getElementById('livePstClock');
+        if (!el) return;
+        const now = new Date();
+        const options = {
+            timeZone: 'Asia/Manila',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
         };
-        requestAnimationFrame(step);
-    });
-
-    // Animate progress bar
-    setTimeout(() => {
-        const f = document.querySelector('.coll-fill');
-        if (f) { const w = f.style.width; f.style.width='0%'; requestAnimationFrame(() => requestAnimationFrame(() => { f.style.width = w; })); }
-    }, 400);
-
-    // Shared defaults
-    Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#64748b';
-    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15,23,42,0.92)';
-    Chart.defaults.plugins.tooltip.padding = 12;
-    Chart.defaults.plugins.tooltip.cornerRadius = 10;
-    const grid = { color: 'rgba(226,232,240,0.5)', drawBorder: false };
-
-    // Weekly Trend
-    const wd = <?= json_encode($weekly_trend) ?>;
-    new Chart(document.getElementById('weeklyChart'), {
-        type: 'bar',
-        data: {
-            labels: wd.map(w => w.label),
-            datasets: [
-                { 
-                    label: 'Violations', 
-                    data: wd.map(w => w.count), 
-                    backgroundColor: 'rgba(59, 130, 246, 0.85)', 
-                    hoverBackgroundColor: '#2563eb', 
-                    borderRadius: 6, 
-                    borderSkipped: false, 
-                    order: 2, 
-                    yAxisID: 'y' 
-                },
-                { 
-                    label: 'Revenue (₱)', 
-                    data: wd.map(w => w.revenue), 
-                    type: 'line', 
-                    borderColor: '#10b981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.08)', 
-                    fill: true, 
-                    borderWidth: 2.5, 
-                    tension: 0.28, 
-                    pointBackgroundColor: '#10b981', 
-                    pointRadius: 4, 
-                    pointHoverRadius: 6, 
-                    order: 1, 
-                    yAxisID: 'y1' 
-                }
-            ]
-        },
-        options: {
-            responsive: true, 
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: { position: 'top', labels: { usePointStyle: true, pointStyleWidth: 10 } },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            if (ctx.dataset.yAxisID === 'y1') {
-                                return ' Revenue: ₱' + Number(ctx.raw || 0).toLocaleString();
-                            }
-                            return ' Tickets: ' + Number(ctx.raw || 0);
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: { 
-                    beginAtZero: true, 
-                    grid, 
-                    ticks: { 
-                        precision: 0, 
-                        stepSize: 1 
-                    }, 
-                    title: { display: true, text: 'Tickets Count' } 
-                },
-                y1: { 
-                    beginAtZero: true, 
-                    position: 'right', 
-                    grid: { drawOnChartArea: false }, 
-                    ticks: { 
-                        callback: v => '₱' + Number(v).toLocaleString() 
-                    }, 
-                    title: { display: true, text: 'Revenue (₱)' } 
-                }
-            }
-        }
-    });
-
-    // Monthly Breakdown
-    const md = <?= json_encode($monthly_breakdown) ?>;
-    const mnames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    new Chart(document.getElementById('monthlyChart'), {
-        type: 'line',
-        data: {
-            labels: mnames,
-            datasets: [
-                { 
-                    label: 'Total Issued', 
-                    data: Object.values(md).map(m=>m.count), 
-                    borderColor:'#3b82f6', 
-                    backgroundColor:'rgba(59,130,246,0.08)', 
-                    fill:true, 
-                    tension: 0.28, 
-                    borderWidth:3, 
-                    pointRadius:4, 
-                    pointHoverRadius:7, 
-                    pointBackgroundColor: '#3b82f6' 
-                },
-                { 
-                    label: 'Paid',         
-                    data: Object.values(md).map(m=>m.paid),  
-                    borderColor:'#10b981', 
-                    borderDash:[6,4], 
-                    tension: 0.28, 
-                    borderWidth:2.5, 
-                    pointRadius:3, 
-                    pointBackgroundColor: '#10b981' 
-                },
-                { 
-                    label: 'Pending',      
-                    data: Object.values(md).map(m=>m.pending),
-                    borderColor:'#f59e0b', 
-                    borderDash:[3,5], 
-                    tension: 0.28, 
-                    borderWidth:2.5, 
-                    pointRadius:3, 
-                    pointBackgroundColor: '#f59e0b' 
-                }
-            ]
-        },
-        options: {
-            responsive: true, 
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: { 
-                legend: { position: 'top', labels: { usePointStyle: true, pointStyleWidth: 10 } },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw || 0)} tickets`
-                    }
-                }
-            },
-            scales: { 
-                x: { grid: { display: false } }, 
-                y: { 
-                    beginAtZero: true, 
-                    grid,
-                    ticks: {
-                        precision: 0,
-                        stepSize: 1
-                    },
-                    title: { display: true, text: 'Tickets Count' }
-                } 
-            }
-        }
-    });
-
-    // Nature of Violation Horizontal Bar Chart
-    const nd = <?= json_encode($natureSorted) ?>;
-    const nlabels = nd.map(n => n.violation_type);
-    const ncounts  = nd.map(n => n.count);
-    const palette  = ['#3b82f6','#0ea5e9','#06b6d4','#10b981','#14b8a6','#6366f1','#8b5cf6','#f59e0b','#ec4899','#f97316'];
-
-    new Chart(document.getElementById('natureBarChart'), {
-        type: 'bar',
-        data: {
-            labels: nlabels,
-            datasets: [{ 
-                label: 'Incidents', 
-                data: ncounts, 
-                backgroundColor: ncounts.map((_, i) => palette[i % palette.length] + 'cc'),
-                hoverBackgroundColor: ncounts.map((_, i) => palette[i % palette.length]),
-                borderRadius: 6, 
-                borderSkipped: false 
-            }]
-        },
-        options: {
-            indexAxis: 'y', 
-            responsive: true, 
-            maintainAspectRatio: false,
-            scales: { 
-                x: { 
-                    beginAtZero: true, 
-                    grid,
-                    ticks: {
-                        precision: 0,
-                        stepSize: 1
-                    },
-                    title: { display: true, text: 'Incidents Count' }
-                }, 
-                y: { 
-                    grid: { display: false },
-                    ticks: { font: { weight: '500' } }
-                } 
-            },
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ` Incidents: ${ctx.raw}`
-                    }
-                }
-            }
-        }
-    });
-});
-</script>
-
-<script>
-// ═══ ANALYTICS SECTION TOGGLE ════════════════════════════════
-(function () {
-    const STORAGE_KEY = 'officer_analytics_hidden';
-    const section     = document.getElementById('analyticsSection');
-    const btn         = document.getElementById('analyticsToggleBtn');
-    const icon        = document.getElementById('analyticsToggleIcon');
-    const text        = document.getElementById('analyticsToggleText');
-    const pill        = document.getElementById('analyticsVisiblePill');
-
-    if (!section || !btn) return;
-
-    function setHidden(hidden, animate) {
-        if (hidden) {
-            if (animate) {
-                section.classList.add('analytics-collapsed');
-            } else {
-                // Instant — no transition on first load
-                section.style.transition = 'none';
-                section.classList.add('analytics-collapsed');
-                // Re-enable transition after one frame
-                requestAnimationFrame(() => {
-                    section.style.transition = '';
-                });
-            }
-            icon.className  = 'bi bi-eye me-1';
-            text.textContent = 'Show';
-            pill.textContent = 'Hidden';
-            pill.classList.add('hidden-state');
-            btn.classList.add('is-hidden');
-            localStorage.setItem(STORAGE_KEY, '1');
-        } else {
-            section.classList.remove('analytics-collapsed');
-            icon.className  = 'bi bi-eye-slash me-1';
-            text.textContent = 'Hide';
-            pill.textContent = 'Visible';
-            pill.classList.remove('hidden-state');
-            btn.classList.remove('is-hidden');
-            localStorage.removeItem(STORAGE_KEY);
+        try {
+            el.textContent = now.toLocaleTimeString('en-US', options) + ' PST';
+        } catch (e) {
+            el.textContent = now.toLocaleTimeString() + ' PST';
         }
     }
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
 
-    // Init on page load — instant (no animation)
-    const startHidden = localStorage.getItem(STORAGE_KEY) === '1';
-    setHidden(startHidden, false);
-
-    // Click handler — animated
-    btn.addEventListener('click', function () {
-        const isCurrentlyCollapsed = section.classList.contains('analytics-collapsed');
-        setHidden(!isCurrentlyCollapsed, true);
-    });
-})();
+});
 </script>
 <?= $this->endSection() ?>

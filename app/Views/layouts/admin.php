@@ -19,41 +19,51 @@
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
             --transition-speed: 0.3s;
-            /* Theme matching Original Navy Blue Dashboard */
-            --brand-primary: #3b82f6;
-            --brand-secondary: #2563eb;
-            --brand-accent: #8b5cf6;
-            --brand-gold: #f59e0b;
-            --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            --brand-gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            --surface-bg: #f1f5f9;
-            --surface-muted: #e2e8f0;
+            /* Blue Theme */
+            --brand-primary: #2563eb;
+            --brand-secondary: #1e40af;
+            --brand-accent: #3b82f6;
+            --brand-highlight: #60a5fa;
+            --brand-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            --surface-bg: #f0f9ff;
+            --surface-muted: #e0f2fe;
             --surface-card: #ffffff;
-            --text-strong: #0f172a;
-            --text-body: #334155;
-            --text-muted: #64748b;
-            --border-soft: #e2e8f0;
+            --text-strong: #0c4a6e;
+            --text-body: #0369a1;
+            --text-muted: #0284c7;
+            --border-soft: #bae6fd;
             --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+            --shadow-sm: 0 2px 8px rgba(37, 99, 235, 0.1);
+            --shadow-md: 0 4px 16px rgba(37, 99, 235, 0.15);
+            --shadow-lg: 0 8px 32px rgba(37, 99, 235, 0.2);
         }
 
         :root[data-theme="dark"] {
-            --surface-bg: #0f172a;
-            --surface-muted: #1e293b;
-            --surface-card: #1e293b;
-            --text-strong: #f8fafc;
-            --text-body: #cbd5e1;
-            --text-muted: #94a3b8;
-            --border-soft: rgba(255, 255, 255, 0.1);
+            --surface-bg: #0a1929;
+            --surface-muted: #0f2942;
+            --surface-card: #132f4c;
+            --text-strong: #e3f2fd;
+            --text-body: #90caf9;
+            --text-muted: #64b5f6;
+            --border-soft: #1e4976;
+            --shadow-sm: 0 2px 8px rgba(25, 118, 210, 0.3);
+            --shadow-md: 0 4px 16px rgba(25, 118, 210, 0.4);
+            --shadow-lg: 0 8px 32px rgba(25, 118, 210, 0.5);
         }
 
         :root[data-theme="light"] {
-            --surface-bg: #f1f5f9;
-            --surface-muted: #e2e8f0;
+            --surface-bg: #f0f9ff;
+            --surface-muted: #e0f2fe;
             --surface-card: #ffffff;
-            --text-strong: #0f172a;
-            --text-body: #334155;
-            --text-muted: #64748b;
-            --border-soft: #e2e8f0;
+            --text-strong: #0c4a6e;
+            --text-body: #0369a1;
+            --text-muted: #0284c7;
+            --border-soft: #bae6fd;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         body {
@@ -62,6 +72,7 @@
             color: var(--text-body);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .empty-state {
@@ -86,14 +97,15 @@
         .sidebar {
             width: var(--sidebar-width);
             min-height: 100vh;
-            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(180deg, #2a2d35 0%, #1f2229 100%);
             color: white;
-            transition: width var(--transition-speed) ease;
+            transition: width var(--transition-speed) var(--ease-premium), 
+                        transform var(--transition-speed) var(--ease-premium);
             position: fixed;
             left: 0;
             top: 0;
             z-index: 1000;
-            box-shadow: 12px 0 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
             border-right: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -101,7 +113,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 30%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 30%);
             pointer-events: none;
         }
 
@@ -109,31 +121,56 @@
             width: var(--sidebar-collapsed-width);
         }
 
+        /* The nav column scrolls on short laptop screens instead of pushing
+           the Logout item below the bottom edge, where a fixed sidebar can
+           never be scrolled to. The collapse toggle is a sibling of this
+           column, so it keeps sitting on the sidebar border. */
+        .sidebar > .position-sticky {
+            max-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+        }
+
+        .sidebar > .position-sticky::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar > .position-sticky::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 3px;
+        }
+
         .sidebar a {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
-            padding: 12px 20px;
+            padding: 14px 20px;
             display: flex;
             align-items: center;
             white-space: nowrap;
             overflow: hidden;
-            transition: padding var(--transition-speed) ease;
+            transition: all var(--transition-speed) var(--ease-premium);
+            border-radius: 12px;
+            margin: 4px 12px;
         }
 
         .sidebar.collapsed a {
-            padding: 12px 0;
+            padding: 14px 0;
             justify-content: center;
+            margin: 4px 8px;
         }
 
         .sidebar a i {
             font-size: 1.25rem;
             min-width: 40px;
             text-align: center;
-            transition: transform 0.25s var(--ease-premium), filter 0.25s var(--ease-premium);
+            transition: transform 0.3s var(--ease-premium);
         }
 
         .sidebar .nav-text {
-            transition: opacity var(--transition-speed) ease, visibility var(--transition-speed) ease;
+            transition: opacity var(--transition-speed) ease, 
+                        visibility var(--transition-speed) ease;
             opacity: 1;
             visibility: visible;
         }
@@ -146,30 +183,68 @@
             display: none;
         }
 
-        .sidebar a:hover, .sidebar a.active {
+        .sidebar a:hover {
             color: white;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .sidebar a.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            font-weight: 600;
         }
         
         .sidebar .nav-link {
-            border-radius: 12px;
-            margin: 3px 12px;
             position: relative;
-            transition: transform 0.25s var(--ease-premium), background-color 0.25s var(--ease-premium);
-        }
-
-        .sidebar .nav-link:hover {
-            transform: translateX(3px);
         }
 
         .sidebar .nav-link:hover i {
-            transform: translateY(-2px) scale(1.14);
-            filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.4));
+            transform: scale(1.1);
         }
 
         .sidebar .nav-link.active i {
+            transform: scale(1.08);
+        }
+
+        .sidebar .nav-text {
+            transition: opacity var(--transition-speed) ease, 
+                        visibility var(--transition-speed) ease;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar.collapsed .nav-text,
+        .sidebar.collapsed .sidebar-header-text {
+            opacity: 0;
+            visibility: hidden;
+            width: 0;
+            display: none;
+        }
+
+        .sidebar a:hover {
+            color: white;
+            background: rgba(96, 165, 250, 0.2);
+            transform: translateX(4px);
+        }
+        
+        .sidebar a.active {
+            color: white;
+            background: rgba(96, 165, 250, 0.3);
+            font-weight: 600;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+        }
+        
+        .sidebar .nav-link {
+            position: relative;
+        }
+
+        .sidebar .nav-link:hover i {
             transform: scale(1.1);
-            filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.5));
+        }
+
+        .sidebar .nav-link.active i {
+            transform: scale(1.08);
         }
 
         .sidebar-toggle {
@@ -177,10 +252,10 @@
             right: -20px;
             top: 50%;
             transform: translateY(-50%);
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border: 3px solid #ffffff;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            border: 2px solid #ffffff;
             border-radius: 50%;
             color: white;
             display: flex;
@@ -188,15 +263,15 @@
             justify-content: center;
             cursor: pointer;
             z-index: 1001;
-            transition: all var(--transition-speed) ease;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+            transition: all var(--transition-speed) var(--ease-premium);
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
             font-size: 1.1rem;
         }
 
         .sidebar-toggle:hover {
-            filter: brightness(0.95);
-            transform: translateY(-50%) scale(1.15);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
         }
 
         .sidebar.collapsed .sidebar-toggle {
@@ -204,7 +279,16 @@
         }
 
         .sidebar.collapsed .sidebar-toggle:hover {
-            transform: translateY(-50%) rotate(180deg) scale(1.15);
+            transform: translateY(-50%) rotate(180deg) scale(1.1);
+        }
+
+        @keyframes pageFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
         }
 
         .main-content {
@@ -213,6 +297,7 @@
             width: calc(100% - var(--sidebar-width));
             padding: 20px;
             min-height: 100vh;
+            animation: pageFadeIn 0.22s ease-out;
         }
 
         .sidebar.collapsed + .main-content {
@@ -220,101 +305,231 @@
             width: calc(100% - var(--sidebar-collapsed-width));
         }
 
+        /* Modal & Backdrop Stacking Context Fix */
+        .modal {
+            z-index: 1060 !important;
+        }
+        .modal-backdrop {
+            z-index: 1050 !important;
+            background-color: rgba(15, 23, 42, 0.65) !important;
+        }
+        .modal-backdrop.show {
+            opacity: 1 !important;
+            backdrop-filter: blur(4px) !important;
+            -webkit-backdrop-filter: blur(4px) !important;
+        }
+        .modal.fade .modal-dialog {
+            transform: scale(0.96) translateY(10px);
+            opacity: 0;
+            transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        .modal.show .modal-dialog {
+            transform: scale(1) translateY(0) !important;
+            opacity: 1 !important;
+        }
+
         /* Enhanced Glassmorphic Card Styling & Hover Transitions */
         .card {
             border: none;
-            border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(31, 41, 55, 0.07);
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.75);
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .analytics-tilt {
-            transform-style: preserve-3d;
-            will-change: transform;
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            background: var(--surface-card);
+            border: 1px solid var(--border-soft);
+            transition: transform 0.35s var(--ease-premium), 
+                        box-shadow 0.35s var(--ease-premium), 
+                        border-color 0.35s var(--ease-premium);
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--brand-accent);
         }
 
         .card-header {
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-soft);
             background-color: transparent;
+            font-weight: 600;
+            color: var(--text-strong);
         }
 
         /* Button Micro-Interactions & Hover Lift */
         .btn {
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s var(--ease-premium);
+            border: 2px solid transparent;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 22px -4px rgba(16, 185, 129, 0.35);
+            box-shadow: var(--shadow-md);
         }
 
         .btn:active {
-            transform: translateY(1px) scale(0.98);
+            transform: translateY(0) scale(0.98);
         }
 
+        /* Primary Blue Buttons */
         .btn-primary {
-            border: none;
-            background: var(--brand-gradient);
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+            background: #2563eb;
+            border: 2px solid #2563eb;
             color: #ffffff;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
         }
 
         .btn-primary:hover {
-            filter: brightness(1.08);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.48);
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(29, 78, 216, 0.45);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid #2563eb;
+            color: #2563eb;
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
             color: #ffffff;
         }
 
-        /* Dropdown Pop-In Animation */
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: 2px solid #10b981;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: 2px solid #f59e0b;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            border-color: #d97706;
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: 2px solid #ef4444;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border-color: #dc2626;
+            color: #ffffff;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-secondary {
+            background: #808080;
+            border: 2px solid #808080;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #666666;
+            border-color: #666666;
+            color: #ffffff;
+        }
+
+        .btn-info {
+            background: #f0f0f0;
+            border: 2px solid #000000;
+            color: #000000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-info:hover {
+            background: #e0e0e0;
+            border-color: #000000;
+            color: #000000;
+        }
+
+        .btn-light {
+            background: var(--surface-muted);
+            border: 2px solid var(--border-soft);
+            color: var(--text-body);
+        }
+
+        .btn-light:hover {
+            background: var(--surface-card);
+            border-color: #000000;
+        }
+
+        .btn-dark {
+            background: #000000;
+            border: 2px solid #000000;
+            color: #ffffff;
+        }
+
+        .btn-dark:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        /* Dropdown Fade Animation */
         .dropdown-menu {
-            border-radius: 14px;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.15);
-            animation: dropdownFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            transform-origin: top right;
+            border-radius: 12px;
+            border: 1px solid var(--border-soft);
+            box-shadow: var(--shadow-lg);
+            animation: dropdownFadeIn 0.2s var(--ease-premium);
         }
 
         @keyframes dropdownFadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-8px) scale(0.95);
+                transform: translateY(-8px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
         .dropdown-item {
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s var(--ease-premium);
             border-radius: 8px;
             margin: 2px 4px;
             width: calc(100% - 8px);
+            color: var(--text-body);
         }
 
         .dropdown-item:hover {
-            background-color: rgba(16, 185, 129, 0.08);
+            background-color: var(--surface-muted);
             transform: translateX(4px);
-            color: var(--brand-primary);
+            color: var(--text-strong);
         }
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #6ee7b7;
-            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.2);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
             transform: translateY(-1px);
+            transition: all 0.2s var(--ease-premium);
+        }
+
+        .form-control,
+        .form-select {
+            border-color: var(--border-soft);
+            transition: all 0.2s var(--ease-premium);
         }
 
         .main-content .h2 {
@@ -323,46 +538,49 @@
             letter-spacing: -0.3px;
         }
 
-        /* Premium KPI Cards with Dynamic Motion & Aura Glow */
+        /* Premium KPI Cards - Colorful with Smooth Animations */
         .premium-kpi {
             position: relative;
             overflow: hidden;
-            border-radius: 18px;
-            border: 0;
-            color: #fff !important;
-            box-shadow: 0 16px 36px rgba(150, 15, 25, 0.28);
-            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: kpiFloat 6.6s ease-in-out infinite;
+            border-radius: 16px;
+            border: none;
+            color: #ffffff !important;
+            box-shadow: var(--shadow-md);
+            transition: all 0.4s var(--ease-premium);
+            animation: kpiFloat 6s ease-in-out infinite;
             animation-delay: var(--float-delay, 0s);
         }
 
         .premium-kpi:hover {
             transform: translateY(-8px) scale(1.02) !important;
-            box-shadow: 0 25px 50px -10px rgba(200, 30, 43, 0.45), 0 0 30px rgba(212, 160, 23, 0.25) !important;
+            box-shadow: var(--shadow-lg) !important;
         }
 
         .premium-kpi i {
-            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s var(--ease-premium);
+            opacity: 0.9;
         }
 
         .premium-kpi:hover i {
-            transform: scale(1.25) rotate(8deg);
+            transform: scale(1.2) rotate(5deg);
+            opacity: 1;
         }
 
         .premium-kpi::after {
             content: '';
             position: absolute;
-            inset: auto -35% -40% auto;
+            bottom: -40%;
+            right: -35%;
             width: 180px;
             height: 180px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.18);
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
             pointer-events: none;
             transition: transform 0.5s ease;
         }
 
         .premium-kpi:hover::after {
-            transform: scale(1.3);
+            transform: scale(1.4);
         }
 
         .premium-kpi::before {
@@ -372,46 +590,107 @@
             left: -25%;
             width: 35%;
             height: 300%;
-            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 100%);
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
             transform: rotate(20deg);
-            animation: premiumShine 5.1s var(--ease-premium) infinite;
+            animation: premiumShine 6s var(--ease-premium) infinite;
             animation-delay: var(--shine-delay, 0s);
         }
 
+        /* Colorful KPI Card Backgrounds */
         .premium-kpi.bg-primary {
-            background: linear-gradient(135deg, #c81e2b 0%, #e03040 48%, #b01520 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .premium-kpi.bg-primary:hover {
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5) !important;
+        }
+
+        .premium-kpi.bg-primary i {
+            color: #ffffff !important;
         }
 
         .premium-kpi.bg-success {
-            background: linear-gradient(135deg, #0fa36f 0%, #16b57d 45%, #4fd1a0 100%) !important;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        .premium-kpi.bg-success:hover {
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.5) !important;
+        }
+
+        .premium-kpi.bg-success i {
+            color: #ffffff !important;
         }
 
         .premium-kpi.bg-info {
-            background: linear-gradient(135deg, #b87d00 0%, #d4a017 50%, #f0c040 100%) !important;
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
+        }
+
+        .premium-kpi.bg-info:hover {
+            box-shadow: 0 12px 32px rgba(6, 182, 212, 0.5) !important;
+        }
+
+        .premium-kpi.bg-info i {
+            color: #ffffff !important;
         }
 
         .premium-kpi.bg-warning {
-            background: linear-gradient(135deg, #7d3c00 0%, #a05010 48%, #c06820 100%) !important;
-            color: #fff9f0 !important;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+        }
+
+        .premium-kpi.bg-warning:hover {
+            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.5) !important;
+        }
+
+        .premium-kpi.bg-warning i {
+            color: #ffffff !important;
+        }
+
+        .premium-kpi.bg-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+        }
+
+        .premium-kpi.bg-danger:hover {
+            box-shadow: 0 12px 32px rgba(239, 68, 68, 0.5) !important;
+        }
+
+        .premium-kpi.bg-danger i {
+            color: #ffffff !important;
         }
 
         /* Interactive Table Row Hover Effects */
         .table thead th {
-            border-bottom: 1.5px solid #e2e8f0;
-            color: #4a5568;
-            font-size: 0.78rem;
-            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-soft);
+            color: var(--text-strong);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             font-weight: 700;
+            background-color: var(--surface-muted);
         }
 
         .table tbody tr {
-            border-color: #f1f5f9;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            border-color: var(--border-soft);
+            transition: all 0.25s var(--ease-premium);
         }
 
         .table tbody tr:hover {
-            background-color: rgba(59, 130, 246, 0.04) !important;
+            background-color: var(--surface-muted) !important;
+            transform: scale(1.01);
         }
 
         /* Modern Sleek Scrollbar for Responsive Tables */
@@ -513,9 +792,112 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
         }
 
+        /* Colorful Status Badges - Restored */
         .badge {
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            padding: 0.5em 1em;
+            border-radius: 8px;
+            transition: all 0.2s var(--ease-premium);
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Success/Paid - Green */
+        .badge.bg-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .badge.bg-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Warning/Pending - Orange */
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        .badge.bg-warning:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Danger/Cancelled - Red */
+        .badge.bg-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .badge.bg-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Primary - Blue */
+        .badge.bg-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .badge.bg-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Secondary - Gray (keeping monochrome) */
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Info - Cyan */
+        .badge.bg-info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Light - White with border (monochrome) */
+        .badge.bg-light {
+            background-color: #fafafa !important;
+            color: #000000 !important;
+            border: 1px solid #e0e0e0 !important;
+        }
+
+        /* Dark - Black (monochrome) */
+        .badge.bg-dark {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+
+        /* Dark subtle - for ticket IDs etc (monochrome) */
+        .badge.bg-dark-subtle {
+            background-color: #f5f5f5 !important;
+            color: #000000 !important;
+            border: 1px solid #e0e0e0 !important;
             font-weight: 600;
-            letter-spacing: 0.01em;
+        }
+
+        .badge.bg-secondary-subtle {
+            background-color: #f5f5f5 !important;
+            color: #000000 !important;
+            border: 1px solid #e0e0e0 !important;
+            font-weight: 600;
+        }
+
+        /* Rounded pill badges */
+        .badge.rounded-pill {
+            padding: 0.4em 1.2em;
         }
 
         .btn {
@@ -524,36 +906,34 @@
         }
 
         .desktop-header {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 20px;
-            padding: 0.75rem 1.5rem !important;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            background: var(--surface-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 1rem 1.5rem !important;
+            box-shadow: var(--shadow-sm);
             margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: all 0.3s var(--ease-premium);
         }
 
         [data-bs-theme="dark"] .desktop-header {
-            background: rgba(26, 32, 53, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            background: var(--surface-card);
+            border: 1px solid var(--border-soft);
+            box-shadow: var(--shadow-md);
         }
 
         .header-title {
-            font-size: 1.25rem;
+            font-size: 1.35rem;
             font-weight: 800;
             margin: 0;
-            color: #1e293b;
+            color: var(--text-strong);
             letter-spacing: -0.02em;
         }
 
         [data-bs-theme="dark"] .header-title {
-            color: #f1f5f9;
+            color: var(--text-strong);
         }
 
         .user-profile-badge {
@@ -561,26 +941,27 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            background: var(--surface-muted);
+            border: 1px solid var(--border-soft);
             border-radius: 12px;
-            transition: all 0.2s ease;
+            transition: all 0.3s var(--ease-premium);
         }
 
         [data-bs-theme="dark"] .user-profile-badge {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--surface-muted);
+            border: 1px solid var(--border-soft);
         }
 
         .user-profile-badge:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: translateY(-1px);
+            background: var(--surface-card);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
 
         .avatar-circle {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -588,9 +969,10 @@
             color: white;
             font-weight: 700;
             font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
             overflow: hidden;
             flex-shrink: 0;
+            border: 2px solid #60a5fa;
         }
 
         .topbar-avatar-img {
@@ -617,35 +999,42 @@
         .theme-select {
             min-width: 110px;
             border-radius: 10px;
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            background-color: rgba(255, 255, 255, 0.5);
-            color: #475569;
+            border: 1px solid var(--border-soft);
+            background-color: var(--surface-card);
+            color: var(--text-body);
             font-size: 0.85rem;
             font-weight: 600;
             padding: 0.4rem 2rem 0.4rem 0.75rem;
             cursor: pointer;
+            transition: all 0.2s var(--ease-premium);
+        }
+
+        .theme-select:hover {
+            border-color: var(--brand-primary);
         }
 
         [data-bs-theme="dark"] .theme-select {
-            background-color: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #94a3b8;
+            background-color: var(--surface-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-body);
         }
 
         .modal-content {
             border: 1px solid var(--border-soft);
-            border-radius: 18px;
-            box-shadow: 0 26px 72px rgba(25, 39, 86, 0.26);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
+            background: var(--surface-card);
         }
 
         .modal-header {
-            border-bottom: 1px solid #e8ecff;
+            border-bottom: 1px solid var(--border-soft);
+            background: var(--surface-card);
         }
 
         .modal-footer {
-            border-top: 1px solid #edf1ff;
-            background: #f8faff;
+            border-top: 1px solid var(--border-soft);
+            background: var(--surface-muted);
         }
 
         .table-light,
@@ -658,6 +1047,10 @@
         }
 
         @media (prefers-color-scheme: dark) {
+            /* The OS dark setting is only a fallback: an explicit "Light"
+               pick must still render light, so everything below is skipped
+               when the user has chosen the light theme. */
+            :root:not([data-theme="light"]) {
             body {
                 background: radial-gradient(circle at 10% 0%, #2d0505 0%, #180202 35%, #0f0101 100%);
             }
@@ -792,6 +1185,7 @@
                 background: #d4a017;
                 opacity: 0.24;
             }
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -804,15 +1198,54 @@
                 animation: none !important;
             }
 
+            /* Cancelling the reveal animation must not leave it at opacity 0. */
+            .premium-reveal {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
             .card,
             .sidebar .nav-link {
                 transition: none !important;
             }
         }
 
+        /* Blue Theme Alerts */
         .alert {
-            border: none;
+            border: 2px solid;
             border-radius: 12px;
+            transition: all 0.3s var(--ease-premium);
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-color: #3b82f6;
+        }
+
+        .alert-primary {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            border-color: #2563eb;
         }
 
         body.role-enforcer .card-header,
@@ -829,18 +1262,20 @@
             position: sticky;
             top: 0;
             z-index: 990;
-            background: rgba(245, 247, 255, 0.95);
-            backdrop-filter: blur(6px);
-            border-bottom: 1px solid #dbe2ff;
-            padding: 10px 12px;
+            background: var(--surface-card);
+            border-bottom: 1px solid var(--border-soft);
+            padding: 12px;
+            box-shadow: var(--shadow-sm);
         }
 
         .mobile-sidebar-backdrop {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(21, 27, 52, 0.45);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 998;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
         }
 
         body.sidebar-open .mobile-sidebar-backdrop {
@@ -855,16 +1290,11 @@
         }
 
         @media (max-width: 768px) {
-            body::before,
-            body::after {
-                display: none;
-            }
-
             .sidebar {
                 left: calc(-1 * var(--sidebar-width));
                 width: min(var(--sidebar-width), 86vw);
-                box-shadow: 0 10px 35px rgba(0,0,0,0.28);
-                transition: left var(--transition-speed) ease;
+                box-shadow: var(--shadow-lg);
+                transition: left var(--transition-speed) var(--ease-premium);
             }
             .sidebar.active {
                 left: 0;
@@ -879,8 +1309,8 @@
             }
 
             .container-fluid {
-                padding-left: 0.35rem;
-                padding-right: 0.35rem;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
             }
 
             .card {
@@ -890,26 +1320,22 @@
             .card-header,
             .card-body,
             .card-footer {
-                padding-left: 0.9rem !important;
-                padding-right: 0.9rem !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
             }
 
             .btn-group {
                 flex-wrap: wrap;
-                gap: 0.3rem;
+                gap: 0.5rem;
             }
 
             .modal-dialog {
-                margin: 0.75rem;
+                margin: 1rem;
             }
 
             .table {
                 min-width: 640px;
                 font-size: 0.9rem;
-            }
-
-            .table-premium-mobile {
-                min-width: 0;
             }
 
             .form-control,
@@ -923,26 +1349,77 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 12px;
-                margin: -12px -12px 10px -12px;
+                margin: -12px -12px 12px -12px;
             }
             .desktop-header {
                 display: none !important;
             }
             .main-content .h2 {
-                font-size: 1.15rem;
-            }
-            .btn-toolbar {
-                margin-left: auto;
+                font-size: 1.25rem;
             }
 
+            .premium-kpi {
+                margin-bottom: 1rem;
+            }
+
+            /* Optimize for touch */
+            .btn {
+                min-height: 44px;
+            }
+
+            .sidebar a {
+                padding: 16px 20px;
+            }
+
+            .table tbody tr:hover {
+                transform: none;
+            }
+        }
+
+        /* Tablet Portrait */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+
+            .premium-kpi {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Large Desktop */
+        @media (min-width: 1920px) {
+            .container-fluid {
+                max-width: 1800px;
+                margin: 0 auto;
+            }
+
+            .sidebar {
+                width: 300px;
+            }
+
+            .main-content {
+                margin-left: 300px;
+                width: calc(100% - 300px);
+            }
+        }
+
+        /* Mobile: ledger tables stack into cards. This block lost its opening
+           rule in an earlier edit, which left a stray "}-mobile td" selector
+           and pushed the card rules to every screen width. */
+        @media (max-width: 768px) {
             .table-premium-mobile {
                 border: 0;
+                min-width: 0;
             }
-
             .table-premium-mobile thead {
                 display: none;
             }
-
             .table-premium-mobile tbody,
             .table-premium-mobile tr,
             .table-premium-mobile td {
@@ -991,63 +1468,164 @@
         }
 
         /* ═══════════════════════════════════════════════════════════════
+           SMOOTH DELIVERY LAYER
+           Motion and scrolling only — no layout, wording or behaviour is
+           changed here, so every screen keeps its present content.
+           ═══════════════════════════════════════════════════════════════ */
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Colour changes cross-fade for the length of a theme switch. The class
+           is only present while switching, so normal rendering stays cheap. */
+        html.theme-switching,
+        html.theme-switching body,
+        html.theme-switching body * {
+            transition: background-color 0.32s var(--ease-premium),
+                        color 0.32s var(--ease-premium),
+                        border-color 0.32s var(--ease-premium),
+                        box-shadow 0.32s var(--ease-premium) !important;
+        }
+
+        /* Each page fades up into place instead of appearing in a single frame.
+           The animation is opacity-only on purpose: a transform here would turn
+           the shell into a containing block and drag fixed buttons (like the
+           officer's quick-add FAB) away from the viewport. */
+        @keyframes contentDeliver {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .main-content {
+            animation: contentDeliver 0.3s var(--ease-premium) both;
+            transition: margin-left var(--transition-speed) var(--ease-premium),
+                        width var(--transition-speed) var(--ease-premium),
+                        opacity 0.18s ease-in;
+        }
+
+        /* Leaving a page: the shell stays put and only the content fades out. */
+        html.is-leaving .main-content {
+            opacity: 0;
+        }
+
+        /* Wide tables scroll like a native pane: momentum, thin bar, no rubber
+           banding that drags the whole page sideways. */
+        .table-responsive,
+        .report-table-scroll {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+        }
+
+        .table-responsive::-webkit-scrollbar,
+        .report-table-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb,
+        .report-table-scroll::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.5);
+            border-radius: 99px;
+        }
+
+        /* State changes ease instead of snapping. */
+        .table tbody tr {
+            transition: background-color 0.24s var(--ease-premium),
+                        box-shadow 0.24s var(--ease-premium),
+                        transform 0.24s var(--ease-premium);
+        }
+
+        .badge,
+        .form-control,
+        .form-select,
+        .input-group-text,
+        .dropdown-item,
+        .nav-link {
+            transition: background-color 0.24s var(--ease-premium),
+                        color 0.24s var(--ease-premium),
+                        border-color 0.24s var(--ease-premium),
+                        box-shadow 0.24s var(--ease-premium),
+                        transform 0.24s var(--ease-premium);
+        }
+
+        /* The dialog itself is already animated by the premium modal rules
+           above; the backdrop is left alone on purpose — Bootstrap waits for
+           the backdrop before it opens the dialog, so a fading backdrop would
+           delay every dialog by its own duration. */
+
+        /* Taps register instantly and quietly instead of flashing the
+           browser's default highlight over a pressed row or button. */
+        .btn,
+        .table tbody tr,
+        .dropdown-item {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        /* A modal taller than the screen scrolls inside its own box, and that
+           scrollbar eats ~15px on the right — which pushed the whole dialog
+           off-centre (bigger gap on the right than on the left). Reserving the
+           gutter on both edges keeps dialogs optically centred, whether or not
+           they need to scroll. */
+        .modal {
+            scrollbar-gutter: stable both-edges;
+        }
+
+        /* Readers who ask for less motion get the same screens, instantly. */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            .main-content { animation: none !important; }
+            html.is-leaving .main-content { opacity: 1; }
+            html.theme-switching body * { transition: none !important; }
+            .modal.fade .modal-dialog { transition: none !important; transform: none; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
            PREMIUM ULTRA-SMOOTH & RESPONSIVE SWEETALERT2 STYLING
            ═══════════════════════════════════════════════════════════════ */
 
-        /* Smooth Backdrop with subtle glassmorphic blur */
+        /* Smooth Backdrop.
+           The blur is painted on a full-screen fixed layer, so only devices
+           that can afford it get it — and it is never animated: the tint
+           fades, the blur simply applies. Animating a backdrop-filter is what
+           made the overlay stutter on phones. */
         .swal2-container {
             z-index: 999999 !important;
             padding: 1rem !important;
-            backdrop-filter: blur(8px) saturate(130%) !important;
-            -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
-            transition: background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
-                        backdrop-filter 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            transition: background-color 0.24s var(--ease-premium) !important;
+            -webkit-tap-highlight-color: transparent;
         }
         .swal2-container.swal2-backdrop-show {
             background: rgba(15, 23, 42, 0.45) !important;
         }
+        @media (min-width: 768px) and (hover: hover) {
+            .swal2-container.swal2-backdrop-show {
+                backdrop-filter: blur(6px) saturate(120%);
+                -webkit-backdrop-filter: blur(6px) saturate(120%);
+            }
+        }
         :root[data-theme="dark"] .swal2-container.swal2-backdrop-show {
             background: rgba(0, 0, 0, 0.65) !important;
         }
-
-        /* Hardware-accelerated smooth spring animations */
-        @keyframes swal2SmoothIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.88) translateY(16px);
-                filter: blur(4px);
-            }
-            65% {
-                opacity: 1;
-                transform: scale(1.015) translateY(-2px);
-                filter: blur(0px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-                filter: blur(0px);
-            }
+        /* Toasts reuse the backdrop-show class, but they are notifications,
+           not modal dialogs: without this the tint and blur were painted as a
+           dark strip behind the toast card. */
+        body.swal2-toast-shown .swal2-container {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
         }
 
-        @keyframes swal2SmoothOut {
-            0% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.92) translateY(10px);
-                filter: blur(2px);
-            }
-        }
-
+        /* The dialog and toast animations themselves live further down, in
+           "DIALOG DELIVERY", so each keyframe is declared exactly once. */
         .swal2-popup:not(.swal2-toast).swal2-show {
-            animation: swal2SmoothIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-            will-change: transform, opacity, filter;
+            animation: swal2SmoothIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            will-change: transform, opacity;
         }
         .swal2-popup:not(.swal2-toast).swal2-hide {
             animation: swal2SmoothOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards !important;
-            will-change: transform, opacity, filter;
+            will-change: transform, opacity;
         }
 
         /* Modern Glass Card */
@@ -1101,6 +1679,12 @@
         }
         .swal2-popup:hover .swal2-icon {
             transform: scale(1.04);
+        }
+        /* A tap leaves the hover state stuck on touch screens. */
+        @media (hover: none) {
+            .swal2-popup:hover .swal2-icon {
+                transform: scale(0.96);
+            }
         }
 
         /* Success Icon */
@@ -1158,9 +1742,15 @@
             border: none !important;
             box-shadow: none !important;
             min-height: 42px !important;
-            display: inline-flex !important;
+            /* No !important here: SweetAlert hides the buttons a dialog does not
+               use with an inline display:none, and an !important rule would
+               force every Confirm/Deny/Cancel button back on screen. */
+            display: inline-flex;
             align-items: center !important;
             justify-content: center !important;
+            /* Drops the tap delay and the grey flash on touch screens. */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         .swal2-styled:hover {
             transform: translateY(-1.5px) !important;
@@ -1170,6 +1760,15 @@
         }
         .swal2-styled:focus {
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+        }
+        /* The ring is for keyboards, not for the finger that just tapped. */
+        .swal2-styled:focus:not(:focus-visible) {
+            box-shadow: none !important;
+        }
+        @media (hover: none) {
+            .swal2-styled:hover {
+                transform: none !important;
+            }
         }
 
         /* Confirm button */
@@ -1316,10 +1915,234 @@
             .swal2-container.swal2-top {
                 padding: 10px !important;
             }
+            /* Width follows the toast container instead of the whole
+               viewport: the grid column is narrower than 100vw, so a fixed
+               width made the card run off the right edge and clip its text. */
             .swal2-popup.swal2-toast {
-                width: calc(100vw - 20px) !important;
-                margin: 0 auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                margin: 0 !important;
                 border-radius: 14px !important;
+            }
+        }
+
+        /* ── DIALOG DELIVERY: SMALL-SCREEN FIT AND CHEAPER MOTION ─────
+           Dialogs keep every word and button; only the way they arrive and
+           the way they fit a small screen are tuned here. */
+
+        /* A tall dialog must never run off a short screen: it scrolls inside
+           itself instead (landscape phones, error lists, long confirms). */
+        .swal2-popup:not(.swal2-toast) {
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .swal2-popup:not(.swal2-toast)::-webkit-scrollbar {
+            width: 8px;
+        }
+        .swal2-popup:not(.swal2-toast)::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.45);
+            border-radius: 99px;
+        }
+
+        /* Desktop: a short, soft spring. Only opacity and transform are
+           animated — a blur layer here is what made the card stutter.
+           (These are the only swal2Smooth* keyframes in the file; the same
+           declarations used to be repeated, so the later copy silently won.) */
+        @keyframes swal2SmoothIn {
+            0%   { opacity: 0; transform: scale(0.94) translateY(12px); }
+            70%  { opacity: 1; transform: scale(1.012) translateY(-1px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes swal2SmoothOut {
+            0%   { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.96) translateY(6px); }
+        }
+
+        /* Phones: the dialog rises from the bottom edge instead of scaling
+           from nowhere, which reads as a sheet and matches the swipe-down
+           habit of the rest of the mobile screens. */
+        @keyframes swal2SheetIn {
+            0%   { opacity: 0; transform: translateY(26px) scale(0.985); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes swal2SheetOut {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(18px) scale(0.99); }
+        }
+
+        /* Body and actions settle a beat after the card lands — a short beat,
+           so the dialog never feels like it is still loading. */
+        @keyframes swal2ContentIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .swal2-show .swal2-title,
+        .swal2-show .swal2-html-container {
+            animation: swal2ContentIn 0.22s 0.02s var(--ease-premium) both;
+        }
+        .swal2-show .swal2-actions {
+            animation: swal2ContentIn 0.24s 0.05s var(--ease-premium) both;
+        }
+        .swal2-show .swal2-icon {
+            animation: swal2ContentIn 0.28s var(--ease-premium) both;
+        }
+
+        @media (max-width: 576px) {
+            .swal2-popup:not(.swal2-toast).swal2-show {
+                animation-name: swal2SheetIn !important;
+                animation-duration: 0.26s !important;
+            }
+            .swal2-popup:not(.swal2-toast).swal2-hide {
+                animation-name: swal2SheetOut !important;
+                animation-duration: 0.18s !important;
+            }
+        }
+
+        /* Close button eases instead of popping. */
+        .swal2-close {
+            transition: transform 0.2s var(--ease-premium), color 0.2s ease, opacity 0.2s ease !important;
+        }
+        .swal2-close:hover {
+            transform: scale(1.12) rotate(90deg);
+        }
+
+        /* Toasts keep a comfortable gap and never exceed the screen. */
+        .swal2-container.swal2-top-end,
+        .swal2-container.swal2-top {
+            gap: 0.5rem;
+        }
+        .swal2-popup.swal2-toast {
+            max-width: min(420px, calc(100vw - 1.5rem));
+        }
+        @media (max-width: 576px) {
+            /* SweetAlert caps the toast container at 360px and pins it to the
+               right, which left a wide strip on the left and none on the
+               right. Full width with equal gutters reads as one band. */
+            .swal2-container.swal2-top-end,
+            .swal2-container.swal2-top {
+                width: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                justify-content: center !important;
+                /* Clear of the 69px sticky top bar, so a toast never hides
+                   the menu button while it is on screen. */
+                padding: calc(79px + env(safe-area-inset-top, 0px)) 12px 12px !important;
+            }
+            .swal2-popup:not(.swal2-toast) {
+                max-height: calc(100dvh - 1.5rem);
+                padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)) !important;
+            }
+        }
+
+        /* Very small phones: keep everything readable without crowding. */
+        @media (max-width: 380px) {
+            .swal2-popup:not(.swal2-toast) {
+                padding: 1.2rem 0.95rem 1.1rem !important;
+                border-radius: 18px !important;
+            }
+            .swal2-title {
+                font-size: 1.08rem !important;
+            }
+            .swal2-html-container {
+                font-size: 0.84rem !important;
+            }
+            .swal2-actions {
+                gap: 8px !important;
+            }
+        }
+
+        /* Landscape phones: the viewport is short, so dialogs hug the top and
+           scale their icon down instead of being cut off. */
+        @media (max-height: 520px) and (orientation: landscape) {
+            .swal2-container {
+                padding: 0.5rem !important;
+                align-items: flex-start !important;
+            }
+            .swal2-popup:not(.swal2-toast) {
+                max-height: calc(100dvh - 1rem);
+                padding: 1rem 1.25rem !important;
+                border-radius: 16px !important;
+            }
+            .swal2-icon {
+                transform: scale(0.72);
+                margin: 0.1rem auto 0.2rem !important;
+            }
+            .swal2-actions {
+                flex-direction: row !important;
+                margin-top: 0.9rem !important;
+            }
+            .swal2-styled {
+                width: auto !important;
+                flex: 1 1 0;
+            }
+        }
+
+        /* No motion at all for readers who ask for it — dialogs still fit. */
+        @media (prefers-reduced-motion: reduce) {
+            .swal2-popup.swal2-show,
+            .swal2-popup.swal2-hide,
+            .swal2-popup.swal2-toast.swal2-show,
+            .swal2-popup.swal2-toast.swal2-hide,
+            .swal2-show .swal2-title,
+            .swal2-show .swal2-html-container,
+            .swal2-show .swal2-actions,
+            .swal2-show .swal2-icon {
+                animation: none !important;
+            }
+            .swal2-close:hover {
+                transform: none;
+            }
+        }
+
+        /* ── PRINT: strip the app chrome ────────────────────────────────
+           The print dialog has no preview, and the sidebar, topbar, theme
+           picker and toasts used to be printed on top of the document. */
+        @media print {
+            /* Paper is always fully delivered, never mid-transition. */
+            .main-content,
+            html.is-leaving .main-content {
+                animation: none !important;
+                opacity: 1 !important;
+            }
+            .sidebar,
+            .sidebar-toggle,
+            .mobile-topbar,
+            .desktop-header,
+            .user-profile-badge,
+            .theme-select,
+            .swal2-container,
+            .alert-dismissible .btn-close {
+                display: none !important;
+            }
+            /* Reveal animations never finish in a print snapshot, which left
+               the hero and cards at opacity 0 — a blank sheet on paper. */
+            .premium-reveal,
+            .premium-reveal * {
+                opacity: 1 !important;
+                transform: none !important;
+                animation: none !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                padding: 0 !important;
+            }
+            body {
+                background: #fff !important;
+                color: #0f172a !important;
+            }
+            /* Keep coloured state badges and progress bars on paper. */
+            .badge,
+            .progress-bar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .card {
+                box-shadow: none !important;
             }
         }
     </style>
@@ -1344,6 +2167,9 @@
                     <option value="dark">Dark</option>
                 </select>
                 <span class="text-muted small text-truncate d-none d-sm-inline" style="max-width: 30vw;">Hi, <?= esc((string) session()->get('username')) ?></span>
+                <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm" title="Log out" aria-label="Log out">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
             </div>
         </div>
 
@@ -1382,6 +2208,11 @@
                         <span class="text-muted" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;"><?= esc($layoutRole) ?></span>
                     </div>
                 </div>
+
+                <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" title="Log out of this account">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-lg-inline">Logout</span>
+                </a>
             </div>
         </header>
 
@@ -1394,6 +2225,36 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Every dialog opens without the page jumping underneath it: SweetAlert
+        // otherwise pads <body> to hide the scrollbar and the whole screen
+        // shifts sideways for a frame. Options passed by a caller still win.
+        const swalFire = Swal.fire;
+        Swal.fire = function (...args) {
+            if (args.length === 1 && args[0] && typeof args[0] === 'object') {
+                args[0] = Object.assign({ heightAuto: false }, args[0]);
+            }
+            // Keep the callee's own `this`: a Swal.mixin() class (the toast
+            // helper) carries its defaults there, and binding to Swal would
+            // turn every toast into a full dialog.
+            return swalFire.apply(this, args);
+        };
+
+        // Pages that build their own toast (Swal.mixin) would otherwise miss
+        // those defaults and re-introduce the body jump, so mixins get the
+        // same treatment. A mixin's own options still win.
+        const swalMixin = Swal.mixin;
+        Swal.mixin = function (...args) {
+            const mixin = swalMixin.apply(this, args);
+            const mixinFire = mixin.fire;
+            mixin.fire = function (...fireArgs) {
+                if (fireArgs.length === 1 && fireArgs[0] && typeof fireArgs[0] === 'object') {
+                    fireArgs[0] = Object.assign({ heightAuto: false }, fireArgs[0]);
+                }
+                return mixinFire.apply(this, fireArgs);
+            };
+            return mixin;
+        };
+
         // Global Enhanced Toast Mixin
         const Toast = Swal.mixin({
             toast: true,
@@ -1401,6 +2262,7 @@
             showConfirmButton: false,
             timer: 3200,
             timerProgressBar: true,
+            heightAuto: false,
             showClass: { popup: 'swal2-show' },
             hideClass: { popup: 'swal2-hide' },
             didOpen: (toast) => {
@@ -1486,6 +2348,17 @@
 
         const getSavedTheme = () => localStorage.getItem(THEME_KEY) || 'auto';
 
+        // Cross-fade the palette during a switch instead of snapping. The class
+        // lives only for the length of the change.
+        let themeSwitchTimer = null;
+        const flashThemeChange = () => {
+            root.classList.add('theme-switching');
+            window.clearTimeout(themeSwitchTimer);
+            themeSwitchTimer = window.setTimeout(function() {
+                root.classList.remove('theme-switching');
+            }, 380);
+        };
+
         const applyTheme = (theme, shouldPersist = false) => {
             const mode = (theme === 'light' || theme === 'dark') ? theme : 'auto';
             if (mode === 'auto') {
@@ -1504,15 +2377,18 @@
         applyTheme(getSavedTheme());
 
         themeSelectDesktop?.addEventListener('change', function() {
+            flashThemeChange();
             applyTheme(this.value, true);
         });
 
         themeSelectMobile?.addEventListener('change', function() {
+            flashThemeChange();
             applyTheme(this.value, true);
         });
 
         darkPreference.addEventListener('change', function() {
             if (getSavedTheme() === 'auto') {
+                flashThemeChange();
                 applyTheme('auto');
             }
         });
@@ -1576,12 +2452,63 @@
             }
         });
 
-        document.querySelectorAll('.sidebar .nav-link').forEach(function(link) {
-            link.addEventListener('click', function() {
-                if (isMobile()) {
-                    closeMobileSidebar();
-                }
-            });
+        // Smooth delivery: every in-app navigation steps the content out while
+        // the shell stays still. Delegated, so card links and buttons move the
+        // same way as the sidebar. New tabs, downloads, external sites, the
+        // print view and same-page links are left completely alone.
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (!link) return;
+            if (link.target === '_blank' || link.hasAttribute('download')) return;
+            if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+            const href = link.getAttribute('href');
+            if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
+
+            let target;
+            try {
+                target = new URL(link.href, window.location.href);
+            } catch (err) {
+                return;
+            }
+
+            if (target.origin !== window.location.origin) return;
+            if (target.searchParams.get('print') === '1') return;
+            if (target.pathname === window.location.pathname && target.search === window.location.search) return;
+            // Downloads keep the same page on screen, so they must not fade it.
+            if (/export|download|\.csv$|\.pdf$/i.test(target.pathname + target.search)) return;
+
+            if (isMobile()) {
+                closeMobileSidebar();
+            }
+
+            document.documentElement.classList.add('is-leaving');
+
+            // If the navigation is cancelled (a blocked popup, a stalled
+            // request), bring the page back instead of leaving it faded.
+            window.setTimeout(function() {
+                document.documentElement.classList.remove('is-leaving');
+            }, 1500);
+        });
+
+        // Returning through the browser cache must never restore a faded page.
+        window.addEventListener('pageshow', function(event) {
+            document.documentElement.classList.remove('is-leaving');
+            if (event.persisted) {
+                document.querySelectorAll('.main-content').forEach(function(mc) {
+                    mc.style.opacity = '';
+                    mc.style.transform = '';
+                    mc.style.transition = '';
+                });
+            }
+        });
+
+        // Ensure all modals are direct children of document.body so they are never trapped
+        // by container stacking contexts, keeping the backdrop firmly over all page content.
+        document.querySelectorAll('.modal').forEach(function(modal) {
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
         });
     });
 </script>

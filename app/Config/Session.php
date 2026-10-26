@@ -40,8 +40,13 @@ class Session extends BaseConfig
      *
      * The number of SECONDS you want the session to last.
      * Setting to 0 (zero) means expire when the browser is closed.
+     *
+     * Officers and admins keep this page open between calls, so the old two
+     * hours signed them out in the middle of a shift. Eight hours covers a
+     * working day; the clock restarts on every request, so only a genuinely
+     * idle session reaches it. Lower this if the workstations are shared.
      */
-    public int $expiration = 7200;
+    public int $expiration = 28800;
 
     /**
      * --------------------------------------------------------------------------

@@ -530,6 +530,19 @@
                     </div>
                 </div>
 
+                <!-- Assigned Station (Enforcer only) -->
+                <div id="stationSection" style="<?= $currentRoleVal === 'enforcer' ? '' : 'display: none;' ?>">
+                    <div class="mb-3">
+                        <label for="assigned_station" class="form-label">Assigned Duty Station <span class="text-muted fw-normal small">(Enforcers Only)</span></label>
+                        <div class="field-group">
+                            <i class="bi bi-geo field-icon"></i>
+                            <input type="text" name="assigned_station" id="assigned_station" class="form-control"
+                                   placeholder="e.g. Ceres Terminal, Main Crossing..." autocomplete="off"
+                                   value="<?= old('assigned_station', $user['assigned_station'] ?? '') ?>">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 3. THEN: USERNAME & EMAIL + STATUS -->
                 <div class="section-divider">
                     <span class="section-icon bg-warning bg-opacity-10 text-dark"><i class="bi bi-person-circle"></i></span>
@@ -730,8 +743,15 @@
             card.addEventListener('click', function () {
                 roleCards.forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
+                const selectedRole = this.getAttribute('data-role');
                 if (roleInput) {
-                    roleInput.value = this.getAttribute('data-role');
+                    roleInput.value = selectedRole;
+                }
+
+                // Toggle Station Section visibility
+                const stationSection = document.getElementById('stationSection');
+                if (stationSection) {
+                    stationSection.style.display = (selectedRole === 'enforcer') ? '' : 'none';
                 }
             });
         });

@@ -54,11 +54,9 @@ class UserController extends BaseController
         if (!$violation) {
             return redirect()->to(base_url('user/dashboard'))->with('error', 'Violation not found.');
         }
-        
-        // Ensure the violation belongs to the logged-in user
-        $session = session();
-        if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this violation.');
+
+        if (!$this->assertOwnership($violation)) {
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this violation.');
         }
 
         $allViolations = $this->violationRecord
@@ -70,7 +68,7 @@ class UserController extends BaseController
         $data = [
             'title'          => 'Violation Details',
             'violation'      => $violation,
-            'all_violations' => $allViolations
+            'all_violations' => $allViolations,
         ];
 
         return view('user/view_violation', $data);
@@ -84,10 +82,8 @@ class UserController extends BaseController
             return redirect()->to(base_url('user/dashboard'))->with('error', 'Violation not found.');
         }
 
-        // Ensure the violation belongs to the logged-in user
-        $session = session();
-        if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
+        if (!$this->assertOwnership($violation)) {
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
         }
 
         if ($violation['status'] !== 'Pending') {
@@ -95,8 +91,8 @@ class UserController extends BaseController
         }
 
         $data = [
-            'title' => 'Pay Violation',
-            'violation' => $violation
+            'title'     => 'Pay Violation',
+            'violation' => $violation,
         ];
 
         return view('user/pay_violation', $data);
@@ -104,28 +100,24 @@ class UserController extends BaseController
 
     public function processPayment()
     {
-        $violationModel = new ViolatorRecord();
-
-        $ticketId = $this->request->getPost('ticket_id');
+        $ticketId      = $this->request->getPost('ticket_id');
         $paymentMethod = $this->request->getPost('payment_method');
 
-        $violation = $violationModel->where('ticket_id', $ticketId)->first();
+        $violation = $this->violationRecord->where('ticket_id', $ticketId)->first();
 
         if (!$violation || $violation['status'] !== 'Pending') {
             return redirect()->to(base_url('user/dashboard'))->with('error', 'Invalid violation or already paid.');
         }
 
-        // Ensure the violation belongs to the logged-in user
-        $session = session();
-        if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
+        if (!$this->assertOwnership($violation)) {
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to pay this violation.');
         }
 
-        if ($violationModel->recordPayment($violation['id'], $paymentMethod)) {
+        if ($this->violationRecord->recordPayment($violation['id'], $paymentMethod)) {
             return redirect()->to(base_url('user/receipt/' . $ticketId))->with('success', 'Payment successful!');
-        } else {
-            return redirect()->back()->with('error', 'Payment failed. Please try again.');
         }
+
+        return redirect()->back()->with('error', 'Payment failed. Please try again.');
     }
 
     public function receipt($ticketId = null)
@@ -136,15 +128,16 @@ class UserController extends BaseController
             return redirect()->to(base_url('user/dashboard'))->with('error', 'Receipt not found.');
         }
 
-        // Ensure the violation belongs to the logged-in user
-        $session = session();
-        if ($violation['license_plate'] !== $session->get('license_plate') && $violation['driver_name'] !== $session->get('username')) {
-             return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this receipt.');
+        if (!$this->assertOwnership($violation)) {
+            return redirect()->to(base_url('user/dashboard'))->with('error', 'You do not have permission to view this receipt.');
         }
 
+        // The receipt lists every infraction on the ticket on its own line,
+        // each with the fine that was actually collected for it.
         $data = [
-            'title' => 'Payment Receipt',
-            'violation' => $violation
+            'title'       => 'Payment Receipt',
+            'violation'   => $violation,
+            'infractions' => $this->violationRecord->getTicketInfractions($violation['ticket_id'] ?? ''),
         ];
 
         return view('user/receipt', $data);
@@ -168,19 +161,37 @@ class UserController extends BaseController
 
     public function history()
     {
-        $session = session();
+        $session      = session();
         $licensePlate = $session->get('license_plate');
-        $driverName = $session->get('username');
+        $driverName   = $session->get('username');
+
+        $all = $this->violationRecord->getByDriver($licensePlate, $driverName);
 
         $data = [
-            'title' => 'My Payment History',
-            'violations' => array_filter($this->violationRecord->getByDriver($licensePlate, $driverName), function($v) {
-                return $v['status'] === 'Paid';
-            }),
-            'username' => $session->get('username'),
-            'role' => $session->get('role')
+            'title'      => 'My Payment History',
+            'violations' => array_filter($all, static fn($v) => $v['status'] === 'Paid'),
+            'username'   => $session->get('username'),
+            'role'       => $session->get('role'),
         ];
 
         return view('user/history', $data);
+    }
+
+    // ───────────────────────────────────────────────────────────────────
+    // Private Helpers
+    // ───────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns true when the logged-in user owns the given violation record
+     * (matched by either license plate or driver name).
+     *
+     * Centralises the ownership check that was previously copy-pasted
+     * in viewViolation(), payViolation(), processPayment(), and receipt().
+     */
+    private function assertOwnership(array $violation): bool
+    {
+        $session = session();
+        return $violation['license_plate'] === $session->get('license_plate')
+            || $violation['driver_name']   === $session->get('username');
     }
 }

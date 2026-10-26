@@ -81,7 +81,7 @@
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
-                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Violations</h6>
+                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Tickets</h6>
                             </div>
                             <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_violations'] ?>" data-prefix="" data-suffix="">0</h3>
                         </div>
@@ -90,8 +90,7 @@
                         </div>
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;">All recorded tickets</span>
+                        <div class="d-flex align-items-center justify-content-between">                                <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= esc($summary['report_year'] ?? $year) ?> tickets issued</span>
                             <i class="bi bi-arrow-right-circle opacity-75"></i>
                         </div>
                     </div>
@@ -134,7 +133,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Collection Rate</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['collection_rate'] ?>" data-prefix="" data-suffix="%">0%</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['collection_rate'] ?>" data-prefix="" data-suffix="%" data-decimals="1">0%</h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                             <i class="bi bi-pie-chart text-white fs-4 lh-1"></i>
@@ -143,7 +142,7 @@
                     
                     <div class="mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;">Paid vs Total Violators</span>
+                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;">Collected vs Assessed</span>
                             <i class="bi bi-arrow-right-circle opacity-50 ms-auto"></i>
                         </div>
                         <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.2); border-radius: 10px;">
@@ -164,16 +163,18 @@
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Top Violators</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder"><?= number_format(count($top_violators_list)) ?></h3>
+                            <h3 class="mb-0 fw-bolder"><?= number_format((int) ($summary['total_violators'] ?? count($top_violators_list))) ?></h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded p-2 d-inline-flex">
                             <i class="bi bi-person-lines-fill text-white fs-5 lh-1"></i>
                         </div>
                     </div>
-                    <?php if (!empty($top_violators_list)): ?>
+                    <?php if (!empty($top_violators_list)):
+                        $topViolatorName = trim((string) ($top_violators_list[0]['driver_name'] ?? '')) ?: 'Unknown Violator';
+                    ?>
                     <div class="mb-2">
-                        <div class="fw-bold text-truncate" style="font-size:0.95rem;">🥇 <?= esc($top_violators_list[0]['driver_name']) ?></div>
-                        <span class="badge bg-white text-warning fw-bold rounded-pill px-2 mt-1" style="font-size:0.75rem;"><?= $top_violators_list[0]['total_violations'] ?> violations</span>
+                        <div class="fw-bold text-truncate" style="font-size:0.95rem;">🥇 <?= esc($topViolatorName) ?></div>
+                        <span class="badge bg-white text-warning fw-bold rounded-pill px-2 mt-1" style="font-size:0.75rem;"><?= number_format((int) $top_violators_list[0]['total_violations']) ?> attempt<?= (int) $top_violators_list[0]['total_violations'] === 1 ? '' : 's' ?></span>
                     </div>
                     <?php endif; ?>
                     <div class="pt-2 border-top border-white border-opacity-25">
@@ -194,10 +195,61 @@
         <!-- Weekly Trend -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.15s;">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend (Last 12 Weeks)</h5>
+                <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend 
+                        <small class="fw-normal text-muted" style="font-size:0.85rem;">
+                            <?= !empty($selected_month_name) ? '(' . esc($selected_month_name) . ' ' . esc($year) . ')' : '(Last 12 Weeks)' ?>
+                        </small>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <form method="GET" class="m-0 d-flex align-items-center gap-1">
+                            <input type="hidden" name="year" value="<?= esc($year) ?>">
+                            <select name="month" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 145px; border-radius: 8px;" onchange="this.form.submit()">
+                                <option value="" <?= empty($selected_month) ? 'selected' : '' ?>>Last 12 Weeks</option>
+                                <optgroup label="<?= esc($year) ?> Breakdown">
+                                    <?php 
+                                    $adminMonths = [
+                                        1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+                                        5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+                                        9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+                                    ];
+                                    foreach ($adminMonths as $mIdx => $mName): ?>
+                                        <option value="<?= $mIdx ?>" <?= ($selected_month == $mIdx) ? 'selected' : '' ?>>
+                                            <?= $mName ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            </select>
+                        </form>
+                        <?php if (!empty($selected_month)): ?>
+                            <a href="?year=<?= esc($year) ?>" class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-2" style="font-size:0.75rem;" title="Reset to Last 12 Weeks">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <?php if (!empty($selected_month_name)): ?>
+                        <?php 
+                            $monthTotalTickets = array_sum(array_column($weekly_trend, 'count'));
+                            $monthTotalRevenue = array_sum(array_column($weekly_trend, 'revenue'));
+                            $monthPaidRevenue  = array_sum(array_column($weekly_trend, 'paid_revenue'));
+                        ?>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 bg-light rounded-3 border border-light-subtle gap-2">
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
+                                    <i class="bi bi-ticket-perforated me-1"></i><?= $monthTotalTickets ?> Violations in <?= esc($selected_month_name) ?>
+                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">
+                                    <i class="bi bi-cash-stack me-1"></i>₱<?= number_format($monthPaidRevenue, 2) ?> Paid
+                                </span>
+                            </div>
+                            <span class="small text-muted" style="font-size: 0.78rem;">
+                                <i class="bi bi-calendar-check me-1"></i>Weekly Breakdown
+                            </span>
+                        </div>
+                    <?php endif; ?>
                     <canvas id="weeklyChart" height="300"></canvas>
                 </div>
             </div>
@@ -206,8 +258,13 @@
         <!-- Monthly Breakdown -->
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.17s;">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
+                <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
+                        <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2 py-0.5 d-none d-sm-inline" style="font-size: 0.7rem;" title="Click any month to inspect its weekly trend">
+                            <i class="bi bi-cursor me-1"></i>Click month for weekly
+                        </span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <canvas id="monthlyChart" height="300"></canvas>
@@ -267,6 +324,7 @@
                         <i class="bi bi-clock me-1"></i>
                         Last updated: <span id="natureLastUpdated">—</span>
                         &nbsp;·&nbsp; <span id="natureRecordCount">0</span> violation type(s)
+                        &nbsp;·&nbsp; CY <?= esc($summary['report_year'] ?? $year) ?>
                     </div>
                 </div>
 
@@ -369,7 +427,7 @@
                                     <tr>
                                         <th class="ps-4" style="width:55px;">#</th>
                                         <th>Driver Information</th>
-                                        <th style="width:42%;">Violations</th>
+                                        <th style="width:42%;">Attempts</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -379,17 +437,22 @@
                                         <?php $r = 1; $medals = ['🥇','🥈','🥉']; foreach ($top_violators_list as $vl):
                                             $p = $maxModalV > 0 ? round(($vl['total_violations'] / $maxModalV) * 100) : 0;
                                             $rl = $r <= 3 ? $medals[$r-1] : $r;
+                                            $profileUrl = base_url('penalties/violator/' . (int) $vl['violator_id']);
+                                            $violatorName = trim((string) ($vl['driver_name'] ?? '')) ?: 'Unknown Violator';
+                                            $violatorPlate = trim((string) ($vl['license_plate'] ?? ''));
                                         ?>
-                                        <tr style="cursor:pointer;" onclick="window.location='<?= base_url('penalties/search?q='.urlencode($vl['driver_name'])) ?>'">
+                                        <tr style="cursor:pointer;" onclick="window.location='<?= $profileUrl ?>'" title="Open violator profile">
                                             <td class="ps-4 text-center fw-bold text-muted" style="font-size:1.1rem;"><?= $rl ?></td>
                                             <td>
-                                                <div class="fw-bold text-dark"><?= esc($vl['driver_name']) ?></div>
-                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace small"><?= esc($vl['license_plate']) ?></span>
+                                                <a href="<?= $profileUrl ?>" class="fw-bold text-dark text-decoration-none" onclick="event.stopPropagation();"><?= esc($violatorName) ?></a>
+                                                <?php if ($violatorPlate !== '' && ! \App\Libraries\ViolatorIdentity::isPlaceholder($violatorPlate)): ?>
+                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace small"><?= esc($violatorPlate) ?></span>
+                                                <?php endif; ?>
                                             </td>
                                             <td class="pe-4">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <div class="flex-grow-1"><div class="progress" style="height:8px;border-radius:4px;"><div class="progress-bar bg-warning" style="width:<?= $p ?>%;"></div></div></div>
-                                                    <span class="badge bg-warning text-dark rounded-pill fw-bold px-2" style="min-width:32px;"><?= $vl['total_violations'] ?></span>
+                                                    <span class="badge bg-warning text-dark rounded-pill fw-bold px-2" style="min-width:32px;"><?= number_format((int) $vl['total_violations']) ?></span>
                                                 </div>
                                             </td>
                                         </tr>
@@ -509,7 +572,9 @@
         const weeklyData = <?= json_encode($weekly_trend) ?>;
         const weekLabels = weeklyData.map(w => w.label);
         const weekCounts = weeklyData.map(w => w.count);
-        const weekRevenues = weeklyData.map(w => w.revenue);
+        // Revenue means money actually collected, which is how the Revenue
+        // Report counts it: pending fines are owed, not received.
+        const weekRevenues = weeklyData.map(w => w.paid_revenue);
 
         new Chart(document.getElementById('weeklyChart'), {
             type: 'bar',
@@ -525,7 +590,7 @@
                         yAxisID: 'y'
                     },
                     {
-                        label: 'Revenue ($)',
+                        label: 'Revenue (₱ collected)',
                         data: weekRevenues,
                         type: 'line',
                         borderColor: '#10b981', // emerald-500
@@ -542,6 +607,35 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                if (!items.length) return '';
+                                const idx = items[0].dataIndex;
+                                const item = weeklyData[idx];
+                                if (item && item.date_range) {
+                                    return item.label + ' (' + item.date_range + ')';
+                                }
+                                if (item && item.week_start && item.week_end) {
+                                    return item.label + ' (' + item.week_start + ' to ' + item.week_end + ')';
+                                }
+                                return items[0].label;
+                            },
+                            label: function(ctx) {
+                                if (ctx.dataset.yAxisID === 'y1') {
+                                    const item = weeklyData[ctx.dataIndex] || {};
+                                    let txt = ' Collected: ₱' + Number(ctx.raw || 0).toLocaleString();
+                                    if (item.revenue !== undefined) {
+                                        txt += ' · Assessed: ₱' + Number(item.revenue || 0).toLocaleString();
+                                    }
+                                    return txt;
+                                }
+                                return ' Tickets: ' + Number(ctx.raw || 0);
+                            }
+                        }
+                    }
+                },
                 scales: {
                     x: { grid: { display: false } },
                     y: { 
@@ -553,7 +647,10 @@
                         beginAtZero: true,
                         position: 'right',
                         grid: { drawOnChartArea: false },
-                        title: { display: true, text: 'Revenue' }
+                        ticks: {
+                            callback: v => '₱' + Number(v).toLocaleString()
+                        },
+                        title: { display: true, text: 'Revenue (₱)' }
                     }
                 }
             }
@@ -602,8 +699,31 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
+                onClick: (e, elements) => {
+                    if (elements && elements.length > 0) {
+                        const monthIndex = elements[0].index;
+                        const monthNum = monthIndex + 1;
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('year', '<?= esc($year) ?>');
+                        url.searchParams.set('month', monthNum);
+                        window.location.href = url.toString();
+                    }
+                },
+                onHover: (e, elements) => {
+                    if (e.native && e.native.target) {
+                        e.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+                    }
+                },
                 plugins: {
-                    legend: { position: 'top' }
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                if (!items.length) return '';
+                                return items[0].label + ' (Click to view weekly breakdown)';
+                            }
+                        }
+                    }
                 },
                 scales: {
                     x: { grid: { display: false } },
@@ -615,7 +735,7 @@
         // ═══════════════════════════════════════════════════════════════
         // NATURE OF VIOLATION — REAL-TIME ENGINE
         // ═══════════════════════════════════════════════════════════════
-        const NATURE_API_URL   = '<?= base_url('api/nature-summary') ?>';
+        const NATURE_API_URL   = '<?= base_url('api/nature-summary') ?>?year=<?= (int) ($summary['report_year'] ?? $year) ?>';
         const NATURE_REFRESH_MS = 30000; // 30 seconds
 
         // Full extended palette for all violation types
@@ -978,7 +1098,9 @@
         }
 
         // --- Secondary Chart Controller (Status and Roles) ---
-        const statusData = <?= json_encode($status_distribution) ?>;
+        // Cancelled violators are left out of this doughnut: the chart reports
+        // only what is still Pending or already Paid.
+        const statusData = <?= json_encode($status_distribution) ?>.filter(s => s.status !== 'Cancelled');
         const statusLabels = statusData.map(s => s.status);
         const statusValues = statusData.map(s => s.count);
 
@@ -1005,8 +1127,8 @@
                         data: statusValues,
                         backgroundColor: statusLabels.map(label => {
                             if (label === 'Pending') return '#ffc107';
-                            if (label === 'Paid') return '#198754';
-                            return '#dc3545';
+                            if (label === 'Paid')    return '#198754';
+                            return '#6c757d';
                         })
                     }]
                 },

@@ -31,9 +31,9 @@ class UserController extends BaseController
         }
 
         $stats = [
-            'total'    => (new UserModel())->whereIn('role', ['admin', 'enforcer'])->countAllResults(),
-            'admin'    => (new UserModel())->where('role', 'admin')->countAllResults(),
-            'enforcer' => (new UserModel())->where('role', 'enforcer')->countAllResults(),
+            'total'    => $this->userModel->whereIn('role', ['admin', 'enforcer'])->countAllResults(),
+            'admin'    => $this->userModel->where('role', 'admin')->countAllResults(),
+            'enforcer' => $this->userModel->where('role', 'enforcer')->countAllResults(),
         ];
 
         $data = [
@@ -129,6 +129,7 @@ class UserController extends BaseController
             'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
             'confirm_password' => 'matches[password]',
             'role'     => 'permit_empty|in_list[admin,driver,enforcer]',
+            'assigned_station' => 'permit_empty|max_length[255]',
         ];
 
         if (!$this->validate($rules)) {
@@ -152,6 +153,7 @@ class UserController extends BaseController
             'email'     => trim((string) $this->request->getPost('email')),
             'password'  => $password,
             'role'      => $role,
+            'assigned_station' => trim((string) $this->request->getPost('assigned_station')),
             'status'    => 'active',
         ];
 
@@ -195,6 +197,7 @@ class UserController extends BaseController
             'address'  => 'required|max_length[255]',
             'email'    => "required|valid_email|is_unique[users.email,id,{$id}]",
             'role'     => 'required|in_list[admin,driver,enforcer]',
+            'assigned_station' => 'permit_empty|max_length[255]',
             'status'   => 'required|in_list[active,inactive,suspended]',
         ];
 
@@ -218,6 +221,7 @@ class UserController extends BaseController
             'address'   => trim((string) $this->request->getPost('address')),
             'email'     => trim((string) $this->request->getPost('email')),
             'role'      => $this->request->getPost('role'),
+            'assigned_station' => trim((string) $this->request->getPost('assigned_station')),
             'status'    => $this->request->getPost('status'),
         ];
 

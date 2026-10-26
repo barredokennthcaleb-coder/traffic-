@@ -31,7 +31,7 @@
     <?php endif; ?>
 
     <!-- Record Violation Modal -->
-    <div class="modal fade" id="recordViolationModal" tabindex="-1" aria-labelledby="recordViolationModalLabel" aria-hidden="true">
+    <div class="modal fade" id="recordViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="recordViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-dark text-white py-3">
@@ -41,7 +41,10 @@
                 <div class="modal-body p-3 p-md-4" style="background-color: #f8f9fa;">
                     <form action="<?= base_url('officer/store') ?>" method="POST" id="violationForm">
                         <?= csrf_field() ?>
-                        
+                        <?php $prefill = is_array($prefillViolator ?? null) ? $prefillViolator : []; ?>
+                        <input type="hidden" name="submission_token" id="submission_token" value="<?= esc($submissionToken ?? '') ?>">
+                        <input type="hidden" name="violator_id" id="violator_id" value="<?= esc(old('violator_id', $prefill['id'] ?? '')) ?>">
+
                         <!-- Physical Ticket Container -->
                         <div class="tct-modal-card">
 
@@ -65,24 +68,52 @@
                                     <span class="tct-bold-label">TO:</span>
                                 </div>
 
-                                <div class="tct-row mb-2 align-items-end">
-                                    <span class="tct-bold-label me-2">Driver's Name:</span>
-                                    <input type="text" name="driver_full_name" id="driver_full_name" 
-                                           class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                           placeholder="Masha Tabu Batongbakal" required 
-                                           value="<?= old('first_name') ? trim(old('first_name') . ' ' . old('middle_name') . ' ' . old('last_name')) : '' ?>">
-                                    <input type="hidden" name="first_name" id="first_name" value="<?= old('first_name') ?>">
-                                    <input type="hidden" name="middle_name" id="middle_name" value="<?= old('middle_name') ?>">
-                                    <input type="hidden" name="last_name" id="last_name" value="<?= old('last_name') ?>">
+                                <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                                    <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
+                                    <?php
+                                    // Three visible name fields instead of one run-on input, so each
+                                    // word sits above its own (First) / (Middle) / (Last) label. Any
+                                    // values kept from a failed submit win over the violator prefill.
+                                    $oldFirst = old('first_name');
+                                    $oldLast  = old('last_name');
+                                    if ($oldFirst === null && $oldLast === null) {
+                                        $newRecordName = tct_split_name($prefill['first_name'] ?? null, $prefill['middle_name'] ?? null, $prefill['last_name'] ?? null, $prefill['driver_name'] ?? null);
+                                    } else {
+                                        $newRecordName = tct_split_name($oldFirst, old('middle_name'), $oldLast, null);
+                                    }
+                                    ?>
+                                    <div class="d-flex flex-1 gap-2" style="min-width: 0;">
+                                        <div class="flex-1 d-flex flex-column text-center">
+                                            <input type="text" name="first_name" id="first_name"
+                                                   class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;"
+                                                   placeholder="First" required
+                                                   value="<?= esc($newRecordName['first']) ?>">
+                                            <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(First)</span>
+                                        </div>
+                                        <div class="flex-1 d-flex flex-column text-center">
+                                            <input type="text" name="middle_name" id="middle_name"
+                                                   class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;"
+                                                   placeholder="Middle"
+                                                   value="<?= esc($newRecordName['middle']) ?>">
+                                            <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
+                                        </div>
+                                        <div class="flex-1 d-flex flex-column text-center">
+                                            <input type="text" name="last_name" id="last_name"
+                                                   class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;"
+                                                   placeholder="Last" required
+                                                   value="<?= esc($newRecordName['last']) ?>">
+                                            <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="tct-row mb-2 align-items-end">
                                     <span class="tct-bold-label me-2">Address:</span>
                                     <input type="text" name="address" id="address" 
                                            class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                           placeholder="bocana ilog" required 
-                                           value="<?= old('address') ?>">
-                                    <input type="hidden" name="age" id="age" value="<?= old('age') ?: '25' ?>">
+                                           placeholder="e.g. Brgy. 1, Kabankalan City" required 
+                                           value="<?= esc(old('address', $prefill['address'] ?? '')) ?>">
+                                    <input type="hidden" name="age" id="age" value="<?= esc(old('age', $prefill['age'] ?? '25')) ?>">
                                 </div>
 
                                 <div class="tct-row mb-2 align-items-end">
@@ -90,19 +121,19 @@
                                         <span class="tct-bold-label me-1">DL/Permit No.</span>
                                         <input type="text" name="license_number" id="license_number" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="no" value="<?= old('license_number') ?>">
+                                               placeholder="e.g. F02-00-123456" value="<?= esc(old('license_number', $prefill['license_number'] ?? '')) ?>">
                                     </div>
                                     <div class="d-flex flex-1 align-items-end me-3">
                                         <span class="tct-bold-label me-1">Plate#</span>
                                         <input type="text" name="license_plate" id="license_plate" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="890" required value="<?= old('license_plate') ?>">
+                                               placeholder="e.g. ABC 1234" required value="<?= esc(old('license_plate', $prefill['license_plate'] ?? '')) ?>">
                                     </div>
                                     <div class="d-flex flex-1 align-items-end">
                                         <span class="tct-bold-label me-1">MTOP#</span>
                                         <input type="text" name="mtop_number" id="mtop_number" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="m789" value="<?= old('mtop_number') ?>">
+                                               placeholder="e.g. 1234 (optional)" value="<?= esc(old('mtop_number', $prefill['mtop_number'] ?? '')) ?>">
                                     </div>
                                 </div>
 
@@ -111,25 +142,25 @@
                                         <span class="tct-bold-label me-1">Owner:</span>
                                         <input type="text" name="owner_name" id="owner_name" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="no" value="<?= old('owner_name') ?>">
+                                               placeholder="e.g. Same as driver" value="<?= esc(old('owner_name', $prefill['owner_name'] ?? '')) ?>">
                                     </div>
                                     <div class="d-flex flex-1 align-items-end">
                                         <span class="tct-bold-label me-1">Address</span>
                                         <input type="text" name="owner_address" id="owner_address" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="bocana ilog" value="<?= old('owner_address') ?>">
+                                               placeholder="e.g. Same as above" value="<?= esc(old('owner_address', $prefill['owner_address'] ?? '')) ?>">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Section 2: Violations Checklist -->
                             <div class="tct-doc-section">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
                                     <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
-                                    <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="badge bg-light text-dark border fw-bold" id="fineBadge" style="font-size: 0.82rem;">Fine: ₱<span id="penalty_amount_display">0.00</span></span>
-                                        <button type="button" class="btn btn-xs btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addViolationTypeModal">
-                                            <i class="bi bi-plus-circle me-1"></i> New Type
+                                        <button type="button" class="btn btn-xs btn-outline-primary" id="addNewInfractionBtn" title="Add infraction">
+                                            <i class="bi bi-plus-lg me-1"></i> Add Infraction
                                         </button>
                                     </div>
                                 </div>
@@ -137,7 +168,7 @@
                                     You are hereby charged/cited for comitting the violations marked "x" hereunder:
                                 </div>
 
-                                <div class="tct-checklist-container">
+                                <div class="tct-checklist-container" id="violationChecklist">
                                     <?php foreach ($violationTypes as $type): ?>
                                         <?php $isChecked = in_array((string)$type['id'], (array)old('violation_type_id', []), true); ?>
                                         <label class="tct-check-label">
@@ -153,6 +184,25 @@
                                         </label>
                                     <?php endforeach; ?>
                                 </div>
+
+                                <!-- Additional infraction entries added with the + Add Infraction button -->
+                                <div id="newInfractionRows" class="d-flex flex-column gap-2 mt-2"></div>
+                                <template id="newInfractionRowTemplate">
+                                    <div class="infraction-entry d-flex align-items-center gap-2">
+                                        <select name="violation_type_id[]" class="form-select form-select-sm tct-input infraction-select flex-1" aria-label="Additional infraction">
+                                            <option value="">-- Select additional violation --</option>
+                                            <?php foreach ($violationTypes as $type): ?>
+                                                <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
+                                                    <?= esc($type['violation_name']) ?> - ₱<?= number_format((float) $type['fine_amount'], 2) ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <button type="button" class="btn btn-sm btn-outline-danger infraction-remove" title="Remove infraction" aria-label="Remove infraction">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </div>
+                                </template>
+
                                 <input type="hidden" id="penalty_amount" value="0.00">
                             </div>
 
@@ -163,21 +213,12 @@
                                         <span class="tct-bold-label me-1">Place:</span>
                                         <input type="text" name="location" id="location" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold"
-                                               required list="locationOptions" placeholder="Biyarin, Kabankalan City"
+                                               required list="locationOptions" placeholder="e.g. Ceres Terminal, Kabankalan City"
                                                value="<?= esc(old('location')) ?>">
                                         <datalist id="locationOptions">
                                             <option value="Ceres Terminal, Kabankalan City">
                                             <option value="Biyarin, Kabankalan City">
-                                            <?php
-                                            $barangays = [
-                                                'Barangay 1 (Poblacion)', 'Barangay 2 (Poblacion)', 'Barangay 3 (Poblacion)', 'Barangay 4 (Poblacion)',
-                                                'Barangay 5 (Poblacion)', 'Barangay 6 (Poblacion)', 'Barangay 7 (Poblacion)', 'Barangay 8 (Poblacion)',
-                                                'Barangay 9 (Poblacion)', 'Bantayan', 'Binicuil', 'Camansi', 'Camingawan', 'Camugao', 'Carol-an',
-                                                'Daan Banua', 'Hilamonan', 'Inapoy', 'Linao', 'Locotan', 'Magballo', 'Oringao', 'Orong',
-                                                'Pinaguinpinan', 'Salong', 'Tabugon', 'Tagoc', 'Tagukon', 'Talubangi', 'Tampalon', 'Tan-Awan', 'Tapi'
-                                            ];
-                                            foreach ($barangays as $brgy):
-                                            ?>
+                                            <?php foreach (kabankalan_areas() as $brgy): ?>
                                             <option value="<?= esc($brgy) ?>, Kabankalan City">
                                             <?php endforeach; ?>
                                         </datalist>
@@ -219,13 +260,18 @@
                                 <!-- Driver Signature Area (Centered Line) -->
                                 <div class="tct-driver-signature-area text-center mb-4">
                                     <div class="tct-sig-wrapper mx-auto position-relative" style="width: 280px; height: 55px;">
-                                        <canvas id="driverSigCanvas" width="280" height="55" 
-                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 55px; touch-action: none; cursor: crosshair; z-index: 2; background: transparent;"></canvas>
+                                        <img id="driverSigPreview" src="" alt="Signature of the Driver"
+                                             style="display: none; position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); max-height: 44px; z-index: 2;">
                                         <div class="tct-sig-underline w-100" style="position: absolute; bottom: 0; left: 0;"></div>
                                     </div>
                                     <div class="d-flex justify-content-center align-items-center gap-2 mt-1">
                                         <span class="tct-sub-label">Signature of the Driver</span>
-                                        <button type="button" class="btn btn-link text-danger p-0 small" id="clearDriverSigBtn" style="font-size: 0.72rem; text-decoration: none;">(Clear)</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-0" data-open-signature="driver">
+                                            <i class="bi bi-pen-fill"></i> <span id="driverSigBtnLabel">Sign Here</span>
+                                        </button>
+                                        <button type="button" class="btn btn-link text-danger p-0" id="clearDriverSigBtn" style="display: none;" title="Remove Signature">
+                                            <i class="bi bi-x-circle-fill"></i>
+                                        </button>
                                     </div>
                                     <input type="hidden" name="driver_signature" id="driver_signature">
                                 </div>
@@ -234,11 +280,18 @@
                                 <div class="tct-officer-signature-area mb-3">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <div class="tct-sub-label">Printed Name and Signature of Apprehending Officer.</div>
-                                        <button type="button" class="btn btn-link text-danger p-0 small" id="clearOfficerSigBtn" style="font-size: 0.72rem; text-decoration: none;">(Clear)</button>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-2 py-0" data-open-signature="officer">
+                                                <i class="bi bi-pen-fill"></i> <span id="officerSigBtnLabel">Sign Here</span>
+                                            </button>
+                                            <button type="button" class="btn btn-link text-danger p-0" id="clearOfficerSigBtn" style="display: none;" title="Remove Signature">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="tct-officer-box position-relative" style="border: 1.5px solid #000; height: 60px; width: 100%; display: flex; align-items: center; justify-content: center; background: #fff;">
-                                        <canvas id="officerSigCanvas" width="500" height="60" 
-                                                style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; touch-action: none; cursor: crosshair; z-index: 2; background: transparent;"></canvas>
+                                        <img id="officerSigPreview" src="" alt="Signature of the Apprehending Officer"
+                                             style="display: none; max-height: 52px; z-index: 2;">
                                     </div>
                                     <input type="hidden" name="officer_signature" id="officer_signature">
                                 </div>
@@ -250,15 +303,29 @@
                             </div>
 
                             <!-- Footer Area matching Ticket Format -->
+                            <?php
+                                $defaultTct = old('custom_ticket_no') ?: ($nextTctNumber ?? '');
+                                $defaultTctParts = parse_tct_number($defaultTct);
+                            ?>
                             <div class="tct-footer-area d-flex justify-content-between align-items-center pt-2">
                                 <div class="tct-driver-copy-tag">Driver's Copy</div>
-                                <div class="tct-number-tag d-flex align-items-center">
-                                    <span class="me-1">TCT No.</span>
-                                    <input type="text" name="custom_ticket_no" id="custom_ticket_no" 
-                                           class="form-control form-control-sm tct-input tct-red-no p-0 border-0 text-end"
-                                           style="width: 175px; background: transparent;"
-                                           placeholder="2024-2026-7890" 
-                                           value="<?= old('custom_ticket_no') ?>">
+                                <div class="text-end">
+                                    <div class="tct-number-tag d-flex align-items-center justify-content-end">
+                                        <span class="me-1">TCT No.</span>
+                                        <span class="tct-year-prefix" id="tctYearPrefix"><?= esc($defaultTctParts['prefix']) ?></span>
+                                        <input type="text" id="tctSerialInput"
+                                               class="form-control form-control-sm tct-input tct-red-no p-0 border-0 text-start"
+                                               style="width: 92px; background: transparent;"
+                                               maxlength="7"
+                                               inputmode="numeric"
+                                               pattern="\d{7}"
+                                               placeholder="0030268"
+                                               value="<?= esc($defaultTctParts['serial']) ?>"
+                                               title="Auto-assigned serial number. Edit only when using a physical TCT booklet.">
+                                        <input type="hidden" name="custom_ticket_no" id="custom_ticket_no"
+                                               value="<?= esc($defaultTctParts['full']) ?>"
+                                               data-from-old="<?= old('custom_ticket_no') ? '1' : '0' ?>">
+                                    </div>
                                 </div>
                             </div>
 
@@ -280,6 +347,10 @@
 
 <div class="container-fluid pb-4">
 
+    <!-- ═══════════════════════════════════════════════════════════
+         TICKET LEDGER
+         ═══════════════════════════════════════════════════════════ -->
+    <div id="ledgerPane">
 
     <!-- ═══ CITATION TABLE CARD ═══════════════════════════════════ -->
     <div class="row justify-content-center">
@@ -295,14 +366,11 @@
                             <i class="bi bi-list-check me-1 text-primary"></i>My Recorded Violations
                         </span>
                         <div class="vr mx-1 d-none d-md-block" style="height: 20px;"></div>
-                        <button type="button" class="btn btn-sm btn-filter-chip active" data-status="">
-                            All <span class="badge bg-white text-dark ms-1 rounded-pill"><?= $totalTickets ?? count($violations ?? []) ?></span>
+                        <button type="button" class="btn btn-sm btn-filter-chip btn-filter-all active" data-status="">
+                            All <span class="badge ms-1 rounded-pill"><?= $totalViolators ?? 0 ?></span>
                         </button>
-                        <button type="button" class="btn btn-sm btn-filter-chip" data-status="pending">
-                            Pending <span class="badge bg-warning text-dark ms-1 rounded-pill"><?= $pendingCount ?? 0 ?></span>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-filter-chip" data-status="paid">
-                            Paid <span class="badge bg-success text-white ms-1 rounded-pill"><?= $paidCount ?? 0 ?></span>
+                        <button type="button" class="btn btn-sm btn-filter-chip btn-filter-pending" data-status="pending">
+                            Pending <span class="badge filter-badge-pending ms-1 rounded-pill"><?= $pendingViolators ?? 0 ?></span>
                         </button>
                     </div>
 
@@ -310,43 +378,48 @@
                     <div class="d-flex gap-2 flex-wrap align-items-center ms-auto">
                         <div class="modern-search-box position-relative">
                             <i class="bi bi-search search-icon"></i>
-                            <input type="text" id="tableSearchInput" class="form-control form-control-sm modern-search-input" placeholder="Search ticket, driver, plate #...">
+                            <input type="text" id="tableSearchInput" class="form-control form-control-sm modern-search-input" placeholder="Search violator name...">
                             <button type="button" class="btn btn-sm btn-clear-search d-none" id="btnClearSearch">
                                 <i class="bi bi-x-circle-fill"></i>
                             </button>
                         </div>
-                        <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
-                            <i class="bi bi-plus-circle-fill me-1"></i> Record Violation
+                        <button type="button" class="btn btn-sm btn-new-violation rounded-pill px-3 shadow-sm d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
+                            <span class="d-inline-flex align-items-center justify-content-center bg-white text-primary rounded-circle me-1" style="width: 18px; height: 18px; font-size: 11px; flex-shrink: 0;">
+                                <i class="bi bi-plus-lg fw-bold" style="-webkit-text-stroke: 0.5px currentColor;"></i>
+                            </span>
+                            <span>New Violation</span>
                         </button>
                     </div>
+                </div>
+
+                <div class="px-4 py-2 border-top d-flex align-items-start gap-2" style="background:#f8fafc; font-size:.78rem;">
+                    <i class="bi bi-info-circle text-primary mt-1"></i>
+                    <span class="text-muted">
+                        One row per violator. A repeat apprehension is added to that person's history instead of
+                        creating a duplicate row. Settled tickets are kept in the administrator's <strong>Payment History</strong>.
+                    </span>
                 </div>
 
                 <!-- Table Content -->
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0 table-premium-mobile officer-violations-table" id="officerViolationTable">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0 officer-violations-table" id="officerViolationTable">
+                            <thead class="table-light">
                                 <tr>
-                                    <th class="ps-4" style="width: 145px; min-width: 135px;">Ticket ID</th>
-                                    <th style="width: 220px; min-width: 200px;">Driver & Vehicle</th>
-                                    <th style="min-width: 220px;">Violations Infraction</th>
-                                    <th style="width: 120px; min-width: 110px;">Breakdown</th>
-                                    <th class="text-end" style="width: 125px; min-width: 115px;">Total Fine</th>
-                                    <th class="text-center" style="width: 125px; min-width: 115px;">Status</th>
-                                    <th style="width: 130px; min-width: 120px;">Date Issued</th>
-                                    <th class="text-end pe-4 col-actions" style="width: 135px; min-width: 130px;">Actions</th>
+                                    <th class="ps-4" style="min-width: 300px;">Violator</th>
+                                    <th class="text-end pe-4 col-actions" style="width: 210px; min-width: 200px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($violations)): ?>
                                     <tr id="noTableDataRow">
-                                        <td colspan="8">
+                                        <td colspan="2">
                                             <div class="empty-state py-5 text-center">
                                                 <div class="empty-state-icon-wrap mb-3 mx-auto">
-                                                    <i class="bi bi-ticket-perforated fs-1 text-primary"></i>
+                                                    <i class="bi bi-people fs-1 text-primary"></i>
                                                 </div>
-                                                <h6 class="fw-bold text-dark">No Violations Found</h6>
-                                                <p class="text-muted small mb-3">You have not recorded any traffic citations yet.</p>
+                                                <h6 class="fw-bold text-dark">No Recorded Violators</h6>
+                                                <p class="text-muted small mb-3">You have no violator with an outstanding citation. Settled tickets are kept in the administrator's Payment History.</p>
                                                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
                                                     <i class="bi bi-plus-circle me-1"></i> Record First Violation
                                                 </button>
@@ -356,168 +429,44 @@
                                 <?php else: ?>
                                     <?php foreach ($violations as $v): ?>
                                     <?php
-                                        $rowStatusClass = match(strtolower($v['status'] ?? '')) {
-                                            'paid'      => 'row-paid',
-                                            'cancelled' => 'row-cancelled',
-                                            default     => 'row-pending',
-                                        };
+                                        // Ledger names stay compact: the middle name is
+                                        // shown as an initial here and in full on the record.
+                                        $vName = \App\Libraries\ViolatorIdentity::shortName(
+                                            $v['first_name'] ?? '',
+                                            $v['middle_name'] ?? '',
+                                            $v['last_name'] ?? '',
+                                            $v['driver_name'] ?? ''
+                                        );
+                                        if ($vName === '') {
+                                            $vName = 'Unknown Violator';
+                                        }
+                                        $vHistoryUrl = base_url('officer/violator-profile/' . (int) ($v['violator_id'] ?? 0));
+                                        // "+" records another citation for this same person: the TCT
+                                        // record form opens already filled with their details.
+                                        $vAddUrl     = base_url('officer/violations?violator_id=' . (int) ($v['violator_id'] ?? 0));
                                     ?>
-                                    <tr class="officer-violation-row <?= $rowStatusClass ?>">
-                                        <!-- Ticket ID with 1-click copy -->
-                                        <td class="ps-4" data-label="Ticket ID">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <span class="ticket-id-pill font-monospace" title="Click to copy" onclick="copyTicketId('<?= esc($v['ticket_id'] ?? '') ?>', this)">
-                                                    <i class="bi bi-ticket-perforated text-primary me-1"></i><?= esc($v['ticket_id'] ?? 'N/A') ?>
-                                                    <i class="bi bi-clipboard ms-1 text-muted copy-icon" style="font-size: 0.75rem;"></i>
-                                                </span>
+                                    <tr class="officer-violation-row row-pending" data-status="pending">
+                                        <!-- One row per violator: the name is the whole record on this ledger -->
+                                        <td class="ps-4" data-label="Violator">
+                                            <div class="driver-name-text fw-semibold lh-sm">
+                                                <?= esc($vName) ?>
                                             </div>
                                         </td>
 
-                                        <!-- Driver Information -->
-                                        <td data-label="Driver & Vehicle">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="driver-mini-avatar">
-                                                    <?= strtoupper(substr(trim(($v['first_name'] ?? '') ?: ($v['driver_name'] ?? 'D')), 0, 1)) ?>
-                                                </div>
-                                                <div>
-                                                    <div class="fw-bold text-dark" style="font-size: 0.92rem; line-height: 1.2;">
-                                                        <?= esc(trim(($v['first_name'] ?? '') . ' ' . ($v['last_name'] ?? '')) ?: ($v['driver_name'] ?? '-')) ?>
-                                                    </div>
-                                                    <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
-                                                        <span class="plate-pill font-monospace" title="License Plate">
-                                                            <i class="bi bi-car-front-fill me-1"></i><?= esc($v['license_plate'] ?? '-') ?>
-                                                        </span>
-                                                        <?php if (!empty($v['license_number']) && !in_array(strtolower(trim($v['license_number'])), ['no', 'none', 'n/a', '-'])): ?>
-                                                            <span class="dl-pill font-monospace" title="Driver License / Permit">
-                                                                DL: <?= esc($v['license_number']) ?>
-                                                            </span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-
-                                        <!-- Violation Type -->
-                                        <td class="small fw-semibold text-dark" data-label="Violations Infraction">
-                                            <?php 
-                                                $vTypes = explode('||', $v['concatenated_violations'] ?? $v['violation_type'] ?? '-');
-                                                echo '<div class="d-flex flex-column gap-1">';
-                                                foreach ($vTypes as $vt) {
-                                                    $parts = explode('::', $vt);
-                                                    $vName = $parts[0];
-                                                    echo '<div class="violation-chip"><i class="bi bi-exclamation-circle-fill text-danger me-1"></i>' . esc($vName) . '</div>';
-                                                }
-                                                echo '</div>';
-                                            ?>
-                                        </td>
-
-                                        <!-- Amount Breakdown -->
-                                        <td class="small font-monospace text-muted" data-label="Breakdown">
-                                            <?php 
-                                                $vTypes = explode('||', $v['concatenated_violations'] ?? $v['violation_type'] ?? '-');
-                                                echo '<div class="d-flex flex-column gap-1">';
-                                                foreach ($vTypes as $vt) {
-                                                    $parts = explode('::', $vt);
-                                                    $vAmt  = isset($parts[1]) && $parts[1] !== '' ? (float)$parts[1] : null;
-                                                    echo '<div class="text-secondary">';
-                                                    if ($vAmt !== null) {
-                                                        echo '₱' . number_format($vAmt, 2);
-                                                    } else {
-                                                        echo '-';
-                                                    }
-                                                    echo '</div>';
-                                                }
-                                                echo '</div>';
-                                            ?>
-                                        </td>
-
-                                        <!-- Total Fine -->
-                                        <td class="text-end" data-label="Total Fine">
-                                            <?php $isPaid = strtolower($v['status'] ?? '') === 'paid'; ?>
-                                            <span class="total-fine-badge font-monospace <?= $isPaid ? 'total-fine-paid' : 'total-fine-pending' ?>">
-                                                ₱<?= number_format((float) ($v['total_penalty_sum'] ?? $v['penalty_amount'] ?? 0), 2) ?>
-                                            </span>
-                                        </td>
-
-                                        <!-- Status Badge -->
-                                        <td class="text-center" data-label="Status">
-                                            <?php if (($v['status'] ?? '') === 'Pending'): ?>
-                                                <span class="status-glow-badge status-pending">
-                                                    <span class="status-dot"></span> Pending
-                                                </span>
-                                            <?php elseif (($v['status'] ?? '') === 'Paid'): ?>
-                                                <span class="status-glow-badge status-paid">
-                                                    <i class="bi bi-check-circle-fill me-1"></i> Paid
-                                                </span>
-                                            <?php else: ?>
-                                                <span class="status-glow-badge status-cancelled">
-                                                    <i class="bi bi-x-circle me-1"></i> Cancelled
-                                                </span>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <!-- Date Issued -->
-                                        <td class="text-muted small" data-label="Date Issued" style="white-space: nowrap;">
-                                            <div class="d-flex align-items-center gap-1">
-                                                <i class="bi bi-calendar3 text-muted" style="font-size: 0.8rem; flex-shrink: 0;"></i>
-                                                <span style="white-space: nowrap;"><?= isset($v['max_violation_date']) ? date('M d, Y', strtotime($v['max_violation_date'])) : (isset($v['violation_date']) ? date('M d, Y', strtotime($v['violation_date'])) : '-') ?></span>
-                                            </div>
-                                        </td>
-
-                                        <!-- Actions Bar -->
+                                        <!-- View this violator's records, or add another violation to them -->
                                         <td class="text-end pe-4 col-actions" data-label="Actions">
-                                            <div class="d-inline-flex align-items-center gap-1">
-                                                <!-- Quick Print Button -->
-                                                <button type="button" class="btn btn-sm btn-action-icon btn-action-print" title="Print Citation Ticket (TCT)" onclick="printTicket('<?= base_url('officer/view/' . $v['id'] . '?print=1') ?>')">
-                                                    <i class="bi bi-printer"></i>
-                                                </button>
-
-                                                <!-- Quick View Button -->
-                                                <a href="<?= base_url('officer/view/' . $v['id']) ?>" class="btn btn-sm btn-action-icon btn-action-view" title="View Detailed Record">
-                                                    <i class="bi bi-eye"></i>
+                                            <div class="d-inline-flex align-items-center gap-2 justify-content-end">
+                                                <a href="<?= esc($vHistoryUrl) ?>"
+                                                   class="btn btn-sm btn-white border shadow-sm"
+                                                   title="View the records of <?= esc($vName) ?>">
+                                                    <i class="bi bi-eye text-primary me-1"></i> View
                                                 </a>
-
-                                                <!-- Dropdown Menu for Management Actions -->
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-action-icon btn-action-more dropdown-toggle no-caret" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false" title="More Management Actions">
-                                                        <i class="bi bi-three-dots-vertical"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-1">
-                                                        <?php if (($v['status'] ?? '') === 'Pending'): ?>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item py-2 btn-edit-violation text-dark"
-                                                                    data-id="<?= $v['id'] ?>"
-                                                                    data-ticket-id="<?= esc($v['ticket_id'] ?? '') ?>"
-                                                                    data-first-name="<?= esc($v['first_name'] ?? '') ?>"
-                                                                    data-last-name="<?= esc($v['last_name'] ?? '') ?>"
-                                                                    data-middle-name="<?= esc($v['middle_name'] ?? '') ?>"
-                                                                    data-age="<?= esc((string) ($v['age'] ?? '')) ?>"
-                                                                    data-address="<?= esc($v['address'] ?? '') ?>"
-                                                                    data-license-plate="<?= esc($v['license_plate'] ?? '') ?>"
-                                                                    data-license-number="<?= esc($v['license_number'] ?? '') ?>"
-                                                                    data-mtop-number="<?= esc($v['mtop_number'] ?? '') ?>"
-                                                                    data-owner-name="<?= esc($v['owner_name'] ?? '') ?>"
-                                                                    data-acknowledgment="<?= esc($v['acknowledgment'] ?? '') ?>"
-                                                                    data-violation-type-id="<?= esc((string) ($v['violation_type_id'] ?? '')) ?>"
-                                                                    data-location="<?= esc($v['location'] ?? '') ?>"
-                                                                    data-notes="<?= esc($v['notes'] ?? '') ?>">
-                                                                    <i class="bi bi-pencil me-2 text-warning"></i> Edit Citation
-                                                                </button>
-                                                            </li>
-                                                            <li>
-                                                                <button type="button" class="dropdown-item py-2 btn-cancel-violation text-danger" data-id="<?= $v['id'] ?>">
-                                                                    <i class="bi bi-x-circle me-2 text-danger"></i> Cancel Citation
-                                                                </button>
-                                                            </li>
-                                                            <li><hr class="dropdown-divider my-1"></li>
-                                                        <?php endif; ?>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item py-2 btn-delete-violation text-danger" data-id="<?= $v['id'] ?>">
-                                                                <i class="bi bi-trash3 me-2"></i> Delete Permanently
-                                                            </button>
-                                                        </li>
-                                                    </ul>
-                                                </div>
+                                                <a href="<?= esc($vAddUrl) ?>"
+                                                   class="btn btn-sm btn-primary rounded-circle shadow-sm"
+                                                   style="width: 32px; height: 32px;"
+                                                   title="Record another violation for <?= esc($vName) ?>">
+                                                    <i class="bi bi-plus-lg fw-bold"></i>
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -536,7 +485,9 @@
             </div>
         </div>
     </div>
-</div>
+    </div><!-- /#ledgerPane -->
+
+</div><!-- /.container-fluid -->
 
 <div class="modal fade" id="cancelViolationModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -565,7 +516,7 @@
 </div>
 
 <!-- Edit Violation Modal (Formatted matching Physical TCT Citation Ticket) -->
-<div class="modal fade" id="editViolationModal" tabindex="-1" aria-labelledby="editViolationModalLabel" aria-hidden="true">
+<div class="modal fade" id="editViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editViolationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-dark text-white py-3">
@@ -601,12 +552,21 @@
                                 <span class="tct-bold-label">TO:</span>
                             </div>
 
-                            <div class="tct-row mb-2 align-items-end">
-                                <span class="tct-bold-label me-2">Driver's Name:</span>
-                                <div class="d-flex flex-1 align-items-end gap-2">
-                                    <input type="text" name="first_name" id="edit_first_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="First" required>
-                                    <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Middle">
-                                    <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Last" required>
+                            <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                                <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
+                                <div class="d-flex flex-1 gap-2" style="min-width: 0;">
+                                    <div class="flex-1 d-flex flex-column text-center">
+                                        <input type="text" name="first_name" id="edit_first_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="First" required>
+                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(First)</span>
+                                    </div>
+                                    <div class="flex-1 d-flex flex-column text-center">
+                                        <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Middle">
+                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
+                                    </div>
+                                    <div class="flex-1 d-flex flex-column text-center">
+                                        <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Last" required>
+                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -643,34 +603,32 @@
                             </div>
                         </div>
 
-                        <!-- Section 2: Violations Details -->
+                        <!-- Section 2: Violations Checklist (same format as the record form) -->
                         <div class="tct-doc-section">
-                            <div class="tct-sec-heading text-center mb-1">VIOLATION DETAILS</div>
+                            <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+                                <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="badge bg-light text-dark border fw-bold" style="font-size: 0.82rem;">Fine: ₱<span id="edit_penalty_amount_display">0.00</span></span>
+                                </div>
+                            </div>
                             <div class="tct-sec-notice text-center mb-3">
-                                You are hereby charged/cited for committing the violation specified hereunder:
+                                You are hereby charged/cited for comitting the violations marked "x" hereunder:
                             </div>
 
-                            <div class="row g-3 align-items-center">
-                                <div class="col-md-8">
-                                    <label class="tct-bold-label mb-1" for="edit_violation_type_id">Violation Type <span class="text-danger">*</span></label>
-                                    <select class="form-select form-select-sm tct-input" name="violation_type_id" id="edit_violation_type_id" required style="border-radius: 0; background-color: #fff;">
-                                        <option value="">-- Select Violation Type --</option>
-                                        <?php foreach ($violationTypes as $type): ?>
-                                            <option value="<?= $type['id'] ?>" data-amount="<?= $type['fine_amount'] ?>" data-points="<?= $type['points'] ?>">
-                                                <?= esc($type['violation_name']) ?> - ₱<?= number_format((float) $type['fine_amount'], 2) ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="tct-bold-label mb-1">Fine Amount</label>
-                                    <div class="p-2 bg-light border rounded d-flex align-items-center justify-content-between">
-                                        <span class="small text-muted">Amount:</span>
-                                        <span class="fw-bold text-danger fs-5">₱<span id="edit_penalty_amount_display">0.00</span></span>
-                                    </div>
-                                    <input type="hidden" id="edit_penalty_amount" value="0.00">
-                                </div>
+                            <div class="tct-checklist-container" id="editViolationChecklist">
+                                <?php foreach ($violationTypes as $type): ?>
+                                    <label class="tct-check-label">
+                                        <input type="checkbox" name="violation_type_id[]" class="edit-violation-check d-none"
+                                               value="<?= $type['id'] ?>"
+                                               data-amount="<?= $type['fine_amount'] ?>"
+                                               data-name="<?= esc($type['violation_name'], 'attr') ?>">
+                                        <div class="tct-box"><span class="tct-box-x"></span></div>
+                                        <span class="tct-item-text"><?= esc($type['violation_name']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
                             </div>
+
+                            <input type="hidden" id="edit_penalty_amount" value="0.00">
                         </div>
 
                         <!-- Section 3: Place & Legal Notice -->
@@ -693,15 +651,21 @@
                         <!-- Section 4: Acknowledgment & Notes -->
                         <div class="tct-doc-section border-bottom-0 pb-0">
                             <div class="tct-ack-heading mb-2">I HEREBY ACKNOWLEDGE RECEIPT OF THIS TCT.</div>
-                            <div class="d-flex gap-4 mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="acknowledgment" id="edit_ackAdmitted" value="Admitted">
-                                    <label class="form-check-label fw-semibold" for="edit_ackAdmitted">Admitted</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="acknowledgment" id="edit_ackProtest" value="Under Protest">
-                                    <label class="form-check-label fw-semibold" for="edit_ackProtest">Under Protest</label>
-                                </div>
+                            <div class="d-flex gap-5 mb-4">
+                                <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
+                                    <input type="radio" name="acknowledgment" id="edit_ackAdmitted" value="Admitted" class="d-none">
+                                    <div class="tct-box me-2 tct-ack-box" id="edit_ackAdmittedBox">
+                                        <span class="tct-box-x"></span>
+                                    </div>
+                                    <span class="fw-bold">Admitted</span>
+                                </label>
+                                <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
+                                    <input type="radio" name="acknowledgment" id="edit_ackProtest" value="Under Protest" class="d-none">
+                                    <div class="tct-box me-2 tct-ack-box" id="edit_ackProtestBox">
+                                        <span class="tct-box-x"></span>
+                                    </div>
+                                    <span class="fw-bold">Under Protest</span>
+                                </label>
                             </div>
 
                             <div class="mt-3 mb-2">
@@ -750,40 +714,10 @@
     </div>
 </div>
 
-<!-- Add Violation Type Modal -->
-<div class="modal fade" id="addViolationTypeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Violation Type</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div id="vtError" class="alert alert-danger d-none"></div>
-
-                <div class="mb-3">
-                    <label class="form-label">Violation Name <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="vtName" placeholder="e.g., No Helmet" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Fine Amount <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="vtFine" step="0.01" min="0" placeholder="0.00" />
-                </div>
-                <div class="mb-0">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-control" id="vtDesc" rows="3" placeholder="Optional details"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer bg-light border-0">
-                <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveViolationTypeBtn">
-                    <span class="spinner-border spinner-border-sm me-2 d-none" id="vtSpinner"></span>
-                    Save
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Floating Quick-Add Button -->
+<button type="button" class="fab-new-violation no-print" data-bs-toggle="modal" data-bs-target="#recordViolationModal" title="Add New Violation" aria-label="Add New Violation">
+    <i class="bi bi-plus-lg"></i>
+</button>
 
 <style>
     /* ── DASHBOARD HERO BANNER ─────────────────────────────────── */
@@ -917,11 +851,11 @@
         overflow: hidden;
     }
     .main-table-header {
-        background: #f8faff;
-        border-bottom: 1px solid #e2e8f0;
+        background: #ffffff;
+        border-bottom: 1px solid #f1f5f9;
     }
     .btn-filter-chip {
-        background: #fff;
+        background: #ffffff;
         border: 1px solid #e2e8f0;
         color: #475569;
         font-weight: 600;
@@ -934,20 +868,136 @@
         gap: 0.35rem;
     }
     .btn-filter-chip:hover {
-        background: #f8faff;
+        background: #f8fafc;
         border-color: #cbd5e1;
         color: #1e293b;
         transform: translateY(-1px);
     }
-    .btn-filter-chip.active {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    .btn-filter-chip.active,
+    .btn-filter-all.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+    }
+    .btn-filter-chip.active:hover,
+    .btn-filter-all.active:hover {
+        background: #1d4ed8;
         border-color: #1d4ed8;
-        color: #fff;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+        color: #ffffff;
+    }
+    .btn-filter-all .badge {
+        background: #e2e8f0;
+        color: #475569;
+    }
+    .btn-filter-chip .badge {
+        font-size: 0.76rem;
+        font-weight: 700;
+        min-width: 22px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6px;
+        border-radius: 10px;
     }
     .btn-filter-chip.active .badge {
-        background: rgba(255, 255, 255, 0.25) !important;
-        color: #fff !important;
+        background: rgba(255, 255, 255, 0.28) !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .filter-badge-pending {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+    .btn-filter-pending:hover {
+        border-color: #fde68a;
+        color: #92400e;
+        background: #fffbeb;
+    }
+    .btn-filter-pending.active {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.28);
+    }
+
+    /* ── NEW VIOLATION BUTTON ── */
+    .btn-new-violation {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        border: none;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.45rem 1rem;
+        border-radius: 999px;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .btn-new-violation:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 5px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-new-violation:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+    }
+
+    /* ── FLOATING QUICK-ADD BUTTON ── */
+    .fab-new-violation {
+        position: fixed;
+        right: 1.75rem;
+        bottom: 1.75rem;
+        width: 58px;
+        height: 58px;
+        border: none;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: #ffffff;
+        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+        z-index: 1030;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+    }
+    .fab-new-violation i {
+        font-size: 1.55rem;
+        line-height: 1;
+    }
+    .fab-new-violation:hover {
+        color: #ffffff;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5);
+    }
+    .fab-new-violation:active {
+        transform: translateY(0) scale(0.97);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .fab-new-violation:focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.35);
+        outline-offset: 3px;
+    }
+    @media (max-width: 768px) {
+        .fab-new-violation {
+            right: 1rem;
+            bottom: 1rem;
+            width: 52px;
+            height: 52px;
+        }
+        .fab-new-violation i {
+            font-size: 1.35rem;
+        }
+    }
+    @media print {
+        .fab-new-violation {
+            display: none !important;
+        }
     }
 
     /* ── SEARCH BOX ────────────────────────────────────────────── */
@@ -975,7 +1025,7 @@
     }
     .modern-search-input:focus {
         border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
     }
     .btn-clear-search {
         position: absolute;
@@ -988,86 +1038,124 @@
         background: transparent;
         font-size: 0.85rem;
     }
-    .btn-clear-search:hover { color: #ef4444; }
+    .btn-clear-search:hover { color: #334155; }
 
-    /* ── TABLE ROW & CELL BADGES (SMOOTH & RESPONSIVE DESIGN) ── */
+    /* ── TABLE ROW & CELL BADGES (CLEAN, SMOOTH & RESPONSIVE) ── */
     .officer-violations-table {
         border-collapse: separate;
         border-spacing: 0;
     }
     .officer-violations-table thead th {
-        background: #1e293b;
-        color: #e2e8f0;
-        font-size: 0.72rem;
+        background: #f8f9fa;
+        color: #475569;
+        font-size: 0.74rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        padding: 0.9rem 1rem;
-        border-bottom: 2px solid #334155;
+        letter-spacing: 0.05em;
+        padding: 0.85rem 1rem;
+        border-bottom: 1.5px solid #e2e8f0;
         white-space: nowrap;
     }
     .officer-violations-table thead th:first-child { padding-left: 1.5rem; }
     .officer-violations-table thead th:last-child  { padding-right: 1.5rem; }
     .officer-violations-table tbody td {
-        padding: 1rem 1rem;
+        padding: 0.95rem 1rem;
         border-bottom: 1px solid #f1f5f9;
         font-size: 0.88rem;
         vertical-align: middle;
-        background: inherit;
-        transition: background 0.18s ease;
+        background: #ffffff;
+        transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    /* ── STATUS BARS AT REST (inset — vivid, works on any border-collapse) ── */
+    .driver-name-link {
+        cursor: pointer;
+        color: inherit;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+    .driver-name-link:hover .driver-name-text {
+        color: #2563eb !important;
+        text-decoration: underline;
+    }
+    .driver-link-icon {
+        transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+    .driver-name-text {
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 0.93rem;
+        letter-spacing: -0.01em;
+        transition: color 0.15s ease;
+    }
+    .amount-text {
+        color: #475569;
+        font-family: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        font-size: 0.84rem;
+        font-weight: 600;
+    }
+    .date-text {
+        color: #475569;
+        font-size: 0.84rem;
+        font-weight: 500;
+    }
+    .btn-white {
+        background: #ffffff;
+        color: #475569;
+        border-color: #dee2e6;
+        transition: all 0.2s ease;
+    }
+    .btn-white:hover {
+        background: #f8f9fa;
+        color: #0f172a;
+        border-color: #cbd5e1;
+    }
+    /* ── SMOOTH ROWS & HOVER ── */
     .officer-violations-table tbody tr {
-        transition: background  0.28s cubic-bezier(0.34,1.56,0.64,1),
-                    box-shadow  0.28s cubic-bezier(0.34,1.56,0.64,1),
-                    transform   0.28s cubic-bezier(0.34,1.56,0.64,1);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        position: relative;
+        z-index: 1;
+        background: #ffffff;
+    }
+    .officer-violations-table tbody tr:hover td {
+        background-color: #f8faff !important;
+    }
+    .officer-violations-table tbody tr:hover {
+        z-index: 2;
+        transform: translateY(-1.5px);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+    }
+    /* Elevate row when its action dropdown is opened or focused */
+    .officer-violations-table tbody tr:focus-within,
+    .officer-violations-table tbody tr:has(.dropdown-menu.show),
+    .officer-violations-table tbody tr:has(.show),
+    .officer-violations-table tbody tr.has-open-dropdown {
+        z-index: 1065 !important;
         position: relative;
     }
-    .officer-violations-table tbody tr.row-pending {
-        background: rgba(254,252,232,0.5);
-        box-shadow: inset 5px 0 0 #f59e0b, inset 8px 0 14px rgba(245,158,11,0.09);
-    }
-    .officer-violations-table tbody tr.row-paid {
-        background: rgba(240,253,248,0.6);
-        box-shadow: inset 5px 0 0 #10b981, inset 8px 0 14px rgba(16,185,129,0.09);
-    }
+    .officer-violations-table tbody tr.row-pending,
+    .officer-violations-table tbody tr.row-paid,
     .officer-violations-table tbody tr.row-cancelled {
-        background: rgba(248,250,252,0.7);
-        box-shadow: inset 5px 0 0 #94a3b8, inset 8px 0 14px rgba(148,163,184,0.09);
-    }
-    /* ── HOVER: vivid glow + spring slide ── */
-    .officer-violations-table tbody tr.row-pending:hover {
-        background: #fffbeb !important;
-        box-shadow: inset 6px 0 0 #f59e0b,
-                    inset 12px 0 22px rgba(245,158,11,0.15),
-                    0 4px 24px rgba(245,158,11,0.13);
-        transform: translateX(4px);
-    }
-    .officer-violations-table tbody tr.row-paid:hover {
-        background: #ecfdf5 !important;
-        box-shadow: inset 6px 0 0 #10b981,
-                    inset 12px 0 22px rgba(16,185,129,0.15),
-                    0 4px 24px rgba(16,185,129,0.12);
-        transform: translateX(4px);
-    }
-    .officer-violations-table tbody tr.row-cancelled:hover {
-        background: #f8fafc !important;
-        box-shadow: inset 6px 0 0 #94a3b8,
-                    inset 12px 0 22px rgba(148,163,184,0.15),
-                    0 4px 24px rgba(148,163,184,0.10);
-        transform: translateX(4px);
+        background: #ffffff;
     }
     /* Responsive: mobile card layout */
     @media (max-width: 767px) {
+        .officer-violations-table {
+            min-width: 0;
+            width: 100%;
+        }
+        .officer-violations-table .col-actions {
+            width: auto;
+            white-space: normal;
+        }
         .officer-violations-table thead { display: none; }
         .officer-violations-table tbody tr {
             display: block;
-            margin-bottom: 0.75rem;
-            border-radius: 12px;
+            margin-bottom: 0.85rem;
+            border-radius: 14px;
             border: 1px solid #e2e8f0;
-            border-left-width: 4px !important;
-            box-shadow: 0 2px 8px rgba(15,23,42,0.05);
+            box-shadow: 0 2px 8px rgba(15,23,42,0.06);
             transform: none !important;
+            padding: 0.4rem 0;
+            background: #ffffff !important;
         }
         .officer-violations-table tbody td {
             display: flex;
@@ -1076,6 +1164,7 @@
             padding: 0.55rem 1rem;
             border-bottom: 1px solid #f1f5f9;
             font-size: 0.83rem;
+            color: #1e293b;
         }
         .officer-violations-table tbody td:last-child { border-bottom: none; }
         .officer-violations-table tbody td::before {
@@ -1084,7 +1173,7 @@
             font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #94a3b8;
+            color: #64748b;
             flex-shrink: 0;
             margin-right: 0.75rem;
             margin-top: 2px;
@@ -1094,10 +1183,10 @@
 
     /* Ticket ID Glass Pill */
     .ticket-id-pill {
-        background: #eff6ff;
+        background: #f0f7ff;
         border: 1px solid #bfdbfe;
-        color: #1e40af;
-        padding: 0.28rem 0.65rem;
+        color: #1d4ed8;
+        padding: 0.25rem 0.65rem;
         border-radius: 8px;
         font-size: 0.82rem;
         font-weight: 700;
@@ -1105,48 +1194,28 @@
         display: inline-flex;
         align-items: center;
         letter-spacing: 0.02em;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         user-select: none;
     }
     .ticket-id-pill:hover {
         background: #dbeafe;
         border-color: #93c5fd;
-        color: #1d4ed8;
+        color: #1e40af;
         transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
     }
     .ticket-id-pill.copied {
-        background: #ecfdf5 !important;
+        background: #dcfce7 !important;
         border-color: #86efac !important;
-        color: #059669 !important;
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
-    }
-
-    /* Driver Avatar with Modern Multi-stop Gradient */
-    .driver-mini-avatar {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
-        color: #fff;
-        font-size: 0.84rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-        transition: transform 0.2s ease;
-    }
-    .officer-violation-row:hover .driver-mini-avatar {
-        transform: scale(1.05);
+        color: #15803d !important;
+        box-shadow: 0 0 10px rgba(22, 163, 74, 0.2) !important;
     }
 
     /* Vehicle Plate & DL Pills */
     .plate-pill {
-        background: #0f172a;
-        color: #f8fafc;
-        border: 1px solid #334155;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 6px;
         padding: 0.18rem 0.55rem;
         font-size: 0.74rem;
@@ -1154,13 +1223,22 @@
         letter-spacing: 0.05em;
         display: inline-flex;
         align-items: center;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
         transition: all 0.2s ease;
     }
+    .plate-pill i {
+        color: #2563eb !important;
+        margin-right: 0.25rem;
+    }
+    .plate-pill:hover {
+        background: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
+        color: #000000 !important;
+    }
     .dl-pill {
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #0f172a;
+        border: 1.5px solid #cbd5e1;
         border-radius: 6px;
         padding: 0.18rem 0.55rem;
         font-size: 0.74rem;
@@ -1181,54 +1259,63 @@
         display: inline-flex;
         align-items: center;
         line-height: 1.35;
+        font-weight: 500;
         word-break: break-word;
         transition: all 0.18s ease;
+    }
+    .violation-chip .violation-dot {
+        color: #ef4444;
+        font-size: 1.15rem;
+        line-height: 0.9;
+        margin-right: 5px;
+        font-weight: bold;
     }
     .officer-violation-row:hover .violation-chip {
         background: #ffffff;
         border-color: #cbd5e1;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
-    /* Total Fine Badge (Dynamic Status Responsive) */
+    /* Total Fine Badge (Subtle Soft Colors, High Readability) */
     .total-fine-badge {
-        font-size: 0.95rem;
+        font-size: 0.94rem;
         font-weight: 800;
         letter-spacing: -0.01em;
-        padding: 0.25rem 0.6rem;
-        border-radius: 8px;
+        padding: 0.25rem 0.65rem;
+        border-radius: 7px;
         display: inline-block;
-        transition: all 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .total-fine-pending {
-        color: #92400e;
-        background: rgba(245,158,11,0.10);
-        border: 1.5px solid rgba(245,158,11,0.30);
+        color: #b45309;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
     }
     .total-fine-paid {
-        color: #047857;
-        background: rgba(16,185,129,0.09);
-        border: 1.5px solid rgba(16,185,129,0.28);
+        color: #15803d;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
     }
     .officer-violation-row:hover .total-fine-badge {
         transform: scale(1.02);
     }
 
-    /* Status Badges with Subtle Translucent Glow */
+    /* Status Badges (Alive, Subtle Glow & Dot Animation) */
     .status-glow-badge {
         display: inline-flex;
         align-items: center;
-        padding: 0.38rem 0.85rem;
-        border-radius: 20px;
+        padding: 0.32rem 0.8rem;
+        border-radius: 999px;
         font-size: 0.74rem;
         font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .status-pending {
-        background: rgba(245, 158, 11, 0.12);
+        background: #fffbeb;
         color: #b45309;
-        border: 1px solid rgba(245, 158, 11, 0.32);
+        border: 1px solid #fcd34d;
     }
     .status-pending .status-dot {
         width: 7px;
@@ -1236,65 +1323,88 @@
         border-radius: 50%;
         background: #f59e0b;
         margin-right: 6px;
-        box-shadow: 0 0 8px rgba(245, 158, 11, 0.7);
-        animation: pulseAmber 1.8s infinite;
+        box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+        animation: pulseAmber 2s infinite ease-in-out;
+        flex-shrink: 0;
+    }
+    @keyframes pulseAmber {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.35; transform: scale(0.75); }
     }
     .status-paid {
-        background: rgba(16, 185, 129, 0.12);
-        color: #047857;
-        border: 1px solid rgba(16, 185, 129, 0.32);
+        background: #ecfdf5;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+    .status-paid i {
+        color: #16a34a;
     }
     .status-cancelled {
-        background: rgba(239, 68, 68, 0.10);
+        background: #fef2f2;
         color: #b91c1c;
-        border: 1px solid rgba(239, 68, 68, 0.28);
+        border: 1px solid #fecaca;
+    }
+    .status-cancelled i {
+        color: #dc2626;
     }
     .officer-violation-row:hover .status-glow-badge {
         transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
-    /* Smooth Action Icon Buttons */
+    /* Action Icon Buttons */
     .btn-action-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 9px;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         background: #ffffff;
         border: 1px solid #e2e8f0;
         color: #64748b;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         padding: 0;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        text-decoration: none;
     }
     .btn-action-icon:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 12px rgba(15, 23, 42, 0.10);
     }
     .btn-action-print:hover {
         background: #ecfdf5;
         border-color: #86efac;
         color: #059669;
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
     }
     .btn-action-view:hover {
         background: #eff6ff;
-        border-color: #bfdbfe;
+        border-color: #93c5fd;
         color: #2563eb;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
     }
     .btn-action-more:hover {
         background: #f8fafc;
         border-color: #cbd5e1;
-        color: #0f172a;
+        color: #334155;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
     }
 
     /* Dropdown Menu Polish */
+    .officer-violations-table .col-actions {
+        position: relative;
+    }
+    .officer-violations-table .col-actions .dropdown {
+        position: relative;
+    }
+    .officer-violations-table .dropdown-menu,
     .dropdown-menu {
         border-radius: 12px !important;
         border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12) !important;
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16) !important;
         padding: 0.4rem !important;
+        background-color: #ffffff !important;
+        z-index: 1070 !important;
     }
     .dropdown-item {
         border-radius: 8px;
@@ -1302,13 +1412,20 @@
         font-weight: 500;
         padding: 0.45rem 0.85rem;
         transition: all 0.15s ease;
+        color: #1e293b;
     }
     .dropdown-item:hover {
         background-color: #f1f5f9;
+        color: #0f172a;
+    }
+    .dropdown-item.btn-cancel-violation,
+    .dropdown-item.btn-delete-violation {
+        color: #dc2626 !important;
     }
     .dropdown-item.btn-cancel-violation:hover,
     .dropdown-item.btn-delete-violation:hover {
-        background-color: #fef2f2;
+        background-color: #fef2f2 !important;
+        color: #b91c1c !important;
     }
 
     /* Modern Pagination */
@@ -1335,7 +1452,7 @@
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
         border-color: #1d4ed8;
         color: #fff;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
     }
 
     /* Smooth Scrollbar for Table */
@@ -1606,16 +1723,22 @@
         border-radius: 8px !important;
     }
     .officer-violations-table {
-        min-width: 1040px;
         table-layout: auto;
+    }
+    @media (min-width: 768px) {
+        .officer-violations-table {
+            min-width: 1040px;
+        }
     }
     .officer-violations-table th,
     .officer-violations-table td {
         vertical-align: middle;
     }
-    .officer-violations-table .col-actions {
-        width: 135px;
-        white-space: nowrap;
+    @media (min-width: 768px) {
+        .officer-violations-table .col-actions {
+            width: 135px;
+            white-space: nowrap;
+        }
     }
     .officer-violations-table .actions-group {
         flex-wrap: nowrap;
@@ -1806,6 +1929,41 @@
         font-size: 0.88rem;
         font-style: italic;
     }
+    .tct-doc-section .btn-xs {
+        padding: 0.25rem 0.55rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+    .infraction-entry {
+        padding: 0.35rem 0.45rem;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+    }
+    .infraction-entry .infraction-select {
+        border-radius: 6px;
+        background-color: #fff;
+        min-width: 0;
+    }
+    .infraction-entry .infraction-remove {
+        flex: 0 0 auto;
+        border-radius: 6px;
+        line-height: 1;
+    }
+    .infraction-entry .infraction-remove:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    @media (max-width: 575.98px) {
+        .infraction-entry {
+            align-items: stretch !important;
+        }
+        .infraction-entry .infraction-select {
+            font-size: 0.78rem;
+        }
+    }
     .tct-legal-text {
         font-size: 0.86rem;
         font-style: italic;
@@ -1899,6 +2057,12 @@
         font-size: 1.15rem;
         font-family: Arial, sans-serif;
     }
+    .tct-year-prefix {
+        font-weight: 700;
+        font-size: 1.05rem;
+        font-family: Arial, sans-serif;
+        color: #000;
+    }
     .tct-red-no {
         color: #dc3545;
         font-family: 'Courier New', monospace;
@@ -1916,12 +2080,123 @@
         font-weight: bold;
         font-size: 0.95rem;
     }
+    .tct-input::placeholder {
+        color: #94a3b8 !important;
+        font-weight: 400 !important;
+        font-style: italic !important;
+        opacity: 0.65 !important;
+    }
     .tct-input:focus {
         background: #f0f7ff;
         border-bottom-color: #0d6efd;
         box-shadow: none;
     }
+
+    /* ── MOBILE: stack TCT form rows so nothing runs off-screen ── */
+    @media (max-width: 767px) {
+        .tct-modal-card {
+            padding: 14px 12px;
+        }
+        .tct-row,
+        .tct-row > * {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.35rem;
+        }
+        .tct-row > *,
+        .tct-row > * > * {
+            flex: none !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            margin-right: 0 !important;
+        }
+        .tct-modal-card .tct-sig-wrapper {
+            width: 100% !important;
+            max-width: 280px;
+        }
+        .tct-driver-signature-area .d-flex {
+            flex-wrap: wrap;
+        }
+        .tct-officer-signature-area > .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.35rem;
+        }
+        .tct-officer-signature-area > .d-flex > .d-flex {
+            align-self: flex-end;
+            justify-content: flex-end;
+        }
+        .tct-doc-section .d-flex.gap-5 {
+            gap: 1rem !important;
+        }
+        .tct-footer-area {
+            flex-wrap: wrap;
+            gap: 0.35rem 0.75rem;
+        }
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn {
+            width: 100%;
+        }
+    }
 </style>
+
+<!-- E-Signature Modal (same draw/upload flow as the report sign-off) -->
+<div class="modal fade" id="tctSignatureModal" tabindex="-1" aria-labelledby="tctSignatureModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="tctSignatureModalLabel">
+                    <i class="bi bi-pen-fill text-danger me-2"></i>Apply Digital E-Signature
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <ul class="nav nav-pills nav-justified mb-3" id="tctSigTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="tctDrawTab" data-bs-toggle="tab" data-bs-target="#tctDrawPanel" type="button" role="tab">
+                            <i class="bi bi-fingerprint me-1"></i> Draw Signature
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="tctUploadTab" data-bs-toggle="tab" data-bs-target="#tctUploadPanel" type="button" role="tab">
+                            <i class="bi bi-upload me-1"></i> Upload Image
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="tctSigTabContent">
+                    <div class="tab-pane fade show active" id="tctDrawPanel" role="tabpanel">
+                        <p class="text-muted small mb-2">Use your mouse, touch pen, or finger to draw your signature inside the pad below:</p>
+                        <div class="border rounded-3 p-2 bg-light text-center position-relative">
+                            <canvas id="tctSigCanvas" width="420" height="170" style="touch-action: none; cursor: crosshair; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px; width: 100%; max-width: 420px; height: 170px;"></canvas>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="tctSigClearPad">
+                                <i class="bi bi-eraser-fill me-1"></i> Clear Pad
+                            </button>
+                            <span class="text-muted small"><i class="bi bi-info-circle me-1"></i>Smooth Digital Ink</span>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="tctUploadPanel" role="tabpanel">
+                        <p class="text-muted small mb-2">Select a transparent PNG or JPG image of your signature:</p>
+                        <input type="file" id="tctSigFileInput" class="form-control" accept="image/png, image/jpeg, image/webp">
+                        <div class="text-center mt-3 p-3 border rounded-3 bg-light" id="tctSigUploadPreviewBox" style="display:none;">
+                            <img id="tctSigUploadPreviewImg" src="" alt="Preview" style="max-height: 100px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger fw-bold px-4" id="tctSigApplyBtn">
+                    <i class="bi bi-check-circle-fill me-1"></i> Apply Signature
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?= $this->endSection() ?>
 
@@ -1945,36 +2220,157 @@
             }
         }, 10000);
     }
+    // ═══ NEW VIOLATION INFRACTIONS (CHECKLIST + ADDED ENTRIES) ═══
+    const newInfractionRows = document.getElementById('newInfractionRows');
+    const newInfractionRowTemplate = document.getElementById('newInfractionRowTemplate');
+    const addNewInfractionBtn = document.getElementById('addNewInfractionBtn');
+
+    function showInfractionWarning(message) {
+        if (window.AppToast) {
+            AppToast.fire({ icon: 'warning', title: message });
+        } else {
+            alert(message);
+        }
+    }
+
+    function getNewInfractionRows() {
+        return Array.from(newInfractionRows?.querySelectorAll('.infraction-entry') || []);
+    }
+
+    function getSelectedNewInfractionIds() {
+        const ids = Array.from(document.querySelectorAll('#violationChecklist .violation-check:checked')).map(check => check.value);
+        getNewInfractionRows().forEach(row => {
+            const select = row.querySelector('.infraction-select');
+            if (select?.value) ids.push(select.value);
+        });
+        return ids;
+    }
+
+    function setCheckboxVisual(check) {
+        const box = check.closest('label')?.querySelector('.tct-box');
+        if (!box) return;
+        if (check.checked) {
+            box.classList.add('is-checked');
+            box.innerHTML = '<span class="tct-box-x">X</span>';
+        } else {
+            box.classList.remove('is-checked');
+            box.innerHTML = '';
+        }
+    }
+
+    function syncNewInfractionOptions() {
+        const rows = getNewInfractionRows();
+        const checkedValues = Array.from(document.querySelectorAll('#violationChecklist .violation-check:checked')).map(check => check.value);
+
+        rows.forEach(row => {
+            const select = row.querySelector('.infraction-select');
+            if (!select) return;
+            const ownValue = select.value;
+            Array.from(select.options).forEach(option => {
+                if (!option.value) return;
+                if (option.value === ownValue) {
+                    option.disabled = false;
+                    return;
+                }
+                const usedByOtherRow = rows.some(otherRow => {
+                    if (otherRow === row) return false;
+                    return otherRow.querySelector('.infraction-select')?.value === option.value;
+                });
+                option.disabled = usedByOtherRow || checkedValues.includes(option.value);
+            });
+        });
+    }
+
+    function clearMatchingCheckbox(value) {
+        document.querySelectorAll('#violationChecklist .violation-check:checked').forEach(check => {
+            if (check.value !== value) return;
+            check.checked = false;
+            setCheckboxVisual(check);
+        });
+    }
+
+    function clearMatchingInfractionRows(value, exceptRow = null) {
+        getNewInfractionRows().forEach(row => {
+            if (row === exceptRow) return;
+            const select = row.querySelector('.infraction-select');
+            if (select && select.value === value) {
+                select.value = '';
+            }
+        });
+    }
+
     function updateFineAmount() {
-        const checks = document.querySelectorAll('.violation-check:checked');
         let totalAmount = 0;
-        Array.from(checks).forEach(check => {
+        document.querySelectorAll('#violationChecklist .violation-check:checked').forEach(check => {
             totalAmount += parseFloat(check.dataset.amount || 0);
         });
-        
+        getNewInfractionRows().forEach(row => {
+            const select = row.querySelector('.infraction-select');
+            const selectedOption = select?.options[select.selectedIndex];
+            if (select?.value && selectedOption) {
+                totalAmount += parseFloat(selectedOption.dataset.amount || 0);
+            }
+        });
+
         const penaltyInput = document.getElementById('penalty_amount');
         if (penaltyInput) penaltyInput.value = totalAmount.toFixed(2);
-        
+
         const disp = document.getElementById('penalty_amount_display');
         if (disp) disp.textContent = totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Checkbox violations logic & authentic [X] toggle
-    document.querySelectorAll('.violation-check').forEach(check => {
-        check.addEventListener('change', function() {
-            const box = this.closest('label')?.querySelector('.tct-box');
-            if (box) {
-                if (this.checked) {
-                    box.classList.add('is-checked');
-                    box.innerHTML = '<span class="tct-box-x">X</span>';
-                } else {
-                    box.classList.remove('is-checked');
-                    box.innerHTML = '';
-                }
+    function addNewInfractionRow(selectedId = '') {
+        if (!newInfractionRows || !newInfractionRowTemplate) return null;
+        const row = newInfractionRowTemplate.content.firstElementChild.cloneNode(true);
+        const select = row.querySelector('.infraction-select');
+        const removeBtn = row.querySelector('.infraction-remove');
+
+        if (select) {
+            select.required = true;
+            if (selectedId) {
+                select.value = String(selectedId);
             }
+            select.addEventListener('change', function () {
+                if (this.value) {
+                    clearMatchingCheckbox(this.value);
+                    clearMatchingInfractionRows(this.value, row);
+                }
+                syncNewInfractionOptions();
+                updateFineAmount();
+            });
+        }
+
+        removeBtn?.addEventListener('click', function () {
+            row.remove();
+            syncNewInfractionOptions();
             updateFineAmount();
         });
+
+        newInfractionRows.appendChild(row);
+        syncNewInfractionOptions();
+        updateFineAmount();
+        return row;
+    }
+
+    function handleViolationCheckChange() {
+        if (this.checked) {
+            clearMatchingInfractionRows(this.value);
+        }
+        setCheckboxVisual(this);
+        syncNewInfractionOptions();
+        updateFineAmount();
+    }
+
+    // Checkbox violations logic & authentic [X] toggle
+    document.querySelectorAll('#violationChecklist .violation-check').forEach(check => {
+        check.addEventListener('change', handleViolationCheckChange);
     });
+
+    addNewInfractionBtn?.addEventListener('click', function () {
+        const row = addNewInfractionRow();
+        row?.querySelector('.infraction-select')?.focus();
+    });
+
     updateFineAmount();
 
     // Acknowledgment [X] toggle for Admitted / Under Protest
@@ -1992,50 +2388,64 @@
         });
     });
 
-    // Sync Driver Name input to hidden first_name, middle_name, last_name
-    const driverFullNameInput = document.getElementById('driver_full_name');
-    function syncDriverName() {
-        if (!driverFullNameInput) return;
-        const val = driverFullNameInput.value.trim();
-        const parts = val.split(/\s+/).filter(Boolean);
-        const fName = document.getElementById('first_name');
-        const mName = document.getElementById('middle_name');
-        const lName = document.getElementById('last_name');
+    // The first / middle / last fields are entered directly now (each under its
+    // own label), so nothing needs to be split out of a combined name input.
 
-        if (parts.length === 0) {
-            if (fName) fName.value = '';
-            if (mName) mName.value = '';
-            if (lName) lName.value = '';
-        } else if (parts.length === 1) {
-            if (fName) fName.value = parts[0];
-            if (mName) mName.value = '';
-            if (lName) lName.value = parts[0];
-        } else if (parts.length === 2) {
-            if (fName) fName.value = parts[0];
-            if (mName) mName.value = '';
-            if (lName) lName.value = parts[1];
-        } else {
-            if (fName) fName.value = parts[0];
-            if (mName) mName.value = parts.slice(1, -1).join(' ');
-            if (lName) lName.value = parts[parts.length - 1];
+    // Signature capture: the same draw/upload e-signature dialog used by the
+    // report sign-off, wired to the driver and apprehending-officer fields.
+    const tctSigState = { role: 'driver', drawing: false, hasDrawn: false, uploaded: '' };
+    let tctSigCanvas = null;
+    let tctSigCtx = null;
+
+    function tctSigParts(role) {
+        const cap = role.charAt(0).toUpperCase() + role.slice(1);
+        return {
+            hidden: document.getElementById(role + '_signature'),
+            preview: document.getElementById(role + 'SigPreview'),
+            label: document.getElementById(role + 'SigBtnLabel'),
+            clearBtn: document.getElementById('clear' + cap + 'SigBtn'),
+            storageKey: 'tct_sig_' + role
+        };
+    }
+
+    function setTctSignature(role, dataUrl) {
+        const parts = tctSigParts(role);
+        const signed = !!dataUrl;
+        if (parts.preview) {
+            parts.preview.src = signed ? dataUrl : '';
+            parts.preview.style.display = signed ? 'block' : 'none';
+        }
+        if (parts.hidden) parts.hidden.value = signed ? dataUrl : '';
+        if (parts.label) parts.label.innerText = signed ? 'Change Signature' : 'Sign Here';
+        if (parts.clearBtn) parts.clearBtn.style.display = signed ? 'inline-block' : 'none';
+    }
+
+    function applyTctSignature(role, dataUrl) {
+        setTctSignature(role, dataUrl);
+        if (role === 'officer') {
+            // The officer's own signature is reused across tickets; the driver's
+            // is never stored because it belongs to whoever is being cited.
+            localStorage.setItem('tct_sig_officer', dataUrl);
         }
     }
-    driverFullNameInput?.addEventListener('input', syncDriverName);
-    driverFullNameInput?.addEventListener('change', syncDriverName);
 
-    // Signature Pad Initialization (Touch & Mouse friendly for Mobile Phones)
-    function setupSignaturePad(canvasId, hiddenInputId, clearBtnId) {
-        const canvas = document.getElementById(canvasId);
-        const hiddenInput = document.getElementById(hiddenInputId);
-        const clearBtn = document.getElementById(clearBtnId);
-        if (!canvas || !hiddenInput) return;
+    function clearTctSignature(role) {
+        setTctSignature(role, '');
+        localStorage.removeItem('tct_sig_' + role);
+    }
 
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-        let hasDrawn = false;
+    function restoreSavedOfficerSignature() {
+        const saved = localStorage.getItem('tct_sig_officer');
+        if (saved) setTctSignature('officer', saved);
+    }
+
+    function initTctSigCanvas() {
+        tctSigCanvas = document.getElementById('tctSigCanvas');
+        if (!tctSigCanvas) return;
+        tctSigCtx = tctSigCanvas.getContext('2d');
 
         function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
+            const rect = tctSigCanvas.getBoundingClientRect();
             let clientX = e.clientX;
             let clientY = e.clientY;
             if (e.touches && e.touches.length > 0) {
@@ -2043,74 +2453,254 @@
                 clientY = e.touches[0].clientY;
             }
             return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
+                x: (clientX - rect.left) * (tctSigCanvas.width / rect.width),
+                y: (clientY - rect.top) * (tctSigCanvas.height / rect.height)
             };
         }
 
         function startDrawing(e) {
             e.preventDefault();
-            drawing = true;
-            hasDrawn = true;
-            ctx.lineWidth = 2.5;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.strokeStyle = '#000000';
+            tctSigState.drawing = true;
+            tctSigState.hasDrawn = true;
+            tctSigCtx.lineWidth = 2.5;
+            tctSigCtx.lineCap = 'round';
+            tctSigCtx.lineJoin = 'round';
+            tctSigCtx.strokeStyle = '#0f172a';
             const pos = getPos(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
+            tctSigCtx.beginPath();
+            tctSigCtx.moveTo(pos.x, pos.y);
         }
 
         function draw(e) {
-            if (!drawing) return;
+            if (!tctSigState.drawing) return;
             e.preventDefault();
             const pos = getPos(e);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
+            tctSigCtx.lineTo(pos.x, pos.y);
+            tctSigCtx.stroke();
         }
 
-        function stopDrawing(e) {
-            if (!drawing) return;
-            drawing = false;
-            if (hasDrawn) {
-                hiddenInput.value = canvas.toDataURL('image/png');
+        function stopDrawing() {
+            tctSigState.drawing = false;
+        }
+
+        tctSigCanvas.addEventListener('mousedown', startDrawing);
+        tctSigCanvas.addEventListener('mousemove', draw);
+        tctSigCanvas.addEventListener('mouseup', stopDrawing);
+        tctSigCanvas.addEventListener('mouseleave', stopDrawing);
+
+        tctSigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+        tctSigCanvas.addEventListener('touchmove', draw, { passive: false });
+        tctSigCanvas.addEventListener('touchend', stopDrawing);
+
+        document.getElementById('tctSigClearPad')?.addEventListener('click', function() {
+            tctSigCtx.clearRect(0, 0, tctSigCanvas.width, tctSigCanvas.height);
+            tctSigState.hasDrawn = false;
+        });
+
+        document.getElementById('tctSigFileInput')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                tctSigState.uploaded = evt.target.result;
+                document.getElementById('tctSigUploadPreviewImg').src = tctSigState.uploaded;
+                document.getElementById('tctSigUploadPreviewBox').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('tctSigApplyBtn')?.addEventListener('click', function() {
+            const activeTab = document.querySelector('#tctSigTab .nav-link.active')?.id;
+            let sigData = '';
+
+            if (activeTab === 'tctUploadTab') {
+                if (!tctSigState.uploaded) {
+                    Swal.fire({ icon: 'warning', title: 'No File Selected', text: 'Please select an image file first.' });
+                    return;
+                }
+                sigData = tctSigState.uploaded;
+            } else {
+                if (!tctSigState.hasDrawn) {
+                    Swal.fire({ icon: 'warning', title: 'Empty Signature Pad', text: 'Please draw your signature before applying.' });
+                    return;
+                }
+                sigData = tctSigCanvas.toDataURL('image/png');
             }
-        }
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing);
-
-        clearBtn?.addEventListener('click', function() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            hiddenInput.value = '';
-            hasDrawn = false;
+            applyTctSignature(tctSigState.role, sigData);
+            bootstrap.Modal.getInstance(document.getElementById('tctSignatureModal'))?.hide();
         });
     }
 
-    // Initialize Canvas Pads when Modal Opens
+    function openTctSignatureModal(role) {
+        tctSigState.role = role;
+        const titleEl = document.getElementById('tctSignatureModalLabel');
+        if (titleEl) {
+            const title = role === 'driver' ? 'Driver Signature' : 'Apprehending Officer Signature';
+            titleEl.innerHTML = `<i class="bi bi-pen-fill text-danger me-2"></i>Sign: ${title}`;
+        }
+
+        if (!tctSigCanvas) initTctSigCanvas();
+        if (tctSigCtx) tctSigCtx.clearRect(0, 0, tctSigCanvas.width, tctSigCanvas.height);
+        tctSigState.hasDrawn = false;
+        tctSigState.uploaded = '';
+        const fileInput = document.getElementById('tctSigFileInput');
+        if (fileInput) fileInput.value = '';
+        const previewBox = document.getElementById('tctSigUploadPreviewBox');
+        if (previewBox) previewBox.style.display = 'none';
+
+        // Always land on the draw tab, exactly like the report sign-off.
+        const drawTab = document.getElementById('tctDrawTab');
+        if (drawTab) new bootstrap.Tab(drawTab).show();
+
+        new bootstrap.Modal(document.getElementById('tctSignatureModal')).show();
+    }
+
+    document.querySelectorAll('[data-open-signature]').forEach(btn => {
+        btn.addEventListener('click', () => openTctSignatureModal(btn.dataset.openSignature));
+    });
+    document.getElementById('clearDriverSigBtn')?.addEventListener('click', () => clearTctSignature('driver'));
+    document.getElementById('clearOfficerSigBtn')?.addEventListener('click', () => clearTctSignature('officer'));
+    restoreSavedOfficerSignature();
+
+    function syncTctNumberFields() {
+        const yearPrefix = document.getElementById('tctYearPrefix');
+        const serialInput = document.getElementById('tctSerialInput');
+        const hiddenInput = document.getElementById('custom_ticket_no');
+        if (!yearPrefix || !serialInput || !hiddenInput) return;
+
+        const year = (yearPrefix.textContent || '').replace(/[^\d]/g, '').slice(0, 4) || String(new Date().getFullYear());
+        const serial = String(serialInput.value || '').replace(/\D/g, '').slice(0, 7);
+        serialInput.value = serial;
+        hiddenInput.value = serial ? `${year}-${serial.padStart(7, '0')}` : '';
+    }
+
+    async function refreshNextTctNumber() {
+        const yearPrefix = document.getElementById('tctYearPrefix');
+        const serialInput = document.getElementById('tctSerialInput');
+        const hiddenInput = document.getElementById('custom_ticket_no');
+        if (!yearPrefix || !serialInput || !hiddenInput || hiddenInput.dataset.manual === '1' || hiddenInput.dataset.fromOld === '1') {
+            return;
+        }
+
+        try {
+            const res = await fetch('<?= base_url('officer/next-tct-number') ?>', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (!data.success || !data.number) return;
+
+            const parts = String(data.number).split('-');
+            if (parts.length === 2) {
+                yearPrefix.textContent = `${parts[0]}-`;
+                serialInput.value = parts[1].padStart(7, '0');
+                hiddenInput.value = data.number;
+            }
+        } catch (err) {
+            // Keep the server-rendered preview if refresh fails.
+        }
+    }
+
+    document.getElementById('tctSerialInput')?.addEventListener('input', function () {
+        const hiddenInput = document.getElementById('custom_ticket_no');
+        if (hiddenInput) hiddenInput.dataset.manual = '1';
+        syncTctNumberFields();
+    });
+
+    // Initialize & Reset Form when Modal Opens for a fresh, blank record.
+    // When the page opens with a violator prefill, preserve the server-rendered
+    // values the first time and clear everything on later "New Violation" clicks.
+    const hasPrefillViolator = <?= !empty($prefillViolator) ? 'true' : 'false' ?>;
+    let preservePrefillOnOpen = hasPrefillViolator;
+
+    document.getElementById('recordViolationModal')?.addEventListener('show.bs.modal', function () {
+        <?php if (!session()->getFlashdata('error') && !session()->getFlashdata('errors')): ?>
+            if (preservePrefillOnOpen) {
+                preservePrefillOnOpen = false;
+                return;
+            }
+
+            const form = document.getElementById('violationForm');
+            if (form) {
+                // Clear driver, vehicle, and location inputs
+                ['address', 'license_number', 'license_plate', 'mtop_number', 'owner_name', 'owner_address', 'location', 'notes'].forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) input.value = '';
+                });
+                ['first_name', 'middle_name', 'last_name', 'driver_signature', 'officer_signature', 'violator_id'].forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) input.value = '';
+                });
+                // Reset acknowledgment radio buttons to default (Admitted)
+                const ackAdmitted = document.getElementById('ackAdmitted');
+                if (ackAdmitted) ackAdmitted.checked = true;
+
+                // Uncheck all violations and reset total fine
+                document.querySelectorAll('#recordViolationModal .violation-check').forEach(chk => {
+                    chk.checked = false;
+                    setCheckboxVisual(chk);
+                });
+                if (newInfractionRows) {
+                    newInfractionRows.innerHTML = '';
+                }
+                syncNewInfractionOptions();
+                updateFineAmount();
+
+                // A fresh ticket never inherits the previous driver's signature;
+                // the apprehending officer's own saved signature stays applied.
+                clearTctSignature('driver');
+                restoreSavedOfficerSignature();
+
+                // Set violation datetime to accurate real-time (browser local time)
+                const dtInput = document.getElementById('violation_datetime');
+                if (dtInput) {
+                    const now = new Date();
+                    const y = now.getFullYear();
+                    const m = String(now.getMonth() + 1).padStart(2, '0');
+                    const d = String(now.getDate()).padStart(2, '0');
+                    const h = String(now.getHours()).padStart(2, '0');
+                    const min = String(now.getMinutes()).padStart(2, '0');
+                    dtInput.value = `${y}-${m}-${d}T${h}:${min}`;
+                }
+            }
+        <?php endif; ?>
+    });
+
+    // Refresh the TCT sequence when the modal opens; signatures are captured
+    // in their own draw/upload dialog instead of pads inside the form.
     document.getElementById('recordViolationModal')?.addEventListener('shown.bs.modal', function () {
-        setupSignaturePad('driverSigCanvas', 'driver_signature', 'clearDriverSigBtn');
-        setupSignaturePad('officerSigCanvas', 'officer_signature', 'clearOfficerSigBtn');
+        refreshNextTctNumber();
+    });
+
+    document.getElementById('recordViolationModal')?.addEventListener('hidden.bs.modal', function () {
+        const hiddenInput = document.getElementById('custom_ticket_no');
+        if (hiddenInput) {
+            hiddenInput.dataset.manual = '0';
+            hiddenInput.dataset.fromOld = '0';
+        }
     });
 
     document.getElementById('violationForm')?.addEventListener('submit', function(e) {
         syncDriverName();
-        const hasSelectedViolation = document.querySelectorAll('.violation-check:checked').length > 0;
-        if (!hasSelectedViolation) {
+        syncTctNumberFields();
+        const selectedIds = getSelectedNewInfractionIds();
+
+        if (selectedIds.length === 0) {
             e.preventDefault();
-            alert('Please select at least one violation.');
+            showInfractionWarning('Please select at least one violation infraction.');
             return;
         }
+
+        if (new Set(selectedIds).size !== selectedIds.length) {
+            e.preventDefault();
+            showInfractionWarning('Duplicate infractions are not allowed. Please remove the duplicate entry.');
+            return;
+        }
+
         const printBtn = document.getElementById('submitPrintBtn');
         if (printBtn) {
             printBtn.disabled = true;
-            printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+            printBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing Ticket...';
         }
     });
 
@@ -2141,83 +2731,6 @@
         if (v > 0 && v < 16) this.setCustomValidity('Minimum age is 16.');
         else this.setCustomValidity('');
     });
-
-    async function saveViolationType() {
-        const btn = document.getElementById('saveViolationTypeBtn');
-        const spinner = document.getElementById('vtSpinner');
-        const errorBox = document.getElementById('vtError');
-
-        const name = document.getElementById('vtName').value.trim();
-        const fine = document.getElementById('vtFine').value;
-        const desc = document.getElementById('vtDesc').value.trim();
-
-        errorBox.classList.add('d-none');
-        errorBox.innerHTML = '';
-
-        btn.disabled = true;
-        spinner.classList.remove('d-none');
-
-        try {
-            const res = await fetch('<?= base_url('officer/violation-types/store') ?>', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: new URLSearchParams({
-                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>',
-                    violation_name: name,
-                    fine_amount: fine,
-
-                    description: desc,
-                })
-            });
-
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.success) {
-                const errors = data.errors ? Object.values(data.errors).join('<br>') : (data.message || 'Failed to save.');
-                errorBox.innerHTML = errors;
-                errorBox.classList.remove('d-none');
-                return;
-            }
-
-            const type = data.type;
-            const checklist = document.getElementById('violationChecklist');
-            if (checklist) {
-                const wrap = document.createElement('label');
-                wrap.className = 'tct-check-item';
-                wrap.innerHTML = `
-                    <input type="checkbox" name="violation_type_id[]" class="violation-check"
-                           value="${type.id}" data-amount="${type.fine_amount}" checked>
-                    <span>${type.violation_name}</span>
-                `;
-                checklist.appendChild(wrap);
-                wrap.querySelector('.violation-check')?.addEventListener('change', updateFineAmount);
-                updateFineAmount();
-            }
-
-            const editSelect = document.getElementById('edit_violation_type_id');
-            if (editSelect) {
-                const opt2 = document.createElement('option');
-                opt2.value = type.id;
-                opt2.dataset.amount = type.fine_amount;
-
-                opt2.textContent = `${type.violation_name} - ${parseFloat(type.fine_amount).toFixed(2)}`;
-                editSelect.appendChild(opt2);
-            }
-
-            document.getElementById('vtName').value = '';
-            document.getElementById('vtFine').value = '';
-            document.getElementById('vtDesc').value = '';
-            bootstrap.Modal.getInstance(document.getElementById('addViolationTypeModal')).hide();
-            bootstrap.Modal.getInstance(document.getElementById('recordViolationModal')).show();
-        } finally {
-            btn.disabled = false;
-            spinner.classList.add('d-none');
-        }
-    }
-
-    document.getElementById('saveViolationTypeBtn')?.addEventListener('click', saveViolationType);
 
     // ═══ 1-CLICK COPY TICKET ID ═════════════════════════════════
     window.copyTicketId = function(ticketId, el) {
@@ -2264,7 +2777,7 @@
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             const statusCell = row.querySelector('td[data-label="Status"]');
-            const rowStatus = (statusCell?.textContent || '').toLowerCase();
+            const rowStatus = (row.dataset.status || statusCell?.textContent || '').toLowerCase();
             const matchesSearch = text.includes(keyword);
             const matchesStatus = !currentStatusFilter || rowStatus.includes(currentStatusFilter);
             const show = matchesSearch && matchesStatus;
@@ -2278,7 +2791,7 @@
                 const tbody = document.querySelector('#officerViolationTable tbody');
                 const row = tbody.insertRow();
                 row.id = 'noTableDataRow';
-                row.innerHTML = `<td colspan="8"><div class="empty-state py-4 text-center"><i class="bi bi-search fs-2 text-muted mb-2"></i><div class="empty-state-title fw-bold">No Matching Citations</div><div class="text-muted small">No records match "${keyword || currentStatusFilter}". Try resetting your filters.</div></div></td>`;
+                row.innerHTML = `<td colspan="2"><div class="empty-state py-4 text-center"><i class="bi bi-search fs-2 text-muted mb-2"></i><div class="empty-state-title fw-bold">No Matching Violators</div><div class="text-muted small">No records match "${keyword || currentStatusFilter}". Try resetting your filters.</div></div></td>`;
             }
         } else if (noDataRow) {
             noDataRow.remove();
@@ -2322,68 +2835,213 @@
                 cancelViolationModal.show();
             });
         });
+        cancelViolationForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Cancelling...';
+            }
+        });
     }
 
+    // ═══ EDIT VIOLATION CHECKLIST ═════════════════════════════
     const editModalEl = document.getElementById('editViolationModal');
     const editForm = document.getElementById('editViolationForm');
-    const editTypeSelect = document.getElementById('edit_violation_type_id');
+    const editChecklist = document.getElementById('editViolationChecklist');
     const editAmount = document.getElementById('edit_penalty_amount');
 
-    function updateEditComputedFields() {
-        const option = editTypeSelect?.options[editTypeSelect.selectedIndex];
-        const amount = option?.dataset?.amount ? parseFloat(option.dataset.amount) : 0;
-        if (editAmount) editAmount.value = amount.toFixed(2);
-        const editAmountDisplay = document.getElementById('edit_penalty_amount_display');
-        if (editAmountDisplay) editAmountDisplay.textContent = amount.toFixed(2);
+    function getEditChecks() {
+        return Array.from(editChecklist?.querySelectorAll('.edit-violation-check') || []);
     }
 
-    editTypeSelect?.addEventListener('change', updateEditComputedFields);
+    function updateEditComputedFields() {
+        let totalAmount = 0;
+        getEditChecks().forEach(check => {
+            if (check.checked) {
+                totalAmount += parseFloat(check.dataset.amount || 0);
+            }
+        });
+
+        if (editAmount) editAmount.value = totalAmount.toFixed(2);
+
+        const editAmountDisplay = document.getElementById('edit_penalty_amount_display');
+        if (editAmountDisplay) {
+            editAmountDisplay.textContent = totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    }
+
+    // An infraction whose type is no longer active is re-added to the list so
+    // saving the ticket does not silently drop it.
+    function addEditChecklistEntry(id, name, amount, checked) {
+        if (!editChecklist || !id) return null;
+
+        const existing = getEditChecks().find(check => check.value === String(id));
+        if (existing) {
+            existing.checked = !!checked;
+            setCheckboxVisual(existing);
+            return existing;
+        }
+
+        const wrap = document.createElement('label');
+        wrap.className = 'tct-check-label';
+
+        const check = document.createElement('input');
+        check.type = 'checkbox';
+        check.name = 'violation_type_id[]';
+        check.className = 'edit-violation-check d-none';
+        check.value = String(id);
+        check.dataset.amount = amount ?? '';
+        check.dataset.name = name || '';
+        check.checked = !!checked;
+
+        const box = document.createElement('div');
+        box.className = 'tct-box';
+        const boxX = document.createElement('span');
+        boxX.className = 'tct-box-x';
+        box.appendChild(boxX);
+
+        const text = document.createElement('span');
+        text.className = 'tct-item-text';
+        text.textContent = name || ('Violation #' + id);
+
+        wrap.append(check, box, text);
+        editChecklist.appendChild(wrap);
+        setCheckboxVisual(check);
+
+        return check;
+    }
+
+    function setEditChecklist(typeIds) {
+        const wanted = (Array.isArray(typeIds) ? typeIds : []).map(String).filter(Boolean);
+        getEditChecks().forEach(check => {
+            check.checked = wanted.includes(check.value);
+            setCheckboxVisual(check);
+        });
+    }
+
+    editChecklist?.addEventListener('change', function (event) {
+        if (!event.target.classList.contains('edit-violation-check')) return;
+        setCheckboxVisual(event.target);
+        updateEditComputedFields();
+    });
+
+    updateEditComputedFields();
 
     if (editModalEl && editForm) {
         const editModal = new bootstrap.Modal(editModalEl);
+        const openEditTicketModal = (data, infractions) => {
+            const id = data.id;
+            editForm.action = `<?= base_url('officer/update') ?>/${id}`;
+
+            if (document.getElementById('edit_ticket_no_display')) {
+                document.getElementById('edit_ticket_no_display').textContent = data.ticketId || data.ticket_id || ('#' + id);
+            }
+
+            document.getElementById('edit_first_name').value = data.firstName || data.first_name || '';
+            if(document.getElementById('edit_middle_name')) {
+                document.getElementById('edit_middle_name').value = data.middleName || data.middle_name || '';
+            }
+            document.getElementById('edit_last_name').value = data.lastName || data.last_name || '';
+            if(document.getElementById('edit_license_number')) {
+                document.getElementById('edit_license_number').value = data.licenseNumber || data.license_number || '';
+            }
+            if(document.getElementById('edit_mtop_number')) {
+                document.getElementById('edit_mtop_number').value = data.mtopNumber || data.mtop_number || '';
+            }
+            if(document.getElementById('edit_owner_name')) {
+                document.getElementById('edit_owner_name').value = data.ownerName || data.owner_name || '';
+            }
+            if(document.getElementById('edit_owner_address')) {
+                document.getElementById('edit_owner_address').value = data.ownerAddress || data.owner_address || '';
+            }
+            
+            const ack = data.acknowledgment || '';
+            const setAck = (inputId, boxId, active) => {
+                const input = document.getElementById(inputId);
+                const box   = document.getElementById(boxId);
+                if (input) input.checked = active;
+                if (box) {
+                    box.classList.toggle('is-checked', active);
+                    box.innerHTML = active ? '<span class="tct-box-x">X</span>' : '';
+                }
+            };
+            setAck('edit_ackAdmitted', 'edit_ackAdmittedBox', ack === 'Admitted');
+            setAck('edit_ackProtest', 'edit_ackProtestBox', ack === 'Under Protest');
+
+            document.getElementById('edit_age').value = data.age || '';
+            document.getElementById('edit_address').value = data.address || '';
+            document.getElementById('edit_license_plate').value = data.licensePlate || data.license_plate || '';
+            document.getElementById('edit_location').value = data.location || '';
+            document.getElementById('edit_notes').value = data.notes || '';
+
+            // Mark the violations already saved on this ticket. The checklist is
+            // formatted exactly like the record form.
+            const saved = Array.isArray(infractions) ? infractions : [];
+            setEditChecklist(saved.map(item => item.violation_type_id));
+
+            saved.forEach(item => {
+                const typeId = String(item.violation_type_id || '');
+                if (!typeId) return;
+                const isKnown = getEditChecks().some(check => check.value === typeId);
+                if (!isKnown) {
+                    addEditChecklistEntry(typeId, item.violation_type || '', item.penalty_amount ?? '', true);
+                }
+            });
+
+            updateEditComputedFields();
+            editModal.show();
+        };
+
         document.querySelectorAll('.btn-edit-violation').forEach(btn => {
             btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                editForm.action = `<?= base_url('officer/update') ?>/${id}`;
-
-                if (document.getElementById('edit_ticket_no_display')) {
-                    document.getElementById('edit_ticket_no_display').textContent = this.dataset.ticketId || ('#' + id);
+                let rowInfractions = [];
+                try {
+                    rowInfractions = JSON.parse(this.closest('.officer-violation-row')?.dataset.infractions || '[]');
+                } catch (e) {
+                    rowInfractions = [];
                 }
-
-                document.getElementById('edit_first_name').value = this.dataset.firstName || '';
-                if(document.getElementById('edit_middle_name')) {
-                    document.getElementById('edit_middle_name').value = this.dataset.middleName || '';
-                }
-                document.getElementById('edit_last_name').value = this.dataset.lastName || '';
-                if(document.getElementById('edit_license_number')) {
-                    document.getElementById('edit_license_number').value = this.dataset.licenseNumber || '';
-                }
-                if(document.getElementById('edit_mtop_number')) {
-                    document.getElementById('edit_mtop_number').value = this.dataset.mtopNumber || '';
-                }
-                if(document.getElementById('edit_owner_name')) {
-                    document.getElementById('edit_owner_name').value = this.dataset.ownerName || '';
-                }
-                
-                const ack = this.dataset.acknowledgment || '';
-                if(document.getElementById('edit_ackAdmitted')) {
-                    document.getElementById('edit_ackAdmitted').checked = (ack === 'Admitted');
-                }
-                if(document.getElementById('edit_ackProtest')) {
-                    document.getElementById('edit_ackProtest').checked = (ack === 'Under Protest');
-                }
-
-                document.getElementById('edit_age').value = this.dataset.age || '';
-                document.getElementById('edit_address').value = this.dataset.address || '';
-                document.getElementById('edit_license_plate').value = this.dataset.licensePlate || '';
-                document.getElementById('edit_location').value = this.dataset.location || '';
-                document.getElementById('edit_notes').value = this.dataset.notes || '';
-                if (editTypeSelect) {
-                    editTypeSelect.value = this.dataset.violationTypeId || '';
-                }
-                updateEditComputedFields();
-                editModal.show();
+                openEditTicketModal(this.dataset, rowInfractions);
             });
+        });
+
+        // A ticket opened from a violator's history page comes back as
+        // ?edit_ticket=<violation id>; re-open the modal for that citation.
+        const editTicketSeed = <?= json_encode(($editTicket ?? null) ? array_merge([
+            'id'          => (int) $editTicket['id'],
+            'ticket_id'   => $editTicket['ticket_id'] ?? '',
+            'first_name'  => $editTicket['first_name'] ?? '',
+            'middle_name' => $editTicket['middle_name'] ?? '',
+            'last_name'   => $editTicket['last_name'] ?? '',
+            'age'         => (string) ($editTicket['age'] ?? ''),
+            'address'     => $editTicket['address'] ?? '',
+            'license_number' => $editTicket['license_number'] ?? '',
+            'mtop_number'    => $editTicket['mtop_number'] ?? '',
+            'owner_name'     => $editTicket['owner_name'] ?? '',
+            'owner_address'  => $editTicket['owner_address'] ?? '',
+            'acknowledgment' => $editTicket['acknowledgment'] ?? '',
+            'license_plate'  => $editTicket['license_plate'] ?? '',
+            'location'       => $editTicket['location'] ?? '',
+            'notes'          => $editTicket['notes'] ?? '',
+        ], ['infractions' => $ticketInfractions[$editTicket['ticket_id']] ?? []]) : null) ?>;
+        if (editTicketSeed && editTicketSeed.id) {
+            const seedInfractions = editTicketSeed.infractions || [];
+            delete editTicketSeed.infractions;
+            openEditTicketModal(editTicketSeed, seedInfractions);
+        }
+        editForm.addEventListener('submit', function(e) {
+            const checked = getEditChecks().filter(check => check.checked);
+
+            if (checked.length === 0) {
+                e.preventDefault();
+                showInfractionWarning('Please mark at least one violation for this ticket.');
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            }
         });
     }
 
@@ -2398,7 +3056,49 @@
                 deleteModal.show();
             });
         });
+        deleteForm.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting...';
+            }
+        });
     }
+
+    // Elevate row stacking context dynamically whenever action dropdown opens
+    document.querySelectorAll('.officer-violations-table .dropdown').forEach(dropdownEl => {
+        dropdownEl.addEventListener('show.bs.dropdown', function () {
+            const tr = this.closest('tr');
+            if (tr) {
+                tr.classList.add('has-open-dropdown');
+                tr.style.zIndex = '1065';
+            }
+        });
+        dropdownEl.addEventListener('hidden.bs.dropdown', function () {
+            const tr = this.closest('tr');
+            if (tr) {
+                tr.classList.remove('has-open-dropdown');
+                tr.style.zIndex = '';
+            }
+        });
+    });
+
+    // Auto-close open action dropdowns upon scrolling page or table container so menus never float or follow screen
+    const closeOpenActionDropdowns = () => {
+        document.querySelectorAll('.officer-violations-table .dropdown-menu.show').forEach(menu => {
+            const toggle = menu.closest('.dropdown')?.querySelector('[data-bs-toggle="dropdown"]');
+            if (toggle && typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                const instance = bootstrap.Dropdown.getInstance(toggle);
+                if (instance) {
+                    instance.hide();
+                }
+            }
+        });
+    };
+    window.addEventListener('scroll', closeOpenActionDropdowns, { passive: true });
+    document.querySelectorAll('.table-responsive').forEach(el => {
+        el.addEventListener('scroll', closeOpenActionDropdowns, { passive: true });
+    });
 
     // Subtle premium tilt interaction, consistent with admin.
     const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2417,11 +3117,12 @@
         });
     });
 
-    // Auto-open modal if there are flash errors
-    <?php if (session()->getFlashdata('error') || session()->getFlashdata('errors')): ?>
-        const recordViolationModal = new bootstrap.Modal(document.getElementById('recordViolationModal'));
-        recordViolationModal.show();
+    // Auto-open the form for validation errors or when recording another
+    // violation for a prefilled violator.
+    <?php if (session()->getFlashdata('error') || session()->getFlashdata('errors') || ! empty($prefillViolator)): ?>
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('recordViolationModal')).show();
     <?php endif; ?>
+
 
 </script>
 <?= $this->endSection() ?>

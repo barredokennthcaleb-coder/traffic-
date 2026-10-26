@@ -8,17 +8,38 @@
 
     <!-- Screen Filter Toolbar (Hidden on Print) -->
     <div class="card border-0 shadow-sm mb-4 no-print premium-reveal" style="--reveal-delay: 0s;">
-        <div class="rpt-toolbar-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="rpt-toolbar-header d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="rpt-icon-wrap">
-                    <i class="bi bi-file-earmark-bar-graph-fill"></i>
+                <div class="rpt-icon-wrap" title="Generate Reports">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M8 17v-3"></path>
+                        <path d="M12 17v-6"></path>
+                        <path d="M16 17v-8"></path>
+                    </svg>
                 </div>
                 <div>
                     <h5 class="mb-0 fw-bold" style="color: var(--text-strong);">Generate Reports</h5>
                     <p class="mb-0 text-muted small">Filter by period, type, or status then print or export</p>
                 </div>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
+
+            <!-- Report Mode Switcher & Period Quick Tabs -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <!-- Mode Switcher -->
+                <div class="btn-group btn-group-sm shadow-sm" role="group">
+                    <a href="<?= base_url('reports') ?>" class="btn btn-primary active fw-bold" title="Currently viewing Citation & Revenue Report">
+                        <i class="bi bi-currency-dollar me-1"></i> Revenue Report
+                    </a>
+                    <a href="<?= base_url('reports/violations') ?>" class="btn btn-outline-danger fw-semibold" title="Switch to Violations Summary Only">
+                        <i class="bi bi-shield-exclamation me-1"></i> Violations Only
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap align-items-center">
                 <a href="<?= base_url('reports/export-csv?' . http_build_query($_GET)) ?>" class="btn btn-outline-success btn-sm fw-semibold d-flex align-items-center gap-2 px-3">
                     <i class="bi bi-file-earmark-excel-fill"></i> Export CSV
                 </a>
@@ -27,61 +48,93 @@
                 </button>
             </div>
         </div>
-        <div class="card-body bg-transparent pt-0 pb-3 px-4">
-            <form method="GET" action="<?= base_url('reports') ?>" id="reportFilterForm" class="row g-3 align-items-end">
+        <div class="card-body bg-transparent pt-0 pb-3 px-4 rpt-toolbar-body">
+            <div class="text-end mb-3 pb-2 border-bottom">
+                <div class="text-muted small" style="font-size: 0.74rem;">
+                    <i class="bi bi-info-circle me-1 text-primary"></i>Report Period: <strong><?= date('M d, Y', strtotime($start_date)) ?> &ndash; <?= date('M d, Y', strtotime($end_date)) ?></strong>
+                </div>
+            </div>
 
-                <div class="col-md-2">
+            <!-- Responsive Filter Form -->
+            <form method="GET" action="<?= base_url('reports') ?>" id="reportFilterForm" class="row g-2 align-items-end">
+
+                <!-- Report Type Dropdown -->
+                <div class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12">
                     <label for="period_type" class="form-label filter-label">Report Type</label>
                     <select name="period_type" id="period_type" class="form-select form-select-sm" onchange="togglePeriodInputs(this.value)">
                         <option value="weekly"  <?= ($period_type === 'weekly')  ? 'selected' : '' ?>>📅 Weekly Report</option>
                         <option value="monthly" <?= ($period_type === 'monthly') ? 'selected' : '' ?>>📆 Monthly Report</option>
+                        <option value="yearly"  <?= ($period_type === 'yearly')  ? 'selected' : '' ?>>📊 Full Year Report</option>
                         <option value="custom"  <?= ($period_type === 'custom')  ? 'selected' : '' ?>>🎯 Custom Range</option>
                     </select>
                 </div>
 
                 <!-- Weekly Selector -->
-                <div class="col-md-3 period-box" id="weeklyBox" style="<?= ($period_type !== 'monthly' && $period_type !== 'custom') ? '' : 'display:none;' ?>">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 period-box" id="weeklyBox" style="<?= ($period_type === 'weekly') ? '' : 'display:none;' ?>">
                     <label for="start_date_week" class="form-label filter-label">Week Starting Date</label>
-                    <input type="date" name="start_date" id="start_date_week" class="form-control form-control-sm" value="<?= esc($start_date) ?>">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-calendar-week"></i></span>
+                        <input type="date" name="start_date" id="start_date_week" class="form-control form-control-sm border-start-0" value="<?= esc($start_date) ?>" <?= ($period_type === 'weekly') ? '' : 'disabled' ?>>
+                    </div>
                 </div>
 
-                <!-- Monthly Selector -->
-                <div class="col-md-2 period-box" id="monthlyMonthBox" style="<?= ($period_type === 'monthly') ? '' : 'display:none;' ?>">
-                    <label for="month" class="form-label filter-label">Month</label>
-                    <select name="month" id="month" class="form-select form-select-sm">
-                        <?php
-                        $months = [
-                            '01'=>'January','02'=>'February','03'=>'March','04'=>'April',
-                            '05'=>'May','06'=>'June','07'=>'July','08'=>'August',
-                            '09'=>'September','10'=>'October','11'=>'November','12'=>'December'
-                        ];
-                        foreach($months as $num => $name):
-                        ?>
-                            <option value="<?= $num ?>" <?= ($month == $num) ? 'selected' : '' ?>><?= $name ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <!-- Monthly Selector (Dropdown to Choose Specific Months & Year) -->
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 period-box" id="monthlyBox" style="<?= ($period_type === 'monthly') ? '' : 'display:none;' ?>">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="monthSelect" class="form-label filter-label mb-0">Choose Month &amp; Year</label>
+                        <span class="badge bg-primary-subtle text-primary fw-semibold px-1.5 py-0.5" style="font-size:0.65rem;" id="monthBadgeText">
+                            <?= date('M Y', strtotime("$year-$month-01")) ?>
+                        </span>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-primary border-end-0 px-2"><i class="bi bi-calendar-month"></i></span>
+                        <select name="month" id="monthSelect" class="form-select form-select-sm border-start-0 fw-semibold" onchange="updateMonthBadge()" <?= ($period_type === 'monthly') ? '' : 'disabled' ?>>
+                            <?php
+                            $monthList = [
+                                '01' => 'January',   '02' => 'February', '03' => 'March',     '04' => 'April',
+                                '05' => 'May',       '06' => 'June',     '07' => 'July',      '08' => 'August',
+                                '09' => 'September', '10' => 'October',  '11' => 'November',  '12' => 'December'
+                            ];
+                            $selectedMonth = sprintf('%02d', (int)$month);
+                            foreach($monthList as $mCode => $mTitle):
+                            ?>
+                                <option value="<?= $mCode ?>" <?= ($selectedMonth === $mCode) ? 'selected' : '' ?>><?= $mTitle ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <select name="year" id="monthYearSelect" class="form-select form-select-sm px-1" style="max-width: 80px;" onchange="updateMonthBadge()" <?= ($period_type === 'monthly') ? '' : 'disabled' ?>>
+                            <?php $curY = date('Y'); for($y = $curY; $y >= $curY - 5; $y--): ?>
+                                <option value="<?= $y ?>" <?= ($year == $y) ? 'selected' : '' ?>><?= $y ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-2 period-box" id="monthlyYearBox" style="<?= ($period_type === 'monthly') ? '' : 'display:none;' ?>">
-                    <label for="year" class="form-label filter-label">Year</label>
-                    <select name="year" id="year" class="form-select form-select-sm">
-                        <?php $cYear = date('Y'); for($y = $cYear; $y >= $cYear - 5; $y--): ?>
-                            <option value="<?= $y ?>" <?= ($year == $y) ? 'selected' : '' ?>><?= $y ?></option>
-                        <?php endfor; ?>
-                    </select>
+
+                <!-- Yearly Selector -->
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 period-box" id="yearlyBox" style="<?= ($period_type === 'yearly') ? '' : 'display:none;' ?>">
+                    <label for="year_yearly" class="form-label filter-label">Calendar Year</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-calendar3"></i></span>
+                        <select name="year" id="year_yearly" class="form-select form-select-sm border-start-0" <?= ($period_type === 'yearly') ? '' : 'disabled' ?>>
+                            <?php $cYear = date('Y'); for($y = $cYear; $y >= $cYear - 5; $y--): ?>
+                                <option value="<?= $y ?>" <?= ($year == $y) ? 'selected' : '' ?>>CY <?= $y ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Custom Range -->
-                <div class="col-md-2 period-box" id="customStartBox" style="<?= ($period_type === 'custom') ? '' : 'display:none;' ?>">
-                    <label for="start_date_custom" class="form-label filter-label">From Date</label>
-                    <input type="date" name="start_date" id="start_date_custom" class="form-control form-control-sm" value="<?= esc($start_date) ?>" <?= ($period_type === 'custom') ? '' : 'disabled' ?>>
-                </div>
-                <div class="col-md-2 period-box" id="customEndBox" style="<?= ($period_type === 'custom') ? '' : 'display:none;' ?>">
-                    <label for="end_date_custom" class="form-label filter-label">To Date</label>
-                    <input type="date" name="end_date" id="end_date_custom" class="form-control form-control-sm" value="<?= esc($end_date) ?>">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 period-box" id="customBox" style="<?= ($period_type === 'custom') ? '' : 'display:none;' ?>">
+                    <label class="form-label filter-label">Date Range (From &ndash; To)</label>
+                    <div class="input-group input-group-sm">
+                        <input type="date" name="start_date" id="start_date_custom" class="form-control form-control-sm px-1 text-center" value="<?= esc($start_date) ?>" <?= ($period_type === 'custom') ? '' : 'disabled' ?>>
+                        <span class="input-group-text bg-light text-muted px-1.5">&ndash;</span>
+                        <input type="date" name="end_date" id="end_date_custom" class="form-control form-control-sm px-1 text-center" value="<?= esc($end_date) ?>" <?= ($period_type === 'custom') ? '' : 'disabled' ?>>
+                    </div>
                 </div>
 
-                <div class="col-md-2">
-                    <label for="status" class="form-label filter-label">Status</label>
+                <!-- Status Filter -->
+                <div class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12">
+                    <label for="status" class="form-label filter-label">Citation Status</label>
                     <select name="status" id="status" class="form-select form-select-sm">
                         <option value="">All Statuses</option>
                         <option value="Paid"      <?= ($status_filter === 'Paid')      ? 'selected' : '' ?>>✅ Paid Only</option>
@@ -90,8 +143,9 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
-                    <label for="violation_type_id" class="form-label filter-label">Violation Type</label>
+                <!-- Violation Type Filter -->
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12">
+                    <label for="violation_type_id" class="form-label filter-label">Violation Offense</label>
                     <select name="violation_type_id" id="violation_type_id" class="form-select form-select-sm">
                         <option value="">All Offenses</option>
                         <?php foreach($all_types as $t): ?>
@@ -100,8 +154,9 @@
                     </select>
                 </div>
 
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-1">
+                <!-- Submit Button -->
+                <div class="col-xl-2 col-lg-2 col-md-2 col-sm-12 col-12">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-1.5 py-1.5 shadow-2xs">
                         <i class="bi bi-funnel-fill"></i> Filter
                     </button>
                 </div>
@@ -161,10 +216,43 @@
             </div>
         </div>
 
-        <!-- Section 1: Nature of Violations Breakdown -->
+        <!-- Section 1: Officer Activity -->
         <div class="report-section mb-4">
-            <h5 class="report-sec-title"><i class="bi bi-bar-chart-steps me-2"></i>I. Offense Category Breakdown</h5>
+            <h5 class="report-sec-title"><i class="bi bi-shield-check me-2"></i>I. Enforcer / Officer Activity Summary</h5>
+            <div class="table-responsive report-table-scroll">
             <table class="table table-bordered table-sm report-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Apprehending Officer</th>
+                        <th class="text-center">Citations Issued</th>
+                        <th class="text-end">Total Fine Amount (₱)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($officer_breakdown)): ?>
+                        <tr><td colspan="4" class="text-center text-muted">No officer citations found.</td></tr>
+                    <?php else: ?>
+                        <?php $i=1; foreach($officer_breakdown as $ob): ?>
+                        <tr>
+                            <td class="text-center"><?= $i++ ?></td>
+                            <td class="fw-bold"><?= esc($ob['officer_name']) ?></td>
+                            <td class="text-center fw-bold"><?= number_format($ob['count']) ?></td>
+                            <td class="text-end font-monospace">₱<?= number_format($ob['amount'], 2) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+            </div>
+        </div>
+
+        <!-- Section 2: Nature of Violations Breakdown -->
+        <div class="report-section mb-4">
+            <h5 class="report-sec-title"><i class="bi bi-bar-chart-steps me-2"></i>II. Offense Category Breakdown</h5>
+            <div class="report-scroll-hint"><i class="bi bi-arrows-move"></i> Swipe the table sideways to see every column</div>
+            <div class="table-responsive report-table-scroll">
+            <table class="table table-bordered table-sm report-table report-table-scrollable">
                 <thead>
                     <tr>
                         <th style="width:50px;">#</th>
@@ -192,41 +280,15 @@
                     <?php endif; ?>
                 </tbody>
             </table>
-        </div>
-
-        <!-- Section 2: Officer Activity -->
-        <div class="report-section mb-4">
-            <h5 class="report-sec-title"><i class="bi bi-shield-check me-2"></i>II. Enforcer / Officer Activity Summary</h5>
-            <table class="table table-bordered table-sm report-table">
-                <thead>
-                    <tr>
-                        <th style="width:50px;">#</th>
-                        <th>Apprehending Officer</th>
-                        <th class="text-center">Citations Issued</th>
-                        <th class="text-end">Total Fine Amount (₱)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($officer_breakdown)): ?>
-                        <tr><td colspan="4" class="text-center text-muted">No officer citations found.</td></tr>
-                    <?php else: ?>
-                        <?php $i=1; foreach($officer_breakdown as $ob): ?>
-                        <tr>
-                            <td class="text-center"><?= $i++ ?></td>
-                            <td class="fw-bold"><?= esc($ob['officer_name']) ?></td>
-                            <td class="text-center fw-bold"><?= number_format($ob['count']) ?></td>
-                            <td class="text-end font-monospace">₱<?= number_format($ob['amount'], 2) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            </div>
         </div>
 
         <!-- Section 3: Detailed Ticket Records -->
         <div class="report-section mb-4">
             <h5 class="report-sec-title"><i class="bi bi-list-check me-2"></i>III. Detailed Citation Records</h5>
-            <table class="table table-bordered table-sm report-table">
+            <div class="report-scroll-hint"><i class="bi bi-arrows-move"></i> Swipe the table sideways to see every column</div>
+            <div class="table-responsive report-table-scroll">
+            <table class="table table-bordered table-sm report-table report-table-wide">
                 <thead>
                     <tr>
                         <th>TCT No.</th>
@@ -271,6 +333,7 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Sign-off Block with E-Signature Support -->
@@ -380,17 +443,26 @@
         border-bottom: 1px solid #edf1ff;
     }
     .rpt-icon-wrap {
-        width: 46px;
-        height: 46px;
+        width: 48px;
+        height: 48px;
         border-radius: 14px;
-        background: var(--brand-gradient, linear-gradient(135deg, #5865f2, #7f56d9));
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.35rem;
-        color: #fff;
-        box-shadow: 0 6px 18px rgba(88,101,242,0.3);
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35) !important;
         flex-shrink: 0;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .rpt-icon-wrap:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(37, 99, 235, 0.45) !important;
+    }
+    .rpt-icon-wrap svg {
+        width: 24px;
+        height: 24px;
+        color: #ffffff;
     }
     .filter-label {
         font-size: 0.72rem;
@@ -399,6 +471,13 @@
         letter-spacing: 0.05em;
         color: #6b7fa8;
         margin-bottom: 4px;
+    }
+    .period-box {
+        animation: fadeInBox 0.22s ease-out;
+    }
+    @keyframes fadeInBox {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* Report Document */
@@ -488,25 +567,158 @@
     }
 
     /* Tables */
-    .report-table { font-size: 0.83rem; font-family: Arial, sans-serif; border-color: #000 !important; }
-    .report-table thead th {
-        background: #f1f5f9 !important;
-        color: #0f172a !important;
-        font-weight: bold;
-        border-bottom: 2px solid #000 !important;
-        font-size: 0.8rem;
-        text-transform: uppercase;
+    .report-table { 
+        font-size: 0.85rem; 
+        font-family: Arial, sans-serif; 
+        border: 1.5px solid #000 !important; 
     }
-    .report-table td { vertical-align: middle; padding: 6px 10px; }
+    .report-table thead th {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        font-weight: 800;
+        border: 1.5px solid #000 !important;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        padding: 10px 9px !important;
+    }
+    .report-table td { 
+        vertical-align: middle; 
+        padding: 8px 9px; 
+        border: 1.5px solid #000 !important;
+        color: #000;
+    }
+    .report-table tbody tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+    /* A wide table scrolls inside the sheet instead of pushing the whole page
+       sideways, so every column stays reachable on a phone. */
+    .report-table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 6px;
+        scrollbar-width: thin;
+    }
+    /* Only shown on phones, where the widest table scrolls sideways. */
+    .report-scroll-hint {
+        display: none;
+        font-family: Arial, sans-serif;
+        font-size: 0.7rem;
+        color: #64748b;
+        margin: -4px 0 6px;
+    }
 
     /* Sign-off */
     .sig-line { width: 220px; border-bottom: 1.5px solid #000; margin-top: 50px; }
 
+    /* ── SCREEN ONLY: fit the sheet to tablets and phones ──
+       The printed document keeps its own A4 rules further down; these only
+       shape the on-screen preview so the page reads without sideways drag. */
+    /* Below a full desktop the sidebar eats horizontal room, so the sheet and
+       its tables tighten up before the eight-column list needs a sideways push. */
+    @media screen and (max-width: 1279px) {
+        .report-document-card { padding: 30px 20px; }
+        .report-table { font-size: 0.76rem; }
+        .report-table td { padding: 7px 6px; }
+        .report-table thead th { padding: 8px 6px !important; font-size: 0.72rem; }
+        .report-scroll-hint { display: block; }
+    }
+
+    @media screen and (max-width: 991px) {
+        .report-document-card { padding: 26px 16px; }
+        .report-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        .report-table { font-size: 0.72rem; }
+        .report-table td { padding: 6px 5px; }
+        .report-table thead th { padding: 6px 5px !important; font-size: 0.68rem; }
+    }
+
+    @media screen and (max-width: 767px) {
+        .rpt-toolbar-header { padding: 14px 16px 12px; }
+        .rpt-toolbar-body { padding-left: 16px !important; padding-right: 16px !important; }
+
+        .report-document-card {
+            padding: 20px 14px;
+            border-width: 1.5px;
+            border-radius: 10px;
+        }
+
+        /* Seal above the letterhead instead of behind it. */
+        .report-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 8px;
+            min-height: 0;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .report-header-seal { position: static; }
+        .report-seal-img { width: 56px; height: 56px; }
+        .rep-sub    { font-size: 0.78rem; }
+        .rep-office { font-size: 0.92rem; }
+        .rep-city   { font-size: 0.76rem; }
+        .rep-dept   { font-size: 0.7rem; line-height: 1.3; margin-top: 3px; }
+        .rep-main-title { font-size: 1rem; line-height: 1.25; margin: 6px 0 3px; }
+        .rep-period { font-size: 0.76rem; }
+
+        .report-meta-bar {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 2px;
+            padding: 8px 12px;
+            font-size: 0.76rem;
+        }
+
+        .report-kpi-grid { gap: 8px; margin-bottom: 18px; }
+        .report-kpi-box { padding: 10px 8px; }
+        .kpi-label { font-size: 0.66rem; }
+        .kpi-val   { font-size: 1.05rem; margin: 3px 0; }
+        .kpi-sub   { font-size: 0.65rem; }
+
+        .report-sec-title { font-size: 0.86rem; margin-bottom: 8px; }
+        .report-table { font-size: 0.76rem; }
+        /* The shared layout forces every .table to 640px on phones; the small
+           summary tables fit the sheet, only the detailed list needs to scroll. */
+        .report-table-scroll .report-table { min-width: 0; }
+        .report-table-scroll .report-table-scrollable { min-width: 460px; }
+        .report-table-scroll .report-table-wide { min-width: 640px; }
+        .report-table thead th { font-size: 0.68rem; padding: 8px !important; }
+        .report-table td { padding: 7px 8px; }
+        .report-scroll-hint { display: block; }
+
+        .report-sign-block { margin-top: 1.5rem !important; padding-top: 0 !important; }
+
+        /* Each signature block takes its own line rather than being squeezed
+           into half the width of a phone. */
+        .report-sign-block .row { flex-wrap: wrap; gap: 18px; }
+        .report-sign-block .col-6 { flex: 0 0 100%; max-width: 100%; }
+        .report-sign-block .sig-container { width: 100% !important; max-width: 240px; }
+        .sig-line { width: 200px; margin-top: 40px; }
+    }
+
+    @media screen and (max-width: 359px) {
+        .report-kpi-grid { grid-template-columns: 1fr; }
+    }
+
+    /* The reveal and hover lifts are decoration, never information, so they
+       stay off for readers who ask for reduced motion. */
+    @media (prefers-reduced-motion: reduce) {
+        .period-box,
+        .report-kpi-box,
+        .rpt-icon-wrap,
+        .report-document-card { animation: none !important; transition: none !important; }
+    }
+
     /* Print Styling */
+    @page {
+        margin: 8mm 10mm;
+        size: A4 portrait;
+    }
+
     @media print {
+        /* Hide all UI elements */
         .no-print,
         .sidebar, .sidebar-toggle, .mobile-topbar,
-        .desktop-header, .breadcrumb, .btn,
+        .desktop-header, .breadcrumb, .btn, .btn-group,
         .alert, nav, header, footer {
             display: none !important;
         }
@@ -516,24 +728,198 @@
             padding: 0 !important;
         }
         .container-fluid { padding: 0 !important; }
-        body { background: #fff !important; }
-        .report-document-card {
-            max-width: 100%;
-            border: 2px solid #000;
-            box-shadow: none;
-            padding: 18px 22px;
+        body {
+            background: #fff !important;
+            color: #0f172a !important;
         }
-        @page { margin: 10mm 12mm; size: A4 portrait; }
+
+        /* Root Document Card - Uncompressed, Full Size */
+        .report-document-card {
+            max-width: 100% !important;
+            width: 100% !important;
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+            padding: 16px 20px !important;
+            margin: 0 !important;
+            background: #fff !important;
+            zoom: 1 !important;
+            transform: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Header - Standard natural proportions */
+        .report-header {
+            min-height: auto !important;
+            padding-bottom: 12px !important;
+            margin-bottom: 12px !important;
+            border-bottom: 2px solid #000 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .report-seal-img {
+            width: 75px !important;
+            height: 75px !important;
+        }
+        .rep-sub   { font-size: 0.90rem !important; }
+        .rep-office{ font-size: 1.08rem !important; font-weight: bold !important; }
+        .rep-city  { font-size: 0.88rem !important; }
+        .rep-dept  { font-size: 0.82rem !important; font-weight: bold !important; margin-top: 3px !important; color: #000 !important; }
+        .rep-main-title {
+            font-size: 1.22rem !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.03em !important;
+            margin: 6px 0 3px !important;
+            color: #000 !important;
+        }
+        .rep-period { font-size: 0.86rem !important; color: #334155 !important; }
+
+        /* Meta Bar */
+        .report-meta-bar {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 6px 14px !important;
+            font-size: 0.84rem !important;
+            margin-bottom: 14px !important;
+            border-radius: 4px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* KPI Grid - Uncompressed, clear */
+        .report-kpi-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 10px !important;
+            margin-bottom: 16px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .report-kpi-box {
+            padding: 10px 12px !important;
+            border: 1.5px solid #000 !important;
+            background: #fafafa !important;
+            box-shadow: none !important;
+            border-radius: 6px !important;
+        }
+        .kpi-label { font-size: 0.74rem !important; font-weight: bold !important; }
+        .kpi-val   { font-size: 1.25rem !important; font-weight: 900 !important; margin: 3px 0 !important; }
+        .kpi-sub   { font-size: 0.72rem !important; }
+
+        /* Section Titles */
+        .report-sec-title {
+            font-size: 0.95rem !important;
+            font-weight: bold !important;
+            border-bottom: 1.5px solid #000 !important;
+            padding-bottom: 4px !important;
+            margin-bottom: 8px !important;
+            color: #000 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Tables - Normal readable size */
+        .table-responsive {
+            overflow: visible !important;
+        }
+        /* A4 portrait with 10mm side margins leaves ~678px of usable width;
+           the tables are set here so every column fits on the paper instead of
+           running off the right edge. */
+        .report-table {
+            border: 1.5px solid #000 !important;
+            font-size: 0.74rem !important;
+            margin-bottom: 12px !important;
+            width: 100% !important;
+        }
+        .report-table thead th,
+        .report-table th {
+            background: #e2e8f0 !important;
+            color: #000 !important;
+            font-weight: 800 !important;
+            font-size: 0.7rem !important;
+            padding: 6px 4px !important;
+            border: 1.5px solid #000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .report-table td {
+            padding: 6px 4px !important;
+            font-size: 0.74rem !important;
+            line-height: 1.3 !important;
+            border: 1.5px solid #000 !important;
+            color: #000 !important;
+        }
+        .report-table tbody tr:nth-child(even) {
+            background-color: #f8fafc !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .report-table tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Badges */
+        .badge {
+            border: 1px solid #64748b !important;
+            color: #000 !important;
+            background: transparent !important;
+            font-size: 0.72rem !important;
+        }
+
+        /* Sign-off section - Only eliminate the excessive 114px dead whitespace */
+        .report-sign-block {
+            margin-top: 18px !important;
+            padding-top: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .report-sign-block .row {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+        }
+        .report-sign-block .sig-container {
+            min-height: 55px !important;
+        }
+        .report-sign-block .sig-line {
+            width: 220px !important;
+            margin-top: 30px !important;
+            border-bottom: 1.5px solid #000 !important;
+        }
+        .report-sig-img {
+            max-height: 55px !important;
+        }
+        .report-sign-block .fw-bold {
+            font-size: 0.90rem !important;
+        }
+        .report-sign-block .text-muted {
+            font-size: 0.78rem !important;
+            color: #000 !important;
+        }
     }
 </style>
 
 <script>
-    function togglePeriodInputs(val) {
-        // Hide all period boxes and disable inputs inside hidden boxes to avoid sending conflicting parameters
+    function updateMonthBadge() {
+        const mSelect = document.getElementById('monthSelect');
+        const ySelect = document.getElementById('monthYearSelect');
+        const badge = document.getElementById('monthBadgeText');
+        if (mSelect && ySelect && badge) {
+            const mText = mSelect.options[mSelect.selectedIndex]?.text || '';
+            const yVal = ySelect.value;
+            badge.textContent = `${mText} ${yVal}`;
+        }
+    }
+
+    function togglePeriodInputs(val, fromSwitcher = false) {
         document.querySelectorAll('.period-box').forEach(el => {
             el.style.display = 'none';
             el.querySelectorAll('input, select').forEach(input => input.disabled = true);
         });
+
+        const now = new Date();
+        const curY = now.getFullYear();
+        const curM = String(now.getMonth() + 1).padStart(2, '0');
 
         if (val === 'weekly') {
             const box = document.getElementById('weeklyBox');
@@ -542,21 +928,31 @@
                 box.querySelectorAll('input, select').forEach(input => input.disabled = false);
             }
         } else if (val === 'monthly') {
-            ['monthlyMonthBox', 'monthlyYearBox'].forEach(id => {
-                const box = document.getElementById(id);
-                if (box) {
-                    box.style.display = '';
-                    box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+            const box = document.getElementById('monthlyBox');
+            if (box) {
+                box.style.display = '';
+                box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+
+                const mSelect = document.getElementById('monthSelect');
+                const ySelect = document.getElementById('monthYearSelect');
+                if (fromSwitcher) {
+                    if (mSelect) mSelect.value = curM;
+                    if (ySelect) ySelect.value = curY;
+                    updateMonthBadge();
                 }
-            });
+            }
+        } else if (val === 'yearly') {
+            const box = document.getElementById('yearlyBox');
+            if (box) {
+                box.style.display = '';
+                box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+            }
         } else if (val === 'custom') {
-            ['customStartBox', 'customEndBox'].forEach(id => {
-                const box = document.getElementById(id);
-                if (box) {
-                    box.style.display = '';
-                    box.querySelectorAll('input, select').forEach(input => input.disabled = false);
-                }
-            });
+            const box = document.getElementById('customBox');
+            if (box) {
+                box.style.display = '';
+                box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+            }
         }
     }
 
@@ -565,7 +961,7 @@
         if (periodSelect) {
             togglePeriodInputs(periodSelect.value);
         }
-        // Load saved signatures from localStorage
+        updateMonthBadge();
         loadSavedSignatures();
     });
 

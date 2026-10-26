@@ -13,6 +13,7 @@ class ViolatorRecord extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'violator_id',
         'ticket_id', 
         'driver_name',
         'first_name',
@@ -23,6 +24,7 @@ class ViolatorRecord extends Model
         'license_number',
         'license_plate', 
         'mtop_number',
+        'owner_address',
         'owner_name',
         'acknowledgment',
         'officer_id', 
@@ -50,6 +52,7 @@ class ViolatorRecord extends Model
 
     protected $validationRules = [
         'id'              => 'permit_empty|integer',
+        'violator_id'     => 'permit_empty|integer',
         'ticket_id'       => 'permit_empty',
         'first_name'      => 'required|max_length[100]',
         'middle_name'     => 'permit_empty|max_length[100]',
@@ -60,6 +63,7 @@ class ViolatorRecord extends Model
         'license_plate'   => 'required|max_length[20]',
         'license_number'  => 'permit_empty|max_length[50]',
         'mtop_number'     => 'permit_empty|max_length[50]',
+        'owner_address'   => 'permit_empty|max_length[255]',
         'owner_name'      => 'permit_empty|max_length[150]',
         'acknowledgment'  => 'permit_empty|max_length[50]',
         'officer_id'      => 'permit_empty|integer',
@@ -122,9 +126,162 @@ class ViolatorRecord extends Model
     protected function generateTicketId(array $data)
     {
         if (empty($data['data']['ticket_id'])) {
-            $data['data']['ticket_id'] = 'TKT-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 8));
+            $year = ! empty($data['data']['violation_date'])
+                ? (int) date('Y', strtotime((string) $data['data']['violation_date']))
+                : (int) date('Y');
+
+            $data['data']['ticket_id'] = $this->generateNextTctNumber($year);
         }
+
         return $data;
+    }
+
+    /**
+     * Highest serial already used for a given year from stored ticket ids.
+     */
+    public function getMaxTctSequenceForYear(int $year): int
+    {
+        // 1. Search for ANY ticket containing the year and a hyphen in ticket_id
+        $builder = $this->db->table('violations');
+        $builder->select("ticket_id");
+        $builder->like('ticket_id', (string)$year, 'after');
+        $query = $builder->get();
+        
+        $max = 0;
+        foreach ($query->getResult() as $row) {
+            $tid = (string)$row->ticket_id;
+            // Format is YYYY-XXXXXXX
+            if (preg_match('/^' . $year . '-(\d+)$/', $tid, $matches)) {
+                $serial = (int) $matches[1];
+                if ($serial > $max) {
+                    $max = $serial;
+                }
+            }
+        }
+
+        return $max;
+    }
+
+    /**
+     * Preview the next TCT number without reserving it.
+     */
+    public function peekNextTctNumber(?int $year = null): string
+    {
+        $year = $year ?? (int) date('Y');
+        $this->ensureSequenceTable();
+
+        $row = $this->db->table('tct_sequences')->where('year', $year)->get()->getRowArray();
+        $sequence = $row ? (int) ($row['last_sequence'] ?? 0) : 0;
+        
+        // Always verify against actual records to ensure we follow up the LATEST
+        $maxStored = $this->getMaxTctSequenceForYear($year);
+        $current = max($sequence, $maxStored);
+
+        return sprintf('%d-%07d', $year, $current + 1);
+    }
+
+    /**
+     * Reserve and return the next official TCT number for the year.
+     */
+    public function generateNextTctNumber(?int $year = null): string
+    {
+        $year = $year ?? (int) date('Y');
+        $this->ensureSequenceTable();
+
+        $db = $this->db;
+        $db->transStart();
+
+        $row = $db->query('SELECT last_sequence FROM tct_sequences WHERE year = ? FOR UPDATE', [$year])->getRowArray();
+        $sequence = $row ? (int) ($row['last_sequence'] ?? 0) : 0;
+        
+        // Always verify against actual records to ensure we follow up the LATEST
+        $maxStored = $this->getMaxTctSequenceForYear($year);
+        $current = max($sequence, $maxStored);
+        
+        $next = $current + 1;
+
+        if (! $row) {
+            $db->table('tct_sequences')->insert([
+                'year'          => $year,
+                'last_sequence' => $next,
+                'updated_at'    => date('Y-m-d H:i:s'),
+            ]);
+        } else {
+            $db->table('tct_sequences')
+                ->where('year', $year)
+                ->update([
+                    'last_sequence' => $next,
+                    'updated_at'    => date('Y-m-d H:i:s'),
+                ]);
+        }
+
+        $db->transComplete();
+
+        return sprintf('%d-%07d', $year, $next);
+    }
+
+    /**
+     * Keep the sequence table aligned when a manual booklet number is used.
+     */
+    public function syncSequenceIfHigher(int $year, int $sequence): void
+    {
+        $this->ensureSequenceTable();
+
+        $maxStored = $this->getMaxTctSequenceForYear($year);
+        $finalSequence = max($sequence, $maxStored);
+
+        $row = $this->db->table('tct_sequences')->where('year', $year)->get()->getRowArray();
+        if (! $row) {
+            $this->db->table('tct_sequences')->insert([
+                'year'          => $year,
+                'last_sequence' => $finalSequence,
+                'updated_at'    => date('Y-m-d H:i:s'),
+            ]);
+
+            return;
+        }
+
+        if ($finalSequence > (int) $row['last_sequence']) {
+            $this->db->table('tct_sequences')
+                ->where('year', $year)
+                ->update([
+                    'last_sequence' => $finalSequence,
+                    'updated_at'    => date('Y-m-d H:i:s'),
+                ]);
+        }
+    }
+
+    public function ticketIdExists(string $ticketId): bool
+    {
+        return $this->where('ticket_id', $ticketId)->countAllResults() > 0;
+    }
+
+    protected function ensureSequenceTable(): void
+    {
+        if ($this->db->tableExists('tct_sequences')) {
+            return;
+        }
+
+        $forge = \Config\Database::forge();
+        $forge->addField([
+            'year' => [
+                'type'     => 'SMALLINT',
+                'unsigned' => true,
+                'null'     => false,
+            ],
+            'last_sequence' => [
+                'type'     => 'INT',
+                'unsigned' => true,
+                'null'     => false,
+                'default'  => 0,
+            ],
+            'updated_at' => [
+                'type' => 'DATETIME',
+                'null' => true,
+            ],
+        ]);
+        $forge->addKey('year', true);
+        $forge->createTable('tct_sequences', true);
     }
 
     public function getDetailedViolation($id = null)
@@ -136,6 +293,25 @@ class ViolatorRecord extends Model
                         ->first();
         }
         return null;
+    }
+
+    /**
+     * Infractions printed on one ticket, each carrying its own fine.
+     * Cancelled infractions are left out: nothing is collected for them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getTicketInfractions($ticketId)
+    {
+        if (empty($ticketId)) {
+            return [];
+        }
+
+        return $this->select('id, ticket_id, violation_type, penalty_amount, status')
+                    ->where('ticket_id', $ticketId)
+                    ->where('status !=', 'Cancelled')
+                    ->orderBy('id', 'ASC')
+                    ->findAll();
     }
 
     public function getAllDetailed($status = null, $limit = null, $offset = 0)
@@ -156,26 +332,22 @@ class ViolatorRecord extends Model
         return $builder->findAll();
     }
 
-    public function getPendingCount()
+    /**
+     * Returns the count of distinct tickets for a given status.
+     * Used internally by getPendingCount(), getPaidCount(), and getCancelledCount()
+     * to avoid three near-identical raw queries.
+     */
+    public function getCountByStatus(string $status): int
     {
-        $db = db_connect();
-        $result = $db->query("SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations WHERE status = 'Pending'")->getRow();
-        return $result ? (int)$result->cnt : 0;
+        $result = db_connect()
+            ->query('SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations WHERE status = ?', [$status])
+            ->getRow();
+        return $result ? (int) $result->cnt : 0;
     }
 
-    public function getPaidCount()
-    {
-        $db = db_connect();
-        $result = $db->query("SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations WHERE status = 'Paid'")->getRow();
-        return $result ? (int)$result->cnt : 0;
-    }
-
-    public function getCancelledCount()
-    {
-        $db = db_connect();
-        $result = $db->query("SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations WHERE status = 'Cancelled'")->getRow();
-        return $result ? (int)$result->cnt : 0;
-    }
+    public function getPendingCount(): int   { return $this->getCountByStatus('Pending');   }
+    public function getPaidCount(): int      { return $this->getCountByStatus('Paid');      }
+    public function getCancelledCount(): int { return $this->getCountByStatus('Cancelled'); }
 
     public function getTotalRevenue()
     {
@@ -212,26 +384,55 @@ class ViolatorRecord extends Model
 
     public function recordPayment($id, $paymentMethod, $remarks = null, $transactionId = null)
     {
-        $receiptNumber = $transactionId ?: 'RCP-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
-
         $violation = $this->find($id);
-        if ($violation && !empty($violation['ticket_id'])) {
-            return $this->where('ticket_id', $violation['ticket_id'])->set([
-                'status'          => 'Paid',
-                'paid_date'       => date('Y-m-d H:i:s'),
-                'payment_method'  => $paymentMethod,
-                'receipt_number'  => $receiptNumber,
-                'remarks'         => $remarks,
-            ])->update();
+
+        if (! $violation) {
+            return false;
         }
 
-        return $this->update($id, [
+        $receiptNumber = $transactionId ?: 'RCP-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 10));
+        $payload       = [
             'status'          => 'Paid',
             'paid_date'       => date('Y-m-d H:i:s'),
             'payment_method'  => $paymentMethod,
             'receipt_number'  => $receiptNumber,
             'remarks'         => $remarks,
-        ]);
+        ];
+
+        $db = $this->db;
+        $db->transBegin();
+
+        try {
+            // A payment settles the whole ticket, but cancelled infractions must
+            // stay cancelled for historical accuracy.
+            if (! empty($violation['ticket_id'])) {
+                $updated = $this->where('ticket_id', $violation['ticket_id'])
+                    ->where('status !=', 'Cancelled')
+                    ->set($payload)
+                    ->update();
+            } else {
+                $updated = $this->where('id', $id)
+                    ->where('status !=', 'Cancelled')
+                    ->set($payload)
+                    ->update();
+            }
+
+            if (! $updated || $db->transStatus() === false) {
+                throw new \RuntimeException('Unable to record the payment.');
+            }
+
+            $db->transCommit();
+
+            return true;
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Payment recording failed for violation #{id}: {message}', [
+                'id'      => (int) $id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
     public function cancelViolation($id, $reason = null)
@@ -270,9 +471,12 @@ class ViolatorRecord extends Model
     public function getStatistics()
     {
         $db = db_connect();
-        $ticketCount = $db->query("SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations")->getRow();
+        $ticketCount  = $db->query("SELECT COUNT(DISTINCT ticket_id) as cnt FROM violations")->getRow();
+        $violatorCount = $db->query("SELECT COUNT(DISTINCT violator_id) as cnt FROM violations WHERE violator_id IS NOT NULL")->getRow();
+
         return [
             'total_violations'    => $ticketCount ? (int)$ticketCount->cnt : 0,
+            'total_violators'     => $violatorCount ? (int)$violatorCount->cnt : 0,
             'pending'            => $this->getPendingCount(),
             'paid'               => $this->getPaidCount(),
             'cancelled'          => $this->getCancelledCount(),
@@ -307,55 +511,49 @@ class ViolatorRecord extends Model
     }
 
     /**
-     * Get the driver who has the most total violation records.
+     * Get the violator with the most distinct tickets.
      */
     public function getTopViolatorPerson()
     {
-        $db = db_connect();
-        $query = $db->query("
-            SELECT 
-                driver_name,
-                license_plate,
-                COUNT(*) AS total_violations
-            FROM violations
-            WHERE license_plate IS NOT NULL AND license_plate != ''
-            GROUP BY license_plate, driver_name
-            ORDER BY total_violations DESC
-            LIMIT 1
-        ");
-        return $query->getRowArray();
+        $rows = $this->getTopViolatorsList(1);
+
+        return $rows[0] ?? null;
     }
 
-    public function getTopViolationType()
+    /**
+     * Returns the single most-recorded violation type.
+     * Delegates to getTopViolationsList(1) to avoid duplicating the same SQL.
+     */
+    public function getTopViolationType(): ?array
     {
-        $db = db_connect();
-        $query = $db->query("
-            SELECT 
-                IFNULL(vt.violation_name, v.violation_type) AS violation_type,
-                COUNT(*) AS total_count
-            FROM violations v
-            LEFT JOIN violation_types vt ON vt.id = v.violation_type_id
-            GROUP BY IFNULL(vt.violation_name, v.violation_type)
-            ORDER BY total_count DESC
-            LIMIT 1
-        ");
-        return $query->getRowArray();
+        $result = $this->getTopViolationsList(1);
+        return $result[0] ?? null;
     }
 
+    /**
+     * Top violators grouped by their stable violator record.
+     *
+     * A ticket with several infractions counts as one attempt, matching the
+     * attempt definition used across violator profiles and the violator list.
+     */
     public function getTopViolatorsList($limit = 10)
     {
         $db = db_connect();
         $query = $db->query("
-            SELECT 
-                driver_name,
-                license_plate,
-                COUNT(*) AS total_violations
-            FROM violations
-            WHERE license_plate IS NOT NULL AND license_plate != ''
-            GROUP BY license_plate, driver_name
-            ORDER BY total_violations DESC
+            SELECT
+                v.id AS violator_id,
+                v.driver_name,
+                v.license_number,
+                v.license_plate,
+                COUNT(DISTINCT vi.ticket_id) AS total_violations,
+                MAX(vi.violation_date) AS last_violation_at
+            FROM violators v
+            INNER JOIN violations vi ON vi.violator_id = v.id
+            GROUP BY v.id, v.driver_name, v.license_number, v.license_plate
+            ORDER BY total_violations DESC, last_violation_at DESC, v.driver_name ASC
             LIMIT ?
         ", [(int)$limit]);
+
         return $query->getResultArray();
     }
 
@@ -406,6 +604,32 @@ class ViolatorRecord extends Model
                     ->findAll();
     }
 
+    /**
+     * Overall payment status per violator, derived from all linked tickets.
+     */
+    public function getViolatorStatusDistribution()
+    {
+        $db = db_connect();
+
+        return $db->query("
+            SELECT overall_status AS status, COUNT(*) AS count
+            FROM (
+                SELECT
+                    v.id,
+                    CASE
+                        WHEN SUM(CASE WHEN vi.status <> 'Cancelled' THEN 1 ELSE 0 END) = 0 THEN 'Cancelled'
+                        WHEN SUM(CASE WHEN vi.status = 'Pending' THEN 1 ELSE 0 END) > 0 THEN 'Pending'
+                        ELSE 'Paid'
+                    END AS overall_status
+                FROM violators v
+                INNER JOIN violations vi ON vi.violator_id = v.id
+                GROUP BY v.id
+            ) AS grouped
+            GROUP BY overall_status
+            ORDER BY FIELD(overall_status, 'Pending', 'Paid', 'Cancelled')
+        ")->getResultArray();
+    }
+
     public function getOutstandingFines()
     {
         return $this->selectSum('penalty_amount')
@@ -424,7 +648,9 @@ class ViolatorRecord extends Model
             $weekEnd   = date('Y-m-d', strtotime("sunday this week -$i weeks"));
 
             $builder = $this->builder();
-            $builder->select("COUNT(*) as count, IFNULL(SUM(penalty_amount), 0) as revenue, IFNULL(SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END), 0) as paid_revenue");
+            // Assessed value ignores cancelled (void) citations; paid_revenue is
+            // the money actually collected, matching the Revenue Report.
+            $builder->select("COUNT(*) as count, IFNULL(SUM(CASE WHEN status <> 'Cancelled' THEN penalty_amount ELSE 0 END), 0) as revenue, IFNULL(SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END), 0) as paid_revenue");
             $builder->where('DATE(violation_date) >=', $weekStart);
             $builder->where('DATE(violation_date) <=', $weekEnd);
 
@@ -443,6 +669,70 @@ class ViolatorRecord extends Model
                 'paid_revenue' => (float) ($row['paid_revenue'] ?? 0),
             ];
         }
+        return $result;
+    }
+
+    /**
+     * Get weekly violation trend for a specific month of a year.
+     * Divides the month into Week 1 (1-7), Week 2 (8-14), Week 3 (15-21), Week 4 (22-28), and Week 5 (29-end).
+     */
+    public function getWeeklyTrendForMonth($year, $month, $officerId = null)
+    {
+        $year  = (int) $year;
+        $month = (int) $month;
+        if ($year <= 0) {
+            $year = (int) date('Y');
+        }
+        if ($month < 1 || $month > 12) {
+            $month = (int) date('n');
+        }
+
+        $numDays    = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $monthShort = date('M', mktime(0, 0, 0, $month, 1, $year));
+
+        $weekBrackets = [
+            ['start' => 1, 'end' => 7],
+            ['start' => 8, 'end' => 14],
+            ['start' => 15, 'end' => 21],
+            ['start' => 22, 'end' => 28],
+        ];
+        if ($numDays > 28) {
+            $weekBrackets[] = ['start' => 29, 'end' => $numDays];
+        }
+
+        $result = [];
+        foreach ($weekBrackets as $idx => $wb) {
+            $weekNum     = $idx + 1;
+            $startDayPad = sprintf('%02d', $wb['start']);
+            $endDayPad   = sprintf('%02d', $wb['end']);
+
+            $startDate = sprintf('%04d-%02d-%02d', $year, $month, $wb['start']);
+            $endDate   = sprintf('%04d-%02d-%02d', $year, $month, $wb['end']);
+
+            $builder = $this->builder();
+            $builder->select("COUNT(*) as count, IFNULL(SUM(CASE WHEN status <> 'Cancelled' THEN penalty_amount ELSE 0 END), 0) as revenue, IFNULL(SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END), 0) as paid_revenue");
+            $builder->where('DATE(violation_date) >=', $startDate);
+            $builder->where('DATE(violation_date) <=', $endDate);
+
+            if ($officerId !== null) {
+                $builder->where('officer_id', $officerId);
+            }
+
+            $row = $builder->get()->getRowArray();
+
+            $result[] = [
+                'week_num'     => $weekNum,
+                'label'        => "Week {$weekNum} ({$monthShort} {$startDayPad}-{$endDayPad})",
+                'short_label'  => "W{$weekNum} ({$startDayPad}-{$endDayPad})",
+                'date_range'   => "{$monthShort} {$startDayPad} - {$monthShort} {$endDayPad}, {$year}",
+                'week_start'   => $startDate,
+                'week_end'     => $endDate,
+                'count'        => (int) ($row['count'] ?? 0),
+                'revenue'      => (float) ($row['revenue'] ?? 0),
+                'paid_revenue' => (float) ($row['paid_revenue'] ?? 0),
+            ];
+        }
+
         return $result;
     }
 
@@ -504,7 +794,7 @@ class ViolatorRecord extends Model
      *  - paid_amount    : SUM of penalty_amount for Paid ONLY (collected revenue — matches KPI card)
      *  - pending_amount : SUM of penalty_amount for Pending ONLY
      */
-    public function getViolationNatureSummary($officerId = null)
+    public function getViolationNatureSummary($officerId = null, $startDate = null, $endDate = null)
     {
         $builder = $this->builder();
         $builder->select("IFNULL(vt.violation_name, violations.violation_type) as violation_type,
@@ -521,6 +811,13 @@ class ViolatorRecord extends Model
 
         if ($officerId !== null) {
             $builder->where('violations.officer_id', $officerId);
+        }
+
+        // Optional calendar window, so the dashboard tallies the same year its
+        // KPI cards and the Revenue Report describe.
+        if ($startDate !== null && $endDate !== null) {
+            $builder->where('DATE(violations.violation_date) >=', $startDate);
+            $builder->where('DATE(violations.violation_date) <=', $endDate);
         }
 
         $builder->groupBy('IFNULL(vt.violation_name, violations.violation_type)');
@@ -568,15 +865,26 @@ class ViolatorRecord extends Model
         $records = $builder->orderBy('violations.violation_date', 'DESC')->findAll();
 
         // Summary Calculations
+        //
+        // A cancelled citation is void: it was still issued (and stays in the
+        // detailed records for audit), but it carries no assessable value, so
+        // it must never inflate the assessed, collected or outstanding money.
+        // Only Paid + Pending rows add amount, which keeps
+        // assessed = collected + pending, and the collection rate is measured
+        // against that same assessable value.
         $totalViolations = count($records);
         $distinctTickets = count(array_unique(array_column($records, 'ticket_id')));
-        
+
         $totalAssessed = 0;
         $totalPaid = 0;
         $totalPending = 0;
         $paidTicketsArr = [];
 
         foreach ($records as $r) {
+            if (($r['status'] ?? '') === 'Cancelled') {
+                continue;
+            }
+
             $amt = (float)$r['penalty_amount'];
             $totalAssessed += $amt;
             if ($r['status'] === 'Paid') {
@@ -590,7 +898,7 @@ class ViolatorRecord extends Model
         }
 
         $paidTicketCount = count($paidTicketsArr);
-        $collectionRate  = $distinctTickets > 0 ? round(($paidTicketCount / $distinctTickets) * 100, 1) : 0;
+        $collectionRate  = $totalAssessed > 0 ? round(($totalPaid / $totalAssessed) * 100, 1) : 0;
 
         // Nature Breakdown
         $natureMap = [];
@@ -600,7 +908,9 @@ class ViolatorRecord extends Model
                 $natureMap[$vName] = ['violation_type' => $vName, 'count' => 0, 'amount' => 0];
             }
             $natureMap[$vName]['count']++;
-            $natureMap[$vName]['amount'] += (float)$r['penalty_amount'];
+            if (($r['status'] ?? '') !== 'Cancelled') {
+                $natureMap[$vName]['amount'] += (float)$r['penalty_amount'];
+            }
         }
         usort($natureMap, function($a, $b) { return $b['count'] <=> $a['count']; });
 
@@ -614,22 +924,32 @@ class ViolatorRecord extends Model
             $dailyMap[$day]['count']++;
             if ($r['status'] === 'Paid') {
                 $dailyMap[$day]['revenue'] += (float)$r['penalty_amount'];
-            } else {
+            } elseif (($r['status'] ?? '') === 'Pending') {
                 $dailyMap[$day]['pending'] += (float)$r['penalty_amount'];
             }
         }
         ksort($dailyMap);
 
         // Officer Breakdown
+        // A citation is a ticket, not an infraction line: one ticket carrying
+        // four offences is still one citation issued by that officer, so the
+        // count is taken over distinct ticket numbers.
         $officerMap = [];
         foreach ($records as $r) {
             $offName = $r['officer_name'] ?: 'System / Admin';
             if (!isset($officerMap[$offName])) {
-                $officerMap[$offName] = ['officer_name' => $offName, 'count' => 0, 'amount' => 0];
+                $officerMap[$offName] = ['officer_name' => $offName, 'count' => 0, 'amount' => 0, 'tickets' => []];
             }
-            $officerMap[$offName]['count']++;
-            $officerMap[$offName]['amount'] += (float)$r['penalty_amount'];
+            $officerMap[$offName]['tickets'][$r['ticket_id'] ?: ('#' . $r['id'])] = true;
+            if (($r['status'] ?? '') !== 'Cancelled') {
+                $officerMap[$offName]['amount'] += (float)$r['penalty_amount'];
+            }
         }
+        foreach ($officerMap as &$officerRow) {
+            $officerRow['count'] = count($officerRow['tickets']);
+            unset($officerRow['tickets']);
+        }
+        unset($officerRow);
         usort($officerMap, function($a, $b) { return $b['count'] <=> $a['count']; });
 
         return [

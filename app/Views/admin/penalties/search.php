@@ -12,7 +12,7 @@
         </div>
         <div class="col-md-6 text-end">
             <a href="<?= base_url('penalties/all') ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to All Violations
+                <i class="bi bi-arrow-left me-1"></i> Back to All Violators
             </a>
         </div>
     </div>

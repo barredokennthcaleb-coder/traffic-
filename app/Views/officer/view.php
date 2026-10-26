@@ -54,10 +54,17 @@
         <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Violations
         </a>
-        <a href="<?= current_url() ?>?print=1<?= $fromViolations ? '&from=violations' : '' ?>"
-           class="btn btn-primary btn-sm shadow-sm">
-            <i class="bi bi-printer me-1"></i> Print Ticket
-        </a>
+        <div class="d-flex gap-2">
+            <?php if (! empty($violation['violator_id'])): ?>
+                <a href="<?= base_url('officer/violator-profile/' . (int) $violation['violator_id']) ?>" class="btn btn-outline-dark btn-sm shadow-sm">
+                    <i class="bi bi-person-vcard me-1"></i> Violator Profile
+                </a>
+            <?php endif; ?>
+            <a href="<?= current_url() ?>?print=1<?= $fromViolations ? '&from=violations' : '' ?>"
+               class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-printer me-1"></i> Print Ticket
+            </a>
+        </div>
     </div>
 </div>
 
@@ -85,9 +92,25 @@
                 <span class="tct-bold-label">TO:</span>
             </div>
             
-            <div class="tct-row mb-2 align-items-end">
-                <span class="tct-bold-label me-2">Driver's Name:</span>
-                <span class="tct-field-underline flex-1"><?= esc($violation['driver_name'] ?? trim(($violation['first_name'] ?? '') . ' ' . ($violation['middle_name'] ?? '') . ' ' . ($violation['last_name'] ?? ''))) ?></span>
+            <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
+                <div class="flex-1 d-flex flex-column" style="min-width: 0;">
+                    <?php $tctName = tct_split_name($violation['first_name'] ?? null, $violation['middle_name'] ?? null, $violation['last_name'] ?? null, $violation['driver_name'] ?? null); ?>
+                    <div class="d-flex w-100" style="min-width: 0; gap: 4px; align-items: flex-start;">
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['first']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(First)</span>
+                        </div>
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['middle']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
+                        </div>
+                        <div class="d-flex flex-column text-center" style="min-width: 0; flex: 1 1 auto;">
+                            <span class="tct-field-underline d-block" style="min-width: 0;"><?= esc($tctName['last']) ?></span>
+                            <span class="d-block" style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="tct-row mb-2 align-items-end">
@@ -117,7 +140,7 @@
                 </div>
                 <div class="d-flex flex-1 align-items-end">
                     <span class="tct-bold-label me-1">Address</span>
-                    <span class="tct-field-underline flex-1"><?= esc($violation['address'] ?? '—') ?></span>
+                    <span class="tct-field-underline flex-1"><?= esc(trim((string) ($violation['owner_address'] ?? '')) !== '' ? $violation['owner_address'] : ($violation['address'] ?? '—')) ?></span>
                 </div>
             </div>
         </div>
@@ -209,18 +232,10 @@
         </div>
 
         <!-- Footer -->
-        <?php 
-            $tNo = esc($violation['ticket_id'] ?? '0000000');
-            if (strpos($tNo, 'TKT-') === 0 || strpos($tNo, '2024-') === false) {
-                $tNoDisplay = '2024-' . str_replace('TKT-', '', $tNo);
-            } else {
-                $tNoDisplay = $tNo;
-            }
-        ?>
         <div class="tct-footer-area d-flex justify-content-between align-items-center pt-2">
             <div class="tct-driver-copy-tag">Driver's Copy</div>
             <div class="tct-number-tag">
-                TCT No. <span class="tct-red-no"><?= $tNoDisplay ?></span>
+                TCT No. <?= format_tct_number_display($violation['ticket_id'] ?? null, (int) ($violation['id'] ?? 0), $violation['violation_date'] ?? null) ?>
             </div>
         </div>
 
@@ -435,6 +450,10 @@
         font-size: 1.15rem;
         font-family: Arial, sans-serif;
     }
+    .tct-year-prefix {
+        color: #000;
+        font-weight: 700;
+    }
     .tct-red-no {
         color: #dc3545;
         font-family: 'Courier New', monospace;
@@ -445,6 +464,13 @@
 
     /* Print styling */
     @media print {
+        /* Keep the ticket shading on paper: the black "X" boxes that mark each
+           charged violation are background paints, which browsers drop by
+           default in print. */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
         .no-print,
         .sidebar, .sidebar-toggle, .mobile-topbar,
         .desktop-header, .breadcrumb, .btn,
@@ -462,23 +488,163 @@
         body {
             background: #fff !important;
         }
+        /* One ticket = one sheet. The TCT is a fixed A4 document: on paper the
+           violations list runs in two columns and the spacing is tightened just
+           enough that header, violations, legal notice, both signatures and the
+           TCT number always land on page 1. On screen nothing changes. */
         .tct-official-card {
             max-width: 100%;
+            width: 100%;
             border: 2px solid #000;
             box-shadow: none;
             padding: 18px 22px;
-            zoom: 0.85;
             margin: 0 auto !important;
         }
-        @supports not (zoom: 0.85) {
-            .tct-official-card {
-                transform: scale(0.85);
-                transform-origin: top center;
-            }
+
+        /* Header: same seal and text block, just tighter leading. */
+        .tct-header-area {
+            min-height: 0;
+            margin-bottom: 10px;
         }
+        .tct-seal-box,
+        .tct-seal-img {
+            width: 66px !important;
+            height: 66px !important;
+        }
+        .tct-rep,
+        .tct-city { font-size: 0.95rem; }
+        .tct-office { font-size: 1.1rem; }
+        .tct-doc-title { font-size: 1.28rem; margin: 4px 0 1px; }
+        .tct-ord-no { font-size: 0.98rem; }
+
+        /* Fields + sections: keep every line, drop the empty air around it. */
+        .tct-doc-section {
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .tct-bold-label { font-size: 0.92rem; }
+        .tct-field-underline {
+            font-size: 0.95rem;
+            min-height: 1.15rem;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+        .tct-doc-section .mb-2 { margin-bottom: 0.4rem !important; }
+        .tct-doc-section .mb-3 { margin-bottom: 0.5rem !important; }
+        .tct-doc-section .mb-4 { margin-bottom: 0.7rem !important; }
+
+        /* Violations: two columns, so all 14 lines still print on one sheet. */
+        .tct-sec-heading { font-size: 1.02rem; }
+        .tct-sec-notice {
+            font-size: 0.82rem;
+            margin-bottom: 0.45rem !important;
+        }
+        .tct-checklist-container {
+            grid-template-columns: 1fr 1fr;
+            gap: 5px 18px;
+        }
+        .tct-check-item { font-size: 0.86rem; }
+        .tct-item-text { font-size: 0.86rem; }
+        .tct-box {
+            width: 16px;
+            height: 16px;
+            font-size: 0.76rem;
+            margin-right: 7px;
+        }
+
+        /* Legal notice, signatures, footer. */
+        .tct-legal-text {
+            font-size: 0.82rem;
+            line-height: 1.3;
+        }
+        .tct-ack-heading { font-size: 0.88rem; }
+        .tct-sub-label { font-size: 0.78rem; }
+        .tct-sig-underline { height: 36px; }
+        .tct-officer-box { height: 56px; }
+        .officer-printed-name { font-size: 0.98rem; }
+        .tct-driver-signature-area { margin-bottom: 0.7rem !important; }
+        .tct-officer-signature-area { margin-bottom: 0 !important; }
+        .tct-footer-area { padding-top: 0 !important; }
+        .tct-driver-copy-tag { font-size: 0.92rem; }
+        .tct-number-tag { font-size: 1rem; }
+        .tct-red-no { font-size: 1.15rem; }
+
+        /* Never let the document fragment across sheets. */
+        .tct-doc-section,
+        .tct-footer-area,
+        .tct-official-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
         @page {
             margin: 6mm 8mm;
             size: A4 portrait;
+        }
+    }
+
+    /* ── MOBILE: stack TCT rows so the citation fits the phone screen ── */
+    @media screen and (max-width: 767px) {
+        .tct-official-card {
+            padding: 14px 12px;
+        }
+
+        /* Letterhead: the seal sits above the text instead of on top of it. */
+        .tct-header-area {
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+            margin-bottom: 14px;
+        }
+        .tct-seal-box {
+            position: static;
+            width: 54px;
+            height: 54px;
+        }
+        .tct-seal-img {
+            width: 54px !important;
+            height: 54px !important;
+        }
+        .tct-rep,
+        .tct-city { font-size: 0.92rem; }
+        .tct-office { font-size: 1.02rem; }
+        .tct-doc-title {
+            font-size: 1.16rem;
+            line-height: 1.15;
+            margin: 5px 0 2px;
+        }
+
+        .tct-row,
+        .tct-row > * {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.3rem;
+        }
+        .tct-row > *,
+        .tct-row > * > * {
+            flex: none !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        /* The filled-in value starts on the same left edge as its label, so the
+           typed name / address / plate lines up with the caption above it. */
+        .tct-field-underline {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .tct-bold-label {
+            margin-right: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
+        .tct-official-card .tct-sig-wrapper {
+            width: 100% !important;
+            max-width: 260px;
+        }
+        .tct-official-card .d-flex.gap-5 {
+            gap: 1rem !important;
         }
     }
 </style>
