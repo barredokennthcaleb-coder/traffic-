@@ -186,7 +186,7 @@ try {
 
 <div class="container-fluid py-4 no-print">
     <div class="d-flex justify-content-between mb-3" style="max-width: 750px; margin: 0 auto;">
-        <a href="<?= base_url('user/dashboard') ?>" class="btn btn-secondary">Back to Dashboard</a>
+        <a href="<?= !empty($is_admin_receipt) ? base_url('penalties/history') : base_url('user/dashboard') ?>" class="btn btn-secondary btn-back-electric"><?= !empty($is_admin_receipt) ? 'Back to Payment History' : 'Back to Dashboard' ?></a>
         <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Print Official Receipt</button>
     </div>
 </div>
@@ -347,3 +347,13 @@ try {
 </div>
 
 <?= $this->endSection() ?>
+
+<?php if (!empty($auto_print)): ?>
+    <?= $this->section('scripts') ?>
+    <script>
+        window.addEventListener('load', function () {
+            window.setTimeout(function () { window.print(); }, 250);
+        });
+    </script>
+    <?= $this->endSection() ?>
+<?php endif; ?>

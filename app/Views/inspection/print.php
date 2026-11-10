@@ -200,7 +200,7 @@
 
 <div class="container-fluid py-3 no-print">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
+        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm btn-back-electric">
             <i class="bi bi-arrow-left me-1"></i> Back to Inspections
         </a>
         <div class="d-flex gap-2">

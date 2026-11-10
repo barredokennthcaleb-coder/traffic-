@@ -311,7 +311,7 @@
 
 <div class="paper-wrapper">
     <div class="toolbar-container px-2">
-        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
+        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm btn-back-electric">
             <i class="bi bi-arrow-left me-1"></i> Back to Inspections
         </a>
         <div class="d-flex gap-2">

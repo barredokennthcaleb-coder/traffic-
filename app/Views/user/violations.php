@@ -11,7 +11,7 @@
             <p class="text-muted small mb-0">List of all your traffic violations, including pending and paid.</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="<?= base_url('user/dashboard') ?>" class="btn btn-outline-secondary">
+            <a href="<?= base_url('user/dashboard') ?>" class="btn btn-outline-secondary btn-back-electric">
                 <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
             </a>
         </div>
@@ -50,7 +50,7 @@
                                 <td><span class="badge bg-success-subtle text-success border border-success-subtle px-3 font-monospace">₱<?= number_format($violation['penalty_amount'], 2) ?></span></td>
                                 <td>
                                     <?php if ($violation['status'] == 'Pending'): ?>
-                                        <span class="badge bg-warning text-dark rounded-pill px-3">Pending</span>
+                                        <span class="badge bg-warning rounded-pill px-3">Pending</span>
                                     <?php elseif ($violation['status'] == 'Paid'): ?>
                                         <span class="badge bg-success rounded-pill px-3">Paid</span>
                                     <?php else: ?>

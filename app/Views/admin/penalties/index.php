@@ -7,7 +7,7 @@
 <div class="container-fluid py-4">
     <div class="row mb-4 align-items-center">
         <div class="col-md-4">
-            <h4 class="mb-0"><i class="bi bi-hourglass-split me-2" style="color: #2563eb;"></i>Payment Penalties</h4>
+            <h4 class="mb-0"><i class="bi bi-hourglass-split me-2" style="color: #059669;"></i>Payment Penalties</h4>
         </div>
         <div class="col-md-5">
             <div class="input-group shadow-sm">
@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="col-md-3 text-end">
-            <a href="<?= base_url('penalties/history') ?>" class="btn shadow-sm" style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; border: 2px solid #2563eb; font-weight: 600;">
+            <a href="<?= base_url('penalties/history') ?>" class="btn shadow-sm" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; border: 2px solid #059669; font-weight: 600; transition: transform .2s ease, box-shadow .2s ease;">
                 <i class="bi bi-clock-history me-1"></i> Payment History
             </a>
         </div>
@@ -82,7 +82,7 @@
                                         <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
                                             <?php if (!$skipPlate): ?>
                                                 <span class="plate-pill font-monospace" style="font-size: 0.74rem;">
-                                                    <i class="bi bi-car-front-fill me-1"></i><?= esc($plate) ?>
+                                                    <?= tricycle_icon() ?><?= esc($plate) ?>
                                                 </span>
                                             <?php endif; ?>
                                             <?php if (!$skipDl): ?>
@@ -120,7 +120,7 @@
                                 </td>
                                 <td class="small" data-label="Date Issued" style="white-space:nowrap;">
                                     <div class="d-flex align-items-center gap-1.5">
-                                        <i class="bi bi-calendar3 text-primary" style="font-size:0.8rem; flex-shrink: 0;"></i>
+                                        <i class="bi bi-calendar3" style="font-size:0.8rem; flex-shrink: 0; color:#059669;"></i>
                                         <span><?= date('M d, Y', strtotime($v['violation_date'])) ?></span>
                                     </div>
                                 </td>
@@ -132,9 +132,10 @@
                                         <a href="<?= base_url('penalties/view/' . $v['id']) ?>" class="pn-action-btn pn-action--view" title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <button type="button" class="pn-action-btn pn-action--cancel btn-cancel" data-id="<?= $v['id'] ?>" title="Cancel Violation">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
+                                        <a href="<?= base_url('penalties/receipt/' . rawurlencode((string) $v['ticket_id'])) ?>?print=1"
+                                           class="pn-action-btn pn-action--print" title="Print Official Receipt (OR)" target="_blank">
+                                            <i class="bi bi-printer"></i>
+                                        </a>
                                         <button type="button" class="pn-action-btn pn-action--delete btn-delete" data-id="<?= $v['id'] ?>" title="Delete Record">
                                             <i class="bi bi-trash3"></i>
                                         </button>
@@ -149,36 +150,6 @@
         </div>
         <div class="card-footer bg-white border-0 py-3">
             <?= $pager->links('penalties', 'bootstrap_pagination') ?>
-        </div>
-    </div>
-</div>
-
-<!-- Cancel Confirmation Modal -->
-<div class="modal fade" id="cancelModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Cancel Violation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="cancelForm" method="POST">
-                <?= csrf_field() ?>
-                <div class="modal-body p-4">
-                    <p class="fw-bold">Are you sure you want to cancel this violation ticket?</p>
-                    <div class="mb-3">
-                        <label class="form-label">Reason for Cancellation</label>
-                        <textarea name="reason" class="form-control" rows="3" required placeholder="Enter the reason for cancelling this ticket..."></textarea>
-                    </div>
-                    <div class="alert alert-warning border-0 shadow-sm mb-0">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        This action will set the status to <strong>Cancelled</strong>.
-                    </div>
-                </div>
-                <div class="modal-footer bg-light border-0">
-                    <button type="button" class="btn btn-link text-muted" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger px-4 shadow-sm">Confirm Cancellation</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -225,9 +196,10 @@
 
 /* Ticket ID Glass Pill */
 .ticket-id-pill {
-    background: #f0f7ff;
-    border: 1px solid #bfdbfe;
-    color: #1d4ed8;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #047857;
+    white-space: nowrap;
     padding: 0.25rem 0.65rem;
     border-radius: 8px;
     font-size: 0.82rem;
@@ -240,11 +212,11 @@
     user-select: none;
 }
 .ticket-id-pill:hover {
-    background: #dbeafe;
-    border-color: #93c5fd;
-    color: #1e40af;
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    color: #065f46;
     transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 3px 8px rgba(5, 150, 105, 0.18);
 }
 .ticket-id-pill.copied {
     background: #dcfce7 !important;
@@ -268,13 +240,14 @@
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
     transition: all 0.2s ease;
 }
-.plate-pill i {
-    color: #2563eb !important;
+.plate-pill i,
+.plate-pill .tricycle-icon {
+    color: #059669 !important;
     margin-right: 0.25rem;
 }
 .plate-pill:hover {
     background: #f1f5f9 !important;
-    border-color: #94a3b8 !important;
+    border-color: var(--text-subtle, #5c6b80) !important;
     color: #000000 !important;
 }
 .dl-pill {
@@ -337,9 +310,9 @@
     transition: transform 0.2s ease;
 }
 .total-fine-pending {
-    color: #b45309;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
+    color: #854d0e;
+    background: #fef9c3;
+    border: 1px solid #fde047;
 }
 .pending-row:hover .total-fine-badge {
     transform: scale(1.03);
@@ -366,15 +339,19 @@
     transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
     text-decoration: none;
 }
-.pn-action-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(15,23,42,0.10); }
+.pn-action-btn:hover,
+.pn-action-btn:focus-visible { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(15,23,42,0.16); }
 .pn-action--pay   { color: #047857; border-color: #86efac; }
-.pn-action--pay:hover   { background: #ecfdf5; border-color: #34d399; color: #065f46; }
-.pn-action--view  { color: #2563eb; border-color: #bfdbfe; }
-.pn-action--view:hover  { background: #eff6ff; border-color: #93c5fd; }
-.pn-action--cancel { color: #f59e0b; border-color: #fcd34d; }
-.pn-action--cancel:hover { background: #fffbeb; border-color: #f59e0b; color: #92400e; }
+.pn-action--pay:hover,
+.pn-action--pay:focus-visible { background: #059669; border-color: #059669; color: #ffffff; box-shadow: 0 5px 14px rgba(5,150,105,.32); }
+/* View stays neutral so it does not read as a second "pay" button, which
+   is the green one next to it. */
+.pn-action--view  { color: #475569; border-color: #cbd5e1; }
+.pn-action--view:hover,
+.pn-action--view:focus-visible  { background: #2563eb; border-color: #2563eb; color: #ffffff; box-shadow: 0 5px 14px rgba(37,99,235,.32); }
 .pn-action--delete { color: #ef4444; border-color: #fca5a5; }
-.pn-action--delete:hover { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
+.pn-action--delete:hover,
+.pn-action--delete:focus-visible { background: #dc2626; border-color: #dc2626; color: #ffffff; box-shadow: 0 5px 14px rgba(220,38,38,.32); }
 
 /* Responsive mobile cards */
 @media (max-width: 768px) {
@@ -414,6 +391,30 @@
     #pendingTable tbody td.col-actions {
         justify-content: flex-end !important;
     }
+    /* A table box keeps its content width even once its rows are blocks, so
+       the stacked cards stayed 640px wide on a phone and pushed the driver,
+       amounts and actions off to the side. Making the table itself a block
+       keeps every card inside the column. */
+    #pendingTable,
+    #pendingTable tbody {
+        display: block !important;
+        width: 100% !important;
+        /* A shared min-width of 640px keeps the desktop table readable, but
+           applied to the stacked cards it forced the sideways scroll. */
+        min-width: 0 !important;
+    }
+    #pendingTable tbody tr {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    #pendingTable tbody td {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        flex-wrap: wrap !important;
+    }
+    #pendingTable tbody td > * { min-width: 0; max-width: 100%; }
+    .violation-chip { max-width: 100%; }
 }
 </style>
 
@@ -464,17 +465,6 @@
         }
     });
 
-    const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
-    const cancelForm = document.getElementById('cancelForm');
-
-    document.querySelectorAll('.btn-cancel').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            cancelForm.action = `<?= base_url('penalties/cancel') ?>/${id}`;
-            cancelModal.show();
-        });
-    });
-
     document.querySelectorAll('.btn-delete').forEach(btn => {
         btn.addEventListener('click', function() {
             const id = this.dataset.id;
@@ -505,14 +495,6 @@
                     form.submit();
                 }
             });
-        });
-    });
-
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            deleteForm.action = `<?= base_url('penalties/delete') ?>/${id}`;
-            deleteModal.show();
         });
     });
 

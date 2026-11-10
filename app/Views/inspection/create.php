@@ -311,7 +311,7 @@
 
 <div class="paper-wrapper">
     <div class="toolbar-container px-2">
-        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
+        <a href="<?= base_url('inspections') ?>" class="btn btn-outline-secondary btn-sm shadow-sm btn-back-electric">
             <i class="bi bi-arrow-left me-1"></i> Back to Inspections
         </a>
         <div class="d-flex gap-2">
@@ -356,39 +356,39 @@
                 <!-- Line 1: MTOP # and Route -->
                 <div class="info-row">
                     <span class="info-label me-2">MTOP #:</span>
-                    <input type="text" name="mtop_no" class="paper-input me-4" style="max-width: 220px;" required value="<?= old('mtop_no') ?>" placeholder="e.g. 1234" autocomplete="off">
+                    <input type="text" name="mtop_no" class="paper-input me-4" style="max-width: 220px;" required value="<?= esc(old('mtop_no')) ?>" placeholder="e.g. 1234" autocomplete="off">
                     <span class="info-label me-2">Route:</span>
-                    <input type="text" name="route" class="paper-input" value="<?= old('route') ?>" placeholder="e.g. Suay/Ilog or City Proper" autocomplete="off">
+                    <input type="text" name="route" class="paper-input" value="<?= esc(old('route')) ?>" placeholder="e.g. Suay/Ilog or City Proper" autocomplete="off">
                 </div>
 
                 <!-- Line 2: Name of Operator and Cellphone # DRIVER -->
                 <div class="info-row">
                     <span class="info-label me-2">Name of Operator:</span>
-                    <input type="text" name="operator_name" class="paper-input me-4" required value="<?= old('operator_name') ?>" placeholder="Enter Operator Name" autocomplete="off">
+                    <input type="text" name="operator_name" class="paper-input me-4" required value="<?= esc(old('operator_name')) ?>" placeholder="Enter Operator Name" autocomplete="off">
                     <span class="info-label me-2">Cellphone # DRIVER:</span>
-                    <input type="text" name="driver_cellphone" class="paper-input" style="max-width: 220px;" value="<?= old('driver_cellphone') ?>" placeholder="09123456789" autocomplete="off">
+                    <input type="text" name="driver_cellphone" class="paper-input" style="max-width: 220px;" value="<?= esc(old('driver_cellphone')) ?>" placeholder="09123456789" autocomplete="off">
                 </div>
 
                 <!-- Line 3: Cellphone# Operator and Prof. License# -->
                 <div class="info-row">
                     <span class="info-label me-2">Cellphone# Operator:</span>
-                    <input type="text" name="operator_cellphone" class="paper-input me-4" style="max-width: 260px;" value="<?= old('operator_cellphone') ?>" placeholder="09123456789" autocomplete="off">
+                    <input type="text" name="operator_cellphone" class="paper-input me-4" style="max-width: 260px;" value="<?= esc(old('operator_cellphone')) ?>" placeholder="09123456789" autocomplete="off">
                     <span class="info-label me-2">Prof. License#:</span>
-                    <input type="text" name="driver_license_no" class="paper-input" value="<?= old('driver_license_no') ?>" placeholder="License Number" autocomplete="off">
+                    <input type="text" name="driver_license_no" class="paper-input" value="<?= esc(old('driver_license_no')) ?>" placeholder="License Number" autocomplete="off">
                 </div>
 
                 <!-- Line 4: Name of DRIVER -->
                 <div class="info-row">
                     <span class="info-label me-2">Name of DRIVER:</span>
-                    <input type="text" name="driver_name" class="paper-input" value="<?= old('driver_name') ?>" placeholder="Enter Driver Name" autocomplete="off">
+                    <input type="text" name="driver_name" class="paper-input" value="<?= esc(old('driver_name')) ?>" placeholder="Enter Driver Name" autocomplete="off">
                 </div>
 
                 <!-- Line 5: Make/Type and Color -->
                 <div class="info-row">
                     <span class="info-label me-2">Make/Type:</span>
-                    <input type="text" name="mv_make_type" class="paper-input me-4" value="<?= old('mv_make_type') ?>" placeholder="e.g. Honda TMX / Tricycle" autocomplete="off">
+                    <input type="text" name="mv_make_type" class="paper-input me-4" value="<?= esc(old('mv_make_type')) ?>" placeholder="e.g. Honda TMX / Tricycle" autocomplete="off">
                     <span class="info-label me-2">Color:</span>
-                    <input type="text" name="body_color" class="paper-input" style="max-width: 250px;" value="<?= old('body_color') ?>" placeholder="e.g. Blue" autocomplete="off">
+                    <input type="text" name="body_color" class="paper-input" style="max-width: 250px;" value="<?= esc(old('body_color')) ?>" placeholder="e.g. Blue" autocomplete="off">
                 </div>
             </div>
 
@@ -562,7 +562,7 @@
                 </div>
                 <div class="sig-row">
                     <span class="info-label me-2">Date:</span>
-                    <input type="date" name="inspection_date" class="sig-line-input" style="width: 220px;" required value="<?= old('inspection_date') ?? date('Y-m-d') ?>">
+                    <input type="date" name="inspection_date" class="sig-line-input" style="width: 220px;" required value="<?= esc(old('inspection_date') ?? date('Y-m-d')) ?>">
                 </div>
             </div>
 

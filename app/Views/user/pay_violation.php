@@ -59,7 +59,7 @@
                         <h1 class="mb-0 display-4 fw-bold"><?= number_format($violation['penalty_amount'], 2) ?></h1>
                     </div>
 
-                    <form action="<?= base_url('user/process-payment') ?>" method="POST" id="paymentForm">
+                    <form action="<?= base_url('user/pay/process') ?>" method="POST" id="paymentForm">
                         <?= csrf_field() ?>
                         <input type="hidden" name="ticket_id" value="<?= esc($violation['ticket_id']) ?>">
                         

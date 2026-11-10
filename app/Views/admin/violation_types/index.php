@@ -329,7 +329,10 @@
                 // Dynamically update the row
                 const row = document.getElementById(`row-${result.data.id}`);
                 row.classList.add('highlight');
-                row.cells[0].innerHTML = `<strong>${result.data.violation_name}</strong>`;
+                row.cells[0].innerHTML = '';
+                const nameEl = document.createElement('strong');
+                nameEl.textContent = result.data.violation_name;
+                row.cells[0].appendChild(nameEl);
                 row.cells[1].textContent = result.data.description || 'N/A';
                 row.cells[2].innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-3">₱${parseFloat(result.data.fine_amount).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>`;
                 row.cells[3].innerHTML = result.data.status === 'active' 
@@ -368,8 +371,12 @@
         this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
         try {
+            const csrfData = new FormData();
+            csrfData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
             const response = await fetch(`<?= base_url('violation-types/delete') ?>/${deleteId}`, {
-                method: 'GET',
+                method: 'POST',
+                body: csrfData,
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             });
             const result = await response.json();

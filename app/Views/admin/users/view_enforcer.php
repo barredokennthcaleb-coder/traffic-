@@ -13,7 +13,7 @@
             <button onclick="window.print()" class="btn btn-outline-primary me-2">
                 <i class="bi bi-printer me-1"></i> Print Profile
             </button>
-            <a href="<?= base_url('users?role=enforcer') ?>" class="btn btn-outline-secondary">
+            <a href="<?= base_url('users?role=enforcer') ?>" class="btn btn-outline-secondary btn-back-electric">
                 <i class="bi bi-arrow-left me-1"></i> Back to Enforcers
             </a>
         </div>
@@ -122,8 +122,9 @@
                     </div>
                     <hr>
                     <div>
-                        <small class="text-muted text-uppercase d-block">Total Issued Amount</small>
-                        <h5 class="mb-0 text-danger"><?= number_format((float) $totalIssuedAmount, 2) ?></h5>
+                        <small class="text-muted text-uppercase d-block">Total Assessed Fines</small>
+                        <h5 class="mb-0 text-danger">₱<?= number_format((float) $totalAssessedAmount, 2) ?></h5>
+                        <small class="text-muted">Paid + pending fines; cancelled (void) citations carry no amount.</small>
                     </div>
                 </div>
             </div>
@@ -181,7 +182,7 @@
                                         <?php if (!empty($record['license_plate'])): ?>
                                             <div class="mt-1">
                                                 <span class="plate-pill font-monospace" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-car-front-fill me-1"></i><?= esc($record['license_plate']) ?>
+                                                    <?= tricycle_icon('me-1') ?><?= esc($record['license_plate']) ?>
                                                 </span>
                                             </div>
                                         <?php endif; ?>
@@ -295,7 +296,8 @@
         align-items: center;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
     }
-    .plate-pill i {
+    .plate-pill i,
+    .plate-pill .tricycle-icon {
         color: #2563eb !important;
     }
     .violation-chip {
@@ -328,14 +330,14 @@
         transition: transform 0.2s ease;
     }
     .total-fine-pending {
-        color: #b45309;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
+        color: #854d0e;
+        background: #fef9c3;
+        border: 1px solid #fde047;
     }
     .total-fine-paid {
-        color: #15803d;
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+        color: #065f46;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
     }
     .status-glow-badge {
         display: inline-flex;
@@ -349,17 +351,17 @@
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .status-pending {
-        background: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fcd34d;
+        background: #fef9c3;
+        color: #854d0e;
+        border: 1px solid #eab308;
     }
     .status-pending .status-dot {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: #f59e0b;
+        background: #ca8a04;
         margin-right: 6px;
-        box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+        box-shadow: 0 0 6px rgba(202, 138, 4, 0.6);
         animation: pulseAmber 2s infinite ease-in-out;
         flex-shrink: 0;
     }
@@ -415,6 +417,48 @@
         .enforcer-violations-table tbody td.col-actions {
             justify-content: flex-end !important;
         }
+        /* A table box keeps its column widths even after its rows become
+           cards; making the table and its body blocks lets each card take
+           the whole width instead of one column's share. */
+        .enforcer-violations-table,
+        .enforcer-violations-table tbody {
+            display: block !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        .enforcer-violations-table tbody tr,
+        .enforcer-violations-table tbody td {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .enforcer-violations-table tbody td {
+            row-gap: 0.35rem;
+            flex-wrap: wrap;
+            /* Values pack to the trailing edge; a long value that wraps to
+               its own line still lands on the right instead of snapping
+               back to the label. */
+            justify-content: flex-end !important;
+            text-align: right;
+        }
+        .enforcer-violations-table tbody td::before {
+            max-width: 45%;
+            text-align: left;
+            margin-right: auto !important;
+        }
+        .enforcer-violations-table tbody td > * {
+            min-width: 0;
+            max-width: 100%;
+        }
+        /* The violator's name and plate read from the left edge, under
+           their own small label. */
+        .enforcer-violations-table tbody td[data-label="Violator"] {
+            display: block !important;
+            text-align: left;
+        }
+        .enforcer-violations-table tbody td[data-label="Violator"]::before {
+            display: block;
+            margin: 0 0 0.15rem;
+        }
     }
 
     @media print {
@@ -447,5 +491,4 @@
         }).catch(() => {});
     };
 </script>
-<?= $this->endSection() ?>
 <?= $this->endSection() ?>

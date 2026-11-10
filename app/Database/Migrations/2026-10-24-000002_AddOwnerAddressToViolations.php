@@ -8,6 +8,7 @@ class AddOwnerAddressToViolations extends Migration
 {
     public function up()
     {
+        $this->db->resetDataCache();
         if (! $this->db->fieldExists('owner_address', 'violations')) {
             $this->forge->addColumn('violations', [
                 'owner_address' => [
@@ -22,6 +23,7 @@ class AddOwnerAddressToViolations extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         if ($this->db->fieldExists('owner_address', 'violations')) {
             $this->forge->dropColumn('violations', 'owner_address');
         }

@@ -73,34 +73,34 @@
         box-shadow: 0 8px 22px -4px rgba(79, 70, 229, 0.25);
     }
 
-    /* Admin Chip */
+    /* Admin Chip — electric blue */
     .stat-chip.chip-admin:hover {
-        border-color: #fca5a5;
-        box-shadow: 0 14px 28px -6px rgba(239, 68, 68, 0.18);
+        border-color: #7fb3ff;
+        box-shadow: 0 14px 28px -6px rgba(0, 102, 255, 0.18);
     }
     .stat-chip.chip-admin:hover::before {
-        background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.1), transparent 70%);
+        background: radial-gradient(circle at top right, rgba(0, 102, 255, 0.1), transparent 70%);
         opacity: 1;
     }
     .stat-chip.chip-admin.active {
-        border-color: #dc2626;
-        background: linear-gradient(145deg, #fef2f2 0%, #ffffff 100%);
-        box-shadow: 0 8px 22px -4px rgba(220, 38, 38, 0.25);
+        border-color: #0066ff;
+        background: linear-gradient(145deg, #eef4ff 0%, #ffffff 100%);
+        box-shadow: 0 8px 22px -4px rgba(0, 102, 255, 0.25);
     }
 
-    /* Enforcer Chip */
+    /* Enforcer Chip — lime green */
     .stat-chip.chip-enforcer:hover {
-        border-color: #93c5fd;
-        box-shadow: 0 14px 28px -6px rgba(59, 130, 246, 0.18);
+        border-color: #bef264;
+        box-shadow: 0 14px 28px -6px rgba(132, 204, 22, 0.18);
     }
     .stat-chip.chip-enforcer:hover::before {
-        background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 70%);
+        background: radial-gradient(circle at top right, rgba(132, 204, 22, 0.12), transparent 70%);
         opacity: 1;
     }
     .stat-chip.chip-enforcer.active {
-        border-color: #2563eb;
-        background: linear-gradient(145deg, #eff6ff 0%, #ffffff 100%);
-        box-shadow: 0 8px 22px -4px rgba(37, 99, 235, 0.25);
+        border-color: #84cc16;
+        background: linear-gradient(145deg, #f7fee7 0%, #ffffff 100%);
+        box-shadow: 0 8px 22px -4px rgba(132, 204, 22, 0.25);
     }
 
     .stat-icon {
@@ -158,7 +158,7 @@
         left: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         pointer-events: none;
         font-size: 0.95rem;
         transition: color 0.2s ease;
@@ -192,7 +192,7 @@
         transform: translateY(-50%);
         background: transparent;
         border: none;
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         cursor: pointer;
         padding: 4px;
         display: none;
@@ -324,15 +324,15 @@
     }
 
     .role-pill.admin {
-        background: rgba(239, 68, 68, 0.1);
-        color: #dc2626;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+        background: rgba(0, 102, 255, 0.1);
+        color: #0066ff;
+        border: 1px solid rgba(0, 102, 255, 0.2);
     }
 
     .role-pill.enforcer {
-        background: rgba(59, 130, 246, 0.1);
-        color: #2563eb;
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(132, 204, 22, 0.14);
+        color: #4d7c0f;
+        border: 1px solid rgba(132, 204, 22, 0.28);
     }
 
     /* Status Pills with Pulse */
@@ -382,7 +382,7 @@
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background-color: #94a3b8;
+        background-color: var(--text-subtle, #5c6b80);
     }
 
     /* Action Buttons with Vibrant Hover Glow */
@@ -495,7 +495,7 @@
         </div>
         <div class="col-12 col-md-4">
             <a href="<?= base_url('users?role=admin') ?>" class="stat-chip chip-admin <?= $currentRole === 'admin' ? 'active' : '' ?>">
-                <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                <div class="stat-icon" style="background: rgba(0, 102, 255, 0.1); color: #0066ff;">
                     <i class="bi bi-shield-check"></i>
                 </div>
                 <div>
@@ -506,7 +506,7 @@
         </div>
         <div class="col-12 col-md-4">
             <a href="<?= base_url('users?role=enforcer') ?>" class="stat-chip chip-enforcer <?= $currentRole === 'enforcer' ? 'active' : '' ?>">
-                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                <div class="stat-icon" style="background: rgba(132, 204, 22, 0.14); color: #4d7c0f;">
                     <i class="bi bi-person-badge"></i>
                 </div>
                 <div>
@@ -593,8 +593,8 @@
                             <?php 
                                 $userRole = strtolower((string) ($user['role'] ?? 'enforcer'));
                                 $roleColors = [
-                                    'admin' => ['bg' => 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 'icon' => 'bi-shield-check'],
-                                    'enforcer' => ['bg' => 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 'icon' => 'bi-person-badge']
+                                    'admin' => ['bg' => 'linear-gradient(135deg, #0066ff 0%, #0052cc 100%)', 'icon' => 'bi-shield-check'],
+                                    'enforcer' => ['bg' => 'linear-gradient(135deg, #84cc16 0%, #4d7c0f 100%)', 'icon' => 'bi-person-badge']
                                 ];
                                 $avatarMeta = $roleColors[$userRole] ?? ['bg' => '#64748b', 'icon' => 'bi-person'];
                                 $fullName = trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? ''));
@@ -930,7 +930,7 @@
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#94a3b8',
+                    cancelButtonColor: 'var(--text-subtle, #5c6b80)',
                     confirmButtonText: '<i class="bi bi-trash3 me-1"></i> Yes, Delete',
                     cancelButtonText: 'Cancel',
                     reverseButtons: true,

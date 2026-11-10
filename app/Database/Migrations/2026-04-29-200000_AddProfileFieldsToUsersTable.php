@@ -8,37 +8,51 @@ class AddProfileFieldsToUsersTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('users', [
+        $this->db->resetDataCache();
+        $columns = [
             'firstname' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
                 'null'       => true,
-                'after'      => 'username',
             ],
             'lastname' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
                 'null'       => true,
-                'after'      => 'firstname',
             ],
             'age' => [
                 'type'       => 'INT',
                 'constraint' => 3,
                 'unsigned'   => true,
                 'null'       => true,
-                'after'      => 'lastname',
             ],
             'address' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
                 'null'       => true,
-                'after'      => 'age',
             ],
-        ]);
+        ];
+
+        $missing = [];
+
+        foreach ($columns as $name => $definition) {
+            if (! $this->db->fieldExists($name, 'users')) {
+                $missing[$name] = $definition;
+            }
+        }
+
+        if ($missing !== []) {
+            $this->forge->addColumn('users', $missing);
+        }
     }
 
     public function down()
     {
-        $this->forge->dropColumn('users', ['firstname', 'lastname', 'age', 'address']);
+        $this->db->resetDataCache();
+        foreach (['firstname', 'lastname', 'age', 'address'] as $name) {
+            if ($this->db->fieldExists($name, 'users')) {
+                $this->forge->dropColumn('users', $name);
+            }
+        }
     }
 }

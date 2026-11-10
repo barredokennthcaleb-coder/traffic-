@@ -8,13 +8,13 @@ class AddAssignedAreaToUsers extends Migration
 {
     public function up()
     {
+        $this->db->resetDataCache();
         if (! $this->db->fieldExists('assigned_area', 'users')) {
             $this->forge->addColumn('users', [
                 'assigned_area' => [
                     'type'       => 'VARCHAR',
                     'constraint' => 255,
                     'null'       => true,
-                    'after'      => 'assigned_station',
                 ],
             ]);
         }
@@ -22,6 +22,7 @@ class AddAssignedAreaToUsers extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         if ($this->db->fieldExists('assigned_area', 'users')) {
             $this->forge->dropColumn('users', 'assigned_area');
         }

@@ -8,6 +8,7 @@ class AddDutyStatusToUsers extends Migration
 {
     public function up()
     {
+        $this->db->resetDataCache();
         if (! $this->db->fieldExists('duty_status', 'users')) {
             $this->forge->addColumn('users', [
                 'duty_status' => [
@@ -23,6 +24,7 @@ class AddDutyStatusToUsers extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         if ($this->db->fieldExists('duty_status', 'users')) {
             $this->forge->dropColumn('users', 'duty_status');
         }

@@ -14,10 +14,8 @@
     <style>
         :root {
             --brand-primary: #10b981;
-            --brand-dark: #0f172a;
             --surface-card: #ffffff;
             --surface-bg: #f8fafc;
-            --text-main: #0f172a;
             --text-muted: #64748b;
         }
 
@@ -62,7 +60,7 @@
         }
 
         .hero-subtitle {
-            color: #94a3b8;
+            color: #5c6b80;
             font-size: 0.98rem;
             max-width: 580px;
             margin: 0.5rem auto 0;
@@ -113,7 +111,7 @@
             transform: translateY(-50%);
             background: transparent;
             border: none;
-            color: #94a3b8;
+            color: #5c6b80;
             font-size: 1.2rem;
             cursor: pointer;
             padding: 4px;
@@ -212,7 +210,7 @@
 
         .table-glass thead th {
             background: rgba(15, 23, 42, 0.9) !important;
-            color: #94a3b8 !important;
+            color: #5c6b80 !important;
             font-size: 0.78rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -230,6 +228,244 @@
 
         .table-glass tbody tr:hover td {
             background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        /* Every offense on a ticket, priced on its own line so the reader can
+           see how the Fine Amount column adds up. */
+        .violation-breakdown {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .violation-breakdown li {
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+            padding: 0.15rem 0;
+            font-size: 0.84rem;
+            line-height: 1.4;
+        }
+
+        .violation-breakdown .vb-name {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            flex: 1 1 auto;
+            min-width: 0;
+            color: #e2e8f0;
+        }
+
+        /* A dotted leader runs from the name to its price, so each amount
+           reads as belonging to its own offense instead of to the row. It is a
+           flex item of the name itself, so it fills the leftover space instead
+           of taking a line of its own. */
+        .violation-breakdown .vb-name::after {
+            content: '';
+            flex: 1 1 auto;
+            min-width: 1.25rem;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.22);
+            transform: translateY(-0.28em);
+        }
+
+        .violation-breakdown .vb-amount {
+            flex: 0 0 auto;
+            font-weight: 700;
+            color: #a7f3d0;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        /* The Violation Type header carries both labels: the offense names sit
+           on the left, the fines on the right edge of the same column, so each
+           price reads as that offense's fine. */
+        .lookup-th-pair {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
+        .lookup-th-pair span:last-child {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* A search can return several different people under one name, so each
+           person gets a divider stating only their own ticket count and fines. */
+        .lookup-violator-group td {
+            background: rgba(16, 185, 129, 0.07) !important;
+            border-top: 1px solid rgba(16, 185, 129, 0.28) !important;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.16) !important;
+            padding: 0.55rem 0.9rem !important;
+        }
+
+        .lookup-violator-group .lvg-inner {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem 0.75rem;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+        }
+
+        .lookup-violator-group .lvg-name {
+            font-weight: 800;
+            color: #6ee7b7;
+            letter-spacing: 0.01em;
+        }
+
+        .lookup-violator-group .lvg-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #94a3b8;
+        }
+
+        .lookup-violator-group .lvg-chip {
+            font-family: monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 5px;
+            padding: 0.05rem 0.4rem;
+        }
+
+        .lookup-violator-group .lvg-total {
+            margin-left: auto;
+            font-weight: 600;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .lookup-violator-group .lvg-total strong {
+            margin-left: 0.35rem;
+            font-size: 0.92rem;
+            color: #a7f3d0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Sanction highlighting: only the sanction badge carries colour. A
+           violator on their 2nd sanction gets an amber badge (a warning, not
+           an alarm) and 3 or more sanctions turn it red; names and rows stay
+           uncoloured. The badge states the sanction itself ("2nd Sanction",
+           "3rd Sanction", ...), so the highlight always explains its count. */
+        .lookup-sanction-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-left: 0.45rem;
+            padding: 0.05rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            vertical-align: 1px;
+        }
+
+        .lookup-sanction-chip--second {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            color: #fcd34d;
+        }
+
+        .lookup-sanction-chip--repeat {
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.45);
+            color: #fca5a5;
+        }
+
+        /* Per-driver balances: the outstanding (pending) amount is amber, a
+           fully settled driver is green; paid amounts are never totaled. */
+        .lookup-violator-group .lvg-total .lvg-pending {
+            color: #fcd34d;
+        }
+
+        .lookup-violator-group .lvg-total .lvg-settled {
+            color: #6ee7b7;
+        }
+
+        .lookup-sanction-legend {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.6rem 1.25rem;
+            background: rgba(15, 23, 42, 0.55);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            font-size: 0.78rem;
+        }
+
+        .lookup-sanction-legend i {
+            color: #fbbf24;
+        }
+
+        /* Grand total of everything the search returned. */
+        .lookup-total-row td {
+            background: rgba(15, 23, 42, 0.75);
+            border-top: 1px solid rgba(255, 255, 255, 0.14) !important;
+            padding: 1rem 1.25rem !important;
+        }
+
+        .lookup-total-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem 1rem;
+        }
+
+        .lookup-total-label {
+            color: #cbd5e1;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .lookup-total-count {
+            display: block;
+            color: #64748b;
+            font-weight: 500;
+            font-size: 0.78rem;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* The footer figure is the pending balance only — already-paid
+           amounts are never added in — so it reads in the pending amber. */
+        .lookup-total-amount {
+            color: #fbbf24;
+            font-weight: 800;
+            font-size: 1.35rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+        }
+
+        .lookup-total-settled {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #34d399;
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+
+        /* Several different people matched one search: their fines are never
+           added together, so the footer states where each total lives
+           instead of showing a combined amount. */
+        .lookup-total-note {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+
+        .lookup-total-note i {
+            color: #fbbf24;
         }
 
         .badge-status {
@@ -254,7 +490,7 @@
 
         .badge-cancelled {
             background: rgba(148, 163, 184, 0.15);
-            color: #94a3b8;
+            color: #5c6b80;
             border: 1px solid rgba(148, 163, 184, 0.3);
         }
 
@@ -366,16 +602,54 @@
                 font-weight: 700;
                 letter-spacing: 0.06em;
                 text-transform: uppercase;
-                color: #94a3b8;
+                color: #5c6b80;
                 margin-bottom: 2px;
             }
+            /* The offense list keeps its own line: name and price on one
+               row each, with the price never wrapping away from its name. */
+            .violation-breakdown li {
+                font-size: 0.8rem;
+                gap: 0.5rem;
+            }
+            .violation-breakdown .vb-name {
+                display: block;
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .violation-breakdown .vb-name::after { display: none; }
+            /* The grand total is not a data column, so it does not take the
+               card treatment the record rows do. */
+            .lookup-table tfoot,
+            .lookup-table tfoot tr {
+                display: block;
+                width: 100%;
+            }
+            .lookup-table tfoot tr {
+                margin: 0 10px 12px;
+                padding: 0;
+            }
+            .lookup-table tfoot td {
+                display: block;
+                width: 100%;
+                padding: 0.85rem 1rem !important;
+                border: 1px solid rgba(255, 255, 255, 0.14) !important;
+                border-radius: 14px;
+                background: rgba(15, 23, 42, 0.75);
+            }
+            .lookup-table tfoot td::before { display: none; }
+            .lookup-total-amount {
+                font-size: 1.2rem;
+            }
+
             .lookup-table td[data-label="Ticket #"]       { order: 1; flex: 1 1 45%; }
             .lookup-table td[data-label="Status"]         { order: 2; flex: 1 1 55%; text-align: right; }
             .lookup-table td[data-label="Violator / Driver"] { order: 3; }
             .lookup-table td[data-label="Plate Number"]   { order: 4; }
             .lookup-table td[data-label="Violation Type"] { order: 5; }
-            .lookup-table td[data-label="Date & Time"]    { order: 6; flex: 1 1 50%; }
-            .lookup-table td[data-label="Fine Amount"]    { order: 7; flex: 1 1 50%; }
+            /* The per-person divider is not a data column, so it drops the label. */
+            .lookup-table tbody tr.lookup-violator-group td::before { content: none !important; }
+            .lookup-violator-group .lvg-total { margin-left: 0; width: 100%; }
+            .lookup-table td[data-label="Date & Time"]    { order: 6; }
             .lookup-table td[data-label="Status"] .small  { display: block; }
         }
 
@@ -416,6 +690,124 @@
             }
             .stat-card .fs-3 {
                 font-size: 1.35rem !important;
+            }
+
+            /* The example chips are the fastest way in on a phone, so they
+               become a real tap target instead of 20px of link text. */
+            .search-card a.badge {
+                display: inline-flex;
+                align-items: center;
+                min-height: 40px;
+                padding: 0 0.9rem;
+                border-radius: 10px;
+                font-size: 0.86rem;
+                touch-action: manipulation;
+            }
+
+            .btn-clear-input {
+                width: 36px;
+                height: 36px;
+            }
+
+            .lookup-table tbody td {
+                padding: 6px 14px !important;
+            }
+        }
+
+        /* ══════════════════════════════════════════════════════════════
+           SMOOTH DELIVERY LAYER — presentation and feedback only.
+           The search process (form → results) is untouched.
+           ══════════════════════════════════════════════════════════════ */
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            /* The footer breathes above the home bar on notched phones. */
+            padding-bottom: calc(3rem + env(safe-area-inset-bottom));
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Keyboard focus stays visible everywhere, including on the glass
+           cards; a pointer tap does not paint a ring. */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        [role="button"]:focus-visible {
+            outline: 3px solid #34d399 !important;
+            outline-offset: 2px !important;
+            border-radius: 10px;
+        }
+
+        a:focus:not(:focus-visible),
+        button:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        .search-card a.badge,
+        .btn-clear-input,
+        .btn-search {
+            touch-action: manipulation;
+        }
+
+        /* Money and counts line up the same way they do in the app. */
+        .lookup-table td,
+        .badge-status,
+        .stat-card .fs-3 {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* The three summary cards land one after the other instead of all at
+           once, so the eye follows the numbers in order. */
+        @keyframes lkRise {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card {
+            animation: lkRise 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.04s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.16s; }
+
+        /* The button reports the search while the page is on its way. */
+        .lk-spinner {
+            display: inline-block;
+            width: 0.95em;
+            height: 0.95em;
+            margin-right: 0.45em;
+            vertical-align: -0.1em;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: lkSpin 0.6s linear infinite;
+        }
+
+        @keyframes lkSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-search.is-searching {
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        /* Readers who ask for less motion get the same screens, instantly. */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+            }
+            /* Cancelling the reveal must not leave it at opacity 0. */
+            .stat-card,
+            .results-container {
+                opacity: 1 !important;
+                transform: none !important;
             }
         }
     </style>
@@ -538,24 +930,127 @@
                                         <th>Ticket #</th>
                                         <th>Violator / Driver</th>
                                         <th>Plate Number</th>
-                                        <th>Violation Type</th>
+                                        <th>
+                                            <div class="lookup-th-pair">
+                                                <span>Violation Type</span>
+                                                <span>Fine Amount</span>
+                                            </div>
+                                        </th>
                                         <th>Date & Time</th>
-                                        <th>Fine Amount</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($records as $index => $r): ?>
+                                    <?php
+                                        // A name search can match several different people — the two
+                                        // "kenneth barredo" records here are separate drivers — so the
+                                        // rows are grouped per person and every group states only that
+                                        // person's own fines instead of one merged total.
+                                        $violatorGroups = [];
+                                        foreach ($records as $groupedRecord) {
+                                            $groupKey = (string) ($groupedRecord['violator_id'] ?? '');
+                                            if ($groupKey === '') {
+                                                $groupKey = 'name:' . strtolower(trim(($groupedRecord['driver_name'] ?? '') . '|' . ($groupedRecord['address'] ?? '')));
+                                            }
+                                            $violatorGroups[$groupKey][] = $groupedRecord;
+                                        }
+                                        $multiViolator = count($violatorGroups) > 1;
+
+                                        // Anyone on their 2nd sanction is flagged amber and
+                                        // anyone carrying 3 or more sanctions is flagged red;
+                                        // the legend under the table explains both tiers. Only
+                                        // the badge carries the colour — names stay plain.
+                                        $hasSanctionedDriver = false;
+                                        foreach ($records as $sanctionCheck) {
+                                            if ((int) ($sanctionCheck['total_citations'] ?? 0) > 1) {
+                                                $hasSanctionedDriver = true;
+                                                break;
+                                            }
+                                        }
+
+                                        // Only the outstanding (Pending) amounts are ever
+                                        // totaled: an already-paid citation is settled, so
+                                        // it never inflates what the person still owes.
+                                        $pendingTotal     = 0.0;
+                                        $pendingCount     = 0;
+                                        $settledCount     = 0;
+                                        $pendingTicketIds = [];
+
+                                        foreach ($records as $balanceCheck) {
+                                            $balanceStatus = strtolower((string) ($balanceCheck['status'] ?? ''));
+
+                                            if ($balanceStatus === 'pending') {
+                                                $pendingTotal += (float) ($balanceCheck['penalty_amount'] ?? 0);
+                                                $pendingCount++;
+                                                $pendingTicketIds[(string) ($balanceCheck['ticket_id'] ?? '')] = true;
+                                            } elseif ($balanceStatus === 'paid') {
+                                                $settledCount++;
+                                            }
+                                        }
+
+                                        $pendingTicketCount = count($pendingTicketIds);
+                                    ?>
+                                    <?php foreach ($violatorGroups as $groupRows): ?>
+                                        <?php
+                                            $groupFirst   = $groupRows[0];
+                                            $groupTickets = count($groupRows);
+                                            $groupPending = 0.0;
+                                            foreach ($groupRows as $groupRow) {
+                                                // Only what is still pending counts as this
+                                                // driver's balance; paid tickets stay listed
+                                                // but are never added to it.
+                                                if (strtolower((string) ($groupRow['status'] ?? '')) === 'pending') {
+                                                    $groupPending += (float) ($groupRow['penalty_amount'] ?? 0);
+                                                }
+                                            }
+                                            // Sanctions carried on the register: 2 reads as a
+                                            // 2nd sanction (amber badge), 3 or more as a
+                                            // repeated one (red badge); names stay plain.
+                                            $groupCitations = (int) ($groupFirst['total_citations'] ?? 0);
+                                            $groupIsSecond  = $groupCitations === 2;
+                                            $groupIsRepeat  = $groupCitations >= 3;
+                                        ?>
+                                        <?php if ($multiViolator): ?>
+                                            <tr class="lookup-violator-group">
+                                                <td colspan="6">
+                                                    <div class="lvg-inner">
+                                                        <span class="lvg-name">
+                                                            <i class="bi bi-person-fill me-1"></i><?= esc($groupFirst['driver_name'] ?? trim(($groupFirst['first_name'] ?? '') . ' ' . ($groupFirst['last_name'] ?? ''))) ?><?php if ($groupIsSecond || $groupIsRepeat): ?><span class="lookup-sanction-chip <?= $groupIsSecond ? 'lookup-sanction-chip--second' : 'lookup-sanction-chip--repeat' ?>" title="<?= esc(sanction_label($groupCitations), 'attr') ?> on file — cancelled (void) citations are not counted"><i class="bi <?= $groupIsSecond ? 'bi-exclamation-circle-fill' : 'bi-exclamation-triangle-fill' ?>"></i><?= esc(sanction_label($groupCitations)) ?></span><?php endif; ?>
+                                                        </span>
+                                                        <span class="lvg-meta">
+                                                            <?php if (!empty($groupFirst['license_plate'])): ?>
+                                                                <span class="lvg-chip"><?= esc(strtoupper($groupFirst['license_plate'])) ?></span>
+                                                            <?php endif; ?>
+                                                            <?= esc($groupFirst['address'] ?? 'No Address') ?>
+                                                        </span>
+                                                        <span class="lvg-total">
+                                                            <?= $groupTickets ?> ticket<?= $groupTickets === 1 ? '' : 's' ?>
+                                                            <?php if ($groupPending > 0): ?>
+                                                                <strong class="lvg-pending">₱<?= number_format($groupPending, 2) ?> pending</strong>
+                                                            <?php else: ?>
+                                                                <strong class="lvg-settled">Fully settled</strong>
+                                                            <?php endif; ?>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                        <?php foreach ($groupRows as $index => $r): ?>
                                         <?php 
                                             $st = strtolower($r['status'] ?? 'pending');
                                             $badgeClass = $st === 'paid' ? 'badge-paid' : ($st === 'cancelled' ? 'badge-cancelled' : 'badge-pending');
+                                            $rowCitations = (int) ($r['total_citations'] ?? 0);
+                                            $rowIsSecond  = $rowCitations === 2;
+                                            $rowIsRepeat  = $rowCitations >= 3;
                                         ?>
                                         <tr>
                                             <td class="fw-bold text-success" data-label="Ticket #">
                                                 <?= esc($r['ticket_id'] ?? 'N/A') ?>
                                             </td>
                                             <td data-label="Violator / Driver">
-                                                <div class="fw-bold text-light"><?= esc($r['driver_name'] ?? ($r['first_name'] . ' ' . $r['last_name'])) ?></div>
+                                                <div class="fw-bold text-light">
+                                                    <?= esc($r['driver_name'] ?? ($r['first_name'] . ' ' . $r['last_name'])) ?><?php if ($rowIsSecond || $rowIsRepeat): ?><span class="lookup-sanction-chip <?= $rowIsSecond ? 'lookup-sanction-chip--second' : 'lookup-sanction-chip--repeat' ?>" title="<?= esc(sanction_label($rowCitations), 'attr') ?> on file — cancelled (void) citations are not counted"><i class="bi <?= $rowIsSecond ? 'bi-exclamation-circle-fill' : 'bi-exclamation-triangle-fill' ?>"></i><?= esc(sanction_label($rowCitations)) ?></span><?php endif; ?>
+                                                </div>
                                                 <small class="text-white-50"><?= esc($r['address'] ?? 'No Address') ?></small>
                                             </td>
                                             <td data-label="Plate Number">
@@ -564,7 +1059,29 @@
                                                 </span>
                                             </td>
                                             <td data-label="Violation Type">
-                                                <div class="text-light fw-medium"><?= esc($r['violation_type'] ?? 'Traffic Violation') ?></div>
+                                                <?php
+                                                    // Every offense on this ticket, each with its own fine, so the
+                                                    // reader can see how the ticket total was built. The plain list
+                                                    // stays as the fallback for a row without the pairing.
+                                                    $breakdown = $r['breakdown'] ?? [];
+                                                ?>
+                                                <?php if ($breakdown !== []): ?>
+                                                    <ul class="violation-breakdown">
+                                                        <?php foreach ($breakdown as $offense): ?>
+                                                            <li>
+                                                                <span class="vb-name"><?= esc($offense['type']) ?></span>
+                                                                <span class="vb-amount">₱<?= number_format($offense['amount'], 2) ?></span>
+                                                            </li>
+                                                        <?php endforeach; ?>
+                                                    </ul>
+                                                <?php else: ?>
+                                                    <ul class="violation-breakdown">
+                                                        <li>
+                                                            <span class="vb-name"><?= esc($r['violation_type'] ?? 'Traffic Violation') ?></span>
+                                                            <span class="vb-amount">₱<?= number_format((float) ($r['penalty_amount'] ?? 0), 2) ?></span>
+                                                        </li>
+                                                    </ul>
+                                                <?php endif; ?>
                                                 <?php if (!empty($r['location'])): ?>
                                                     <small class="text-white-50"><i class="bi bi-geo-alt me-1"></i><?= esc($r['location']) ?></small>
                                                 <?php endif; ?>
@@ -572,9 +1089,6 @@
                                             <td data-label="Date &amp; Time">
                                                 <div class="text-light small"><?= esc(date('M d, Y', strtotime($r['violation_date'] ?? $r['created_at']))) ?></div>
                                                 <small class="text-white-50"><?= esc(date('h:i A', strtotime($r['violation_date'] ?? $r['created_at']))) ?></small>
-                                            </td>
-                                            <td class="fw-bold text-light" data-label="Fine Amount">
-                                                ₱<?= number_format((float)($r['penalty_amount'] ?? 0), 2) ?>
                                             </td>
                                             <td data-label="Status">
                                                 <span class="badge-status <?= $badgeClass ?>">
@@ -587,14 +1101,58 @@
                                                     <?php endif; ?>
                                                 </span>
                                                 <?php if ($st === 'paid' && !empty($r['receipt_number'])): ?>
-                                                    <div class="small text-white-50 mt-1" style="font-size:0.72rem">OR #: <?= esc($r['receipt_number']) ?></div>
+                                                    <div class="small text-white-50 mt-1" style="font-size:0.72rem" title="Official Receipt (OR) number">OR (Official Receipt) #: <?= esc($r['receipt_number']) ?></div>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
+                                        <?php endforeach; ?>
                                     <?php endforeach; ?>
                                 </tbody>
+                                <tfoot>
+                                    <tr class="lookup-total-row">
+                                        <td colspan="5" data-label="Total">
+                                            <div class="lookup-total-inner">
+                                                <span class="lookup-total-label">
+                                                    <i class="bi bi-calculator me-2"></i><?= !empty($multiViolator) ? 'Individual Totals' : 'Total Pending' ?>
+                                                    <span class="lookup-total-count">
+                                                        <?php if ($pendingCount > 0): ?>
+                                                            <?= $pendingCount ?> pending violation<?= $pendingCount === 1 ? '' : 's' ?>
+                                                            across <?= $pendingTicketCount ?> ticket<?= $pendingTicketCount === 1 ? '' : 's' ?>
+                                                            <?php if (!empty($multiViolator)): ?>
+                                                                from <?= count($violatorGroups) ?> different drivers
+                                                            <?php elseif ($settledCount > 0): ?>
+                                                                &middot; <?= $settledCount ?> already-paid citation<?= $settledCount === 1 ? '' : 's' ?> not included
+                                                            <?php endif; ?>
+                                                        <?php else: ?>
+                                                            <?= count($records) ?> ticket<?= count($records) === 1 ? '' : 's' ?> on record &mdash; no pending balance
+                                                        <?php endif; ?>
+                                                    </span>
+                                                </span>
+                                                <?php /* Only pending balances are stated. Different people matched this
+                                                         search (similar names or plates): one person's fines are never
+                                                         added onto another's, so the footer points at each driver's
+                                                         own pending balance instead of a combined amount. */ ?>
+                                                <?php if (!empty($multiViolator)): ?>
+                                                    <span class="lookup-total-note" title="Different drivers matched this search. Only each driver's pending balance is shown, with their records above; amounts are never combined.">
+                                                        <i class="bi bi-info-circle me-1"></i>Not combined &mdash; see each driver's pending above
+                                                    </span>
+                                                <?php elseif ($pendingTotal > 0): ?>
+                                                    <span class="lookup-total-amount">₱<?= number_format($pendingTotal, 2) ?></span>
+                                                <?php else: ?>
+                                                    <span class="lookup-total-settled"><i class="bi bi-check-circle-fill"></i>Fully settled</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
+                        <?php if (!empty($hasSanctionedDriver)): ?>
+                            <div class="lookup-sanction-legend">
+                                <i class="bi bi-shield-exclamation"></i>
+                                <span>Badges flag the sanction on file: <strong style="color:#fcd34d;">amber</strong> = 2nd sanction, <strong style="color:#f87171;">red</strong> = 3 or more sanctions. Cancelled (void) citations are not counted, and only pending balances are totaled.</span>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="search-card empty-state text-center">
@@ -640,6 +1198,43 @@
             // the browser reloads clean /lookup with an empty search box and no stale search query!
             if (window.history && window.history.replaceState && window.location.search) {
                 window.history.replaceState(null, document.title, window.location.pathname);
+            }
+
+            // The button reports the trip to the server and ignores any second
+            // tap while the first search is still in flight. The form action and
+            // its result are unchanged — this is only the wait state.
+            const searchForm = document.getElementById('searchForm');
+            const searchBtn = searchForm ? searchForm.querySelector('.btn-search') : null;
+            let searching = false;
+
+            if (searchForm && searchBtn) {
+                searchForm.addEventListener('submit', function (event) {
+                    if (!queryInput || queryInput.value.trim() === '') {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    if (searching) {
+                        return;
+                    }
+
+                    searching = true;
+                    searchBtn.classList.add('is-searching');
+                    searchBtn.innerHTML = '<span class="lk-spinner" aria-hidden="true"></span> Searching…';
+
+                    window.setTimeout(function () {
+                        searchForm.submit();
+                    }, 20);
+                });
+
+                // Coming back from the results page (or a bfcache restore) puts
+                // the button back to normal without a reload.
+                window.addEventListener('pageshow', function () {
+                    searching = false;
+                    searchBtn.classList.remove('is-searching');
+                    searchBtn.innerHTML = '<i class="bi bi-search me-1"></i> Search';
+                });
             }
         });
 

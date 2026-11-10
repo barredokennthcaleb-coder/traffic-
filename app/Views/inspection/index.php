@@ -88,13 +88,13 @@
                                     <td><?= date('M d, Y', strtotime($item['inspection_date'])) ?></td>
                                     <td class="text-end pe-4">
                                         <div class="btn-group shadow-sm">
-                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Print Report">
+                                            <a href="<?= base_url('inspections/print/' . $item['id']) ?>" class="btn btn-sm btn-white border btn-inspection-action action-print" title="Print Report">
                                                 <i class="bi bi-printer text-info"></i>
                                             </a>
-                                            <a href="<?= base_url('inspections/edit/' . $item['id']) ?>" class="btn btn-sm btn-white border" title="Edit Report">
+                                            <a href="<?= base_url('inspections/edit/' . $item['id']) ?>" class="btn btn-sm btn-white border btn-inspection-action action-edit" title="Edit Report">
                                                 <i class="bi bi-pencil text-primary"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-white border btn-delete" data-id="<?= $item['id'] ?>" title="Delete">
+                                            <button type="button" class="btn btn-sm btn-white border btn-inspection-action action-delete btn-delete" data-id="<?= $item['id'] ?>" title="Delete">
                                                 <i class="bi bi-trash text-danger"></i>
                                             </button>
                                         </div>
@@ -119,6 +119,36 @@
 <style>
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
+    .btn-inspection-action {
+        transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+    .btn-inspection-action:hover,
+    .btn-inspection-action:focus-visible {
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .btn-inspection-action:hover i,
+    .btn-inspection-action:focus-visible i {
+        color: #fff !important;
+    }
+    .btn-inspection-action.action-print:hover,
+    .btn-inspection-action.action-print:focus-visible {
+        background: #06b6d4;
+        border-color: #06b6d4 !important;
+        box-shadow: 0 4px 10px rgba(6, 182, 212, 0.25);
+    }
+    .btn-inspection-action.action-edit:hover,
+    .btn-inspection-action.action-edit:focus-visible {
+        background: #2563eb;
+        border-color: #2563eb !important;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+    .btn-inspection-action.action-delete:hover,
+    .btn-inspection-action.action-delete:focus-visible {
+        background: #ef4444;
+        border-color: #ef4444 !important;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+    }
     .empty-state { padding: 3rem 0; }
 </style>
 <?= $this->endSection() ?>

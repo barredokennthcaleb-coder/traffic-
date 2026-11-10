@@ -8,18 +8,23 @@ class AddProfileImageToUsersTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('users', [
-            'profile_image' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-                'null'       => true,
-                'after'      => 'address',
-            ],
-        ]);
+        $this->db->resetDataCache();
+        if (! $this->db->fieldExists('profile_image', 'users')) {
+            $this->forge->addColumn('users', [
+                'profile_image' => [
+                    'type'       => 'VARCHAR',
+                    'constraint' => 255,
+                    'null'       => true,
+                ],
+            ]);
+        }
     }
 
     public function down()
     {
-        $this->forge->dropColumn('users', 'profile_image');
+        $this->db->resetDataCache();
+        if ($this->db->fieldExists('profile_image', 'users')) {
+            $this->forge->dropColumn('users', 'profile_image');
+        }
     }
 }

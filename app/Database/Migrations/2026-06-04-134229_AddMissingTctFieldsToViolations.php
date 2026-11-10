@@ -8,7 +8,8 @@ class AddMissingTctFieldsToViolations extends Migration
 {
     public function up()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $fieldsToAdd = [];
 
         $fields = [
@@ -57,7 +58,8 @@ class AddMissingTctFieldsToViolations extends Migration
 
     public function down()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $columns = ['middle_name', 'license_number', 'mtop_number', 'owner_name', 'acknowledgment'];
 
         foreach ($columns as $column) {

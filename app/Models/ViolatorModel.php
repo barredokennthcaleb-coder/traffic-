@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Libraries\ViolatorIdentity;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Model;
 use RuntimeException;
 
@@ -35,7 +36,10 @@ class ViolatorModel extends Model
         'age',
         'address',
         'license_plate',
+        'vehicle_type',
+        'mtop_number',
         'owner_name',
+        'profile_image',
     ];
 
     protected $useTimestamps = true;
@@ -109,11 +113,15 @@ class ViolatorModel extends Model
             'plate_key'    => $plateKey !== '' ? $plateKey : null,
         ]);
 
-        if ($this->insert($insert)) {
-            return (int) $this->getInsertID();
+        try {
+            if ($this->insert($insert)) {
+                return (int) $this->getInsertID();
+            }
+        } catch (DatabaseException $e) {
+            // A concurrent request may have created the same identity. Re-read it
+            // instead of failing the citation with a database error.
         }
 
-        // A concurrent request may have created the same identity. Re-read it.
         $existing = $this->where('identity_key', $identityKey)->first();
 
         if ($existing) {
@@ -225,7 +233,10 @@ class ViolatorModel extends Model
         $params   = [];
 
         if ($officerId !== null && $officerId > 0) {
-            $where[]  = 'EXISTS (SELECT 1 FROM violations ov WHERE ov.violator_id = v.id AND ov.officer_id = ?)';
+            // Scope the aggregated ticket rows themselves, not just the person
+            // lookup. This keeps tickets, paid totals, balances, date and the
+            // Recorded By value specific to the selected enforcer.
+            $where[]  = 'COALESCE(vi.officer_id, vi.created_by) = ?';
             $params[] = $officerId;
         }
 
@@ -243,12 +254,28 @@ class ViolatorModel extends Model
 
         $status = trim((string) ($filters['status'] ?? ''));
 
-        $hideSettled = false;
+        // The working list (Payment → All Violators) drops fully settled people
+        // so collectors only see open accounts. A registry that is meant to hold
+        // every apprehension ever recorded passes include_settled instead.
+        $includeSettled = ! empty($filters['include_settled']);
+        $hideSettled    = false;
 
-        if (in_array($status, ['Paid', 'Pending', 'Cancelled'], true)) {
-            $having[] = 'overall_status = ?';
-            $params[] = $status;
-        } else {
+        if ($status === 'Pending') {
+            // Show violators who have at least one Pending violation,
+            // even if they also have Paid violations.
+            $having[] = 'COUNT(CASE WHEN vi.status = ? THEN 1 END) > 0';
+            $params[] = 'Pending';
+        } elseif ($status === 'Paid') {
+            // Show violators who have at least one Paid violation,
+            // even if they also have Pending violations.
+            $having[] = 'COUNT(CASE WHEN vi.status = ? THEN 1 END) > 0';
+            $params[] = 'Paid';
+        } elseif ($status === 'Cancelled') {
+            // A cancelled record is one where no live ticket is left, which is
+            // exactly what the aggregate's overall_status already reports.
+            $having[] = "overall_status = ?";
+            $params[] = 'Cancelled';
+        } elseif (! $includeSettled) {
             // Working list: once every ticket of a violator is settled they drop
             // off the default view. Paid status filter brings them back.
             $hideSettled = true;
@@ -275,6 +302,8 @@ class ViolatorModel extends Model
             v.address,
             v.license_plate,
             v.owner_name,
+            COALESCE(NULLIF(TRIM(v.vehicle_type), ''), (SELECT NULLIF(TRIM(v2.vehicle_type), '') FROM violations v2 WHERE v2.violator_id = v.id AND TRIM(COALESCE(v2.vehicle_type, '')) <> '' ORDER BY v2.violation_date DESC LIMIT 1)) AS vehicle_type,
+            COALESCE(NULLIF(TRIM(v.mtop_number), ''), (SELECT NULLIF(TRIM(v2.mtop_number), '') FROM violations v2 WHERE v2.violator_id = v.id AND TRIM(COALESCE(v2.mtop_number, '')) <> '' ORDER BY v2.violation_date DESC LIMIT 1)) AS mtop_number,
             COUNT(DISTINCT vi.ticket_id) AS attempt_count,
             COUNT(DISTINCT CASE WHEN vi.status <> 'Cancelled' THEN vi.ticket_id END) AS active_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status = 'Cancelled' THEN vi.ticket_id END) AS cancelled_ticket_count,
@@ -284,6 +313,11 @@ class ViolatorModel extends Model
             COALESCE(SUM(CASE WHEN vi.status = 'Paid' THEN vi.penalty_amount ELSE 0 END), 0) AS total_paid,
             COALESCE(SUM(CASE WHEN vi.status = 'Pending' THEN vi.penalty_amount ELSE 0 END), 0) AS balance,
             MAX(vi.violation_date) AS last_violation_at,
+            -- The row states what the person was caught for, newest first, the
+            -- same way the enforcer ledger does. Deduplicated when read, since
+            -- GROUP_CONCAT cannot combine DISTINCT with an ORDER BY.
+            GROUP_CONCAT(vi.violation_type ORDER BY vi.violation_date DESC, vi.id DESC SEPARATOR '||') AS violation_type_list,
+            GROUP_CONCAT(DISTINCT COALESCE(NULLIF(TRIM(CONCAT(COALESCE(u.firstname, ''), ' ', COALESCE(u.lastname, ''))), ''), u.username) ORDER BY vi.violation_date DESC SEPARATOR ', ') AS officer_names,
             CASE
                 WHEN SUM(CASE WHEN vi.status <> 'Cancelled' THEN 1 ELSE 0 END) = 0 THEN 'Cancelled'
                 WHEN SUM(CASE WHEN vi.status = 'Pending' THEN 1 ELSE 0 END) > 0 THEN 'Pending'
@@ -291,7 +325,12 @@ class ViolatorModel extends Model
             END AS overall_status
         ";
 
-        $baseSql = 'FROM violators v INNER JOIN violations vi ON vi.violator_id = v.id';
+        // Group the citations per person; when an enforcer filter is selected,
+        // the WHERE clause above scopes every count and sum to that officer's
+        // own citations before the person-level totals are calculated.
+        $baseSql = 'FROM violators v'
+            . ' INNER JOIN violations vi ON vi.violator_id = v.id'
+            . ' LEFT JOIN users u ON u.id = COALESCE(vi.officer_id, vi.created_by)';
 
         if ($where !== []) {
             $baseSql .= ' WHERE ' . implode(' AND ', $where);
@@ -346,6 +385,11 @@ class ViolatorModel extends Model
             $row['total_fines']      = (float) $row['total_fines'];
             $row['total_paid']       = (float) $row['total_paid'];
             $row['balance']          = (float) $row['balance'];
+            $row['officer_names']    = trim((string) ($row['officer_names'] ?? ''));
+            $row['officers']         = array_values(array_filter(array_map(
+                'trim',
+                explode(',', $row['officer_names'])
+            ), static fn ($name) => $name !== ''));
         }
         unset($row);
 
@@ -406,6 +450,47 @@ class ViolatorModel extends Model
     }
 
     /**
+     * Head-counts for the violator registry chips.
+     *
+     * Counts the same population getViolatorList() filters to, so a chip can
+     * never disagree with the rows it opens: a person with one settled and one
+     * open citation counts under both Pending and Settled, because clicking
+     * either chip lists them. Cancelled still means nothing live is left.
+     *
+     * @return array{all: int, pending: int, paid: int, cancelled: int}
+     */
+    public function directoryCounts(?int $officerId = null): array
+    {
+        $officerFilter = $officerId !== null && $officerId > 0 ? ' AND COALESCE(officer_id, created_by) = ?' : '';
+        $params        = $officerFilter !== '' ? [$officerId] : [];
+
+        $row = $this->db->query(
+            "SELECT
+                COUNT(*) AS all_count,
+                COALESCE(SUM(has_pending), 0) AS pending_count,
+                COALESCE(SUM(has_paid), 0) AS paid_count,
+                COALESCE(SUM(has_cancelled), 0) AS cancelled_count
+             FROM (
+                SELECT
+                    CASE WHEN SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END AS has_pending,
+                    CASE WHEN SUM(CASE WHEN status = 'Paid' THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END AS has_paid,
+                    CASE WHEN SUM(CASE WHEN status <> 'Cancelled' THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END AS has_cancelled
+                FROM violations
+                WHERE violator_id IS NOT NULL{$officerFilter}
+                GROUP BY violator_id
+             ) AS grouped",
+            $params
+        )->getRowArray();
+
+        return [
+            'all'       => (int) ($row['all_count'] ?? 0),
+            'pending'   => (int) ($row['pending_count'] ?? 0),
+            'paid'      => (int) ($row['paid_count'] ?? 0),
+            'cancelled' => (int) ($row['cancelled_count'] ?? 0),
+        ];
+    }
+
+    /**
      * Full violator dossier: profile, summary and ticket history.
      */
     public function getProfile(int $violatorId): ?array
@@ -414,6 +499,27 @@ class ViolatorModel extends Model
 
         if (! $violator) {
             return null;
+        }
+
+        // The unit is captured on the citation, so a record logged before the
+        // vehicle field existed still carries its plate and MTOP on the ticket.
+        // Fill the snapshot gaps from the newest citation that has them, which
+        // lets the dossier name the tricycle and its MTOP number.
+        $vehicle = $this->db->query(
+            "SELECT
+                (SELECT vehicle_type FROM violations WHERE violator_id = ? AND TRIM(COALESCE(vehicle_type, '')) <> '' ORDER BY violation_date DESC, id DESC LIMIT 1) AS vehicle_type,
+                (SELECT mtop_number FROM violations WHERE violator_id = ? AND TRIM(COALESCE(mtop_number, '')) <> '' ORDER BY violation_date DESC, id DESC LIMIT 1) AS mtop_number",
+            [$violatorId, $violatorId]
+        )->getRowArray();
+
+        if ($vehicle) {
+            if (trim((string) ($violator['vehicle_type'] ?? '')) === '') {
+                $violator['vehicle_type'] = (string) ($vehicle['vehicle_type'] ?? '');
+            }
+
+            if (trim((string) ($violator['mtop_number'] ?? '')) === '') {
+                $violator['mtop_number'] = (string) ($vehicle['mtop_number'] ?? '');
+            }
         }
 
         $summary = $this->db->query(
@@ -446,22 +552,18 @@ class ViolatorModel extends Model
                     u.username AS officer_username,
                     TRIM(CONCAT(COALESCE(u.firstname, ''), ' ', COALESCE(u.lastname, ''))) AS officer_fullname
              FROM violations vi
-             LEFT JOIN users u ON u.id = vi.officer_id
+             LEFT JOIN users u ON u.id = COALESCE(vi.officer_id, vi.created_by)
              WHERE vi.violator_id = ?
              ORDER BY vi.violation_date DESC, vi.id ASC",
             [$violatorId]
         )->getResultArray();
 
-        // Settled tickets live in Payment History, so the dossier lists
-        // outstanding citations only - the same rule the officer-facing
-        // record applies. The summary and vehicles above/below still see
-        // every row, so attempts and paid totals stay complete.
-        $openRows = array_filter(
-            $rows,
-            static fn (array $row): bool => ($row['status'] ?? '') !== 'Paid'
-        );
-
-        $tickets  = $this->groupTickets($openRows);
+        // Every citation the person ever received stays on the dossier, settled
+        // ones included: paying a fine clears the balance, it does not erase the
+        // apprehension from the record. The ticket then shows as Paid with its
+        // receipt and payment date, which is the history the administrator's
+        // Payment History refers back to.
+        $tickets  = $this->groupTickets($rows);
         $vehicles = $this->collectVehicles($rows);
 
         return [
@@ -485,7 +587,7 @@ class ViolatorModel extends Model
         }
 
         $lastTicket = $this->db->table('violations')
-            ->select('mtop_number, owner_name, owner_address, license_plate, age')
+            ->select('mtop_number, vehicle_type, owner_name, owner_address, license_plate, age')
             ->where('violator_id', $violatorId)
             ->orderBy('violation_date', 'DESC')
             ->orderBy('id', 'DESC')
@@ -496,6 +598,10 @@ class ViolatorModel extends Model
         if ($lastTicket) {
             $violator['mtop_number']   = (string) ($lastTicket['mtop_number'] ?? '');
             $violator['owner_address'] = (string) ($lastTicket['owner_address'] ?? '');
+
+            if (trim((string) ($violator['vehicle_type'] ?? '')) === '') {
+                $violator['vehicle_type'] = (string) ($lastTicket['vehicle_type'] ?? '');
+            }
 
             if (trim((string) ($violator['owner_name'] ?? '')) === '') {
                 $violator['owner_name'] = (string) ($lastTicket['owner_name'] ?? '');
@@ -673,6 +779,18 @@ class ViolatorModel extends Model
             'license_plate'  => strtoupper(ViolatorIdentity::clean($data['license_plate'] ?? '')),
             'owner_name'     => ViolatorIdentity::clean($data['owner_name'] ?? ''),
         ];
+
+        // The vehicle the person was driving, kept on their snapshot so the
+        // ledger can show it (and its MTOP number) without reloading tickets.
+        // Guarded because older databases (and the historical backfill migration,
+        // which runs before these columns are added) may not have them yet.
+        if ($this->db->fieldExists('vehicle_type', 'violators')) {
+            $snapshot['vehicle_type'] = ViolatorIdentity::clean($data['vehicle_type'] ?? '');
+        }
+
+        if ($this->db->fieldExists('mtop_number', 'violators')) {
+            $snapshot['mtop_number'] = ViolatorIdentity::clean($data['mtop_number'] ?? '');
+        }
 
         if (! $snapshot['driver_name']) {
             $snapshot['driver_name'] = trim(implode(' ', array_filter([

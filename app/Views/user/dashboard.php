@@ -18,9 +18,12 @@
                             <p class="text-muted mb-0">Role: <span class="badge bg-info text-dark text-uppercase"><?= esc($role) ?></span></p>
                         </div>
                         <div>
-                            <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger">
-                                <i class="bi bi-box-arrow-right me-1"></i> Logout
-                            </a>
+                            <form method="post" action="<?= base_url('logout') ?>" class="m-0">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-outline-danger">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -44,53 +47,53 @@
 
     <div class="row g-4 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card bg-warning text-dark h-100">
+            <div class="card h-100 text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); box-shadow: 0 8px 20px rgba(202, 138, 4, 0.25); border-radius: 14px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1">Pending Violations</h6>
-                            <h2 class="mb-0"><?= count($pending_violations) ?></h2>
+                            <h6 class="text-uppercase mb-1" style="font-size: 0.78rem; letter-spacing: 0.05em; opacity: 0.95;">Pending Violations</h6>
+                            <h2 class="mb-0 fw-bold"><?= count($pending_violations) ?></h2>
                         </div>
-                        <i class="bi bi-clock-history fs-1 opacity-50"></i>
+                        <i class="bi bi-clock-history fs-1" style="opacity: 0.65;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card bg-success text-white h-100">
+            <div class="card h-100 text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25); border-radius: 14px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1">Paid Violations</h6>
-                            <h2 class="mb-0"><?= count($paid_violations) ?></h2>
+                            <h6 class="text-uppercase mb-1" style="font-size: 0.78rem; letter-spacing: 0.05em; opacity: 0.95;">Paid Violations</h6>
+                            <h2 class="mb-0 fw-bold"><?= count($paid_violations) ?></h2>
                         </div>
-                        <i class="bi bi-check-circle fs-1"></i>
+                        <i class="bi bi-check-circle fs-1" style="opacity: 0.65;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card bg-primary text-white h-100">
+            <div class="card h-100 text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); box-shadow: 0 8px 20px rgba(2, 132, 199, 0.25); border-radius: 14px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1">Total Amount Due</h6>
-                            <h2 class="mb-0"><?= number_format(array_sum(array_column($pending_violations, 'penalty_amount')), 2) ?></h2>
+                            <h6 class="text-uppercase mb-1" style="font-size: 0.78rem; letter-spacing: 0.05em; opacity: 0.95;">Total Amount Due</h6>
+                            <h2 class="mb-0 fw-bold">₱<?= number_format(array_sum(array_column($pending_violations, 'penalty_amount')), 2) ?></h2>
                         </div>
-                        <i class="bi bi-currency-dollar fs-1"></i>
+                        <i class="bi bi-currency-dollar fs-1" style="opacity: 0.65;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card bg-info text-white h-100">
+            <div class="card h-100 text-white border-0 shadow-sm" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); box-shadow: 0 8px 20px rgba(6, 182, 212, 0.25); border-radius: 14px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-uppercase mb-1">Total Paid</h6>
-                            <h2 class="mb-0"><?= number_format(array_sum(array_column($paid_violations, 'penalty_amount')), 2) ?></h2>
+                            <h6 class="text-uppercase mb-1" style="font-size: 0.78rem; letter-spacing: 0.05em; opacity: 0.95;">Total Paid</h6>
+                            <h2 class="mb-0 fw-bold">₱<?= number_format(array_sum(array_column($paid_violations, 'penalty_amount')), 2) ?></h2>
                         </div>
-                        <i class="bi bi-receipt fs-1"></i>
+                        <i class="bi bi-receipt fs-1" style="opacity: 0.65;"></i>
                     </div>
                 </div>
             </div>

@@ -5,7 +5,33 @@
 <?= $this->section('content') ?>
 <?php
     $isPrintMode  = service('request')->getGet('print') === '1';
-    $fromViolations = service('request')->getGet('from') === 'violations';
+    // 58mm mode: used with the "Print 58mm Roll" button when the printer app
+    // or print dialog is set to 58mm / Roll paper. The ticket then prints at
+    // its true size on one continuous page instead of the A4 spool.
+    $paper58      = service('request')->getGet('paper') === '58mm';
+
+    // Where this ticket was opened from, so Back (and the return after
+    // printing) goes there instead of dumping the reader in the whole ledger.
+    $fromParam         = (string) service('request')->getGet('from');
+    $fromViolations    = $fromParam === 'violations';
+    $fromProfileId     = (int) service('request')->getGet('violator');
+    $fromViolatorPage  = $fromParam === 'violator-profile' && $fromProfileId > 0;
+
+    $backUrl    = $fromViolatorPage
+        ? base_url('officer/violator-profile/' . $fromProfileId)
+        : base_url('officer/violations');
+    $backLabel  = $fromViolatorPage ? 'Back to Violator Records' : 'Back to Violations';
+
+    // The print view keeps the same context, so it can hand the reader back to
+    // the page they were reading when the dialog closes.
+    $printParams = ['print' => 1];
+    if ($fromViolations) {
+        $printParams['from'] = 'violations';
+    } elseif ($fromViolatorPage) {
+        $printParams['from']     = 'violator-profile';
+        $printParams['violator'] = $fromProfileId;
+    }
+    $printUrl = base_url('officer/view/' . (int) ($violation['id'] ?? 0)) . '?' . http_build_query($printParams);
 
     $totalFine   = 0;
     $vList       = isset($all_violations) ? $all_violations : [$violation];
@@ -48,24 +74,13 @@
     }
 ?>
 
-<!-- Screen toolbar (hidden on print) -->
-<div class="container-fluid py-3 no-print">
-    <div class="d-flex justify-content-between align-items-center">
-        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Back to Violations
-        </a>
-        <div class="d-flex gap-2">
-            <?php if (! empty($violation['violator_id'])): ?>
-                <a href="<?= base_url('officer/violator-profile/' . (int) $violation['violator_id']) ?>" class="btn btn-outline-dark btn-sm shadow-sm">
-                    <i class="bi bi-person-vcard me-1"></i> Violator Profile
-                </a>
-            <?php endif; ?>
-            <a href="<?= current_url() ?>?print=1<?= $fromViolations ? '&from=violations' : '' ?>"
-               class="btn btn-primary btn-sm shadow-sm">
-                <i class="bi bi-printer me-1"></i> Print Ticket
-            </a>
-        </div>
-    </div>
+<!-- Screen toolbar (hidden on print). Navigation stays at the top; the
+     actions moved to the foot of the ticket, where they follow the document
+     you have just read instead of sitting above it. -->
+<div class="container-fluid pt-3 no-print">
+    <a href="<?= $backUrl ?>" class="btn btn-outline-secondary btn-sm btn-back-electric">
+        <i class="bi bi-arrow-left me-1"></i> <?= esc($backLabel) ?>
+    </a>
 </div>
 
 <!-- TCT Official Document Wrapper -->
@@ -88,11 +103,11 @@
 
         <!-- Section 1: Driver & Vehicle Info -->
         <div class="tct-doc-section">
-            <div class="tct-row mb-2">
-                <span class="tct-bold-label">TO:</span>
-            </div>
+            <!-- TO: and Driver's Name share one line, the way the printed ticket
+                 stock has them, with the name parts lined up to their right. -->
             
             <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                <span class="tct-bold-label me-3" style="white-space: nowrap; padding-top: 3px;">TO:</span>
                 <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
                 <div class="flex-1 d-flex flex-column" style="min-width: 0;">
                     <?php $tctName = tct_split_name($violation['first_name'] ?? null, $violation['middle_name'] ?? null, $violation['last_name'] ?? null, $violation['driver_name'] ?? null); ?>
@@ -127,9 +142,13 @@
                     <span class="tct-bold-label me-1">Plate#</span>
                     <span class="tct-field-underline flex-1"><?= esc($violation['license_plate'] ?? '—') ?></span>
                 </div>
-                <div class="d-flex flex-1 align-items-end">
+                <div class="d-flex flex-1 align-items-end me-3">
                     <span class="tct-bold-label me-1">MTOP#</span>
                     <span class="tct-field-underline flex-1"><?= esc($violation['mtop_number'] ?? '—') ?></span>
+                </div>
+                <div class="d-flex flex-1 align-items-end">
+                    <span class="tct-bold-label me-1">Vehicle</span>
+                    <span class="tct-field-underline flex-1"><?= esc($violation['vehicle_type'] ?? '—') ?></span>
                 </div>
             </div>
 
@@ -239,6 +258,29 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Screen actions (hidden on print), centred under the ticket -->
+<div class="container-fluid pb-4 pt-3 no-print">
+    <div class="d-flex justify-content-center flex-wrap gap-2">
+        <?php if (! empty($violation['violator_id'])): ?>
+            <a href="<?= base_url('officer/violator-profile/' . (int) $violation['violator_id']) ?>" class="btn btn-outline-dark btn-sm shadow-sm">
+                <i class="bi bi-person-vcard me-1"></i> Violator Profile
+            </a>
+        <?php endif; ?>
+        <a href="<?= $printUrl ?>" class="btn btn-primary btn-sm shadow-sm px-4">
+            <i class="bi bi-printer me-1"></i> Print Ticket
+        </a>
+        <a href="<?= $printUrl ?>&paper=58mm" class="btn btn-outline-primary btn-sm shadow-sm px-4"
+           title="One-page printout for the 58mm roll — set the printer app or the print dialog to 58mm / Roll paper first.">
+            <i class="bi bi-receipt me-1"></i> Print 58mm Roll
+        </a>
+    </div>
+    <div class="text-center text-muted small mt-2">
+        58mm roll setup: use “Print 58mm Roll” &middot; Paper — 58mm / Roll paper if listed, otherwise <b>Save as PDF</b>
+        &middot; Scale — Default (100%); if the right side comes out cut, set Custom 22 &middot; Margins — None
+        &middot; Headers and footers — off &middot; Background graphics — on
     </div>
 </div>
 
@@ -462,7 +504,13 @@
         letter-spacing: 0.05em;
     }
 
-    /* Print styling */
+    /* Print styling — tuned for a 58mm thermal receipt printer.
+       The printer's app/driver spools the page on an A4 canvas and then
+       squeezes that canvas down to the 58mm roll (210mm ÷ 58mm ≈ 3.62×).
+       The ticket is therefore still drawn as a 58mm column — readable
+       sizes, one field per line — and pre-scaled up by exactly that factor,
+       so the squeeze lands it back at true 58mm size on paper, with the
+       length following the ticket's own height. */
     @media print {
         /* Keep the ticket shading on paper: the black "X" boxes that mark each
            charged violation are background paints, which browsers drop by
@@ -477,111 +525,164 @@
         .alert, nav, header, footer {
             display: none !important;
         }
-        .main-content {
-            margin-left: 0 !important;
-            width: 100% !important;
-            padding: 0 !important;
-        }
+        .main-content,
         .container-fluid {
+            margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            transform: none !important;
         }
-        body {
+        /* Plain A4 canvas: the print app owns the roll mapping, we only make
+           sure nothing limits the canvas. The root font-size rescales every
+           rem-based size of the ticket at once. */
+        html, body {
+            width: 100% !important;
+            font-size: 9px !important;
+            margin: 0 !important;
+            padding: 0 !important;
             background: #fff !important;
         }
-        /* One ticket = one sheet. The TCT is a fixed A4 document: on paper the
-           violations list runs in two columns and the spacing is tightened just
-           enough that header, violations, legal notice, both signatures and the
-           TCT number always land on page 1. On screen nothing changes. */
         .tct-official-card {
-            max-width: 100%;
-            width: 100%;
-            border: 2px solid #000;
-            box-shadow: none;
-            padding: 18px 22px;
+            width: 58mm !important;
+            max-width: 58mm !important;
             margin: 0 auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            /* ~5mm side margins keep every line inside the printable band. */
+            padding: 6px 20px 8px !important;
+            /* Pre-scaled for the A4 canvas the app squeezes onto the roll
+               (210 ÷ 58 ≈ 3.6207): the squeeze lands it back at 58mm, 1:1. */
+            zoom: 3.6207 !important;
+            transform: none !important;
         }
 
-        /* Header: same seal and text block, just tighter leading. */
+        /* Letterhead: the seal sits in the top-left corner with the three
+           letterhead lines centred beside it — the way the official ticket
+           stock is printed. */
         .tct-header-area {
-            min-height: 0;
-            margin-bottom: 10px;
+            display: block !important;
+            position: relative;
+            min-height: 0 !important;
+            margin-bottom: 4px !important;
+            text-align: center;
         }
-        .tct-seal-box,
+        .tct-seal-box {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 34px !important;
+            height: 34px !important;
+            margin: 0 !important;
+        }
         .tct-seal-img {
-            width: 66px !important;
-            height: 66px !important;
+            width: 34px !important;
+            height: 34px !important;
+            max-width: 34px !important;
+            max-height: 34px !important;
+            margin: 0 !important;
         }
-        .tct-rep,
-        .tct-city { font-size: 0.95rem; }
-        .tct-office { font-size: 1.1rem; }
-        .tct-doc-title { font-size: 1.28rem; margin: 4px 0 1px; }
-        .tct-ord-no { font-size: 0.98rem; }
+        /* The lines sharing the seal's row keep clear of it. */
+        .tct-rep, .tct-office, .tct-city { margin-left: 9mm; }
+        .tct-doc-title { font-size: 9.2px; margin: 3px 0 1px; }
+        .tct-office { font-size: 9.5px; }
 
-        /* Fields + sections: keep every line, drop the empty air around it. */
+        /* 58mm of paper cannot hold side-by-side columns: give every field
+           its own line so nothing is squeezed into a two-letter column. */
+        .tct-row { display: block !important; }
+        .tct-row > .d-flex {
+            margin-right: 0 !important;
+            margin-bottom: 3px !important;
+        }
+
+        /* Driver's name: stack First / Middle / Last, left-aligned. */
+        .tct-official-card .d-flex.w-100 {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .tct-official-card .d-flex.w-100 .d-flex.flex-column {
+            text-align: left !important;
+        }
+        .tct-official-card .d-flex.w-100 .d-block:not(.tct-field-underline) {
+            font-size: 7px !important;
+            color: #000 !important;
+        }
+
+        /* Sections: tighten the air around each block. */
         .tct-doc-section {
-            padding-bottom: 12px;
-            margin-bottom: 12px;
+            padding-bottom: 3px;
+            margin-bottom: 3px;
         }
-        .tct-bold-label { font-size: 0.92rem; }
+        .tct-doc-section .mb-2 { margin-bottom: 3px !important; }
+        .tct-doc-section .mb-3 { margin-bottom: 5px !important; }
+        .tct-doc-section .mb-4 { margin-bottom: 6px !important; }
+        .tct-sub-label { font-size: 7.5px; color: #000; }
         .tct-field-underline {
-            font-size: 0.95rem;
-            min-height: 1.15rem;
-            padding-left: 6px;
-            padding-right: 6px;
+            font-size: 8.5px;
+            min-height: 10px;
+            padding-left: 3px;
+            padding-right: 3px;
         }
-        .tct-doc-section .mb-2 { margin-bottom: 0.4rem !important; }
-        .tct-doc-section .mb-3 { margin-bottom: 0.5rem !important; }
-        .tct-doc-section .mb-4 { margin-bottom: 0.7rem !important; }
 
-        /* Violations: two columns, so all 14 lines still print on one sheet. */
-        .tct-sec-heading { font-size: 1.02rem; }
+        /* Violations checklist: box and text sized for the narrow paper. */
         .tct-sec-notice {
-            font-size: 0.82rem;
-            margin-bottom: 0.45rem !important;
+            font-size: 8px;
+            margin-bottom: 4px !important;
         }
-        .tct-checklist-container {
-            grid-template-columns: 1fr 1fr;
-            gap: 5px 18px;
-        }
-        .tct-check-item { font-size: 0.86rem; }
-        .tct-item-text { font-size: 0.86rem; }
+        .tct-checklist-container { gap: 2px 0; line-height: 1.2; }
+        .tct-check-item,
+        .tct-item-text { font-size: 8.5px; }
+        .tct-check-item { align-items: flex-start; }
         .tct-box {
-            width: 16px;
-            height: 16px;
-            font-size: 0.76rem;
-            margin-right: 7px;
+            width: 12px;
+            height: 12px;
+            font-size: 7px;
+            margin-right: 4px;
+            border-width: 1px;
         }
 
-        /* Legal notice, signatures, footer. */
+        /* Legal notice: justified text leaves rivers this narrow; left-align. */
         .tct-legal-text {
-            font-size: 0.82rem;
-            line-height: 1.3;
+            font-size: 8.5px;
+            line-height: 1.25;
+            text-align: left;
         }
-        .tct-ack-heading { font-size: 0.88rem; }
-        .tct-sub-label { font-size: 0.78rem; }
-        .tct-sig-underline { height: 36px; }
-        .tct-officer-box { height: 56px; }
-        .officer-printed-name { font-size: 0.98rem; }
-        .tct-driver-signature-area { margin-bottom: 0.7rem !important; }
+        .tct-ack-heading { font-size: 9px; }
+
+        /* Acknowledgment + signatures. */
+        .tct-official-card .d-flex.gap-5 {
+            gap: 14px !important;
+            margin-bottom: 10px !important;
+        }
+        .tct-official-card .tct-sig-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .tct-sig-underline {
+            width: 100% !important;
+            height: 24px;
+        }
+        .tct-officer-box { height: 36px; }
+        .officer-printed-name { font-size: 9px; letter-spacing: 0.02em; }
+        .tct-driver-signature-area { margin-bottom: 6px !important; }
         .tct-officer-signature-area { margin-bottom: 0 !important; }
-        .tct-footer-area { padding-top: 0 !important; }
-        .tct-driver-copy-tag { font-size: 0.92rem; }
-        .tct-number-tag { font-size: 1rem; }
-        .tct-red-no { font-size: 1.15rem; }
 
-        /* Never let the document fragment across sheets. */
-        .tct-doc-section,
-        .tct-footer-area,
-        .tct-official-card {
-            break-inside: avoid;
-            page-break-inside: avoid;
+        /* Footer: the two tags may wrap onto their own lines. */
+        .tct-footer-area {
+            flex-wrap: wrap;
+            gap: 2px 8px;
+            padding-top: 0 !important;
         }
+        .tct-number-tag { font-size: 10px; }
 
+        /* The spool canvas the app squeezes onto the roll is A4-shaped; keep
+           it flat (no margins) so the geometry above stays predictable. */
         @page {
-            margin: 6mm 8mm;
             size: A4 portrait;
+            margin: 0;
         }
     }
+
 
     /* ── MOBILE: stack TCT rows so the citation fits the phone screen ── */
     @media screen and (max-width: 767px) {
@@ -649,18 +750,32 @@
     }
 </style>
 
+<?php if ($isPrintMode && $paper58): ?>
+<style>
+    /* 58mm roll mode ("Print 58mm Roll" button): use this when the printer
+       app or the print dialog is set to 58mm / Roll paper. The ticket then
+       prints exactly as drawn, at true size, on one continuous page. The
+       card is pinned to the top-left so drivers that print 1:1 from the
+       paper origin still find the whole ticket in place. */
+    @page { size: 58mm 297mm; margin: 0; }
+    html, body { width: 58mm !important; }
+    .tct-official-card { zoom: 1 !important; margin: 0 !important; }
+</style>
+<?php endif; ?>
+
 <?php if ($isPrintMode): ?>
 <script>
     window.addEventListener('load', function () {
         window.print();
     });
-    <?php if ($fromViolations): ?>
+    <?php if ($fromViolations || $fromViolatorPage): ?>
+    // Printing happens in this same tab, so closing the dialog returns to the
+    // page the ticket was opened from rather than leaving a stray preview.
     window.addEventListener('afterprint', function () {
-        window.location.href = '<?= base_url('officer/violations') ?>';
+        window.location.href = '<?= $backUrl ?>';
     });
     <?php endif; ?>
 </script>
 <?php endif; ?>
 
 <?= $this->endSection() ?>
-

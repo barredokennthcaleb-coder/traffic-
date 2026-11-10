@@ -51,7 +51,7 @@
 <!-- Screen toolbar (hidden on print) -->
 <div class="container-fluid py-3 no-print">
     <div class="d-flex justify-content-between align-items-center">
-        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary btn-sm">
+        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary btn-sm btn-back-electric">
             <i class="bi bi-arrow-left me-1"></i> Back to Violations
         </a>
         <a href="<?= current_url() ?>?print=1<?= $fromViolations ? '&from=violations' : '' ?>"
@@ -81,11 +81,11 @@
 
         <!-- Section 1: Driver & Vehicle Info -->
         <div class="tct-doc-section">
-            <div class="tct-row mb-2">
-                <span class="tct-bold-label">TO:</span>
-            </div>
+            <!-- TO: and Driver's Name share one line, the way the printed ticket
+                 stock has them, with the name parts lined up to their right. -->
             
             <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
+                <span class="tct-bold-label me-3" style="white-space: nowrap; padding-top: 3px;">TO:</span>
                 <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
                 <div class="flex-1 d-flex flex-column" style="min-width: 0;">
                     <?php $tctName = tct_split_name($violation['first_name'] ?? null, $violation['middle_name'] ?? null, $violation['last_name'] ?? null, $violation['driver_name'] ?? null); ?>
@@ -120,9 +120,13 @@
                     <span class="tct-bold-label me-1">Plate#</span>
                     <span class="tct-field-underline flex-1"><?= esc($violation['license_plate'] ?? '—') ?></span>
                 </div>
-                <div class="d-flex flex-1 align-items-end">
+                <div class="d-flex flex-1 align-items-end me-3">
                     <span class="tct-bold-label me-1">MTOP#</span>
                     <span class="tct-field-underline flex-1"><?= esc($violation['mtop_number'] ?? '—') ?></span>
+                </div>
+                <div class="d-flex flex-1 align-items-end">
+                    <span class="tct-bold-label me-1">Vehicle</span>
+                    <span class="tct-field-underline flex-1"><?= esc($violation['vehicle_type'] ?? '—') ?></span>
                 </div>
             </div>
 
@@ -455,69 +459,188 @@
         letter-spacing: 0.05em;
     }
 
-    /* Print styling */
+    /* Print styling — tuned for a 58mm thermal receipt printer.
+       The printer's app/driver spools the page on an A4 canvas and then
+       squeezes that canvas down to the 58mm roll (210mm ÷ 58mm ≈ 3.62×).
+       The ticket is therefore still drawn as a 58mm column — readable
+       sizes, one field per line — and pre-scaled up by exactly that factor,
+       so the squeeze lands it back at true 58mm size on paper, with the
+       length following the ticket's own height. */
     @media print {
-        /* Hide all layout elements */
-        html, body {
-            height: auto !important;
-            background: #fff !important;
-            margin: 0 !important;
-            padding: 0 !important;
+        /* Keep the ticket shading on paper: the black "X" boxes that mark each
+           charged violation are background paints, which browsers drop by
+           default in print. */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
-        
-        /* Hide UI elements from layout/admin */
         .no-print,
-        .sidebar, 
-        .sidebar-toggle, 
-        .mobile-topbar,
-        .mobile-sidebar-backdrop, 
-        .desktop-header, 
-        .breadcrumb, 
-        .btn,
-        .alert, 
-        nav, 
-        header, 
-        footer,
+        .sidebar, .sidebar-toggle, .mobile-topbar,
+        .mobile-sidebar-backdrop,
+        .desktop-header, .breadcrumb, .btn,
+        .alert, nav, header, footer,
         .container-fluid.py-3.no-print {
             display: none !important;
         }
-
-        .main-content {
+        .main-content,
+        .container-fluid {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             transform: none !important;
         }
-
-        .container-fluid {
+        /* Plain A4 canvas: the print app owns the roll mapping, we only make
+           sure nothing limits the canvas. The root font-size rescales every
+           rem-based size of the ticket at once. */
+        html, body {
+            width: 100% !important;
+            height: auto !important;
+            font-size: 9px !important;
+            margin: 0 !important;
             padding: 0 !important;
-            margin: 0 !important;
-            width: 100% !important;
+            background: #fff !important;
         }
-
         .tct-official-card {
-            max-width: 100% !important;
-            width: 100% !important;
-            border: 2px solid #000 !important;
+            width: 58mm !important;
+            max-width: 58mm !important;
+            margin: 0 auto !important;
+            border: none !important;
             box-shadow: none !important;
-            padding: 15mm !important; /* Standard print padding */
+            /* ~5mm side margins keep every line inside the printable band. */
+            padding: 6px 20px 8px !important;
+            /* Pre-scaled for the A4 canvas the app squeezes onto the roll
+               (210 ÷ 58 ≈ 3.6207): the squeeze lands it back at 58mm, 1:1. */
+            zoom: 3.6207 !important;
+            transform: none !important;
+        }
+
+        /* Letterhead: the seal sits in the top-left corner with the three
+           letterhead lines centred beside it — the way the official ticket
+           stock is printed. */
+        .tct-header-area {
+            display: block !important;
+            position: relative;
+            min-height: 0 !important;
+            margin-bottom: 4px !important;
+            text-align: center;
+        }
+        .tct-seal-box {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 34px !important;
+            height: 34px !important;
             margin: 0 !important;
-            page-break-inside: avoid !important;
-            zoom: normal !important; /* Reset zoom for print reliability */
+        }
+        .tct-seal-img {
+            width: 34px !important;
+            height: 34px !important;
+            max-width: 34px !important;
+            max-height: 34px !important;
+            margin: 0 !important;
+        }
+        /* The lines sharing the seal's row keep clear of it. */
+        .tct-rep, .tct-office, .tct-city { margin-left: 9mm; }
+        .tct-doc-title { font-size: 9.2px; margin: 3px 0 1px; }
+        .tct-office { font-size: 9.5px; }
+
+        /* 58mm of paper cannot hold side-by-side columns: give every field
+           its own line so nothing is squeezed into a two-letter column. */
+        .tct-row { display: block !important; }
+        .tct-row > .d-flex {
+            margin-right: 0 !important;
+            margin-bottom: 3px !important;
         }
 
-        /* Force background colors/images in print */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+        /* Driver's name: stack First / Middle / Last, left-aligned. */
+        .tct-official-card .d-flex.w-100 {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        .tct-official-card .d-flex.w-100 .d-flex.flex-column {
+            text-align: left !important;
+        }
+        .tct-official-card .d-flex.w-100 .d-block:not(.tct-field-underline) {
+            font-size: 7px !important;
+            color: #000 !important;
         }
 
+        /* Sections: tighten the air around each block. */
+        .tct-doc-section {
+            padding-bottom: 3px;
+            margin-bottom: 3px;
+        }
+        .tct-doc-section .mb-2 { margin-bottom: 3px !important; }
+        .tct-doc-section .mb-3 { margin-bottom: 5px !important; }
+        .tct-doc-section .mb-4 { margin-bottom: 6px !important; }
+        .tct-sub-label { font-size: 7.5px; color: #000; }
+        .tct-field-underline {
+            font-size: 8.5px;
+            min-height: 10px;
+            padding-left: 3px;
+            padding-right: 3px;
+        }
+
+        /* Violations checklist: box and text sized for the narrow paper. */
+        .tct-sec-notice {
+            font-size: 8px;
+            margin-bottom: 4px !important;
+        }
+        .tct-checklist-container { gap: 2px 0; line-height: 1.2; }
+        .tct-check-item,
+        .tct-item-text { font-size: 8.5px; }
+        .tct-check-item { align-items: flex-start; }
+        .tct-box {
+            width: 12px;
+            height: 12px;
+            font-size: 7px;
+            margin-right: 4px;
+            border-width: 1px;
+        }
+
+        /* Legal notice: justified text leaves rivers this narrow; left-align. */
+        .tct-legal-text {
+            font-size: 8.5px;
+            line-height: 1.25;
+            text-align: left;
+        }
+        .tct-ack-heading { font-size: 9px; }
+
+        /* Acknowledgment + signatures. */
+        .tct-official-card .d-flex.gap-5 {
+            gap: 14px !important;
+            margin-bottom: 10px !important;
+        }
+        .tct-official-card .tct-sig-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .tct-sig-underline {
+            width: 100% !important;
+            height: 24px;
+        }
+        .tct-officer-box { height: 36px; }
+        .officer-printed-name { font-size: 9px; letter-spacing: 0.02em; }
+        .tct-driver-signature-area { margin-bottom: 6px !important; }
+        .tct-officer-signature-area { margin-bottom: 0 !important; }
+
+        /* Footer: the two tags may wrap onto their own lines. */
+        .tct-footer-area {
+            flex-wrap: wrap;
+            gap: 2px 8px;
+            padding-top: 0 !important;
+        }
+        .tct-number-tag { font-size: 10px; }
+
+        /* The spool canvas the app squeezes onto the roll is A4-shaped; keep
+           it flat (no margins) so the geometry above stays predictable. */
         @page {
-            margin: 10mm;
             size: A4 portrait;
+            margin: 0;
         }
     }
+
 </style>
 
 <?php if ($isPrintMode): ?>

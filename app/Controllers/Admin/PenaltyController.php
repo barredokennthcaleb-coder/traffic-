@@ -31,37 +31,17 @@ class PenaltyController extends BaseController
             'pager' => $this->violationRecord->pager,
         ];
         return view('admin/penalties/index', $data);
-    }
-
+    }    /**
+     * The older "All Violators" list, kept only as an alias.
+     *
+     * It paginated ten at a time and dropped fully settled people, so the same
+     * registry appeared to hold different numbers depending on the screen you
+     * opened it from. Every violator now lives on one page in the directory,
+     * which keeps everyone on record and counts exactly what it lists.
+     */
     public function all()
     {
-        $filters = [
-            'search'   => trim((string) $this->request->getGet('search')),
-            'status'   => trim((string) $this->request->getGet('status')),
-            'attempts' => trim((string) $this->request->getGet('attempts')),
-            'sort'     => trim((string) $this->request->getGet('sort')),
-        ];
-
-        $perPage = 10;
-        $page    = max(1, (int) ($this->request->getGet('page_violators') ?? 1));
-        $result  = $this->violatorModel->getViolatorList($filters, $perPage, $page);
-
-        $data = [
-            'title'      => 'All Violators',
-            'violators'  => $result['rows'],
-            'total'      => $result['total'],
-            'page'       => $result['page'],
-            'perPage'    => $result['per_page'],
-            'stats'      => $result['stats'],
-            'counts'     => $this->violatorModel->statusCounts(),
-            'pagerHtml'  => service('pager')->makeLinks($page, $perPage, $result['total'], 'bootstrap_pagination', 0, 'violators'),
-            'search'     => $filters['search'],
-            'status'     => $filters['status'],
-            'attempts'   => $filters['attempts'],
-            'sort'       => $filters['sort'] ?: 'last',
-        ];
-
-        return view('admin/penalties/all', $data);
+        return redirect()->to(base_url('violators'));
     }
 
     /**
@@ -72,7 +52,7 @@ class PenaltyController extends BaseController
         $profile = $this->violatorModel->getProfile((int) $id);
 
         if (! $profile) {
-            return redirect()->to(base_url('penalties/all'))->with('error', 'Violator record not found.');
+            return redirect()->to(base_url('violators'))->with('error', 'Violator record not found.');
         }
 
         $data = [
@@ -81,8 +61,10 @@ class PenaltyController extends BaseController
             'summary'       => $profile['summary'],
             'tickets'       => $profile['tickets'],
             'vehicles'      => $profile['vehicles'],
-            'backUrl'       => base_url('penalties/all'),
-            'backLabel'     => 'All Violators',
+            // Opening a record from the Violators registry returns there, since
+            // the payment working list hides people whose fines are settled.
+            'backUrl'       => base_url('violators'),
+            'backLabel'     => 'Violators',
             'ticketViewBase'=> base_url('penalties/view/'),
             'recordUrl'     => base_url('officer/violations?violator_id=' . (int) $profile['violator']['id']),
             'isAdmin'       => true,
@@ -100,6 +82,11 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('penalties'))->with('error', 'Violation not found or already paid.');
         }
 
+        $nextOrcrNumber = $this->violationRecord->getNextOrcrNumber();
+        if ($nextOrcrNumber === null) {
+            return redirect()->to(base_url('penalties'))->with('error', 'Official Receipt (OR) numbering is not initialized. Run the database migrations.');
+        }
+
         // Each infraction on the ticket is collected on its own receipt line,
         // so the receipt lists every violation with its own fine.
         $infractions = $this->violationRecord->getTicketInfractions($violation['ticket_id'] ?? '');
@@ -114,6 +101,7 @@ class PenaltyController extends BaseController
             'title' => 'Record Payment',
             'violation' => $violation,
             'infractions' => $infractions,
+            'next_orcr_number' => $nextOrcrNumber,
         ];
         return view('admin/penalties/pay', $data);
     }
@@ -123,7 +111,7 @@ class PenaltyController extends BaseController
         $rules = [
             'violation_id'  => 'required|integer',
             'payment_method'=> 'required|in_list[Cash,Check,Money Order]',
-            'transaction_id'=> 'required|max_length[100]',
+            'receipt_number'=> 'required|max_length[18]',
             'remarks'       => 'permit_empty|max_length[500]',
         ];
 
@@ -134,7 +122,11 @@ class PenaltyController extends BaseController
         $violationId   = (int) $this->request->getPost('violation_id');
         $paymentMethod = (string) $this->request->getPost('payment_method');
         $remarks       = trim((string) ($this->request->getPost('remarks') ?? ''));
-        $transactionId = trim((string) $this->request->getPost('transaction_id'));
+        $receiptNumber = trim((string) $this->request->getPost('receipt_number'));
+
+        if (! ctype_digit($receiptNumber) || (int) $receiptNumber < 1) {
+            return redirect()->back()->withInput()->with('error', 'Enter a valid numeric Official Receipt (OR) number greater than zero.');
+        }
 
         $violation = $this->violationRecord->find($violationId);
 
@@ -146,25 +138,125 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('penalties'))->with('error', 'This ticket is not pending payment.');
         }
 
-        if ($this->violationRecord->recordPayment($violationId, $paymentMethod, $remarks, $transactionId)) {
+        if ($this->violationRecord->recordPayment($violationId, $paymentMethod, $remarks, $receiptNumber)) {
             return redirect()->to(base_url('penalties'))->with('payment_settled', 'Payment has been settled successfully!');
         }
 
-        return redirect()->back()->with('error', 'Failed to record payment.');
+        return redirect()->back()->with('error', 'Failed to record payment. Check that the Official Receipt (OR) number is unused and try again.');
     }
 
     public function history()
     {
+        // Payment timestamps are stored in UTC while the office works in
+        // Philippine time: days on this screen are local calendar days and each
+        // row's clock time is converted for display.
+        $localTz = new \DateTimeZone('Asia/Manila');
+        $utcTz   = new \DateTimeZone('UTC');
+        $today = new \DateTimeImmutable('today', $localTz);
+        $period = trim((string) $this->request->getGet('period'));
+        $monthParam = trim((string) $this->request->getGet('month'));
+        if ($period === '') {
+            $period = $monthParam !== '' ? 'month' : 'year';
+        }
+        $dateParam = trim((string) $this->request->getGet('date'));
+        $filterStart = null;
+        $filterEnd = null;
+        $periodLabel = null;
+        $selectedDate = $today->format('Y-m-d');
+        $selectedMonth = $today->format('Y-m');
+        $currentYear = (int) $today->format('Y');
+
+        if ($period === 'year') {
+            $yearStart = new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $currentYear), $localTz);
+            $yearEnd = $yearStart->modify('+1 year');
+            $filterStart = $yearStart->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $filterEnd = $yearEnd->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $periodLabel = (string) $currentYear;
+        } elseif ($period === 'week') {
+            $weekDate = $dateParam !== ''
+                ? \DateTimeImmutable::createFromFormat('!Y-m-d', $dateParam, $localTz)
+                : false;
+            $dateErrors = \DateTimeImmutable::getLastErrors();
+
+            if ($weekDate === false || $weekDate->format('Y-m-d') !== $dateParam
+                || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                return redirect()->to(base_url('penalties/history'))->with('error', 'Choose a valid date to filter the payment history.');
+            }
+
+            $weekStart = $weekDate->modify('monday this week')->setTime(0, 0);
+            $weekEnd = $weekStart->modify('+5 days');
+            $filterStart = $weekStart->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $filterEnd = $weekEnd->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $selectedDate = $weekDate->format('Y-m-d');
+            $periodLabel = $weekStart->format('M d, Y') . ' - ' . $weekEnd->modify('-1 day')->format('M d, Y');
+        } elseif ($period === 'month') {
+            $monthKey = $monthParam !== '' ? $monthParam : $dateParam;
+            $monthDate = preg_match('/^\d{4}-\d{2}$/', $monthKey) === 1
+                ? \DateTimeImmutable::createFromFormat('!Y-m-d', $monthKey . '-01', $localTz)
+                : false;
+            $dateErrors = \DateTimeImmutable::getLastErrors();
+
+            if ($monthDate === false || $monthDate->format('Y-m') !== $monthKey
+                || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                return redirect()->to(base_url('penalties/history'))->with('error', 'Choose a valid month to filter the payment history.');
+            }
+
+            $monthEnd = $monthDate->modify('+1 month');
+            $filterStart = $monthDate->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $filterEnd = $monthEnd->setTimezone($utcTz)->format('Y-m-d H:i:s');
+            $selectedMonth = $monthDate->format('Y-m');
+            $periodLabel = $monthDate->format('F Y');
+            $period = 'month';
+        } elseif ($period !== '') {
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Choose a valid year, week, or month filter.');
+        }
+
+        $summaryQuery = $this->violationRecord
+            ->select('COUNT(DISTINCT violations.ticket_id) as total_transactions, IFNULL(SUM(violations.penalty_amount), 0) as total_revenue')
+            ->where('violations.status', 'Paid');
+        if ($filterStart !== null) {
+            $summaryQuery->where('violations.paid_date >=', $filterStart)
+                         ->where('violations.paid_date <', $filterEnd);
+        }
+        $periodStats = $summaryQuery->get()->getRowArray();
+
+        $yearRevenueRow = $this->violationRecord
+            ->select('IFNULL(SUM(violations.penalty_amount), 0) as year_revenue')
+            ->where('violations.status', 'Paid')
+            ->where('violations.paid_date >=', (new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $currentYear), $localTz))->setTimezone($utcTz)->format('Y-m-d H:i:s'))
+            ->where('violations.paid_date <', (new \DateTimeImmutable(sprintf('%04d-01-01 00:00:00', $currentYear + 1), $localTz))->setTimezone($utcTz)->format('Y-m-d H:i:s'))
+            ->get()
+            ->getRowArray();
+
+        $paymentsQuery = $this->violationRecord
+            ->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
+            ->join('users', 'users.id = violations.officer_id', 'left')
+            ->where('violations.status', 'Paid');
+
+        if ($filterStart !== null) {
+            $paymentsQuery->where('violations.paid_date >=', $filterStart)
+                          ->where('violations.paid_date <', $filterEnd);
+        }
+
         $data = [
-            'title' => 'Payment History',
-            'payments' => $this->violationRecord->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
-                                                 ->join('users', 'users.id = violations.officer_id', 'left')
-                                                 ->where('violations.status', 'Paid')
-                                                 ->groupBy('violations.ticket_id')
-                                                 ->orderBy('violations.paid_date', 'DESC')
-                                                 ->paginate(10, 'history'),
-            'pager' => $this->violationRecord->pager,
+            'title'          => 'Payment History',
+            'payments'       => $paymentsQuery
+                ->groupBy('violations.ticket_id')
+                ->orderBy('violations.paid_date', 'DESC')
+                ->paginate(10, 'history'),
+            'pager'          => $this->violationRecord->pager,
+            'period_stats'   => [
+                'transactions' => (int) ($periodStats['total_transactions'] ?? 0),
+                'revenue'      => (float) ($periodStats['total_revenue'] ?? 0),
+            ],
+            'year_revenue'    => (float) ($yearRevenueRow['year_revenue'] ?? 0),
+            'current_year'    => $currentYear,
+            'selected_period' => $period,
+            'selected_date'   => $selectedDate,
+            'selected_month'  => $selectedMonth,
+            'period_label'    => $periodLabel,
         ];
+
         return view('admin/penalties/history', $data);
     }
 
@@ -184,11 +276,13 @@ class PenaltyController extends BaseController
         ];
 
         if (!empty($violation['ticket_id'])) {
-            if ($this->violationRecord->where('ticket_id', $violation['ticket_id'])->set($updateData)->update()) {
+            // Only Paid rows are reversed: Cancelled infractions on the ticket
+            // must never be resurrected to Pending.
+            if ($this->violationRecord->where('ticket_id', $violation['ticket_id'])->where('status', 'Paid')->set($updateData)->update()) {
                 return redirect()->to(base_url('penalties/history'))->with('success', 'Payment has been reversed and ticket is now Pending.');
             }
         } else {
-            if ($this->violationRecord->update($id, $updateData)) {
+            if ($this->violationRecord->where('id', $id)->where('status', 'Paid')->set($updateData)->update()) {
                 return redirect()->to(base_url('penalties/history'))->with('success', 'Payment has been reversed and ticket is now Pending.');
             }
         }
@@ -196,12 +290,115 @@ class PenaltyController extends BaseController
         return redirect()->to(base_url('penalties/history'))->with('error', 'Failed to reverse payment.');
     }
 
+    public function receipt($ticketId = null)
+    {
+        $violation = $this->violationRecord
+            ->where('ticket_id', $ticketId)
+            ->where('status', 'Paid')
+            ->first();
+
+        if (!$violation) {
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Paid receipt not found.');
+        }
+
+        return view('user/receipt', [
+            'title'            => 'Official Receipt',
+            'violation'        => $violation,
+            'infractions'      => $this->violationRecord->getTicketInfractions($violation['ticket_id']),
+            'is_admin_receipt' => true,
+            'auto_print'       => $this->request->getGet('print') === '1',
+        ]);
+    }
+
+    public function updateReceiptNumber($id = null)
+    {
+        $postedReceiptNumber = $this->request->getPost('receipt_number');
+        $receiptNumber = is_string($postedReceiptNumber) ? trim($postedReceiptNumber) : '';
+        if ($receiptNumber === '' || mb_strlen($receiptNumber) > 50) {
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Enter a valid Official Receipt (OR) number (up to 50 characters).');
+        }
+
+        $violation = $this->violationRecord->find($id);
+        if (!$violation || ($violation['status'] ?? '') !== 'Paid') {
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Paid citation ticket not found.');
+        }
+
+        $ticketId = trim((string) ($violation['ticket_id'] ?? ''));
+        if ($ticketId === '') {
+            return redirect()->to(base_url('penalties/history'))->with('error', 'This payment is not linked to a citation ticket.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transBegin();
+
+        try {
+            $lockSuffix = strcasecmp($db->DBDriver, 'MySQLi') === 0 ? ' FOR UPDATE' : '';
+            $sequence = $db->query(
+                'SELECT last_number, number_width FROM orcr_sequences WHERE id = 1' . $lockSuffix
+            )->getRowArray();
+            if (! $sequence) {
+                $db->transRollback();
+                return redirect()->to(base_url('penalties/history'))->with('error', 'Official Receipt (OR) sequence is not initialized. Run the database migrations.');
+            }
+
+            $duplicateQuery = $db->table('violations')
+                ->where('status', 'Paid')
+                ->where('ticket_id !=', $ticketId);
+            if (ctype_digit($receiptNumber)) {
+                $numericReceiptColumn = strcasecmp($db->DBDriver, 'MySQLi') === 0
+                    ? 'CAST(receipt_number AS UNSIGNED)'
+                    : 'CAST(receipt_number AS INTEGER)';
+                $duplicateQuery->where($numericReceiptColumn . ' =', (int) $receiptNumber, false);
+            } else {
+                $duplicateQuery->where('receipt_number', $receiptNumber);
+            }
+            if ($duplicateQuery->countAllResults() > 0) {
+                $db->transRollback();
+                return redirect()->to(base_url('penalties/history'))->with('error', 'That Official Receipt (OR) number is already assigned to another citation.');
+            }
+
+            $updated = (new ViolatorRecord())
+                ->where('ticket_id', $ticketId)
+                ->where('status', 'Paid')
+                ->set('receipt_number', $receiptNumber)
+                ->update();
+
+            if (ctype_digit($receiptNumber)) {
+                $editedNumber = (int) $receiptNumber;
+                $lastNumber = (int) $sequence['last_number'];
+                $numberWidth = max((int) $sequence['number_width'], strlen($receiptNumber));
+                if ($editedNumber > $lastNumber || $numberWidth > (int) $sequence['number_width']) {
+                    $db->table('orcr_sequences')->where('id', 1)->update([
+                        'last_number'  => max($lastNumber, $editedNumber),
+                        'number_width' => $numberWidth,
+                        'updated_at'   => date('Y-m-d H:i:s'),
+                    ]);
+                }
+            }
+
+            if ($updated && $db->transStatus()) {
+                $db->transCommit();
+                return redirect()->to(base_url('penalties/history'))->with('success', 'Official Receipt (OR) number updated for this citation ticket.');
+            }
+
+            $db->transRollback();
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Failed to update the Official Receipt (OR) number.');
+        } catch (\Throwable $e) {
+            $db->transRollback();
+            log_message('error', 'Official Receipt (OR) update failed for ticket {ticket}: {message}', [
+                'ticket'  => $ticketId,
+                'message' => $e->getMessage(),
+            ]);
+            return redirect()->to(base_url('penalties/history'))->with('error', 'Could not update the Official Receipt (OR) number due to a database error.');
+        }
+    }
+
     public function view($id)
     {
         $violation = $this->violationRecord->getDetailedViolation($id);
 
         if (!$violation) {
-            return redirect()->to(base_url('penalties/all'))->with('error', 'Violation not found.');
+            return redirect()->to(base_url('violators'))->with('error', 'Violation not found.');
         }
 
         $allViolations = [];
@@ -226,17 +423,19 @@ class PenaltyController extends BaseController
         $violation = $this->violationRecord->find($id);
 
         if (!$violation) {
-            return redirect()->to(base_url('penalties/all'))->with('error', 'Violation not found.');
+            return redirect()->to(base_url('violators'))->with('error', 'Violation not found.');
         }
 
         if ($violation['status'] !== 'Pending') {
-            return redirect()->to(base_url('penalties/all'))->with('error', 'Only pending violations can be cancelled.');
+            return redirect()->to(base_url('violators'))->with('error', 'Only pending violations can be cancelled.');
         }
 
-        $reason = $this->request->getPost('reason') ?? 'Cancelled by admin';
+        $reason = $this->request->getPost('reason');
+        $reason = is_string($reason) ? trim($reason) : '';
+        $reason = mb_substr($reason !== '' ? $reason : 'Cancelled by admin', 0, 500);
 
         if ($this->violationRecord->cancelViolation($id, $reason)) {
-            return redirect()->to(base_url('penalties/all'))->with('success', 'Violation cancelled successfully.');
+            return redirect()->to(base_url('violators'))->with('success', 'Violation cancelled successfully.');
         } else {
             return redirect()->back()->with('error', 'Failed to cancel violation.');
         }
@@ -244,10 +443,12 @@ class PenaltyController extends BaseController
 
     public function delete($id = null)
     {
+        $returnToHistory = $this->request->getPost('return_to_history') === '1';
+        $redirectUrl = base_url($returnToHistory ? 'penalties/history' : 'penalties');
         $violation = $this->violationRecord->find($id);
 
         if (!$violation) {
-            return redirect()->to(base_url('penalties'))->with('error', 'Violation record not found.');
+            return redirect()->to($redirectUrl)->with('error', 'Violation record not found.');
         }
 
         $violatorId = (int) ($violation['violator_id'] ?? 0);
@@ -262,10 +463,10 @@ class PenaltyController extends BaseController
         if ($deleted) {
             $this->violatorModel->pruneIfOrphan($violatorId);
 
-            return redirect()->to(base_url('penalties'))->with('success', 'Violation ticket deleted successfully.');
+            return redirect()->to($redirectUrl)->with('success', 'Violation ticket deleted successfully.');
         }
 
-        return redirect()->back()->with('error', 'Failed to delete violation record.');
+        return redirect()->to($redirectUrl)->with('error', 'Failed to delete violation record.');
     }
 
     public function search()
@@ -273,7 +474,7 @@ class PenaltyController extends BaseController
         $keyword = $this->request->getGet('q');
 
         if (empty($keyword)) {
-            return redirect()->to(base_url('penalties/all'));
+            return redirect()->to(base_url('violators'));
         }
 
         $data = [

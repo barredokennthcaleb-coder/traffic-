@@ -37,6 +37,7 @@ class Filters extends BaseFilters
         'auth'          => \App\Filters\Auth::class,
         'admin'         => \App\Filters\AdminAuth::class,
         'officer'       => \App\Filters\OfficerAuth::class,
+        'compress'      => \App\Filters\CompressResponse::class,
     ];
 
     /**
@@ -60,7 +61,11 @@ class Filters extends BaseFilters
         'after' => [
             'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
-            'toolbar',     // Debug Toolbar
+            // 'toolbar' is off on purpose. Its after-filter injects the debug
+            // bar into every page, which cost an extra ~520 KB request and a
+            // re-render on each load. Error pages keep their full detail; only
+            // the toolbar is gone. Uncomment to bring it back.
+            // 'toolbar',  // Debug Toolbar
         ],
     ];
 
@@ -76,12 +81,13 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
+            'csrf',
             // 'invalidchars',
         ],
         'after' => [
             // 'honeypot',
             // 'secureheaders',
+            'compress', // Gzip text responses (php -S has no mod_deflate)
         ],
     ];
 

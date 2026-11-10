@@ -11,8 +11,8 @@
             <p class="text-muted small">Found <strong><?= count($violations) ?></strong> results for "<?= esc($keyword) ?>"</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="<?= base_url('penalties/all') ?>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Back to All Violators
+            <a href="<?= base_url('violators') ?>" class="btn btn-outline-secondary btn-back-electric">
+                <i class="bi bi-arrow-left me-1"></i> Back to Violators
             </a>
         </div>
     </div>

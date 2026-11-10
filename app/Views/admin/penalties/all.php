@@ -108,8 +108,8 @@
                             <?php foreach ($violators as $v): ?>
                                 <?php
                                     $profileUrl = base_url('penalties/violator/' . (int) $v['id']);
-                                    // Ledger names stay compact: the middle name is an initial
-                                    // here and complete on the violator's record.
+                                    // Ledger names show the middle name as one
+                                    // initial; the full name stays on the record.
                                     $name       = \App\Libraries\ViolatorIdentity::shortName(
                                         $v['first_name'] ?? '',
                                         $v['middle_name'] ?? '',
@@ -196,9 +196,9 @@
     border-radius: 10px;
 }
 .btn-filter-chip.active .badge { background: rgba(255, 255, 255, 0.28) !important; color: #ffffff !important; border: none !important; }
-.filter-badge-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.btn-filter-pending:hover { border-color: #fde68a; color: #92400e; background: #fffbeb; }
-.btn-filter-pending.active { background: #f59e0b; border-color: #f59e0b; color: #ffffff; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.28); }
+.filter-badge-pending { background: #fef9c3; color: #854d0e; border: 1px solid #eab308; }
+.btn-filter-pending:hover { border-color: #eab308; color: #854d0e; background: #fef9c3; }
+.btn-filter-pending.active { background: #eab308; border-color: #ca8a04; color: #ffffff; box-shadow: 0 2px 8px rgba(202, 138, 4, 0.28); }
 
 /* Record action */
 .btn-new-violation {
@@ -223,7 +223,7 @@
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
+    color: var(--text-subtle, #5c6b80);
     font-size: 0.85rem;
     pointer-events: none;
 }

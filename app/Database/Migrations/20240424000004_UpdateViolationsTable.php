@@ -8,7 +8,8 @@ class UpdateViolationsTable extends Migration
 {
     public function up()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $fieldsToAdd = [];
 
         $fields = [
@@ -100,6 +101,7 @@ class UpdateViolationsTable extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         $this->forge->dropColumn('violations', 'ticket_id');
         $this->forge->dropColumn('violations', 'violation_type_id');
         $this->forge->dropColumn('violations', 'officer_id');

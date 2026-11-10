@@ -8,7 +8,8 @@ class AddViolatorDetailsToViolationsTable extends Migration
 {
     public function up()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $fieldsToAdd = [];
 
         $fields = [
@@ -51,7 +52,8 @@ class AddViolatorDetailsToViolationsTable extends Migration
 
     public function down()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $columns = ['first_name', 'last_name', 'age', 'address'];
 
         foreach ($columns as $column) {

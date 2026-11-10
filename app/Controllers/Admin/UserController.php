@@ -22,25 +22,29 @@ class UserController extends BaseController
         $role = (string) ($this->request->getGet('role') ?? '');
         $allowedRoles = ['admin', 'enforcer'];
 
-        $usersQuery = $this->userModel;
-        if ($role !== '' && in_array($role, $allowedRoles, true)) {
-            $usersQuery = $usersQuery->where('role', $role);
-        } else {
+        if ($role !== '' && ! in_array($role, $allowedRoles, true)) {
             $role = '';
-            $usersQuery = $usersQuery->whereIn('role', $allowedRoles);
         }
 
+        // Counts first: countAllResults() resets the shared builder state, so
+        // the role filter for the paginated list must be applied afterwards.
         $stats = [
-            'total'    => $this->userModel->whereIn('role', ['admin', 'enforcer'])->countAllResults(),
+            'total'    => $this->userModel->whereIn('role', $allowedRoles)->countAllResults(),
             'admin'    => $this->userModel->where('role', 'admin')->countAllResults(),
             'enforcer' => $this->userModel->where('role', 'enforcer')->countAllResults(),
         ];
+
+        if ($role !== '') {
+            $this->userModel->where('role', $role);
+        } else {
+            $this->userModel->whereIn('role', $allowedRoles);
+        }
 
         $data = [
             'title'        => 'User Management',
             'selectedRole' => $role,
             'stats'        => $stats,
-            'users'        => $usersQuery->paginate(10, 'users'),
+            'users'        => $this->userModel->paginate(10, 'users'),
             'pager'        => $this->userModel->pager,
         ];
         return view('admin/users/index', $data);
@@ -68,25 +72,32 @@ class UserController extends BaseController
             return redirect()->to(base_url('users?role=enforcer'))->with('error', 'Traffic enforcer not found.');
         }
 
+        // Same officer attribution as the reports: officer_id first, then the
+        // account that created the citation for legacy rows.
         $records = $this->violationModel
             ->select('violations.*, users.username as officer_name')
-            ->join('users', 'users.id = violations.officer_id', 'left')
-            ->where('violations.officer_id', $id)
+            ->join('users', 'users.id = COALESCE(violations.officer_id, violations.created_by)', 'left')
+            ->where('COALESCE(violations.officer_id, violations.created_by)', (int) $id)
             ->orderBy('violations.violation_date', 'DESC')
             ->findAll();
 
-        $totalIssuedAmount = array_sum(array_map(static function ($record) {
-            return (float) ($record['penalty_amount'] ?? 0);
-        }, $records));
+        // Assessed fines only: a cancelled citation is void and adds no money
+        // anywhere, so assessed = paid + pending.
+        $totalAssessedAmount = 0.0;
+        foreach ($records as $record) {
+            if (($record['status'] ?? '') !== 'Cancelled') {
+                $totalAssessedAmount += (float) ($record['penalty_amount'] ?? 0);
+            }
+        }
 
         $data = [
-            'title'            => 'Traffic Enforcer Profile: ' . $user['username'],
-            'user'             => $user,
-            'records'          => $records,
-            'pendingCount'     => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Pending')),
-            'paidCount'        => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
-            'cancelledCount'   => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
-            'totalIssuedAmount'=> $totalIssuedAmount,
+            'title'              => 'Traffic Enforcer Profile: ' . $user['username'],
+            'user'               => $user,
+            'records'            => $records,
+            'pendingCount'       => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Pending')),
+            'paidCount'          => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
+            'cancelledCount'     => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
+            'totalAssessedAmount'=> $totalAssessedAmount,
         ];
 
         return view('admin/users/view_enforcer', $data);
@@ -124,6 +135,7 @@ class UserController extends BaseController
             'age'      => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
             'birthdate'=> 'required|valid_date',
             'address'  => 'required|max_length[255]',
+            'license_number' => 'permit_empty|max_length[50]',
             'email'    => 'required|valid_email|is_unique[users.email]',
             // allow shorter password when default env password is used
             'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
@@ -142,20 +154,11 @@ class UserController extends BaseController
             $password = $defaultPassword;
         }
 
-        $data = [
-            'username'  => trim((string) $this->request->getPost('username')),
-            'firstname' => trim((string) $this->request->getPost('firstname')),
-            'lastname'  => trim((string) $this->request->getPost('lastname')),
-            'middle_initial' => trim((string) $this->request->getPost('middle_initial')),
-            'age'       => (int) $this->request->getPost('age'),
-            'birthdate' => $this->request->getPost('birthdate'),
-            'address'   => trim((string) $this->request->getPost('address')),
-            'email'     => trim((string) $this->request->getPost('email')),
+        $data = array_merge($this->accountFieldsFromPost(), [
             'password'  => $password,
             'role'      => $role,
-            'assigned_station' => trim((string) $this->request->getPost('assigned_station')),
             'status'    => 'active',
-        ];
+        ]);
 
         if ($this->userModel->save($data)) {
             return redirect()->to(base_url('users') . ($data['role'] ? '?role=' . $data['role'] : ''))->with('success', 'User created successfully.');
@@ -195,6 +198,7 @@ class UserController extends BaseController
             'age'      => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[120]',
             'birthdate'=> 'required|valid_date',
             'address'  => 'required|max_length[255]',
+            'license_number' => 'permit_empty|max_length[50]',
             'email'    => "required|valid_email|is_unique[users.email,id,{$id}]",
             'role'     => 'required|in_list[admin,driver,enforcer]',
             'assigned_station' => 'permit_empty|max_length[255]',
@@ -210,20 +214,11 @@ class UserController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $data = [
+        $data = array_merge($this->accountFieldsFromPost(), [
             'id'        => $id,
-            'username'  => trim((string) $this->request->getPost('username')),
-            'firstname' => trim((string) $this->request->getPost('firstname')),
-            'lastname'  => trim((string) $this->request->getPost('lastname')),
-            'middle_initial' => trim((string) $this->request->getPost('middle_initial')),
-            'age'       => (int) $this->request->getPost('age'),
-            'birthdate' => $this->request->getPost('birthdate'),
-            'address'   => trim((string) $this->request->getPost('address')),
-            'email'     => trim((string) $this->request->getPost('email')),
             'role'      => $this->request->getPost('role'),
-            'assigned_station' => trim((string) $this->request->getPost('assigned_station')),
             'status'    => $this->request->getPost('status'),
-        ];
+        ]);
 
         if ($this->request->getPost('password')) {
             $data['password'] = $this->request->getPost('password');
@@ -275,5 +270,21 @@ class UserController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to reset password.');
         }
+    }
+
+    private function accountFieldsFromPost(): array
+    {
+        return [
+            'username'        => trim((string) $this->request->getPost('username')),
+            'firstname'       => trim((string) $this->request->getPost('firstname')),
+            'lastname'        => trim((string) $this->request->getPost('lastname')),
+            'middle_initial'  => trim((string) $this->request->getPost('middle_initial')),
+            'age'             => (int) $this->request->getPost('age'),
+            'birthdate'       => $this->request->getPost('birthdate'),
+            'address'         => trim((string) $this->request->getPost('address')),
+            'license_number'  => trim((string) $this->request->getPost('license_number')),
+            'email'           => trim((string) $this->request->getPost('email')),
+            'assigned_station' => trim((string) $this->request->getPost('assigned_station')),
+        ];
     }
 }

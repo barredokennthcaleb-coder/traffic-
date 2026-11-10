@@ -17,7 +17,7 @@
                 <p class="ht-subtitle">Payment history &amp; receipt management</p>
             </div>
         </div>
-        <div class="ht-header-right">
+        <div class="ht-header-actions">
             <div class="ht-search-wrap">
                 <i class="bi bi-search ht-search-icon"></i>
                 <input type="text" id="searchInput" class="ht-search-input" placeholder="Search receipt, driver, plate...">
@@ -25,41 +25,78 @@
                     <i class="bi bi-x-circle-fill"></i>
                 </button>
             </div>
-            <a href="<?= base_url('penalties') ?>" class="ht-btn-back">
+        </div>
+        <div class="ht-header-back">
+            <a href="<?= base_url('penalties') ?>" class="ht-btn-back btn-back-electric">
                 <i class="bi bi-arrow-left me-1"></i> Back to Pending
             </a>
         </div>
     </div>
 
     <!-- STATS STRIP -->
-    <?php
-        $totalCount = count($payments ?? []);
-        $totalRevenue = 0;
-        foreach (($payments ?? []) as $pp) {
-            $totalRevenue += (float)($pp['total_penalty_sum'] ?? $pp['penalty_amount'] ?? 0);
-        }
-    ?>
     <div class="ht-stats-strip">
         <div class="ht-stat-card">
             <div class="ht-stat-icon ht-stat-blue"><i class="bi bi-receipt"></i></div>
             <div>
-                <div class="ht-stat-value"><?= $totalCount ?></div>
-                <div class="ht-stat-label">Total Transactions</div>
+                <div class="ht-stat-value"><?= number_format((int) ($period_stats['transactions'] ?? 0)) ?></div>
+                <div class="ht-stat-label">Paid Transactions<?= $period_label ? ' · ' . esc($period_label) : '' ?></div>
             </div>
         </div>
         <div class="ht-stat-card">
             <div class="ht-stat-icon ht-stat-green"><i class="bi bi-cash-coin"></i></div>
             <div>
-                <div class="ht-stat-value">&#8369;<?= number_format($totalRevenue, 2) ?></div>
-                <div class="ht-stat-label">Total Revenue</div>
+                <div class="ht-stat-value">&#8369;<?= number_format((float) ($period_stats['revenue'] ?? 0), 2) ?></div>
+                <div class="ht-stat-label">Paid Revenue<?= $period_label ? ' · ' . esc($period_label) : '' ?></div>
             </div>
         </div>
-        <div class="ht-stat-card">
+        <button type="button" class="ht-stat-card ht-stat-card--filter" data-bs-toggle="modal" data-bs-target="#historyDateFilterModal" aria-haspopup="dialog" aria-controls="historyDateFilterModal">
             <div class="ht-stat-icon ht-stat-amber"><i class="bi bi-calendar-check"></i></div>
             <div>
-                <div class="ht-stat-value"><?= date('M d, Y') ?></div>
-                <div class="ht-stat-label">As of Today</div>
+                <div class="ht-stat-value"><?= $period_label ? esc($period_label) : 'Choose dates' ?></div>
+                <div class="ht-stat-label"><?= $period_label ? 'Click to change date filter' : 'Filter by week or month' ?></div>
             </div>
+        </button>
+    </div>
+    <?php if ($period_label): ?>
+        <div class="ht-period-notice">
+            <i class="bi bi-calendar-range me-1"></i>
+            Showing paid tickets for <strong><?= esc($period_label) ?></strong>.
+            <a href="<?= base_url('penalties/history') ?>">Clear date filter</a>
+        </div>
+    <?php endif; ?>
+
+    <div class="modal fade" id="historyDateFilterModal" tabindex="-1" aria-labelledby="historyDateFilterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="get" action="<?= base_url('penalties/history') ?>" class="modal-content ht-filter-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="historyDateFilterTitle"><i class="bi bi-calendar-week me-2 text-primary"></i>Filter Paid Transactions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="historyPeriod" class="form-label fw-semibold">Period</label>
+                    <select id="historyPeriod" name="period" class="form-select mb-3">
+                        <option value="year" <?= $selected_period === 'year' ? 'selected' : '' ?>>Current year (<?= esc((string) $current_year) ?>)</option>
+                        <option value="week" <?= $selected_period === 'week' ? 'selected' : '' ?>>Weekdays (Monday to Friday)</option>
+                        <option value="month" <?= $selected_period === 'month' ? 'selected' : '' ?>>Month</option>
+                    </select>
+                    <div class="history-week-field">
+                        <label for="historyWeekDate" class="form-label fw-semibold">Choose any date in the week</label>
+                        <input type="date" id="historyWeekDate" name="date" class="form-control" value="<?= esc($selected_date) ?>" required>
+                    </div>
+                    <div class="history-month-field">
+                        <label for="historyMonthDate" class="form-label fw-semibold">Choose month</label>
+                        <input type="month" id="historyMonthDate" name="month" class="form-control" value="<?= esc($selected_month) ?>" required>
+                    </div>
+                    <p class="small text-muted mt-3 mb-0">The year filter automatically follows the current calendar year.</p>
+                </div>
+                <div class="modal-footer">
+                    <?php if ($period_label): ?>
+                        <a href="<?= base_url('penalties/history') ?>" class="btn btn-outline-secondary me-auto">Clear filter</a>
+                    <?php endif; ?>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Filter</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -72,7 +109,7 @@
                         <tr>
                             <th class="ht-th-index">#</th>
                             <th>Date Paid</th>
-                            <th>Receipt #</th>
+                            <th>Official Receipt (OR) #</th>
                             <th>Driver / Vehicle</th>
                             <th>Violations</th>
                             <th>Amount</th>
@@ -121,18 +158,27 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td data-label="Receipt #">
-                                    <span class="ht-receipt-pill" title="Click to copy" onclick="copyReceipt('<?= esc($p['receipt_number'] ?: '') ?>', this)">
-                                        <i class="bi bi-receipt"></i>
-                                        <span class="ht-receipt-num"><?= esc($p['receipt_number'] ?: 'N/A') ?></span>
-                                        <i class="bi bi-copy ht-copy-ico"></i>
-                                    </span>
+                                <td data-label="Official Receipt (OR) #">
+                                    <div class="ht-receipt-actions">
+                                        <span class="ht-receipt-pill" title="Click to copy" onclick="copyReceipt('<?= esc($p['receipt_number'] ?: '') ?>', this)">
+                                            <i class="bi bi-receipt"></i>
+                                            <span class="ht-receipt-num"><?= esc($p['receipt_number'] ?: 'N/A') ?></span>
+                                            <i class="bi bi-copy ht-copy-ico"></i>
+                                        </span>
+                                        <button type="button" class="ht-action-btn ht-btn-edit-receipt btn-edit-receipt"
+                                                data-id="<?= (int) $p['id'] ?>"
+                                                data-ticket="<?= esc($p['ticket_id'] ?? '', 'attr') ?>"
+                                                data-receipt="<?= esc($p['receipt_number'] ?? '', 'attr') ?>"
+                                                title="Edit Official Receipt (OR) Number" aria-label="Edit Official Receipt (OR) number for ticket <?= esc($p['ticket_id'] ?? '', 'attr') ?>">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
                                 </td>
                                 <td data-label="Driver">
                                     <div class="ht-driver-name"><?= esc($dName) ?></div>
                                     <div class="ht-pills-row">
                                         <?php if (!$skipPlate): ?>
-                                            <span class="ht-plate-pill"><i class="bi bi-car-front-fill"></i> <?= esc($plate) ?></span>
+                                            <span class="ht-plate-pill"><?= tricycle_icon() ?><?= esc($plate) ?></span>
                                         <?php endif; ?>
                                         <?php if (!$skipDl): ?>
                                             <span class="ht-dl-pill"><i class="bi bi-person-badge"></i> <?= esc($dl) ?></span>
@@ -169,14 +215,19 @@
                                 </td>
                                 <td data-label="Actions" class="ht-td-actions">
                                     <div class="ht-action-group">
-                                        <a href="<?= base_url('user/receipt/' . $p['ticket_id']) ?>"
-                                           class="ht-action-btn ht-btn-view" title="View Receipt" target="_blank">
+                                        <a href="<?= base_url('penalties/receipt/' . rawurlencode((string) $p['ticket_id'])) ?>"
+                                           class="ht-action-btn ht-btn-view" title="View Receipt">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         <button type="button" class="ht-action-btn ht-btn-reverse btn-reverse"
-                                                data-id="<?= $p['id'] ?>" data-receipt="<?= $p['receipt_number'] ?>"
+                                                data-id="<?= $p['id'] ?>" data-receipt="<?= esc($p['receipt_number'] ?: 'N/A', 'attr') ?>"
                                                 title="Reverse Payment">
                                             <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                        <button type="button" class="ht-action-btn ht-btn-delete btn-history-delete"
+                                                data-id="<?= $p['id'] ?>" data-receipt="<?= esc($p['receipt_number'] ?: 'N/A', 'attr') ?>"
+                                                title="Delete Paid Ticket">
+                                            <i class="bi bi-trash3"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -196,6 +247,33 @@
         <div class="ht-card-footer">
             <?= $pager->links('history', 'bootstrap_pagination') ?>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editReceiptModal" tabindex="-1" aria-labelledby="editReceiptTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="editReceiptForm" method="post" class="modal-content ht-filter-modal">
+            <?= csrf_field() ?>
+            <div class="modal-header">
+                <h5 class="modal-title" id="editReceiptTitle"><i class="bi bi-receipt me-2 text-primary"></i>Edit Official Receipt (OR) Number</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted">Official Receipt (OR) numbers are independent from TCT numbers. Saving updates this paid ticket everywhere it appears.</p>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="editReceiptTicket">Citation Ticket (TCT)</label>
+                    <input type="text" class="form-control" id="editReceiptTicket" readonly>
+                </div>
+                <div>
+                    <label class="form-label fw-semibold" for="editReceiptNumber">Official Receipt (OR) Number</label>
+                    <input type="text" class="form-control" id="editReceiptNumber" name="receipt_number" maxlength="50" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Official Receipt (OR) Number</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -224,7 +302,7 @@
             </div>
             <div class="ht-modal-footer">
                 <button type="button" class="ht-modal-cancel" data-bs-dismiss="modal">Cancel</button>
-                <a href="#" id="confirmReverseBtn" class="ht-modal-confirm">
+                <a href="#" id="confirmReverseBtn" class="ht-modal-confirm" data-action="">
                     <i class="bi bi-arrow-counterclockwise me-1"></i> Confirm Reverse
                 </a>
             </div>
@@ -241,6 +319,8 @@
 .ht-title{font-size:1.3rem;font-weight:800;color:#0f172a;margin:0;letter-spacing:-.02em;}
 .ht-subtitle{font-size:.8rem;color:#64748b;margin:0;font-weight:500;}
 .ht-header-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
+.ht-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:.75rem;margin-left:auto;max-width: min(100%, 570px);flex:1 1 420px;}
+.ht-header-back{display:flex;align-items:center;flex:0 0 auto;}
 .ht-search-wrap{position:relative;display:flex;align-items:center;}
 .ht-search-icon{position:absolute;left:.9rem;color:#94a3b8;font-size:.88rem;pointer-events:none;}
 .ht-search-input{padding:.55rem 2.4rem .55rem 2.25rem;border:1.5px solid #e2e8f0;border-radius:10px;background:#fff;font-size:.87rem;color:#0f172a;font-family:inherit;width:280px;transition:all .2s ease;outline:none;}
@@ -249,11 +329,17 @@
 .ht-search-clear{position:absolute;right:.6rem;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:.9rem;padding:0;display:none;transition:color .15s;}
 .ht-search-clear:hover{color:#475569;}
 .ht-search-clear.visible{display:block;}
-.ht-btn-back{display:inline-flex;align-items:center;background:#0f172a;color:#fff;border:none;border-radius:10px;padding:.55rem 1.1rem;font-size:.87rem;font-weight:600;font-family:inherit;text-decoration:none;white-space:nowrap;transition:all .2s cubic-bezier(.16,1,.3,1);box-shadow:0 2px 8px rgba(15,23,42,.2);}
-.ht-btn-back:hover{background:#1e293b;color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,23,42,.25);}
+.ht-btn-back{display:inline-flex;align-items:center;background:linear-gradient(135deg,#0066ff 0%,#0052cc 100%);color:#fff;border:1px solid #0066ff;border-radius:10px;padding:.55rem 1.1rem;font-size:.87rem;font-weight:600;font-family:inherit;text-decoration:none;white-space:nowrap;transition:all .2s cubic-bezier(.16,1,.3,1);box-shadow:0 2px 8px rgba(0,82,204,.24);}
+.ht-btn-back:hover,.ht-btn-back:focus-visible{background:linear-gradient(135deg,#0052cc 0%,#0047b3 100%);border-color:#0047b3;color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,82,204,.3);}
 .ht-stats-strip{display:flex;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;}
 .ht-stat-card{flex:1;min-width:180px;background:#fff;border:1px solid #e9eef5;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:.85rem;box-shadow:0 1px 4px rgba(15,23,42,.04);transition:all .2s ease;}
 .ht-stat-card:hover{border-color:#c7d7f7;box-shadow:0 4px 12px rgba(15,23,42,.07);transform:translateY(-1px);}
+.ht-stat-card--filter{font:inherit;text-align:left;cursor:pointer;width:auto;}
+.ht-stat-card--filter:hover,.ht-stat-card--filter:focus-visible{border-color:#0066ff;box-shadow:0 0 0 3px rgba(0,102,255,.12),0 4px 12px rgba(15,23,42,.07);outline:none;}
+.ht-period-notice{margin:-.45rem 0 1.1rem;color:#475569;font-size:.84rem;}
+.ht-period-notice a{margin-left:.5rem;color:#0066ff;font-weight:700;text-decoration:none;}
+.ht-period-notice a:hover{text-decoration:underline;}
+.ht-filter-modal{border:0;border-radius:16px;box-shadow:0 18px 50px rgba(15,23,42,.2);}
 .ht-stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
 .ht-stat-blue{background:#eff6ff;color:#2563eb;}.ht-stat-green{background:#f0fdf4;color:#16a34a;}.ht-stat-amber{background:#fffbeb;color:#d97706;}
 .ht-stat-value{font-size:1.05rem;font-weight:800;color:#0f172a;letter-spacing:-.02em;line-height:1.2;}
@@ -278,11 +364,14 @@
 .ht-receipt-pill{display:inline-flex;align-items:center;gap:.3rem;background:#f0fdf4;border:1px solid #86efac;color:#15803d;border-radius:7px;padding:.22rem .55rem;font-size:.78rem;font-weight:700;letter-spacing:.02em;font-family:'ui-monospace',monospace;white-space:nowrap;cursor:pointer;user-select:none;transition:all .2s cubic-bezier(.16,1,.3,1);}
 .ht-receipt-pill:hover{background:#dcfce7;border-color:#4ade80;transform:translateY(-1px);box-shadow:0 3px 10px rgba(22,163,74,.18);}
 .ht-receipt-pill.copied{background:#dcfce7;border-color:#22c55e;color:#166534;}
+.ht-receipt-actions{display:inline-flex;align-items:center;gap:.35rem;}
+.ht-btn-edit-receipt{width:28px;height:28px;border-radius:7px;color:#0066ff;border-color:#93c5fd;font-size:.75rem;}
+.ht-btn-edit-receipt:hover,.ht-btn-edit-receipt:focus-visible{background:#0066ff;border-color:#0066ff;color:#fff;box-shadow:0 4px 12px rgba(0,102,255,.25);}
 .ht-receipt-num{font-size:.78rem;}.ht-copy-ico{font-size:.68rem;opacity:.55;}
 .ht-driver-name{font-size:.9rem;font-weight:700;color:#0f172a;letter-spacing:-.01em;line-height:1.3;white-space:nowrap;}
 .ht-pills-row{display:flex;align-items:center;flex-wrap:wrap;gap:.25rem;margin-top:.25rem;}
 .ht-plate-pill{display:inline-flex;align-items:center;gap:.25rem;background:#ffffff !important;color:#0f172a !important;border:1.5px solid #cbd5e1 !important;border-radius:6px;padding:.15rem .45rem;font-size:.72rem;font-weight:700;letter-spacing:.04em;font-family:'ui-monospace',monospace;white-space:nowrap;box-shadow:0 1px 2px rgba(15,23,42,.05);transition:all .2s ease;}
-.ht-plate-pill i{color:#2563eb !important;}
+.ht-plate-pill i, .ht-plate-pill .tricycle-icon{color:#2563eb !important;}
 .ht-plate-pill:hover{background:#f1f5f9 !important;border-color:#94a3b8 !important;}
 .ht-dl-pill{display:inline-flex;align-items:center;gap:.25rem;background:#f8fafc;color:#0f172a;border:1.5px solid #cbd5e1;border-radius:6px;padding:.15rem .45rem;font-size:.72rem;font-weight:600;letter-spacing:.02em;white-space:nowrap;}
 .ht-dl-pill i{color:#64748b;}
@@ -297,8 +386,9 @@
 .ht-action-group{display:flex;gap:.4rem;justify-content:flex-end;align-items:center;}
 .ht-action-btn{width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;font-size:.88rem;border:1.5px solid;cursor:pointer;background:#fff;transition:all .2s cubic-bezier(.16,1,.3,1);text-decoration:none;}
 .ht-action-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(15,23,42,.12);}
-.ht-btn-view{color:#0369a1;border-color:#bae6fd;}.ht-btn-view:hover{background:#f0f9ff;border-color:#38bdf8;color:#0284c7;}
+.ht-btn-view{color:#475569;border-color:#cbd5e1;}.ht-btn-view:hover,.ht-btn-view:focus-visible{background:#2563eb;border-color:#2563eb;color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.28);}
 .ht-btn-reverse{color:#dc2626;border-color:#fca5a5;}.ht-btn-reverse:hover{background:#fef2f2;border-color:#f87171;color:#b91c1c;}
+.ht-btn-delete{color:#dc2626;border-color:#fca5a5;}.ht-btn-delete:hover,.ht-btn-delete:focus-visible{background:#dc2626;border-color:#dc2626;color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.28);}
 .ht-empty-state{text-align:center;padding:4rem 1rem;}
 .ht-empty-icon{font-size:2.5rem;color:#cbd5e1;margin-bottom:.75rem;}
 .ht-empty-text{font-size:1rem;font-weight:700;color:#475569;}
@@ -326,9 +416,10 @@
 @media(max-width:767px){
 .ht-page{padding:1rem;}
 .ht-header{flex-direction:column;align-items:flex-start;}
-.ht-header-right{width:100%;}
+.ht-header-actions{width:100%;max-width:none;flex:1 1 auto;margin-left:0;}
 .ht-search-input{width:100%;}
 .ht-search-wrap{width:100%;}
+.ht-header-back{width:100%;}
 .ht-btn-back{width:100%;justify-content:center;}
 .ht-stats-strip{flex-direction:column;}
 .ht-stat-card{min-width:unset;}
@@ -336,10 +427,15 @@
 .ht-table tbody tr{display:block !important;margin-bottom:1rem !important;border:1px solid #e2e8f0 !important;border-radius:14px !important;overflow:hidden !important;box-shadow:0 2px 8px rgba(15,23,42,.05) !important;background:#fff !important;transform:none !important;}
 .ht-table tbody td{display:flex !important;justify-content:space-between !important;align-items:center !important;padding:.65rem 1rem !important;border-bottom:1px solid #f1f5f9 !important;font-size:.85rem !important;}
 .ht-table tbody td:last-child{border-bottom:none !important;}
-.ht-td-index{display:none !important;}
+.ht-table tbody td.ht-td-index{display:none !important;}
 .ht-table tbody td::before{content:attr(data-label);font-weight:700;font-size:.71rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b;flex-shrink:0;margin-right:.75rem;}
 .ht-td-actions{justify-content:flex-end !important;}
 .ht-td-actions::before{display:none !important;}
+.ht-table,.ht-table tbody{display:block !important;width:100% !important;min-width:0 !important;}
+.ht-table tbody tr,.ht-table tbody td{width:100% !important;box-sizing:border-box !important;}
+.ht-table tbody td{gap:.5rem 0;flex-wrap:wrap !important;justify-content:flex-end !important;text-align:right;}
+.ht-table tbody td::before{max-width:45%;text-align:left;margin-right:auto !important;}
+.ht-table tbody td > *{min-width:0;max-width:100%;}
 }
 </style>
 
@@ -347,6 +443,23 @@
 
 <?= $this->section('scripts') ?>
 <script>
+const historyPeriodSelect = document.getElementById('historyPeriod');
+const historyWeekField = document.querySelector('.history-week-field');
+const historyMonthField = document.querySelector('.history-month-field');
+const historyWeekDate = document.getElementById('historyWeekDate');
+const historyMonthDate = document.getElementById('historyMonthDate');
+function updateHistoryPeriodFields() {
+    const period = historyPeriodSelect.value;
+    const showWeek = period === 'week';
+    const showMonth = period === 'month';
+    historyWeekField.hidden = !showWeek;
+    historyMonthField.hidden = !showMonth;
+    historyWeekDate.disabled = !showWeek;
+    historyMonthDate.disabled = !showMonth;
+}
+historyPeriodSelect.addEventListener('change', updateHistoryPeriodFields);
+updateHistoryPeriodFields();
+
 window.copyReceipt = function(receiptNum, el) {
     if (!receiptNum || receiptNum === 'N/A') return;
     navigator.clipboard.writeText(receiptNum).then(() => {
@@ -386,8 +499,79 @@ const confirmReverseBtn = document.getElementById('confirmReverseBtn');
 document.querySelectorAll('.btn-reverse').forEach(btn => {
     btn.addEventListener('click', function() {
         receiptIdSpan.textContent = this.dataset.receipt;
-        confirmReverseBtn.href = `<?= base_url('penalties/reverse') ?>/${this.dataset.id}`;
+        confirmReverseBtn.dataset.action = `<?= base_url('penalties/reverse') ?>/${this.dataset.id}`;
         reverseModal.show();
+    });
+});
+if (confirmReverseBtn) {
+    confirmReverseBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (!this.dataset.action) return;
+
+        // POST (with CSRF token) instead of the old GET link.
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = this.dataset.action;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '<?= csrf_token() ?>';
+        csrf.value = '<?= csrf_hash() ?>';
+
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+    });
+}
+const editReceiptModal = new bootstrap.Modal(document.getElementById('editReceiptModal'));
+const editReceiptForm = document.getElementById('editReceiptForm');
+const editReceiptTicket = document.getElementById('editReceiptTicket');
+const editReceiptNumber = document.getElementById('editReceiptNumber');
+document.querySelectorAll('.btn-edit-receipt').forEach(btn => {
+    btn.addEventListener('click', function() {
+        editReceiptForm.action = `<?= base_url('penalties/receipt/update') ?>/${encodeURIComponent(this.dataset.id)}`;
+        editReceiptTicket.value = this.dataset.ticket || '';
+        editReceiptNumber.value = this.dataset.receipt || '';
+        editReceiptModal.show();
+    });
+});
+document.querySelectorAll('.btn-history-delete').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        const receipt = this.dataset.receipt || 'N/A';
+
+        Swal.fire({
+            title: 'Delete paid ticket?',
+            text: `Receipt ${receipt} and all violations on this ticket will be permanently deleted.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Delete Ticket',
+            cancelButtonText: 'Keep Ticket',
+            customClass: { popup: 'swal-danger' },
+            reverseButtons: true
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= base_url('penalties/delete') ?>/${encodeURIComponent(id)}`;
+
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '<?= csrf_token() ?>';
+            csrfInput.value = '<?= csrf_hash() ?>';
+
+            const historyInput = document.createElement('input');
+            historyInput.type = 'hidden';
+            historyInput.name = 'return_to_history';
+            historyInput.value = '1';
+
+            form.append(csrfInput, historyInput);
+            document.body.appendChild(form);
+            form.submit();
+        });
     });
 });
 </script>

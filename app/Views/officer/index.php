@@ -31,6 +31,33 @@
     <?php endif; ?>
 
     <!-- Record Violation Modal -->
+    <!-- Suggestions for the vehicle field. A tricycle is the common case here, but
+         the officer can type any make or model, so a specific unit is recorded. -->
+    <datalist id="vehicleTypeOptions">
+        <!-- ── Commonly Used Tricycles (Kabankalan City / Philippines) ── -->
+        <option value="Tricycle - Honda TMX 155"></option>
+        <option value="Tricycle - Kawasaki Barako 175"></option>
+        <option value="Tricycle - Bajaj 125"></option>
+        <option value="Tricycle - Honda TMX 125 Alpha"></option>
+        <option value="Tricycle - Honda XRM 125"></option>
+        <option value="Tricycle - Yamaha YTX 125"></option>
+        <option value="Tricycle - Kawasaki CT100B"></option>
+        <option value="Tricycle - Suzuki Smash 115"></option>
+        <option value="Tricycle - Suzuki GD110"></option>
+        <option value="Tricycle - TVS Max / Apache"></option>
+        <option value="Tricycle - Bajaj RE"></option>
+        <option value="Tricycle"></option>
+        <!-- ── Other Vehicle Types ── -->
+        <option value="Motorcycle"></option>
+        <option value="Car"></option>
+        <option value="Van"></option>
+        <option value="SUV"></option>
+        <option value="Jeepney"></option>
+        <option value="Bus"></option>
+        <option value="Truck"></option>
+        <option value="Mitsubishi L300"></option>
+    </datalist>
+
     <div class="modal fade" id="recordViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="recordViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow">
@@ -139,6 +166,14 @@
 
                                 <div class="tct-row align-items-end">
                                     <div class="d-flex flex-1 align-items-end me-3">
+                                        <span class="tct-bold-label me-1">Vehicle</span>
+                                        <input type="text" name="vehicle_type" id="vehicle_type" 
+                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
+                                               list="vehicleTypeOptions"
+                                               placeholder="e.g. Tricycle - Honda TMX 155" 
+                                               value="<?= esc(old('vehicle_type', $prefill['vehicle_type'] ?? '')) ?>">
+                                    </div>
+                                    <div class="d-flex flex-1 align-items-end me-3">
                                         <span class="tct-bold-label me-1">Owner:</span>
                                         <input type="text" name="owner_name" id="owner_name" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
@@ -159,8 +194,8 @@
                                     <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="badge bg-light text-dark border fw-bold" id="fineBadge" style="font-size: 0.82rem;">Fine: ₱<span id="penalty_amount_display">0.00</span></span>
-                                        <button type="button" class="btn btn-xs btn-outline-primary" id="addNewInfractionBtn" title="Add infraction">
-                                            <i class="bi bi-plus-lg me-1"></i> Add Infraction
+                                        <button type="button" class="btn btn-xs btn-outline-primary" id="addNewInfractionBtn" title="Add violation">
+                                            <i class="bi bi-plus-lg me-1"></i> Add Violation
                                         </button>
                                     </div>
                                 </div>
@@ -185,7 +220,7 @@
                                     <?php endforeach; ?>
                                 </div>
 
-                                <!-- Additional infraction entries added with the + Add Infraction button -->
+                                <!-- Additional violation entries added with the + Add Violation button -->
                                 <div id="newInfractionRows" class="d-flex flex-column gap-2 mt-2"></div>
                                 <template id="newInfractionRowTemplate">
                                     <div class="infraction-entry d-flex align-items-center gap-2">
@@ -227,7 +262,7 @@
                                         <span class="tct-bold-label me-1">Date &amp; Time</span>
                                         <input type="datetime-local" name="violation_datetime" id="violation_datetime"
                                                class="form-control form-control-sm tct-input flex-1 fw-bold"
-                                               value="<?= old('violation_datetime') ?: date('Y-m-d\TH:i') ?>">
+                                               value="<?= esc(old('violation_datetime') ?: date('Y-m-d\TH:i')) ?>">
                                     </div>
                                 </div>
 
@@ -298,7 +333,7 @@
 
                                 <div class="mt-2 mb-2">
                                     <label for="notes" class="tct-sub-label mb-1">Notes / Remarks (Optional):</label>
-                                    <input type="text" name="notes" id="notes" class="form-control form-control-sm tct-input" placeholder="Optional remarks" value="<?= old('notes') ?>">
+                                    <input type="text" name="notes" id="notes" class="form-control form-control-sm tct-input" placeholder="Optional remarks" value="<?= esc(old('notes')) ?>">
                                 </div>
                             </div>
 
@@ -361,17 +396,22 @@
                 <div class="card-header py-3 px-4 main-table-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
                     
                     <!-- Left: Title & Filter Chips -->
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <span class="fw-bold text-dark me-2" style="font-size: 0.95rem;">
+                    <div class="d-flex align-items-center gap-2 flex-wrap ledger-filter">
+                        <span class="fw-bold text-dark me-2 ledger-filter-title" style="font-size: 0.95rem;">
                             <i class="bi bi-list-check me-1 text-primary"></i>My Recorded Violations
                         </span>
-                        <div class="vr mx-1 d-none d-md-block" style="height: 20px;"></div>
-                        <button type="button" class="btn btn-sm btn-filter-chip btn-filter-all active" data-status="">
-                            All <span class="badge ms-1 rounded-pill"><?= $totalViolators ?? 0 ?></span>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-filter-chip btn-filter-pending" data-status="pending">
-                            Pending <span class="badge filter-badge-pending ms-1 rounded-pill"><?= $pendingViolators ?? 0 ?></span>
-                        </button>
+                        <div class="ledger-filter-chips d-flex align-items-center gap-2">
+                            <div class="vr mx-1 d-none d-md-block" style="height: 20px;"></div>
+                            <button type="button" class="btn btn-sm btn-filter-chip btn-filter-all <?= empty($statusFilter) ? 'active' : '' ?>" data-status="" aria-pressed="<?= empty($statusFilter) ? 'true' : 'false' ?>">
+                                All <span class="badge ms-1 rounded-pill"><?= $totalViolators ?? 0 ?></span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-filter-chip btn-filter-pending <?= ($statusFilter ?? '') === 'pending' ? 'active' : '' ?>" data-status="pending" aria-pressed="<?= ($statusFilter ?? '') === 'pending' ? 'true' : 'false' ?>">
+                                Pending <span class="badge filter-badge-pending ms-1 rounded-pill"><?= $pendingViolators ?? 0 ?></span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-filter-chip btn-filter-paid <?= ($statusFilter ?? '') === 'paid' ? 'active' : '' ?>" data-status="paid" aria-pressed="<?= ($statusFilter ?? '') === 'paid' ? 'true' : 'false' ?>">
+                                Paid <span class="badge filter-badge-paid ms-1 rounded-pill"><?= $paidViolators ?? 0 ?></span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Right: Search & Record Violation Button -->
@@ -392,34 +432,34 @@
                     </div>
                 </div>
 
-                <div class="px-4 py-2 border-top d-flex align-items-start gap-2" style="background:#f8fafc; font-size:.78rem;">
-                    <i class="bi bi-info-circle text-primary mt-1"></i>
-                    <span class="text-muted">
-                        One row per violator. A repeat apprehension is added to that person's history instead of
-                        creating a duplicate row. Settled tickets are kept in the administrator's <strong>Payment History</strong>.
-                    </span>
-                </div>
-
                 <!-- Table Content -->
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0 officer-violations-table" id="officerViolationTable">
+                            <colgroup>
+                                <col class="col-violator">
+                                <col class="col-vehicle">
+                                <col class="col-status">
+                                <col class="col-actions">
+                            </colgroup>
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-4" style="min-width: 300px;">Violator</th>
-                                    <th class="text-end pe-4 col-actions" style="width: 210px; min-width: 200px;">Actions</th>
+                                    <th class="ps-4">Violator</th>
+                                    <th>Plate &amp; Vehicle</th>
+                                    <th>Status &amp; Offense</th>
+                                    <th class="text-end pe-4 col-actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($violations)): ?>
                                     <tr id="noTableDataRow">
-                                        <td colspan="2">
+                                        <td colspan="4">
                                             <div class="empty-state py-5 text-center">
                                                 <div class="empty-state-icon-wrap mb-3 mx-auto">
                                                     <i class="bi bi-people fs-1 text-primary"></i>
                                                 </div>
                                                 <h6 class="fw-bold text-dark">No Recorded Violators</h6>
-                                                <p class="text-muted small mb-3">You have no violator with an outstanding citation. Settled tickets are kept in the administrator's Payment History.</p>
+                                                <p class="text-muted small mb-3">You have not recorded a violator yet. Every citation you issue stays on this ledger, including the ones already paid.</p>
                                                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#recordViolationModal">
                                                     <i class="bi bi-plus-circle me-1"></i> Record First Violation
                                                 </button>
@@ -429,8 +469,8 @@
                                 <?php else: ?>
                                     <?php foreach ($violations as $v): ?>
                                     <?php
-                                        // Ledger names stay compact: the middle name is
-                                        // shown as an initial here and in full on the record.
+                                        // Ledger names show the middle name as one
+                                        // initial; the full name stays on the record.
                                         $vName = \App\Libraries\ViolatorIdentity::shortName(
                                             $v['first_name'] ?? '',
                                             $v['middle_name'] ?? '',
@@ -444,12 +484,87 @@
                                         // "+" records another citation for this same person: the TCT
                                         // record form opens already filled with their details.
                                         $vAddUrl     = base_url('officer/violations?violator_id=' . (int) ($v['violator_id'] ?? 0));
+
+                                        // A row can carry both: an older ticket that was paid and
+                                        // a fresh one still unpaid. The badges state exactly that
+                                        // instead of hiding the settled part of the record.
+                                        $vPendingAmount = (float) ($v['pending_amount'] ?? 0);
+                                        $vPaidAmount    = (float) ($v['paid_amount'] ?? 0);
+                                        $vHasPending    = (int) ($v['pending_citation_count'] ?? 0) > 0 || $vPendingAmount > 0;
+                                        $vHasPaid       = (int) ($v['paid_citation_count'] ?? 0) > 0 || $vPaidAmount > 0;
+                                        $vStatuses      = trim(($vHasPending ? 'pending ' : '') . ($vHasPaid ? 'paid' : ''));
+                                        $vRowClass      = $vHasPending ? 'row-pending' : 'row-paid';
+
+                                        $vLicense    = trim((string) ($v['license_number'] ?? ''));
+                                        $vPlateNo    = trim((string) ($v['license_plate'] ?? ''));
+                                        $vVehicle    = trim((string) ($v['vehicle_type'] ?? ''));
+                                        $vMtop       = trim((string) ($v['mtop_number'] ?? ''));
+                                        $vBlankValue = static fn (string $value): bool => in_array(strtolower($value), ['', '-', 'n/a', 'none', 'no'], true);
+                                        $vHasLicense = ! $vBlankValue($vLicense);
+                                        $vHasPlate   = ! $vBlankValue($vPlateNo);
+                                        $vHasVehicle = ! $vBlankValue($vVehicle);
+                                        $vHasMtop    = ! $vBlankValue($vMtop);
+
+                                        // Newest offense first, then a count of the others on
+                                        // the record, so the row reads "Overloading +2 more".
+                                        $vTypeList = array_values(array_unique(array_filter(array_map(
+                                            'trim',
+                                            explode('||', (string) ($v['violation_type_list'] ?? ''))
+                                        ), static fn ($type) => $type !== '')));
+                                        $vTopOffense   = $vTypeList[0] ?? '';
+                                        $vMoreOffenses = max(0, count($vTypeList) - 1);
                                     ?>
-                                    <tr class="officer-violation-row row-pending" data-status="pending">
-                                        <!-- One row per violator: the name is the whole record on this ledger -->
+                                    <tr class="officer-violation-row <?= esc($vRowClass) ?>" data-status="<?= esc($vStatuses !== '' ? $vStatuses : 'pending') ?>">
                                         <td class="ps-4" data-label="Violator">
-                                            <div class="driver-name-text fw-semibold lh-sm">
-                                                <?= esc($vName) ?>
+                                            <div class="ledger-identity-text">
+                                                <div class="driver-name-text"><?= esc($vName) ?></div>
+                                                <?php if ($vHasLicense): ?>
+                                                    <div class="ledger-license">License <?= esc($vLicense) ?></div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+
+                                        <td data-label="Plate &amp; Vehicle">
+                                            <div class="ledger-vehicle">
+                                                <span class="ledger-plate<?= $vHasPlate ? '' : ' ledger-plate--none' ?>">
+                                                    <?= tricycle_icon() ?><?= esc($vHasPlate ? strtoupper($vPlateNo) : 'No plate') ?>
+                                                </span>
+                                                <?php if ($vHasVehicle || $vHasMtop): ?>
+                                                    <div class="ledger-vehicle-meta">
+                                                        <?php if ($vHasVehicle): ?>
+                                                            <span class="ledger-vehicle-name"><?= esc($vVehicle) ?></span>
+                                                        <?php endif; ?>
+                                                        <?php if ($vHasMtop): ?>
+                                                            <span class="ledger-mtop">MTOP <?= esc($vMtop) ?></span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+
+                                        <td data-label="Status &amp; Offense">
+                                            <div class="ledger-state">
+                                                <div class="ledger-state-chips">
+                                                    <?php if ($vHasPending): ?>
+                                                        <span class="ledger-status-chip ledger-status-chip--pending" title="Still owed on this violator's citations">
+                                                            <i class="bi bi-hourglass-split"></i>Pending &#8369;<?= number_format($vPendingAmount, 2) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    <?php if ($vHasPaid): ?>
+                                                        <span class="ledger-status-chip ledger-status-chip--paid" title="Already settled at the cashier">
+                                                            <i class="bi bi-check-circle-fill"></i>Paid &#8369;<?= number_format($vPaidAmount, 2) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if ($vTopOffense !== ''): ?>
+                                                    <div class="ledger-offense">
+                                                        <i class="bi bi-exclamation-diamond"></i>
+                                                        <span><?= esc($vTopOffense) ?></span>
+                                                        <?php if ($vMoreOffenses > 0): ?>
+                                                            <span class="ledger-more">+<?= $vMoreOffenses ?> more</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
 
@@ -462,7 +577,7 @@
                                                     <i class="bi bi-eye text-primary me-1"></i> View
                                                 </a>
                                                 <a href="<?= esc($vAddUrl) ?>"
-                                                   class="btn btn-sm btn-primary rounded-circle shadow-sm"
+                                                   class="btn btn-sm btn-primary btn-ledger-add rounded-circle shadow-sm"
                                                    style="width: 32px; height: 32px;"
                                                    title="Record another violation for <?= esc($vName) ?>">
                                                     <i class="bi bi-plus-lg fw-bold"></i>
@@ -478,7 +593,10 @@
                 </div>
 
                 <?php if (isset($pager)): ?>
-                    <div class="card-footer bg-white border-top-0 py-3 d-flex justify-content-center">
+                    <!-- Same pager placement as the Violators directory: the page
+                         count sits at the left edge and the buttons at the right,
+                         instead of both huddling in the middle of the footer. -->
+                    <div class="ledger-pager">
                         <?= $pager->links('violations', 'bootstrap_pagination') ?>
                     </div>
                 <?php endif; ?>
@@ -515,182 +633,7 @@
     </div>
 </div>
 
-<!-- Edit Violation Modal (Formatted matching Physical TCT Citation Ticket) -->
-<div class="modal fade" id="editViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="editViolationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold" id="editViolationModalLabel">
-                    <i class="bi bi-pencil-square me-2"></i>Update Citation Ticket (TCT)
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-3 p-md-4" style="background-color: #f8f9fa;">
-                <form id="editViolationForm" method="POST">
-                    <?= csrf_field() ?>
-
-                    <!-- Physical Ticket Container -->
-                    <div class="tct-modal-card">
-
-                        <!-- Header -->
-                        <div class="tct-modal-header">
-                            <div class="tct-modal-seal">
-                                <img src="<?= base_url('img/pic-1.png') ?>" alt="Kabankalan Logo" class="tct-seal-img">
-                            </div>
-                            <div class="tct-header-text">
-                                <div class="tct-rep">Republic of the Philippines</div>
-                                <div class="tct-office">OFFICE OF THE CITY MAYOR</div>
-                                <div class="tct-city">Kabankalan City</div>
-                                <h4 class="tct-doc-title">TRAFFIC CITATION TICKET (TCT)</h4>
-                                <div class="tct-ord-no">C.O. # 2023-006</div>
-                            </div>
-                        </div>
-
-                        <!-- Section 1: Driver & Vehicle Details -->
-                        <div class="tct-doc-section">
-                            <div class="tct-row mb-2">
-                                <span class="tct-bold-label">TO:</span>
-                            </div>
-
-                            <div class="tct-row mb-2" style="display: flex; align-items: flex-start;">
-                                <span class="tct-bold-label me-2" style="white-space: nowrap; padding-top: 3px;">Driver's Name:</span>
-                                <div class="d-flex flex-1 gap-2" style="min-width: 0;">
-                                    <div class="flex-1 d-flex flex-column text-center">
-                                        <input type="text" name="first_name" id="edit_first_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="First" required>
-                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(First)</span>
-                                    </div>
-                                    <div class="flex-1 d-flex flex-column text-center">
-                                        <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Middle">
-                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
-                                    </div>
-                                    <div class="flex-1 d-flex flex-column text-center">
-                                        <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Last" required>
-                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="tct-row mb-2 align-items-end">
-                                <span class="tct-bold-label me-2">Address:</span>
-                                <input type="text" name="address" id="edit_address" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="Driver address" required>
-                                <input type="hidden" name="age" id="edit_age" value="25">
-                            </div>
-
-                            <div class="tct-row mb-2 align-items-end">
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">DL/Permit No.</span>
-                                    <input type="text" name="license_number" id="edit_license_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
-                                </div>
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">Plate#</span>
-                                    <input type="text" name="license_plate" id="edit_license_plate" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="890" required>
-                                </div>
-                                <div class="d-flex flex-1 align-items-end">
-                                    <span class="tct-bold-label me-1">MTOP#</span>
-                                    <input type="text" name="mtop_number" id="edit_mtop_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="m789">
-                                </div>
-                            </div>
-
-                            <div class="tct-row align-items-end">
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">Owner:</span>
-                                    <input type="text" name="owner_name" id="edit_owner_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
-                                </div>
-                                <div class="d-flex flex-1 align-items-end">
-                                    <span class="tct-bold-label me-1">Address</span>
-                                    <input type="text" name="owner_address" id="edit_owner_address" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="bocana ilog">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Section 2: Violations Checklist (same format as the record form) -->
-                        <div class="tct-doc-section">
-                            <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
-                                <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span class="badge bg-light text-dark border fw-bold" style="font-size: 0.82rem;">Fine: ₱<span id="edit_penalty_amount_display">0.00</span></span>
-                                </div>
-                            </div>
-                            <div class="tct-sec-notice text-center mb-3">
-                                You are hereby charged/cited for comitting the violations marked "x" hereunder:
-                            </div>
-
-                            <div class="tct-checklist-container" id="editViolationChecklist">
-                                <?php foreach ($violationTypes as $type): ?>
-                                    <label class="tct-check-label">
-                                        <input type="checkbox" name="violation_type_id[]" class="edit-violation-check d-none"
-                                               value="<?= $type['id'] ?>"
-                                               data-amount="<?= $type['fine_amount'] ?>"
-                                               data-name="<?= esc($type['violation_name'], 'attr') ?>">
-                                        <div class="tct-box"><span class="tct-box-x"></span></div>
-                                        <span class="tct-item-text"><?= esc($type['violation_name']) ?></span>
-                                    </label>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <input type="hidden" id="edit_penalty_amount" value="0.00">
-                        </div>
-
-                        <!-- Section 3: Place & Legal Notice -->
-                        <div class="tct-doc-section">
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-12">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-2">Place <span class="text-danger">*</span>:</span>
-                                        <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input flex-1"
-                                               required list="locationOptions" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="tct-legal-text">
-                                You are likewise directed to pay before the Office of the City Treasurer of Kabankalan City within three (3) days from the date of this citation and to secure clearance from the CTRAMO for disposition, Failure on your part to comply will constrain the Office to file the appropriate criminal action against you with the proper court.
-                            </div>
-                        </div>
-
-                        <!-- Section 4: Acknowledgment & Notes -->
-                        <div class="tct-doc-section border-bottom-0 pb-0">
-                            <div class="tct-ack-heading mb-2">I HEREBY ACKNOWLEDGE RECEIPT OF THIS TCT.</div>
-                            <div class="d-flex gap-5 mb-4">
-                                <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
-                                    <input type="radio" name="acknowledgment" id="edit_ackAdmitted" value="Admitted" class="d-none">
-                                    <div class="tct-box me-2 tct-ack-box" id="edit_ackAdmittedBox">
-                                        <span class="tct-box-x"></span>
-                                    </div>
-                                    <span class="fw-bold">Admitted</span>
-                                </label>
-                                <label class="d-flex align-items-center cursor-pointer tct-ack-toggle">
-                                    <input type="radio" name="acknowledgment" id="edit_ackProtest" value="Under Protest" class="d-none">
-                                    <div class="tct-box me-2 tct-ack-box" id="edit_ackProtestBox">
-                                        <span class="tct-box-x"></span>
-                                    </div>
-                                    <span class="fw-bold">Under Protest</span>
-                                </label>
-                            </div>
-
-                            <div class="mt-3 mb-2">
-                                <label for="edit_notes" class="tct-bold-label mb-1">Notes / Remarks:</label>
-                                <textarea name="notes" id="edit_notes" class="form-control form-control-sm" rows="2" placeholder="Optional remarks"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                            <span class="tct-driver-copy-tag text-muted">Driver's Copy &bull; Ticket Amendment</span>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-primary btn-sm px-4">
-                                    <i class="bi bi-check-lg me-1"></i> Save Changes
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<?= $this->include('officer/partials/edit_ticket_modal') ?>
 
 <div class="modal fade" id="deleteViolationModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -833,8 +776,8 @@
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: #f59e0b;
-        box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+        background: #ca8a04;
+        box-shadow: 0 0 6px rgba(202, 138, 4, 0.8);
         animation: pulseAmber 2s infinite;
     }
     @keyframes pulseAmber {
@@ -868,22 +811,22 @@
         gap: 0.35rem;
     }
     .btn-filter-chip:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
-        color: #1e293b;
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #0052cc;
         transform: translateY(-1px);
     }
     .btn-filter-chip.active,
     .btn-filter-all.active {
-        background: #2563eb;
-        border-color: #2563eb;
+        background: #0066ff;
+        border-color: #0066ff;
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+        box-shadow: 0 2px 8px rgba(0, 102, 255, 0.32);
     }
     .btn-filter-chip.active:hover,
     .btn-filter-all.active:hover {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
+        background: #0052cc;
+        border-color: #0052cc;
         color: #ffffff;
     }
     .btn-filter-all .badge {
@@ -907,45 +850,269 @@
         border: none !important;
     }
     .filter-badge-pending {
+        background: #fef9c3;
+        color: #854d0e;
+        border: 1px solid #facc15;
+    }
+    .btn-filter-pending:hover {
+        border-color: #facc15;
+        color: #854d0e;
+        background: #fef08a;
+    }
+    .btn-filter-pending.active {
+        background: #fef9c3;
+        border-color: #facc15;
+        color: #854d0e;
+        box-shadow: 0 2px 8px rgba(202, 138, 4, 0.2);
+    }
+    .btn-filter-pending.active:hover {
+        background: #fef08a;
+        border-color: #eab308;
+        color: #854d0e;
+    }
+    .btn-filter-pending.active .badge {
+        background: #fff7b2 !important;
+        color: #854d0e !important;
+        border: 1px solid #facc15 !important;
+    }
+    .filter-badge-paid {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+    .btn-filter-paid:hover {
+        border-color: #a7f3d0;
+        color: #065f46;
+        background: #ecfdf5;
+    }
+    .btn-filter-paid.active {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    }
+    .btn-filter-paid.active:hover {
+        background: #d1fae5;
+        border-color: #6ee7b7;
+        color: #065f46;
+    }
+    .btn-filter-paid.active .badge {
+        background: #d1fae5 !important;
+        color: #065f46 !important;
+        border: 1px solid #a7f3d0 !important;
+    }
+
+    /* ── LEDGER STATUS CHIPS ──
+       One row can hold a settled ticket and a fresh one at the same time, so
+       the chips report both amounts instead of collapsing the record to one
+       state. */
+    .ledger-status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0.32rem 0.6rem;
+        border-radius: 999px;
+        white-space: nowrap;
+        border: 1px solid transparent;
+    }
+    .ledger-status-chip i {
+        font-size: 0.72rem;
+    }
+    .ledger-status-chip--pending {
+        background: #fef9c3;
+        color: #854d0e;
+        border-color: #eab308;
+    }
+    .ledger-status-chip--paid {
+        background: #ecfdf5;
+        color: #065f46;
+        border-color: #10b981;
+    }
+
+    /* ── VIOLATOR LEDGER DETAILS ── */
+    .ledger-identity-text { min-width: 0; }
+    .ledger-license {
+        font-size: 0.76rem;
+        color: #64748b;
+        margin-top: 2px;
+        word-break: break-word;
+    }
+    .ledger-plate {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
         background: #fef3c7;
         color: #92400e;
         border: 1px solid #fde68a;
+        border-radius: 8px;
+        padding: 0.24rem 0.6rem;
+        font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
     }
-    .btn-filter-pending:hover {
-        border-color: #fde68a;
-        color: #92400e;
-        background: #fffbeb;
+    .ledger-plate i, .ledger-plate .tricycle-icon { font-size: 0.72rem; }
+    .ledger-plate--none {
+        background: #f1f5f9;
+        color: #64748b;
+        border-color: #e2e8f0;
+        font-family: inherit;
+        letter-spacing: 0;
     }
-    .btn-filter-pending.active {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        color: #ffffff;
-        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.28);
+    .ledger-vehicle {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+        min-width: 0;
+    }
+    .ledger-vehicle-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.12rem;
+        font-size: 0.74rem;
+        line-height: 1.35;
+        min-width: 0;
+    }
+    .ledger-vehicle-name {
+        color: #334155;
+        font-weight: 600;
+        word-break: break-word;
+    }
+    .ledger-mtop {
+        color: #64748b;
+        font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        letter-spacing: 0.03em;
+    }
+    .ledger-state {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+        min-width: 0;
+    }
+    .ledger-state-chips {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .ledger-offense {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.78rem;
+        color: #475569;
+        min-width: 0;
+    }
+    .ledger-offense i { color: #ca8a04; font-size: 0.74rem; }
+    .ledger-more {
+        color: #64748b;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    [data-bs-theme="dark"] .ledger-license,
+    [data-bs-theme="dark"] .ledger-offense {
+        color: #94a3b8;
+    }
+    [data-bs-theme="dark"] .ledger-plate {
+        background: #422006;
+        color: #fcd34d;
+        border-color: #78350f;
+    }
+    [data-bs-theme="dark"] .ledger-plate--none {
+        background: #1e293b;
+        color: #94a3b8;
+        border-color: #334155;
+    }
+    [data-bs-theme="dark"] .ledger-vehicle-name {
+        color: #cbd5e1;
+    }
+    [data-bs-theme="dark"] .ledger-mtop {
+        color: #94a3b8;
     }
 
     /* ── NEW VIOLATION BUTTON ── */
     .btn-new-violation {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
         font-size: 0.85rem;
         padding: 0.45rem 1rem;
         border-radius: 999px;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 2px 10px rgba(0, 102, 255, 0.3);
         transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         text-decoration: none;
         white-space: nowrap;
     }
     .btn-new-violation:hover {
-        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        background: linear-gradient(135deg, #0052cc 0%, #003db3 100%);
         color: #ffffff;
         transform: translateY(-1px);
-        box-shadow: 0 5px 14px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 5px 16px rgba(0, 102, 255, 0.45);
     }
     .btn-new-violation:active {
         transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        box-shadow: 0 2px 6px rgba(0, 102, 255, 0.2);
+    }
+
+    #addNewInfractionBtn {
+        background: #0066ff;
+        border-color: #0066ff;
+        color: #ffffff;
+    }
+    #addNewInfractionBtn:hover,
+    #addNewInfractionBtn:focus-visible {
+        background: #0052cc;
+        border-color: #0052cc;
+        color: #ffffff;
+    }
+
+    #recordViolationModal #submitPrintBtn {
+        background: #0066ff;
+        border-color: #0066ff;
+        color: #ffffff;
+    }
+    #recordViolationModal #submitPrintBtn:hover,
+    #recordViolationModal #submitPrintBtn:focus-visible {
+        background: #0052cc;
+        border-color: #0052cc;
+        color: #ffffff;
+    }
+    #recordViolationModal [data-open-signature] {
+        color: #0066ff;
+        border-color: #0066ff;
+    }
+    #recordViolationModal [data-open-signature]:hover,
+    #recordViolationModal [data-open-signature]:focus-visible {
+        background: #eff6ff;
+        color: #0052cc;
+        border-color: #0052cc;
+    }
+
+    .officer-violations-table .btn-white {
+        color: #0052cc;
+        border-color: #bfdbfe;
+    }
+    .officer-violations-table .btn-white:hover {
+        background: #eff6ff;
+        color: #003db3;
+        border-color: #60a5fa;
+    }
+    .officer-violations-table .btn-ledger-add {
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+        border-color: #0066ff;
+        color: #ffffff;
+    }
+    .officer-violations-table .btn-ledger-add:hover {
+        background: linear-gradient(135deg, #0052cc 0%, #003db3 100%);
+        border-color: #0052cc;
+        color: #ffffff;
     }
 
     /* ── FLOATING QUICK-ADD BUTTON ── */
@@ -1009,7 +1176,7 @@
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         font-size: 0.85rem;
         pointer-events: none;
     }
@@ -1017,28 +1184,38 @@
         padding-left: 34px !important;
         padding-right: 30px !important;
         border-radius: 20px !important;
-        border: 1px solid #cbd5e1 !important;
+        border: 2px solid #0066ff !important;
         background: #fff !important;
         font-size: 0.85rem !important;
         height: 36px;
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modern-search-input:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+        border-color: #0066ff !important;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.16) !important;
     }
     .btn-clear-search {
         position: absolute;
         right: 8px;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         padding: 0;
         border: none;
         background: transparent;
         font-size: 0.85rem;
     }
     .btn-clear-search:hover { color: #334155; }
+
+    /* ── PAGER ──
+       Matches the Violators directory: a full-width strip under the last row,
+       so the page count lines up at the left edge and the buttons at the
+       right. The footer it used to sit in centred the whole strip. */
+    .ledger-pager {
+        padding: 12px 1.5rem;
+        border-top: 1px solid #eef2f7;
+        background: #ffffff;
+    }
 
     /* ── TABLE ROW & CELL BADGES (CLEAN, SMOOTH & RESPONSIVE) ── */
     .officer-violations-table {
@@ -1073,7 +1250,7 @@
         transition: all 0.15s ease;
     }
     .driver-name-link:hover .driver-name-text {
-        color: #2563eb !important;
+        color: #0066ff !important;
         text-decoration: underline;
     }
     .driver-link-icon {
@@ -1167,6 +1344,12 @@
             color: #1e293b;
         }
         .officer-violations-table tbody td:last-child { border-bottom: none; }
+        /* Keep the violator name and license together in the mobile card. */
+        .officer-violations-table tbody td[data-label="Violator"] {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.4rem;
+        }
         .officer-violations-table tbody td::before {
             content: attr(data-label);
             font-weight: 700;
@@ -1178,7 +1361,32 @@
             margin-right: 0.75rem;
             margin-top: 2px;
         }
+        /* The name and action buttons are self-explanatory on a card.
+           Repeating those two headers only makes each card taller. */
+        .officer-violations-table tbody td[data-label="Violator"]::before,
+        .officer-violations-table tbody td[data-label="Actions"]::before {
+            display: none;
+        }
+        .officer-violations-table tbody td {
+            padding: 0.45rem 0.9rem;
+        }
+        .officer-violations-table tbody tr {
+            margin-bottom: 0.6rem;
+        }
         .col-actions { justify-content: flex-end; }
+
+        /* The card layout was hard-coded white, so a dark screen showed a
+           white ledger on a navy page. */
+        [data-bs-theme="dark"] .officer-violations-table tbody tr,
+        [data-bs-theme="dark"] .officer-violations-table tbody td {
+            background: #111b2f !important;
+            border-color: #1e293b !important;
+            color: #e2e8f0;
+        }
+        [data-bs-theme="dark"] .officer-violations-table tbody td::before {
+            color: #94a3b8;
+        }
+
     }
 
     /* Ticket ID Glass Pill */
@@ -1232,7 +1440,7 @@
     }
     .plate-pill:hover {
         background: #f1f5f9 !important;
-        border-color: #94a3b8 !important;
+        border-color: var(--text-subtle, #5c6b80) !important;
         color: #000000 !important;
     }
     .dl-pill {
@@ -1287,9 +1495,9 @@
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .total-fine-pending {
-        color: #b45309;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
+        color: #854d0e;
+        background: #fef9c3;
+        border: 1px solid #facc15;
     }
     .total-fine-paid {
         color: #15803d;
@@ -1313,21 +1521,21 @@
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .status-pending {
-        background: #fffbeb;
-        color: #b45309;
-        border: 1px solid #fcd34d;
+        background: #fef9c3;
+        color: #854d0e;
+        border: 1px solid #eab308;
     }
     .status-pending .status-dot {
         width: 7px;
         height: 7px;
         border-radius: 50%;
-        background: #f59e0b;
+        background: #d97706;
         margin-right: 6px;
-        box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
-        animation: pulseAmber 2s infinite ease-in-out;
+        box-shadow: 0 0 6px rgba(217, 119, 6, 0.6);
+        animation: pulseMustard 2s infinite ease-in-out;
         flex-shrink: 0;
     }
-    @keyframes pulseAmber {
+    @keyframes pulseMustard {
         0%, 100% { opacity: 1; transform: scale(1); }
         50%       { opacity: 0.35; transform: scale(0.75); }
     }
@@ -1469,7 +1677,7 @@
         transition: background 0.2s ease;
     }
     .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: var(--text-subtle, #5c6b80);
     }
 
     /* ── DARK THEME ADAPTATIONS ────────────────────────────────── */
@@ -1479,6 +1687,10 @@
         border-color: #1e293b;
     }
     [data-bs-theme="dark"] .stat-counter-value { color: #f8fafc; }
+    /* Names and the ledger title were hard-coded near-black, which left them
+       invisible once the dark palette is active. */
+    [data-bs-theme="dark"] .driver-name-text { color: #f8fafc; }
+    [data-bs-theme="dark"] .main-table-header .text-dark { color: #e2e8f0 !important; }
     [data-bs-theme="dark"] .main-table-header { background: #0f172a; border-color: #1e293b; }
     [data-bs-theme="dark"] .officer-violations-table thead th { background: #0f172a; border-color: #1e293b; color: #94a3b8; }
     [data-bs-theme="dark"] .officer-violations-table tbody td { border-color: #1e293b; }
@@ -1489,6 +1701,9 @@
     [data-bs-theme="dark"] .violation-chip { background: #1e293b; border-color: #334155; color: #e2e8f0; }
     [data-bs-theme="dark"] .total-fine-pending { color: #f8fafc; background: #1e293b; border-color: #334155; }
     [data-bs-theme="dark"] .total-fine-paid { color: #34d399; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); }
+    [data-bs-theme="dark"] .ledger-status-chip--pending { background: rgba(202, 138, 4, 0.15); border-color: rgba(202, 138, 4, 0.35); color: #eab308; }
+    [data-bs-theme="dark"] .ledger-status-chip--paid { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34d399; }
+    [data-bs-theme="dark"] .filter-badge-paid { background: rgba(16, 185, 129, 0.18); border-color: rgba(16, 185, 129, 0.35); color: #34d399; }
     [data-bs-theme="dark"] .btn-action-icon { background: #1e293b; border-color: #334155; color: #94a3b8; }
     [data-bs-theme="dark"] .btn-action-more:hover { background: #334155; color: #f8fafc; }
     [data-bs-theme="dark"] .modern-search-input { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
@@ -1497,6 +1712,93 @@
     [data-bs-theme="dark"] .dropdown-item:hover { background: #1e293b !important; }
     [data-bs-theme="dark"] .table-responsive::-webkit-scrollbar-track { background: #0f172a; }
     [data-bs-theme="dark"] .table-responsive::-webkit-scrollbar-thumb { background: #334155; }
+    [data-bs-theme="dark"] .table-responsive { scrollbar-color: #334155 #0f172a; }
+
+    /* The ledger's rows, pager and neutral buttons were only darkened inside
+       the <=767px card layout, so at desktop width the dark theme painted a
+       white table under the near-white names it had already switched over.
+       Scoped to the table rather than the whole page so the modals keep their
+       light form styling. */
+    [data-bs-theme="dark"] .officer-violations-table tbody tr,
+    [data-bs-theme="dark"] .officer-violations-table tbody td {
+        background-color: #111b2f !important;
+        border-color: #1e293b !important;
+    }
+    [data-bs-theme="dark"] .officer-violations-table tbody tr:hover td {
+        background-color: #172554 !important;
+    }
+    /* Chips and amount badges repaint themselves white on row hover, which
+       undid their dark colours at the moment the row was highlighted. */
+    [data-bs-theme="dark"] .officer-violation-row:hover .violation-chip {
+        background: #1e3a8a;
+        border-color: #3b82f6;
+        color: #dbeafe;
+    }
+    [data-bs-theme="dark"] .ledger-pager {
+        background: #111b2f;
+        border-color: #1e293b;
+    }
+    [data-bs-theme="dark"] .officer-violations-table .btn-white {
+        background: #1e293b !important;
+        border-color: #334155 !important;
+        color: #cbd5e1 !important;
+    }
+    [data-bs-theme="dark"] .officer-violations-table .btn-white:hover {
+        background: #334155 !important;
+        color: #f8fafc !important;
+    }
+    /* The status chips keep their light pill styling, and the count badges
+       inside them are tinted rather than solid, so on a dark screen they sat
+       on white and washed out. */
+    [data-bs-theme="dark"] .btn-filter-chip:not(.active),
+    [data-bs-theme="dark"] .btn-filter-all:not(.active) {
+        background: #1e293b;
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+    [data-bs-theme="dark"] .btn-filter-chip:not(.active):hover,
+    [data-bs-theme="dark"] .btn-filter-all:not(.active):hover {
+        background: #334155;
+        border-color: #60a5fa;
+        color: #bfdbfe;
+    }
+    [data-bs-theme="dark"] .btn-filter-all .badge {
+        background: #334155;
+        color: #cbd5e1;
+    }
+    [data-bs-theme="dark"] .filter-badge-pending {
+        background: rgba(250, 204, 21, 0.18);
+        border-color: rgba(250, 204, 21, 0.4);
+        color: #fde047;
+    }
+    [data-bs-theme="dark"] .btn-filter-pending.active {
+        background: rgba(202, 138, 4, 0.2);
+        border-color: rgba(250, 204, 21, 0.5);
+        color: #fde047;
+    }
+    [data-bs-theme="dark"] .btn-filter-pending.active .badge {
+        background: rgba(250, 204, 21, 0.18) !important;
+        border-color: rgba(250, 204, 21, 0.4) !important;
+        color: #fde047 !important;
+    }
+    [data-bs-theme="dark"] .btn-filter-paid.active {
+        background: rgba(16, 185, 129, 0.18);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #6ee7b7;
+    }
+    [data-bs-theme="dark"] .btn-filter-paid.active .badge {
+        background: rgba(16, 185, 129, 0.2) !important;
+        border-color: rgba(16, 185, 129, 0.35) !important;
+        color: #6ee7b7 !important;
+    }
+    [data-bs-theme="dark"] .btn-filter-pending:not(.active):hover {
+        border-color: rgba(250, 204, 21, 0.5);
+        color: #fde047;
+    }
+    [data-bs-theme="dark"] .btn-filter-paid:not(.active):hover {
+        border-color: rgba(16, 185, 129, 0.5);
+        color: #6ee7b7;
+    }
 
     .no-caret::after {
         display: none !important;
@@ -1723,12 +2025,16 @@
         border-radius: 8px !important;
     }
     .officer-violations-table {
-        table-layout: auto;
+        table-layout: fixed;
     }
     @media (min-width: 768px) {
         .officer-violations-table {
             min-width: 1040px;
         }
+        .officer-violations-table .col-violator { width: 30%; }
+        .officer-violations-table .col-vehicle { width: 19%; }
+        .officer-violations-table .col-status { width: 35%; }
+        .officer-violations-table .col-actions { width: 16%; }
     }
     .officer-violations-table th,
     .officer-violations-table td {
@@ -1736,7 +2042,7 @@
     }
     @media (min-width: 768px) {
         .officer-violations-table .col-actions {
-            width: 135px;
+            width: 16%;
             white-space: nowrap;
         }
     }
@@ -1761,7 +2067,7 @@
         border-radius: 99px;
     }
     .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: var(--text-subtle, #5c6b80);
     }
     .enforcer-card .card-header h4,
     .enforcer-card .card-header h5 {
@@ -1798,8 +2104,16 @@
     #tableSearchInput {
         border-radius: 0 10px 10px 0;
     }
-    #tableSearchInput:focus {
-        box-shadow: none;
+    /* The ledger search wears electric blue in every state; the enforcer role
+       theme would otherwise tint its border and focus ring emerald. */
+    #tableSearchInput.modern-search-input {
+        border: 2px solid #0066ff !important;
+        outline: none !important;
+    }
+    #tableSearchInput.modern-search-input:focus,
+    #tableSearchInput.modern-search-input:focus-visible {
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.16) !important;
     }
     @media (max-width: 768px) {
         .tct-checklist {
@@ -1845,301 +2159,178 @@
         }
     }
 
-    /* TCT Modal Document Styling */
-    .tct-modal-card {
-        background: #fff;
-        border: 2px solid #000;
-        padding: 20px 24px;
-        font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
-        color: #000;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-    .tct-modal-header {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 18px;
-        min-height: 80px;
-    }
-    .tct-modal-seal {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 75px;
-        height: 75px;
-    }
-    .tct-seal-img {
-        width: 75px !important;
-        height: 75px !important;
-        max-width: 75px !important;
-        max-height: 75px !important;
-        object-fit: contain;
-        display: block;
-    }
-    .tct-header-text {
-        text-align: center;
-        line-height: 1.25;
-    }
-    .tct-rep {
-        font-size: 1rem;
-    }
-    .tct-office {
-        font-size: 1.15rem;
-        font-weight: bold;
-    }
-    .tct-city {
-        font-size: 1rem;
-    }
-    .tct-doc-title {
-        font-size: 1.35rem;
-        font-weight: 900;
-        margin-top: 8px;
-        margin-bottom: 2px;
-        letter-spacing: 0.02em;
-        font-family: Arial, sans-serif;
-    }
-    .tct-ord-no {
-        font-size: 1.05rem;
-        font-weight: bold;
-    }
-    .tct-doc-section {
-        border-bottom: 1.5px solid #000;
-        padding-bottom: 14px;
-        margin-bottom: 14px;
-    }
-    .tct-bold-label {
-        font-weight: bold;
-        font-size: 0.95rem;
-        white-space: nowrap;
-        font-family: Arial, sans-serif;
-    }
-    .tct-sub-label {
-        font-size: 0.82rem;
-        font-style: italic;
-        color: #333;
-    }
-    .tct-sec-heading {
-        font-size: 1.1rem;
-        font-weight: bold;
-        letter-spacing: 0.05em;
-        font-family: Arial, sans-serif;
-    }
-    .tct-sec-notice {
-        font-size: 0.88rem;
-        font-style: italic;
-    }
-    .tct-doc-section .btn-xs {
-        padding: 0.25rem 0.55rem;
-        font-size: 0.72rem;
-        font-weight: 600;
-        border-radius: 6px;
-        white-space: nowrap;
-    }
-    .infraction-entry {
-        padding: 0.35rem 0.45rem;
-        background: #f8fafc;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-    }
-    .infraction-entry .infraction-select {
-        border-radius: 6px;
-        background-color: #fff;
-        min-width: 0;
-    }
-    .infraction-entry .infraction-remove {
-        flex: 0 0 auto;
-        border-radius: 6px;
-        line-height: 1;
-    }
-    .infraction-entry .infraction-remove:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    @media (max-width: 575.98px) {
-        .infraction-entry {
-            align-items: stretch !important;
-        }
-        .infraction-entry .infraction-select {
-            font-size: 0.78rem;
-        }
-    }
-    .tct-legal-text {
-        font-size: 0.86rem;
-        font-style: italic;
-        text-align: justify;
-        line-height: 1.35;
-        border-top: 1px dashed #444;
-        padding-top: 8px;
-        margin-top: 8px;
-    }
-    .tct-ack-heading {
-        font-size: 0.92rem;
-        font-weight: bold;
-        font-family: Arial, sans-serif;
-    }
-    .tct-driver-copy-tag {
-        font-size: 0.82rem;
-        font-weight: bold;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-    .tct-row {
-        display: flex;
-        width: 100%;
-    }
-    .flex-1 {
-        flex: 1;
-    }
-    .tct-checklist-container {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 5px 12px;
-    }
-    .tct-check-label {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        margin-bottom: 2px;
-        user-select: none;
-    }
-    .tct-box {
-        width: 18px;
-        height: 18px;
-        border: 1.5px solid #000;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 0.85rem;
-        font-family: monospace;
-        line-height: 1;
-        margin-right: 10px;
-        flex-shrink: 0;
-        background: #fff;
-        color: #000;
-    }
-    .tct-box.is-checked {
-        background: #000;
-        color: #fff;
-    }
-    .tct-box-x {
-        display: inline-block;
-        line-height: 1;
-    }
-    .tct-item-text {
-        font-family: Arial, sans-serif;
-        font-size: 0.92rem;
-    }
-    .tct-sig-underline {
-        width: 260px;
-        border-bottom: 1.5px solid #000;
-        height: 35px;
-    }
-    .tct-officer-box {
-        border: 1.5px solid #000;
-        height: 60px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #fafafa;
-    }
-    .officer-printed-name {
-        font-weight: bold;
-        font-size: 1.05rem;
-        text-transform: uppercase;
-        font-family: Arial, sans-serif;
-        letter-spacing: 0.05em;
-    }
-    .tct-number-tag {
-        font-weight: bold;
-        font-size: 1.15rem;
-        font-family: Arial, sans-serif;
-    }
-    .tct-year-prefix {
-        font-weight: 700;
-        font-size: 1.05rem;
-        font-family: Arial, sans-serif;
-        color: #000;
-    }
-    .tct-red-no {
-        color: #dc3545;
-        font-family: 'Courier New', monospace;
-        font-size: 1.25rem;
-        font-weight: 900;
-        letter-spacing: 0.05em;
-    }
-    .tct-input {
-        border: none;
-        border-bottom: 1.5px solid #000;
-        border-radius: 0;
-        padding: 2px 6px;
-        background: transparent;
-        font-family: Arial, sans-serif;
-        font-weight: bold;
-        font-size: 0.95rem;
-    }
-    .tct-input::placeholder {
-        color: #94a3b8 !important;
-        font-weight: 400 !important;
-        font-style: italic !important;
-        opacity: 0.65 !important;
-    }
-    .tct-input:focus {
-        background: #f0f7ff;
-        border-bottom-color: #0d6efd;
-        box-shadow: none;
-    }
+<?= $this->include('officer/partials/tct_ticket_styles') ?>
 
-    /* ── MOBILE: stack TCT form rows so nothing runs off-screen ── */
-    @media (max-width: 767px) {
-        .tct-modal-card {
-            padding: 14px 12px;
-        }
-        .tct-row,
-        .tct-row > * {
-            flex-direction: column !important;
+    /* ── MOBILE: enforcer streamlining ───────────────────────────── */
+    @media (max-width: 767.98px) {
+        /* The header stops squeezing: the title and chips keep their own
+           lines while search and the record button share one full-width row
+           instead of dropping into an awkward half-width stack. */
+        .main-table-header {
+            padding: 0.7rem 0.9rem !important;
+            gap: 0.55rem !important;
             align-items: stretch !important;
-            gap: 0.35rem;
         }
-        .tct-row > *,
-        .tct-row > * > * {
-            flex: none !important;
-            width: 100% !important;
-            min-width: 0 !important;
-            margin-right: 0 !important;
+        .main-table-header > div { width: 100%; }
+        .main-table-header .modern-search-box {
+            min-width: 0;
+            flex: 1 1 0;
         }
-        .tct-modal-card .tct-sig-wrapper {
-            width: 100% !important;
-            max-width: 280px;
+        .main-table-header .modern-search-input { height: 40px; }
+        .main-table-header .btn-new-violation { flex: 0 0 auto; white-space: nowrap; }
+        .main-table-header .btn-filter-chip { flex: 0 0 auto; }
+
+        /* Thumbs, not mice: the row's actions reach a 44px target without
+           making the cards any taller than they already are. */
+        .officer-violations-table tbody td.col-actions .btn {
+            min-height: 44px;
+            min-width: 44px;
         }
-        .tct-driver-signature-area .d-flex {
-            flex-wrap: wrap;
+        .officer-violations-table tbody td.col-actions a.btn.rounded-circle {
+            width: 44px !important;
+            height: 44px !important;
         }
-        .tct-officer-signature-area > .d-flex {
+        .officer-violations-table tbody td {
+            padding-left: 0.9rem;
+            padding-right: 0.9rem;
+        }
+        /* Record / edit citation: the header and footer stay within reach
+           while the long form scrolls between them, so Save is never a
+           2,800px scroll away from the field being filled. */
+        #recordViolationModal .modal-content,
+        #editViolationModal .modal-content {
+            display: flex;
             flex-direction: column;
-            align-items: flex-start !important;
-            gap: 0.35rem;
+            max-height: calc(100vh - 2rem);
+            max-height: calc(100dvh - 2rem);
         }
-        .tct-officer-signature-area > .d-flex > .d-flex {
-            align-self: flex-end;
-            justify-content: flex-end;
+        #recordViolationModal .modal-body,
+        #editViolationModal .modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        .tct-doc-section .d-flex.gap-5 {
-            gap: 1rem !important;
+
+        /* The form's own action bar rides along at the bottom of that scroll,
+           so Save & Print Ticket stays under the thumb the whole way down a
+           2,700px ticket instead of hiding at the end of it. */
+        #recordViolationModal .tct-modal-card .d-flex.justify-content-end.gap-2.border-top,
+        #editViolationModal .tct-modal-card .d-flex.justify-content-between.border-top {
+            position: sticky;
+            bottom: 0;
+            z-index: 3;
+            background: #ffffff;
+            margin-top: 0.75rem;
+            padding-bottom: 0.35rem;
+            box-shadow: 0 -10px 14px -10px rgba(15, 23, 42, 0.25);
         }
-        .tct-footer-area {
+        #editViolationModal .tct-modal-card .d-flex.justify-content-between.border-top {
             flex-wrap: wrap;
             gap: 0.35rem 0.75rem;
         }
-        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top {
-            flex-direction: column !important;
-            gap: 0.5rem !important;
+        #editViolationModal .tct-modal-card .d-flex.justify-content-between.border-top .d-flex.gap-2 {
+            flex: 1 1 auto;
+            justify-content: flex-end;
+            flex-wrap: wrap;
         }
-        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn {
+        #editViolationModal .tct-modal-card .d-flex.justify-content-between.border-top .d-flex.gap-2 .btn {
+            min-height: 44px;
+        }
+
+        /* A table box keeps its own column widths even after its rows become
+           cards, so every card stayed a quarter of the width and its content
+           spilled out sideways (the vehicle name broke letter by letter).
+           Making the table and its body blocks lets each card take the whole
+           column - the same fix the payment list already uses. */
+        .officer-violations-table,
+        .officer-violations-table tbody {
+            display: block;
             width: 100%;
+            min-width: 0;
+            table-layout: auto;
         }
+        .officer-violations-table tbody tr,
+        .officer-violations-table tbody td {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .officer-violations-table tbody td {
+            row-gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+        .officer-violations-table tbody td::before {
+            max-width: 45%;
+        }
+        .officer-violations-table tbody td > * {
+            min-width: 0;
+            max-width: 100%;
+        }
+        /* Label left, value right: the value side takes the rest of the row
+           and parks its pills at the trailing edge instead of hugging the
+           label with dead space on the far side. */
+        .officer-violations-table tbody td:not([data-label="Violator"]) > div {
+            flex: 1 1 auto;
+            text-align: right;
+        }
+        .officer-violations-table tbody td .ledger-vehicle,
+        .officer-violations-table tbody td .ledger-state {
+            align-items: flex-end;
+        }
+        .officer-violations-table tbody td .ledger-vehicle-meta {
+            align-items: flex-end;
+            text-align: right;
+        }
+        .officer-violations-table tbody td .ledger-state-chips {
+            justify-content: flex-end;
+        }
+        .officer-violations-table tbody td .ledger-offense {
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            text-align: right;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        /* The title owns its line and the three chips scroll sideways as one
+           row, instead of a lonely chip dropping to a second line. */
+        .main-table-header .ledger-filter-title { flex: 0 0 100%; }
+        .ledger-filter-chips {
+            width: 100%;
+            min-width: 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .ledger-filter-chips::-webkit-scrollbar { display: none; }
+        .ledger-filter-chips .btn-filter-chip { flex: 0 0 auto; }
+    }
+
+    /* The floating button hides while the header's New Violation button is
+       on screen, so it never sits over a row's View / + actions. */
+    .fab-new-violation {
+        transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 0.22s ease;
+    }
+    .fab-new-violation.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(14px) scale(0.85);
+        pointer-events: none;
+        /* Visibility waits for the fade, so the button is never focusable or
+           announced while it sits over nothing; dropping the class reveals it
+           immediately with the base transition. */
+        transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                    visibility 0s linear 0.25s;
+    }
+
+    /* A lifted row is a hover state, not a pressed one: touch screens would
+       otherwise keep it stuck after a tap. */
+    @media (hover: none), (pointer: coarse) {
+        .officer-violations-table tbody tr:hover { transform: none !important; }
     }
 </style>
 
@@ -2623,7 +2814,7 @@
             const form = document.getElementById('violationForm');
             if (form) {
                 // Clear driver, vehicle, and location inputs
-                ['address', 'license_number', 'license_plate', 'mtop_number', 'owner_name', 'owner_address', 'location', 'notes'].forEach(id => {
+                ['address', 'license_number', 'license_plate', 'mtop_number', 'vehicle_type', 'owner_name', 'owner_address', 'location', 'notes'].forEach(id => {
                     const input = document.getElementById(id);
                     if (input) input.value = '';
                 });
@@ -2681,7 +2872,6 @@
     });
 
     document.getElementById('violationForm')?.addEventListener('submit', function(e) {
-        syncDriverName();
         syncTctNumberFields();
         const selectedIds = getSelectedNewInfractionIds();
 
@@ -2750,14 +2940,26 @@
     const tableSearchInput = document.getElementById('tableSearchInput');
     const btnClearSearch = document.getElementById('btnClearSearch');
     const filterChips = document.querySelectorAll('.btn-filter-chip');
-    let currentStatusFilter = '';
+    let currentStatusFilter = <?= json_encode($statusFilter ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
 
     filterChips.forEach(chip => {
         chip.addEventListener('click', function() {
-            filterChips.forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            currentStatusFilter = (this.dataset.status || '').toLowerCase();
-            applyTableFilters();
+            const url = new URL(window.location.href);
+            const status = (this.dataset.status || '').toLowerCase();
+
+            if (status) {
+                url.searchParams.set('status', status);
+            } else {
+                url.searchParams.delete('status');
+            }
+
+            for (const key of Array.from(url.searchParams.keys())) {
+                if (key === 'page' || key === 'violations' || /^page_/i.test(key)) {
+                    url.searchParams.delete(key);
+                }
+            }
+
+            window.location.assign(url.toString());
         });
     });
 
@@ -2776,7 +2978,7 @@
 
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
-            const statusCell = row.querySelector('td[data-label="Status"]');
+            const statusCell = row.querySelector('td[data-label="Status & Offense"]');
             const rowStatus = (row.dataset.status || statusCell?.textContent || '').toLowerCase();
             const matchesSearch = text.includes(keyword);
             const matchesStatus = !currentStatusFilter || rowStatus.includes(currentStatusFilter);
@@ -2791,7 +2993,7 @@
                 const tbody = document.querySelector('#officerViolationTable tbody');
                 const row = tbody.insertRow();
                 row.id = 'noTableDataRow';
-                row.innerHTML = `<td colspan="2"><div class="empty-state py-4 text-center"><i class="bi bi-search fs-2 text-muted mb-2"></i><div class="empty-state-title fw-bold">No Matching Violators</div><div class="text-muted small">No records match "${keyword || currentStatusFilter}". Try resetting your filters.</div></div></td>`;
+                row.innerHTML = `<td colspan="4"><div class="empty-state py-4 text-center"><i class="bi bi-search fs-2 text-muted mb-2"></i><div class="empty-state-title fw-bold">No Matching Violators</div><div class="text-muted small">No records match "${keyword || currentStatusFilter}". Try resetting your filters.</div></div></td>`;
             }
         } else if (noDataRow) {
             noDataRow.remove();
@@ -2844,206 +3046,7 @@
         });
     }
 
-    // ═══ EDIT VIOLATION CHECKLIST ═════════════════════════════
-    const editModalEl = document.getElementById('editViolationModal');
-    const editForm = document.getElementById('editViolationForm');
-    const editChecklist = document.getElementById('editViolationChecklist');
-    const editAmount = document.getElementById('edit_penalty_amount');
-
-    function getEditChecks() {
-        return Array.from(editChecklist?.querySelectorAll('.edit-violation-check') || []);
-    }
-
-    function updateEditComputedFields() {
-        let totalAmount = 0;
-        getEditChecks().forEach(check => {
-            if (check.checked) {
-                totalAmount += parseFloat(check.dataset.amount || 0);
-            }
-        });
-
-        if (editAmount) editAmount.value = totalAmount.toFixed(2);
-
-        const editAmountDisplay = document.getElementById('edit_penalty_amount_display');
-        if (editAmountDisplay) {
-            editAmountDisplay.textContent = totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-    }
-
-    // An infraction whose type is no longer active is re-added to the list so
-    // saving the ticket does not silently drop it.
-    function addEditChecklistEntry(id, name, amount, checked) {
-        if (!editChecklist || !id) return null;
-
-        const existing = getEditChecks().find(check => check.value === String(id));
-        if (existing) {
-            existing.checked = !!checked;
-            setCheckboxVisual(existing);
-            return existing;
-        }
-
-        const wrap = document.createElement('label');
-        wrap.className = 'tct-check-label';
-
-        const check = document.createElement('input');
-        check.type = 'checkbox';
-        check.name = 'violation_type_id[]';
-        check.className = 'edit-violation-check d-none';
-        check.value = String(id);
-        check.dataset.amount = amount ?? '';
-        check.dataset.name = name || '';
-        check.checked = !!checked;
-
-        const box = document.createElement('div');
-        box.className = 'tct-box';
-        const boxX = document.createElement('span');
-        boxX.className = 'tct-box-x';
-        box.appendChild(boxX);
-
-        const text = document.createElement('span');
-        text.className = 'tct-item-text';
-        text.textContent = name || ('Violation #' + id);
-
-        wrap.append(check, box, text);
-        editChecklist.appendChild(wrap);
-        setCheckboxVisual(check);
-
-        return check;
-    }
-
-    function setEditChecklist(typeIds) {
-        const wanted = (Array.isArray(typeIds) ? typeIds : []).map(String).filter(Boolean);
-        getEditChecks().forEach(check => {
-            check.checked = wanted.includes(check.value);
-            setCheckboxVisual(check);
-        });
-    }
-
-    editChecklist?.addEventListener('change', function (event) {
-        if (!event.target.classList.contains('edit-violation-check')) return;
-        setCheckboxVisual(event.target);
-        updateEditComputedFields();
-    });
-
-    updateEditComputedFields();
-
-    if (editModalEl && editForm) {
-        const editModal = new bootstrap.Modal(editModalEl);
-        const openEditTicketModal = (data, infractions) => {
-            const id = data.id;
-            editForm.action = `<?= base_url('officer/update') ?>/${id}`;
-
-            if (document.getElementById('edit_ticket_no_display')) {
-                document.getElementById('edit_ticket_no_display').textContent = data.ticketId || data.ticket_id || ('#' + id);
-            }
-
-            document.getElementById('edit_first_name').value = data.firstName || data.first_name || '';
-            if(document.getElementById('edit_middle_name')) {
-                document.getElementById('edit_middle_name').value = data.middleName || data.middle_name || '';
-            }
-            document.getElementById('edit_last_name').value = data.lastName || data.last_name || '';
-            if(document.getElementById('edit_license_number')) {
-                document.getElementById('edit_license_number').value = data.licenseNumber || data.license_number || '';
-            }
-            if(document.getElementById('edit_mtop_number')) {
-                document.getElementById('edit_mtop_number').value = data.mtopNumber || data.mtop_number || '';
-            }
-            if(document.getElementById('edit_owner_name')) {
-                document.getElementById('edit_owner_name').value = data.ownerName || data.owner_name || '';
-            }
-            if(document.getElementById('edit_owner_address')) {
-                document.getElementById('edit_owner_address').value = data.ownerAddress || data.owner_address || '';
-            }
-            
-            const ack = data.acknowledgment || '';
-            const setAck = (inputId, boxId, active) => {
-                const input = document.getElementById(inputId);
-                const box   = document.getElementById(boxId);
-                if (input) input.checked = active;
-                if (box) {
-                    box.classList.toggle('is-checked', active);
-                    box.innerHTML = active ? '<span class="tct-box-x">X</span>' : '';
-                }
-            };
-            setAck('edit_ackAdmitted', 'edit_ackAdmittedBox', ack === 'Admitted');
-            setAck('edit_ackProtest', 'edit_ackProtestBox', ack === 'Under Protest');
-
-            document.getElementById('edit_age').value = data.age || '';
-            document.getElementById('edit_address').value = data.address || '';
-            document.getElementById('edit_license_plate').value = data.licensePlate || data.license_plate || '';
-            document.getElementById('edit_location').value = data.location || '';
-            document.getElementById('edit_notes').value = data.notes || '';
-
-            // Mark the violations already saved on this ticket. The checklist is
-            // formatted exactly like the record form.
-            const saved = Array.isArray(infractions) ? infractions : [];
-            setEditChecklist(saved.map(item => item.violation_type_id));
-
-            saved.forEach(item => {
-                const typeId = String(item.violation_type_id || '');
-                if (!typeId) return;
-                const isKnown = getEditChecks().some(check => check.value === typeId);
-                if (!isKnown) {
-                    addEditChecklistEntry(typeId, item.violation_type || '', item.penalty_amount ?? '', true);
-                }
-            });
-
-            updateEditComputedFields();
-            editModal.show();
-        };
-
-        document.querySelectorAll('.btn-edit-violation').forEach(btn => {
-            btn.addEventListener('click', function() {
-                let rowInfractions = [];
-                try {
-                    rowInfractions = JSON.parse(this.closest('.officer-violation-row')?.dataset.infractions || '[]');
-                } catch (e) {
-                    rowInfractions = [];
-                }
-                openEditTicketModal(this.dataset, rowInfractions);
-            });
-        });
-
-        // A ticket opened from a violator's history page comes back as
-        // ?edit_ticket=<violation id>; re-open the modal for that citation.
-        const editTicketSeed = <?= json_encode(($editTicket ?? null) ? array_merge([
-            'id'          => (int) $editTicket['id'],
-            'ticket_id'   => $editTicket['ticket_id'] ?? '',
-            'first_name'  => $editTicket['first_name'] ?? '',
-            'middle_name' => $editTicket['middle_name'] ?? '',
-            'last_name'   => $editTicket['last_name'] ?? '',
-            'age'         => (string) ($editTicket['age'] ?? ''),
-            'address'     => $editTicket['address'] ?? '',
-            'license_number' => $editTicket['license_number'] ?? '',
-            'mtop_number'    => $editTicket['mtop_number'] ?? '',
-            'owner_name'     => $editTicket['owner_name'] ?? '',
-            'owner_address'  => $editTicket['owner_address'] ?? '',
-            'acknowledgment' => $editTicket['acknowledgment'] ?? '',
-            'license_plate'  => $editTicket['license_plate'] ?? '',
-            'location'       => $editTicket['location'] ?? '',
-            'notes'          => $editTicket['notes'] ?? '',
-        ], ['infractions' => $ticketInfractions[$editTicket['ticket_id']] ?? []]) : null) ?>;
-        if (editTicketSeed && editTicketSeed.id) {
-            const seedInfractions = editTicketSeed.infractions || [];
-            delete editTicketSeed.infractions;
-            openEditTicketModal(editTicketSeed, seedInfractions);
-        }
-        editForm.addEventListener('submit', function(e) {
-            const checked = getEditChecks().filter(check => check.checked);
-
-            if (checked.length === 0) {
-                e.preventDefault();
-                showInfractionWarning('Please mark at least one violation for this ticket.');
-                return;
-            }
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
-            }
-        });
-    }
+<?= $this->include('officer/partials/edit_ticket_modal_script') ?>
 
     const deleteModalEl = document.getElementById('deleteViolationModal');
     const deleteForm = document.getElementById('deleteViolationForm');
@@ -3116,6 +3119,33 @@
             card.style.transform = '';
         });
     });
+
+    // The floating New Violation button steps aside whenever the header's
+    // New Violation button is already visible, so it never covers a row's
+    // View / + actions while the officer scrolls the ledger. Phones only: on
+    // a wide screen the header and the FAB never compete for the same space.
+    const fabBtn = document.querySelector('.fab-new-violation');
+    const headerNewBtn = document.querySelector('.btn-new-violation');
+    const fabMedia = window.matchMedia('(max-width: 767.98px)');
+    let fabObserver = null;
+
+    if (fabBtn && headerNewBtn && 'IntersectionObserver' in window) {
+        fabObserver = new IntersectionObserver(([entry]) => {
+            fabBtn.classList.toggle('is-hidden', entry.isIntersecting);
+        }, { threshold: 0.6 });
+
+        const syncFabMode = () => {
+            if (fabMedia.matches) {
+                fabObserver.observe(headerNewBtn);
+            } else {
+                fabObserver.unobserve(headerNewBtn);
+                fabBtn.classList.remove('is-hidden');
+            }
+        };
+
+        syncFabMode();
+        fabMedia.addEventListener('change', syncFabMode);
+    }
 
     // Auto-open the form for validation errors or when recording another
     // violation for a prefilled violator.

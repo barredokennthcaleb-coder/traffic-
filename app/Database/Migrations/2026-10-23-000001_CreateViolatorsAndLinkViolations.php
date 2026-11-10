@@ -18,6 +18,7 @@ class CreateViolatorsAndLinkViolations extends Migration
 {
     public function up()
     {
+        $this->db->resetDataCache();
         if (! $this->db->tableExists('violators')) {
             $this->forge->addField([
                 'id' => [
@@ -144,6 +145,7 @@ class CreateViolatorsAndLinkViolations extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         if ($this->db->fieldExists('violator_id', 'violations')) {
             foreach ($this->db->getIndexData('violations') as $index) {
                 if (($index->name ?? '') === 'violations_violator_id') {

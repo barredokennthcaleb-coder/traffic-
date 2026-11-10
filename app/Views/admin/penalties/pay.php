@@ -60,7 +60,18 @@
                             </div>
                             <div class="col-flex" style="width: 50%; display: flex; align-items: center; justify-content: center;">
                                 <span style="font-size: 20px; margin-right: 15px;">NO.</span>
-                                <input type="text" name="transaction_id" class="orcr-input" placeholder="3852351" required title="Enter the OR/CR Number">
+                                <input
+                                    type="text"
+                                    name="receipt_number"
+                                    class="orcr-auto-number"
+                                    value="<?= esc(old('receipt_number', $next_orcr_number)) ?>"
+                                    inputmode="numeric"
+                                    pattern="[0-9]{1,18}"
+                                    maxlength="18"
+                                    required
+                                    aria-label="Official Receipt (OR) number"
+                                    title="Enter the Official Receipt (OR) number. The next number is prefilled."
+                                >
                             </div>
                         </div>
 
@@ -468,23 +479,22 @@
 .receipt-input:focus {
     border-bottom: 1px solid #000;
 }
-.orcr-input {
-    color: red;
+.orcr-auto-number {
+    width: 155px;
+    border: 0;
+    border-bottom: 1px dashed #000;
+    background: transparent;
+    color: #dc2626;
     font-size: 24px;
-    font-weight: bold;
+    font-weight: 700;
     letter-spacing: 2px;
+    text-align: center;
     font-family: monospace;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 4px 12px;
-    width: 160px;
-    background: #fff;
-    transition: all 0.2s ease;
     outline: none;
 }
-.orcr-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+.orcr-auto-number:focus {
+    border-bottom-style: solid;
+    box-shadow: 0 1px 0 #dc2626;
 }
 .payment-radio {
     accent-color: #000;

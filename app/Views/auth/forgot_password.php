@@ -133,17 +133,18 @@
 
         <?php if (session()->getFlashdata('error')) : ?>
             <div class="alert alert-danger mb-4">
-                <?= session()->getFlashdata('error') ?>
+                <?= esc(session()->getFlashdata('error')) ?>
             </div>
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('success')) : ?>
             <div class="alert alert-success mb-4">
-                <?= session()->getFlashdata('success') ?>
+                <?= esc(session()->getFlashdata('success')) ?>
             </div>
         <?php endif; ?>
 
         <form action="<?= base_url('forgot-password') ?>" method="POST">
+            <?= csrf_field() ?>
             <div class="mb-4">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="input-group">

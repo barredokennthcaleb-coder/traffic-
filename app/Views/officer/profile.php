@@ -15,8 +15,11 @@
         $initials = strtoupper(substr((string) $displayName, 0, 1));
         $hasProfileFile = !empty($officer['profile_image']) && is_file(FCPATH . 'uploads/profile/' . $officer['profile_image']);
         $profileImage = $hasProfileFile ? base_url('uploads/profile/' . $officer['profile_image']) : null;
-        $totalTickets  = count($records);
-        $collectionPct = $totalTickets > 0 ? round(($paidCount / $totalTickets) * 100) : 0;
+        // Issued and clearance figures arrive from the controller, which
+        // counts one ticket as one citation and treats cancelled citations
+        // as void, exactly like the reports.
+        $totalTickets  = (int) ($totalTickets ?? 0);
+        $collectionPct = (int) ($collectionPct ?? 0);
 
         // Assigned jurisdiction panel: duty station, station areas and Google Map target
         $station = trim((string) ($assignedStation ?? ''));
@@ -59,7 +62,6 @@
         $selectedArea = $confirmedArea !== '' ? $confirmedArea : $mapQuery;
         $mapSearch = $mapQuery . ', Philippines';
         $mapEmbed  = 'https://www.google.com/maps?q=' . rawurlencode($mapSearch) . '&hl=en&output=embed';
-        $mapLink   = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($mapSearch);
     ?>
 
     <?php if (session()->getFlashdata('success')): ?>
@@ -86,6 +88,37 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endif; ?>
+
+    <!-- ═══ BREAK TIME NOTIFICATION BANNER ══════════════════════ -->
+    <div id="breakTimeBanner" class="break-time-banner mb-4 <?= $dutyStatus === 'On Break' ? '' : 'd-none' ?>" role="alert">
+        <div class="break-banner-glow"></div>
+        <div class="break-banner-body">
+            <div class="break-banner-icon-wrap">
+                <i class="bi bi-cup-hot-fill"></i>
+                <span class="break-banner-pulse"></span>
+            </div>
+            <div class="break-banner-info flex-grow-1 min-w-0">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                    <span class="badge bg-warning text-dark fw-bold rounded-pill px-2.5 py-1">
+                        <i class="bi bi-pause-circle-fill me-1"></i>BREAK TIME ACTIVE
+                    </span>
+                    <span class="break-timer-badge font-monospace" id="breakElapsedBadge">
+                        <i class="bi bi-stopwatch me-1"></i><span id="breakTimerText">00:00:00</span> elapsed
+                    </span>
+                </div>
+                <div class="break-banner-subtext">
+                    Field patrol and citations are temporarily paused. Break started at 
+                    <strong id="breakStartedText"><?= !empty($breakStartedAt) ? date('h:i A', strtotime($breakStartedAt)) : date('h:i A') ?></strong>.
+                    Remember to resume active patrol when finished.
+                </div>
+            </div>
+            <div class="break-banner-action flex-shrink-0">
+                <button type="button" class="btn btn-sm btn-break-resume fw-bold rounded-pill shadow-sm px-3" id="btnResumeActiveDuty">
+                    <i class="bi bi-play-circle-fill me-1"></i>Resume Active Patrol
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ═══ HERO BANNER WITH REAL-TIME OPERATIONAL HUD ═════════ -->
     <div class="profile-hero mb-4 premium-reveal" style="--reveal-delay:0.05s">
@@ -133,25 +166,29 @@
                     <span><i class="bi bi-person me-1"></i>@<?= esc($officer['username'] ?? '-') ?></span>
                     <span><i class="bi bi-envelope me-1"></i><?= esc($officer['email'] ?? '-') ?></span>
                     <span>
-                        <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;vertical-align:middle;color:<?= ($officer['status'] ?? '') === 'active' ? '#4ade80' : '#94a3b8' ?>"></i>
+                        <i class="bi bi-circle-fill me-1" style="font-size:0.5rem;vertical-align:middle;color:<?= ($officer['status'] ?? '') === 'active' ? '#4ade80' : 'var(--text-subtle, #5c6b80)' ?>"></i>
                         <?= ucfirst(esc($officer['status'] ?? 'Active')) ?>
                     </span>
                 </div>
             </div>
 
-            <!-- Middle: Real-Time Field Status HUD -->
-            <div class="hero-duty-hud d-none d-lg-flex ms-lg-auto me-lg-3">
-                <div class="hud-status-badge">
-                    <span class="live-radar-dot"></span>
-                    <span class="fw-bold tracking-wider">ON ACTIVE FIELD DUTY</span>
+            <!-- Middle: Real-Time Field Status HUD (Responsive on all screen sizes) -->
+            <div class="hero-duty-hud ms-lg-auto me-lg-3" id="heroDutyHud">
+                <div class="hud-status-badge <?= $dutyStatus === 'On Break' ? 'hud-badge-break' : ($dutyStatus === 'Off Duty' ? 'hud-badge-off' : '') ?>" id="hudStatusBadge">
+                    <span class="live-radar-dot <?= $dutyStatus === 'On Break' ? 'radar-amber' : ($dutyStatus === 'Off Duty' ? 'radar-gray' : '') ?>" id="hudRadarDot"></span>
+                    <span class="fw-bold tracking-wider" id="hudStatusLabel">
+                        <?= $dutyStatus === 'On Break' ? 'BREAK TIME ACTIVE' : ($dutyStatus === 'Off Duty' ? 'OFF DUTY' : 'ON ACTIVE PATROL') ?>
+                    </span>
                 </div>
-                <div class="hud-time-wrap">
-                    <i class="bi bi-clock-history me-1.5 text-warning"></i>
+                <div class="hud-time-wrap" id="hudTimeWrap">
+                    <i class="bi <?= $dutyStatus === 'On Break' ? 'bi-stopwatch text-warning' : 'bi-clock-history text-warning' ?> me-1.5" id="hudTimeIcon"></i>
                     <span id="livePstClock" class="fw-bold font-monospace">--:--:-- PST</span>
                 </div>
-                <div class="hud-sector-text">
-                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i>
-                    <span>CTRAMO &middot; <?= esc($topLocation) ?></span>
+                <div class="hud-sector-text" id="hudSectorWrap">
+                    <i class="bi <?= $dutyStatus === 'On Break' ? 'bi-pause-circle-fill text-warning' : ($dutyStatus === 'Off Duty' ? 'bi-moon-stars-fill text-secondary' : 'bi-geo-alt-fill text-danger') ?> me-1" id="hudSectorIcon"></i>
+                    <span id="hudSectorLabel">
+                        <?= $dutyStatus === 'On Break' ? 'Patrol Paused &middot; On Break' : ($dutyStatus === 'Off Duty' ? 'Shift Concluded &middot; Standby' : 'CTRAMO &middot; ' . esc($topLocation)) ?>
+                    </span>
                 </div>
             </div>
 
@@ -185,21 +222,29 @@
         <div class="col-sm-6 col-xl-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card is-clickable <?= $dutyStatus === 'On Break' ? 'duty-on-break' : ($dutyStatus === 'Off Duty' ? 'duty-off-duty' : '') ?>" id="dutyStatusCard"
                  role="button" tabindex="0"
-                 data-bs-toggle="modal" data-bs-target="#dutyStatusModal" aria-controls="dutyStatusModal"
+                 aria-haspopup="dialog"
                  title="Click to change your duty status">
                 <div class="card-body p-3 d-flex align-items-center gap-3">
-                    <div class="op-icon-box bg-success-subtle text-success">
-                        <i class="bi bi-broadcast fs-4"></i>
+                    <div class="op-icon-box <?= $dutyStatus === 'On Break' ? 'bg-warning-subtle text-warning-emphasis' : ($dutyStatus === 'Off Duty' ? 'bg-secondary-subtle text-secondary' : 'bg-success-subtle text-success') ?>" id="dutyStatusIconBox">
+                        <i class="bi <?= $dutyStatus === 'On Break' ? 'bi-cup-hot-fill' : ($dutyStatus === 'Off Duty' ? 'bi-moon-stars' : 'bi-broadcast') ?> fs-4" id="dutyStatusIcon"></i>
                     </div>
-                    <div class="flex-grow-1">
+                    <div class="flex-grow-1 min-w-0">
                         <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.68rem; letter-spacing: 0.05em;">Field Status</small>
                         <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size:0.95rem;">
                             <span class="live-pulse-indicator" id="dutyStatusDot"></span>
                             <span id="dutyStatusValue"><?= esc($dutyStatus) ?></span>
                         </span>
-                        <small class="text-muted d-block" style="font-size:0.72rem;">Call Sign: Unit #<?= esc($officer['id']) ?></small>
+                        <small class="text-muted d-block text-truncate" id="dutyStatusSubtitle" style="font-size:0.72rem;">
+                            <?php if ($dutyStatus === 'On Break'): ?>
+                                Break Time: <span id="cardBreakTimer">00:00:00</span>
+                            <?php elseif ($dutyStatus === 'Off Duty'): ?>
+                                Shift Finished &middot; Standby
+                            <?php else: ?>
+                                Call Sign: Unit #<?= esc($officer['id']) ?> &middot; Active
+                            <?php endif; ?>
+                        </small>
                     </div>
-                    <i class="bi bi-chevron-down op-card-caret text-success"></i>
+                    <i class="bi bi-chevron-down op-card-caret <?= $dutyStatus === 'On Break' ? 'text-warning' : ($dutyStatus === 'Off Duty' ? 'text-secondary' : 'text-success') ?>" id="dutyStatusCaret"></i>
                 </div>
             </div>
         </div>
@@ -279,7 +324,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                    <div class="jurisdiction-area-head d-flex justify-content-between align-items-center gap-2 mb-2">
                         <small class="text-muted text-uppercase fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">
                             Areas of Station Assigned
                         </small>
@@ -305,17 +350,28 @@
                         <?php endforeach; ?>
                     </div>
 
+                    <!-- The map grows here instead of handing the area off to a
+                         separate Google Maps tab, so the officer never loses the
+                         profile they were reading. sandbox deliberately omits
+                         allow-popups so the embed cannot spawn a tab either. -->
                     <div class="jurisdiction-map-frame rounded-3 border border-light shadow-sm overflow-hidden" style="height: 220px;">
                         <iframe id="jurisdictionMap" title="Assigned jurisdiction map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+                                sandbox="allow-scripts allow-same-origin allow-forms"
                                 src="<?= esc($mapEmbed) ?>"></iframe>
+                        <button type="button" class="jurisdiction-map-expand" id="jurisdictionMapToggle"
+                                aria-expanded="false" aria-controls="jurisdictionMap" title="Expand the map in this window">
+                            <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
+                            <span class="visually-hidden">Expand map</span>
+                        </button>
                     </div>
                     <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
                         <small class="text-muted text-truncate" style="font-size: 0.68rem;" id="jurisdictionMapLabel" title="<?= esc($mapSearch) ?>">
                             <i class="bi bi-pin-angle-fill me-1"></i><?= esc($mapSearch) ?>
-                        </small>                            <a id="jurisdictionMapLink" href="<?= esc($mapLink) ?>" target="_blank" rel="noopener noreferrer"
-                           class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold flex-shrink-0" style="font-size: 0.68rem;">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>Google Maps 2026
-                        </a>
+                        </small>
+                        <button type="button" id="jurisdictionMapLink"
+                                class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-semibold flex-shrink-0" style="font-size: 0.68rem;">
+                            <i class="bi bi-arrows-angle-expand me-1" aria-hidden="true"></i><span id="jurisdictionMapLinkText">Expand map</span>
+                        </button>
                     </div>
                 </div>
 
@@ -336,61 +392,34 @@
         </div>
     </div>
 
-    <!-- ═══ DUTY STATUS MODAL: SWITCH THE FIELD STATUS ══════════ -->
-    <div class="modal fade" id="dutyStatusModal" tabindex="-1" aria-labelledby="dutyStatusModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered jurisdiction-dialog">
-            <div class="modal-content jurisdiction-panel">
-                <div class="modal-header border-bottom border-light">
-                    <div class="d-flex justify-content-between align-items-start gap-2 w-100">
-                        <div class="min-w-0">
-                            <small id="dutyStatusModalLabel" class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.64rem; letter-spacing: 0.05em;">Field Status</small>
-                            <span class="fw-bold text-dark d-block" style="font-size: 0.9rem;">
-                                <i class="bi bi-broadcast me-1 text-success"></i>Set your duty status
-                            </span>
-                        </div>
-                        <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                </div>
-
-                <form id="dutyStatusForm" action="<?= base_url('officer/profile/duty-status') ?>" method="POST">
-                    <?= csrf_field() ?>
-                    <div class="modal-body">
-                        <?php
-                        $dutyDescriptions = [
-                            'Active Patrol' => 'On the road and writing citations now.',
-                            'On Break'      => 'Paused for a moment — not taking assignments.',
-                            'Off Duty'      => 'Shift finished for now.',
-                        ];
-                        ?>
-                        <div class="d-flex flex-column gap-2" role="radiogroup" aria-labelledby="dutyStatusModalLabel">
-                            <?php foreach ($dutyStatuses as $dutyIndex => $dutyOption): ?>
-                            <label class="duty-option<?= $dutyOption === $dutyStatus ? ' is-selected' : '' ?>" for="duty_option_<?= $dutyIndex ?>"
-                                   data-status="<?= esc($dutyOption) ?>">
-                                <input type="radio" class="d-none" name="duty_status" id="duty_option_<?= $dutyIndex ?>"
-                                       value="<?= esc($dutyOption) ?>" <?= $dutyOption === $dutyStatus ? 'checked' : '' ?>>
-                                <span class="duty-option-dot duty-dot-<?= strtolower(str_replace(' ', '-', $dutyOption)) ?>"></span>
-                                <span class="flex-grow-1 min-w-0">
-                                    <span class="fw-bold text-dark d-block" style="font-size:0.88rem;"><?= esc($dutyOption) ?></span>
-                                    <small class="text-muted d-block" style="font-size:0.7rem;"><?= esc($dutyDescriptions[$dutyOption] ?? '') ?></small>
-                                </span>
-                                <i class="bi bi-check2-circle duty-option-check"></i>
-                            </label>
-                            <?php endforeach; ?>
-                        </div>
-                        <small class="text-muted d-block mt-3" style="font-size:0.7rem;">
-                            <i class="bi bi-info-circle me-1"></i>Saved to your officer record, so it survives a sign-out.
-                        </small>
-                    </div>
-                    <div class="modal-footer border-top border-light">
-                        <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 fw-semibold" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold">
-                            <i class="bi bi-check2-circle me-1"></i>Save Status
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <!-- SweetAlert uses this form only for its CSRF token and endpoint. -->
+    <form id="dutyStatusForm" action="<?= base_url('officer/profile/duty-status') ?>" method="POST" class="d-none">
+        <?= csrf_field() ?>
+    </form>
+    <template id="dutyStatusOptionsTemplate">
+        <?php
+        $dutyDescriptions = [
+            'Active Patrol' => 'On the road and writing citations now.',
+            'On Break'      => 'Paused for a moment — not taking assignments.',
+            'Off Duty'      => 'Shift finished for now.',
+        ];
+        ?>
+        <div class="duty-status-swal-options" role="radiogroup" aria-label="Choose your duty status">
+            <?php foreach ($dutyStatuses as $dutyOption): ?>
+            <button type="button" class="duty-option" role="radio" aria-checked="false" data-status="<?= esc($dutyOption, 'attr') ?>">
+                <span class="duty-option-dot duty-dot-<?= strtolower(str_replace(' ', '-', $dutyOption)) ?>"></span>
+                <span class="flex-grow-1 min-w-0">
+                    <span class="fw-bold text-dark d-block" style="font-size:0.88rem;"><?= esc($dutyOption) ?></span>
+                    <small class="text-muted d-block" style="font-size:0.7rem;"><?= esc($dutyDescriptions[$dutyOption] ?? '') ?></small>
+                </span>
+                <i class="bi bi-check2-circle duty-option-check"></i>
+            </button>
+            <?php endforeach; ?>
         </div>
-    </div>
+        <small class="duty-status-swal-note">
+            <i class="bi bi-info-circle me-1"></i>Saved to your officer record, so it survives a sign-out.
+        </small>
+    </template>
 
     <!-- ═══ OFFENSE BREAKDOWN MODAL: EVERY OFFENSE HANDLED ══════ -->
     <div class="modal fade" id="offenseBreakdownModal" tabindex="-1" aria-labelledby="offenseBreakdownModalLabel" aria-hidden="true">
@@ -475,7 +504,7 @@
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
                             <?= esc($badgeNumber) ?>
                         </span>
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#editCredentialsModal" title="Edit your credentials or fix errors">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-profile-edit rounded-pill px-3 py-1 fw-semibold" style="font-size: 0.75rem;" data-bs-toggle="modal" data-bs-target="#editCredentialsModal" title="Edit your credentials or fix errors">
                             <i class="bi bi-pencil-square me-1"></i>Edit
                         </button>
                     </div>
@@ -535,22 +564,18 @@
                                 <i class="bi bi-card-checklist me-1.5 text-success"></i>Citation Enforcement Record
                             </h6>
                             <small class="text-muted d-block" style="font-size: 0.7rem;">
-                                Apprehension logs registered by this officer &middot; <?= esc($enforcementDateNote) ?>
+                                Apprehension logs registered by this officer &middot; <span id="cfrDateNote"><?= esc($enforcementDateNote) ?></span>
                             </small>
                         </div>
-                        <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.72rem;">
-                            <?= $totalTickets ?> Record<?= $totalTickets === 1 ? '' : 's' ?>
-                        </span>
                     </div>
 
                     <!-- Period switch: each window starts from zero on its own -->
                     <div class="cfr-period-switch mt-2" role="group" aria-label="Enforcement record period">
                         <?php
                         $periodOptions = [
-                            'week'  => ['label' => 'This Week',  'title' => 'Citations issued this week – starts again from zero every Monday'],
+                            'week'  => ['label' => 'This Week',  'title' => 'Citations issued this week, Monday to Friday – starts again from zero every Monday'],
                             'month' => ['label' => 'This Month', 'title' => 'Citations issued this month – starts again from zero on the 1st'],
                             'year'  => ['label' => 'This Year',  'title' => 'Citations issued this year – starts again from zero every January'],
-                            'all'   => ['label' => 'All Time',   'title' => 'Lifetime total for this officer – never resets'],
                         ];
                         foreach ($periodOptions as $periodKey => $periodOption):
                             $isActive = $enforcementPeriod === $periodKey;
@@ -558,30 +583,102 @@
                             <a href="<?= base_url('officer/profile?period=' . $periodKey) ?>"
                                class="cfr-period-btn<?= $isActive ? ' active' : '' ?>"
                                title="<?= esc($periodOption['title']) ?>"
+                               data-cfr-period="<?= esc($periodKey) ?>"
                                <?= $isActive ? 'aria-current="page"' : '' ?>><?= esc($periodOption['label']) ?></a>
                         <?php endforeach; ?>
+                        <a href="#cfrCustomRange" id="cfrCustomPill"
+                           class="cfr-period-btn<?= $enforcementPeriod === 'custom' ? ' active' : '' ?>"
+                           data-bs-toggle="collapse"
+                           role="button"
+                           aria-expanded="<?= $enforcementPeriod === 'custom' ? 'true' : 'false' ?>"
+                           aria-controls="cfrCustomRange"
+                           title="Pick any two dates — a specific week, a single month, or a whole year"
+                           <?= $enforcementPeriod === 'custom' ? 'aria-current="page"' : '' ?>>Custom Range</a>
+                    </div>
+
+                    <!-- Custom range: month dropdowns and two exact dates -->
+                    <div class="collapse<?= $enforcementPeriod === 'custom' ? ' show' : '' ?> mt-2.5" id="cfrCustomRange">
+                        <div class="p-2.5 rounded-3 bg-light border border-light-subtle">
+                            <form method="GET" action="<?= base_url('officer/profile') ?>" id="cfrCustomForm" class="d-flex flex-column gap-2">
+                                <input type="hidden" name="period" value="custom">
+
+                                <!-- Month & Year pick a whole month in one move -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <!-- Dropdown Months -->
+                                    <div class="d-inline-flex align-items-center gap-1.5">
+                                        <label for="cfrMonthSelect" class="small text-muted fw-semibold mb-0" style="font-size:0.75rem;">
+                                            <i class="bi bi-calendar-month text-primary me-1"></i>Month:
+                                        </label>
+                                        <select id="cfrMonthSelect" class="form-select form-select-sm" style="font-size:0.78rem; padding:0.25rem 0.55rem; width:auto; min-width:125px;">
+                                            <option value="">Choose Month</option>
+                                            <option value="01">January</option>
+                                            <option value="02">February</option>
+                                            <option value="03">March</option>
+                                            <option value="04">April</option>
+                                            <option value="05">May</option>
+                                            <option value="06">June</option>
+                                            <option value="07">July</option>
+                                            <option value="08">August</option>
+                                            <option value="09">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+                                        </select>
+                                        <select id="cfrYearSelect" class="form-select form-select-sm" style="font-size:0.78rem; padding:0.25rem 0.45rem; width:76px;">
+                                            <?php $curYr = (int)date('Y'); for($y = $curYr; $y >= $curYr - 5; $y--): ?>
+                                                <option value="<?= $y ?>" <?= ($y === $curYr) ? 'selected' : '' ?>><?= $y ?></option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+
+                                </div>
+
+                                <!-- Bottom Row: Exact Date Pickers (From / To) -->
+                                <div class="d-flex align-items-center gap-2 flex-wrap pt-2 border-top border-light-subtle">
+                                    <span class="small text-muted fw-semibold me-1" style="font-size:0.75rem;">
+                                        <i class="bi bi-calendar3 text-secondary me-1"></i>Range:
+                                    </span>
+                                    <!-- Each label stays welded to its own date box, so a
+                                         narrowing card wraps whole pairs instead of
+                                         stranding a "To" above the wrong input. -->
+                                    <span class="cfr-date-pair">
+                                        <label class="small text-muted fw-semibold mb-0" for="cfrStartDate" style="font-size:0.75rem;">From</label>
+                                        <input type="date" name="start_date" id="cfrStartDate" class="form-control form-control-sm" style="max-width: 145px; font-size:0.78rem;"
+                                               value="<?= esc($enforcementStart ?? '') ?>" required>
+                                    </span>
+                                    <span class="cfr-date-pair">
+                                        <label class="small text-muted fw-semibold mb-0" for="cfrEndDate" style="font-size:0.75rem;">To</label>
+                                        <input type="date" name="end_date" id="cfrEndDate" class="form-control form-control-sm" style="max-width: 145px; font-size:0.78rem;"
+                                               value="<?= esc($enforcementEnd ?? '') ?>" required>
+                                    </span>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold shadow-xs" style="font-size:0.78rem;">
+                                        <i class="bi bi-funnel me-1"></i>Apply
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                     <div>
                         <!-- 4 Metric Tiles -->
                         <div class="row g-3 mb-3">
-                            <div class="col-4">
-                                <div class="p-3 rounded-3 bg-light border border-light-subtle">
-                                    <small class="text-muted text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Total Issued</small>
-                                    <span class="fs-4 fw-bold text-dark"><?= $totalTickets ?></span>
+                            <div class="col-12 col-sm-4">
+                                <div class="p-3 rounded-3 bg-light border border-light-subtle cfr-kpi-tile cfr-total-issued-tile">
+                                    <small class="text-muted text-uppercase d-block fw-semibold cfr-total-issued-label" style="font-size: 0.68rem;">Total Issued</small>
+                                    <span class="fs-4 fw-bold text-dark cfr-total-issued-value" id="cfrTotalIssued"><?= $totalTickets ?></span>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle">
+                            <div class="col-12 col-sm-4">
+                                <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle cfr-kpi-tile cfr-settled-tile">
                                     <small class="text-success-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Settled / Paid</small>
-                                    <span class="fs-4 fw-bold text-success"><?= $paidCount ?></span>
+                                    <span class="fs-4 fw-bold text-success" id="cfrPaidCount"><?= $paidCount ?></span>
                                 </div>
                             </div>
-                            <div class="col-4">
-                                <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle">
+                            <div class="col-12 col-sm-4">
+                                <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle cfr-kpi-tile cfr-pending-tile">
                                     <small class="text-warning-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Pending Fines</small>
-                                    <span class="fs-4 fw-bold text-warning-emphasis"><?= $pendingCount ?></span>
+                                    <span class="fs-4 fw-bold text-warning-emphasis" id="cfrPendingCount"><?= $pendingCount ?></span>
                                 </div>
                             </div>
                         </div>
@@ -592,12 +689,12 @@
                                 <span class="fw-semibold text-dark" style="font-size:0.8rem;">
                                     <i class="bi bi-shield-check text-success me-1"></i>Settlement Clearance Rate
                                 </span>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.75rem;">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.75rem;" id="cfrPct">
                                     <?= $collectionPct ?>%
                                 </span>
                             </div>
                             <div class="progress" style="height: 8px; border-radius: 99px; background: rgba(226,232,240,0.8);">
-                                <div class="progress-bar bg-success" style="width: <?= $collectionPct ?>%; border-radius: 99px;"></div>
+                                <div class="progress-bar bg-success" id="cfrPctBar" style="width: <?= $collectionPct ?>%; border-radius: 99px;"></div>
                             </div>
                         </div>
                     </div>
@@ -605,10 +702,10 @@
                     <!-- Bottom Fines & Action Link -->
                     <div class="pt-3 border-top border-light-subtle d-flex justify-content-between align-items-center">
                         <div>
-                            <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.68rem;">Total Fines Assessed</small>
-                            <span class="fs-5 fw-bold text-primary">₱<?= number_format((float) $totalAmount, 2) ?></span>
+                            <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.68rem;">Total Fines</small>
+                            <span class="fs-5 fw-bold text-primary" id="cfrTotalAmount">₱<?= number_format((float) $totalAmount, 2) ?></span>
                         </div>
-                        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-primary btn-sm px-3.5 py-1.5 rounded-pill fw-semibold">
+                        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-primary btn-profile-registry btn-sm px-3.5 py-1.5 rounded-pill fw-semibold">
                             <i class="bi bi-card-checklist me-1"></i>Open Violations Registry
                         </a>
                     </div>
@@ -683,7 +780,21 @@
 </div>
 
 <style>
-    /* Citation enforcement period switch (Week / Month / Year / All Time) */
+    .btn-profile-edit,
+    .btn-profile-registry {
+        color: #0066ff !important;
+        border-color: #0066ff !important;
+    }
+    .btn-profile-edit:hover,
+    .btn-profile-edit:focus-visible,
+    .btn-profile-registry:hover,
+    .btn-profile-registry:focus-visible {
+        color: #ffffff !important;
+        background: #0052cc !important;
+        border-color: #0052cc !important;
+    }
+
+    /* Citation enforcement period switch (Week / Month / Year / Custom Range) */
     .cfr-period-switch {
         display: inline-flex;
         flex-wrap: wrap;
@@ -712,9 +823,50 @@
         color: #0f172a;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
     }
+
+    /* While a new period is loading the card keeps its current figures and only
+       dims very slightly, so the switch never looks like a broken click. */
+    .record-card.cfr-refreshing .card-body {
+        opacity: .72;
+        transition: opacity .15s ease;
+    }
+    .record-card.cfr-refreshing .cfr-period-btn.active {
+        opacity: .7;
+    }
+
+    /* A date label travels with its own box, so narrowing the card wraps whole
+       pairs instead of stranding a "To" above the wrong input. */
+    .cfr-date-pair {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+    }
+
     @media (max-width: 575.98px) {
         .cfr-period-switch { width: 100%; }
         .cfr-period-btn { flex: 1 1 auto; text-align: center; }
+
+        /* Phones: the dropdowns and the date boxes each get their own line
+           instead of being squeezed against a label. */
+        #cfrCustomRange form > div {
+            flex-direction: column;
+            align-items: stretch !important;
+            row-gap: 0.5rem;
+        }
+        #cfrCustomRange form > div > div {
+            width: 100%;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        #cfrCustomRange form > div .form-select { min-width: 0 !important; }
+        #cfrCustomRange #cfrMonthSelect { flex: 1 1 auto; width: 100% !important; }
+        #cfrCustomRange .cfr-date-pair { width: 100%; }
+        #cfrCustomRange .cfr-date-pair .form-control { flex: 1 1 auto; max-width: none !important; }
+        #cfrCustomRange form > div > button {
+            width: 100%;
+            margin-left: 0;
+        }
     }
 /* ── HERO ─────────────────────────────────────────────────── */
 .profile-hero {
@@ -827,7 +979,7 @@
     z-index: 5;
 }
 .dot-active  { background: #4ade80; box-shadow: 0 0 10px rgba(74,222,128,0.85); }
-.dot-inactive { background: #94a3b8; }
+.dot-inactive { background: var(--text-subtle, #5c6b80); }
 .hero-name {
     font-size: 1.7rem;
     font-weight: 800;
@@ -956,8 +1108,8 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #f59e0b;
-    box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+    background: #ca8a04;
+    box-shadow: 0 0 6px rgba(202, 138, 4, 0.8);
     animation: pulseAmber 2s infinite;
 }
 @keyframes pulseAmber {
@@ -981,6 +1133,99 @@
 }
 
 
+/* ── BREAK TIME NOTIFICATION BANNER ──────────────────────── */
+.break-time-banner {
+    position: relative;
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.96) 0%, rgba(253, 230, 138, 0.92) 100%);
+    border: 1.5px solid #eab308;
+    border-radius: 18px;
+    padding: 1.15rem 1.4rem;
+    box-shadow: 0 10px 25px -5px rgba(202, 138, 4, 0.28), 0 8px 10px -6px rgba(202, 138, 4, 0.2);
+    overflow: hidden;
+    animation: slideInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.3s ease;
+}
+:root[data-theme="dark"] .break-time-banner {
+    background: linear-gradient(135deg, rgba(120, 53, 15, 0.45) 0%, rgba(180, 83, 9, 0.4) 100%);
+    border-color: rgba(202, 138, 4, 0.65);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.55);
+}
+.break-banner-body {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+}
+.break-banner-icon-wrap {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #ca8a04;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 14px rgba(202, 138, 4, 0.45);
+    flex-shrink: 0;
+}
+.break-banner-pulse {
+    position: absolute;
+    inset: -3px;
+    border-radius: 16px;
+    border: 2px solid #ca8a04;
+    opacity: 0.8;
+    animation: pingBreak 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes pingBreak {
+    75%, 100% {
+        transform: scale(1.22);
+        opacity: 0;
+    }
+}
+.break-timer-badge {
+    background: rgba(15, 23, 42, 0.08);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #92400e;
+}
+:root[data-theme="dark"] .break-timer-badge {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fde68a;
+}
+.break-banner-subtext {
+    font-size: 0.85rem;
+    color: #78350f;
+    line-height: 1.45;
+}
+:root[data-theme="dark"] .break-banner-subtext {
+    color: #fef3c7;
+}
+.btn-break-resume {
+    background: #ffffff;
+    color: #047857;
+    border: 1.5px solid #10b981;
+    font-size: 0.85rem;
+    padding: 0.5rem 1.15rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.btn-break-resume:hover {
+    background: #10b981;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
 /* ── OPERATIONAL FIELD HUD ───────────────────────────────── */
 .hero-duty-hud {
     background: rgba(15, 23, 42, 0.45);
@@ -992,6 +1237,7 @@
     flex-direction: column;
     gap: 0.35rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: all 0.25s ease;
 }
 .hud-status-badge {
     display: inline-flex;
@@ -1002,6 +1248,12 @@
     color: #4ade80;
     text-transform: uppercase;
 }
+.hud-status-badge.hud-badge-break {
+    color: #eab308;
+}
+.hud-status-badge.hud-badge-off {
+    color: #94a3b8;
+}
 .live-radar-dot {
     width: 9px;
     height: 9px;
@@ -1009,6 +1261,21 @@
     background: #4ade80;
     box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
     animation: radarPulse 1.8s infinite;
+}
+.live-radar-dot.radar-amber {
+    background: #ca8a04;
+    box-shadow: 0 0 0 0 rgba(202, 138, 4, 0.7);
+    animation: radarPulseAmber 1.8s infinite;
+}
+@keyframes radarPulseAmber {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(202, 138, 4, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(202, 138, 4, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(202, 138, 4, 0); }
+}
+.live-radar-dot.radar-gray {
+    background: #94a3b8;
+    box-shadow: none;
+    animation: none;
 }
 @keyframes radarPulse {
     0% {
@@ -1041,6 +1308,41 @@
 .op-status-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid #f1f5f9 !important;
+}
+.op-status-card .op-icon-box,
+.op-status-card .live-pulse-indicator {
+    transition: background-color 0.24s ease, color 0.24s ease, box-shadow 0.24s ease, transform 0.24s ease;
+}
+.op-status-card.is-status-changing #dutyStatusValue,
+.op-status-card.is-status-changing #dutyStatusSubtitle,
+.op-status-card.is-status-changing #dutyStatusIconBox {
+    animation: dutyStatusChangeIn 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes dutyStatusChangeIn {
+    from { opacity: 0.55; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.swal2-popup.swal2-toast.duty-status-update-toast.swal2-show {
+    animation: dutyStatusToastIn 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) forwards !important;
+}
+.swal2-popup.swal2-toast.duty-status-update-toast.swal2-hide {
+    animation: dutyStatusToastOut 0.24s ease-in forwards !important;
+}
+@keyframes dutyStatusToastIn {
+    from { opacity: 0; transform: translate3d(16px, -5px, 0) scale(0.98); }
+    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes dutyStatusToastOut {
+    to { opacity: 0; transform: translate3d(10px, -3px, 0) scale(0.99); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .op-status-card.is-status-changing #dutyStatusValue,
+    .op-status-card.is-status-changing #dutyStatusSubtitle,
+    .op-status-card.is-status-changing #dutyStatusIconBox,
+    .swal2-popup.swal2-toast.duty-status-update-toast.swal2-show,
+    .swal2-popup.swal2-toast.duty-status-update-toast.swal2-hide {
+        animation: none !important;
+    }
 }
 .op-status-card:hover {
     transform: translateY(-2px);
@@ -1097,14 +1399,18 @@
 .op-status-card.is-open .op-card-caret {
     transform: rotate(180deg);
 }
+.op-status-card.is-saving {
+    cursor: progress;
+    opacity: 0.8;
+}
 
 /* The pulse dot follows the saved duty status */
 .op-status-card.duty-on-break .live-pulse-indicator {
-    background: #f59e0b;
-    box-shadow: 0 0 6px rgba(245, 158, 11, 0.9);
+    background: #ca8a04;
+    box-shadow: 0 0 6px rgba(202, 138, 4, 0.9);
 }
 .op-status-card.duty-off-duty .live-pulse-indicator {
-    background: #94a3b8;
+    background: var(--text-subtle, #5c6b80);
     box-shadow: none;
     animation: none;
 }
@@ -1120,16 +1426,26 @@
     border-radius: 12px;
     cursor: pointer;
     margin-bottom: 0;
-    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+button.duty-option {
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: #ffffff;
 }
 .duty-option:hover {
     border-color: #bfdbfe;
     background: #f8fafc;
+    transform: translateY(-1px);
 }
 .duty-option.is-selected {
-    border-color: #2563eb;
+    border-color: #0066ff;
     background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
+}
+.duty-option.is-selected .fw-bold {
+    color: #0052cc !important;
 }
 .duty-option-dot {
     width: 12px;
@@ -1140,15 +1456,15 @@
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
 }
 .duty-dot-on-break {
-    background: #f59e0b;
-    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15);
+    background: #ca8a04;
+    box-shadow: 0 0 0 4px rgba(202, 138, 4, 0.15);
 }
 .duty-dot-off-duty {
-    background: #94a3b8;
+    background: var(--text-subtle, #5c6b80);
     box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
 }
 .duty-option-check {
-    color: #2563eb;
+    color: #0066ff;
     opacity: 0;
     transform: scale(0.7);
     transition: opacity 0.18s ease, transform 0.18s ease;
@@ -1166,8 +1482,8 @@
     background: #fff;
 }
 .offense-breakdown-item.is-top {
-    border-color: #fde68a;
-    background: #fffbeb;
+    border-color: #eab308;
+    background: #fef9c3;
 }
 .offense-rank {
     display: inline-flex;
@@ -1185,7 +1501,7 @@
     vertical-align: middle;
 }
 .offense-breakdown-item.is-top .offense-rank {
-    background: #f59e0b;
+    background: #ca8a04;
     color: #fff;
 }
 .offense-share-track {
@@ -1201,7 +1517,7 @@
     transition: width 0.4s ease;
 }
 .offense-breakdown-item.is-top .offense-share-fill {
-    background: linear-gradient(90deg, #f59e0b, #d97706);
+    background: linear-gradient(90deg, #eab308, #ca8a04);
 }
 
 :root[data-theme="dark"] .offense-breakdown-item {
@@ -1209,8 +1525,8 @@
     border-color: rgba(255, 255, 255, 0.07);
 }
 :root[data-theme="dark"] .offense-breakdown-item.is-top {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(202, 138, 4, 0.12);
+    border-color: rgba(202, 138, 4, 0.35);
 }
 :root[data-theme="dark"] .offense-share-track {
     background: rgba(255, 255, 255, 0.08);
@@ -1239,6 +1555,110 @@
 }
 .jurisdiction-panel .modal-body {
     padding: 1rem 1.1rem 1.1rem;
+}
+.swal2-popup.duty-status-swal {
+    max-width: 430px !important;
+    padding: 1.2rem 1rem 0.9rem !important;
+    border-radius: 20px !important;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-title {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0 0.1rem 0.8rem !important;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left !important;
+}
+.duty-status-title-kicker {
+    color: #64748b;
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+.duty-status-title-main {
+    color: #0f172a;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+.duty-status-title-main i {
+    color: #0066ff;
+    margin-right: 0.2rem;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-html {
+    margin: 0.75rem 0 0 !important;
+    text-align: left !important;
+}
+.duty-status-swal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.swal2-popup.duty-status-swal .duty-option {
+    min-height: 54px;
+    padding: 0.6rem 0.7rem;
+    border-radius: 12px;
+}
+.swal2-popup.duty-status-swal .duty-option:focus-visible {
+    outline: 3px solid rgba(0, 102, 255, 0.25);
+    outline-offset: 2px;
+}
+.duty-status-swal-note {
+    display: block;
+    margin-top: 0.8rem;
+    color: #64748b;
+    font-size: 0.7rem;
+    text-align: left;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-actions {
+    width: calc(100% + 2rem) !important;
+    margin: 0.9rem -1rem -0.9rem !important;
+    padding: 0.7rem 1rem !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-confirm {
+    background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%) !important;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.28) !important;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-confirm:hover {
+    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.38) !important;
+}
+.swal2-popup.duty-status-swal .duty-status-swal-cancel {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-status-swal-title {
+    border-color: #334155;
+}
+:root[data-theme="dark"] .duty-status-title-main {
+    color: #f8fafc;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-option {
+    background: #1e293b;
+    border-color: #475569;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-option .text-dark {
+    color: #f8fafc !important;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-option.is-selected {
+    background: rgba(0, 102, 255, 0.18);
+}
+:root[data-theme="dark"] .duty-status-swal-note {
+    color: #94a3b8;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-status-swal-actions {
+    background: #172033;
+    border-color: #334155;
+}
+:root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-status-swal-cancel {
+    background: #334155 !important;
+    border-color: #475569 !important;
+    color: #e2e8f0 !important;
 }
 .jurisdiction-area-list {
     max-height: 200px;
@@ -1284,11 +1704,57 @@
     color: #1d4ed8;
     background: #dbeafe;
 }
+.jurisdiction-map-frame {
+    position: relative;
+}
 .jurisdiction-map-frame iframe {
     display: block;
     width: 100%;
     height: 100%;
     border: 0;
+}
+/* Expand control floats over the map's own chrome (its links sit top-left). */
+.jurisdiction-map-expand {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #1e293b;
+    font-size: 0.78rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+.jurisdiction-map-expand:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+}
+/* Expanded: the map takes the modal's room and the area list steps aside,
+   keeping the officer on this page with a standard-size map. */
+.jurisdiction-panel.is-map-expanded .jurisdiction-area-head,
+.jurisdiction-panel.is-map-expanded .jurisdiction-area-list {
+    display: none !important;
+}
+.jurisdiction-panel.is-map-expanded .jurisdiction-map-frame {
+    height: min(62vh, 460px) !important;
+}
+.jurisdiction-panel.is-map-expanded #jurisdictionMapToggle {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+}
+:root[data-theme="dark"] .jurisdiction-map-expand {
+    background: rgba(30, 41, 59, 0.96);
+    border-color: rgba(148, 163, 184, 0.35);
+    color: #e2e8f0;
 }
 
 /* ── ENFORCER CREDENTIAL CARD ────────────────────────────── */
@@ -1302,6 +1768,26 @@
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .profile-hero-content {
+        align-items: stretch;
+    }
+    .hero-duty-hud {
+        width: 100%;
+        margin: 0.75rem 0 0 0 !important;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .hero-upload-wrap {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
 @media (max-width: 768px) {
     .profile-hero {
         padding: 1.5rem 1.2rem;
@@ -1334,6 +1820,27 @@
     }
 }
 
+@media (max-width: 576px) {
+    .hero-duty-hud {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+        padding: 0.75rem 1rem;
+    }
+    .break-banner-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+    }
+    .break-banner-action {
+        width: 100%;
+    }
+    .btn-break-resume {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* ── PRINT ────────────────────────────────────────────────────────
    The banner is a blue gradient carrying white ink. Paper has no
    gradient, so the officer's name, e-mail and duty HUD all printed
@@ -1344,7 +1851,7 @@
 
     .profile-hero {
         background: #fff !important;
-        border: 1px solid #94a3b8 !important;
+        border: 1px solid var(--text-subtle, #5c6b80) !important;
         box-shadow: none !important;
         border-radius: 0 !important;
         padding: 10px 0 !important;
@@ -1382,7 +1889,7 @@
     }
     .avatar-display-container {
         background: #e2e8f0 !important;
-        border: 1px solid #94a3b8 !important;
+        border: 1px solid var(--text-subtle, #5c6b80) !important;
     }
     .op-status-card,
     .record-card {
@@ -1396,6 +1903,64 @@
    instead. Light theme renders exactly as before. */
 :root[data-theme="dark"] .text-dark {
     color: var(--text-strong) !important;
+}
+:root[data-bs-theme="dark"] .cfr-total-issued-tile {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+}
+:root[data-bs-theme="dark"] .cfr-total-issued-tile small {
+    color: #cbd5e1 !important;
+}
+:root[data-bs-theme="dark"] #cfrTotalIssued {
+    color: #60a5fa !important;
+}
+.cfr-total-issued-tile {
+    border-color: rgba(0, 102, 255, .22) !important;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, .06);
+}
+.cfr-kpi-tile {
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.cfr-settled-tile {
+    box-shadow: 0 2px 8px rgba(25, 135, 84, .06);
+}
+.cfr-pending-tile {
+    box-shadow: 0 2px 8px rgba(180, 120, 0, .06);
+}
+.cfr-total-issued-label,
+.cfr-total-issued-value {
+    color: #0066ff !important;
+    transition: color .2s ease;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .cfr-total-issued-tile:hover {
+        border-color: rgba(0, 102, 255, .45) !important;
+        box-shadow: 0 5px 14px rgba(0, 102, 255, .12);
+        transform: translateY(-1px);
+    }
+    .cfr-settled-tile:hover {
+        border-color: rgba(25, 135, 84, .45) !important;
+        box-shadow: 0 5px 14px rgba(25, 135, 84, .12);
+        transform: translateY(-1px);
+    }
+    .cfr-pending-tile:hover {
+        border-color: rgba(180, 120, 0, .45) !important;
+        box-shadow: 0 5px 14px rgba(180, 120, 0, .12);
+        transform: translateY(-1px);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cfr-kpi-tile {
+        transition: none;
+    }
+}
+:root[data-bs-theme="dark"] .cfr-total-issued-tile {
+    border-color: rgba(59, 130, 246, .38) !important;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, .1);
+}
+:root[data-bs-theme="dark"] .cfr-total-issued-label,
+:root[data-bs-theme="dark"] #cfrTotalIssued {
+    color: #60a5fa !important;
 }
 /* Long jurisdiction / offence names shrink and ellipsis inside the card
    instead of pushing past its edge. */
@@ -1465,6 +2030,52 @@ document.addEventListener('DOMContentLoaded', function () {
     const jurMap = document.getElementById('jurisdictionMap');
     const jurMapLink = document.getElementById('jurisdictionMapLink');
     const jurMapLabel = document.getElementById('jurisdictionMapLabel');
+    const jurMapToggle = document.getElementById('jurisdictionMapToggle');
+    const jurMapLinkText = document.getElementById('jurisdictionMapLinkText');
+    const jurPanel = document.querySelector('.jurisdiction-panel');
+
+    // The map widens inside this modal instead of opening Google Maps in a new
+    // tab, so the officer keeps their profile (and their place) on one page.
+    function setMapExpanded(expand) {
+        if (!jurPanel || !jurMapToggle) return;
+        jurPanel.classList.toggle('is-map-expanded', expand);
+        jurMapToggle.setAttribute('aria-expanded', expand ? 'true' : 'false');
+        jurMapToggle.setAttribute('title', expand ? 'Shrink the map back into this window' : 'Expand the map in this window');
+        const icon = jurMapToggle.querySelector('i');
+        if (icon) {
+            icon.className = expand ? 'bi bi-arrows-angle-contract' : 'bi bi-arrows-angle-expand';
+        }
+        if (jurMapLinkText) {
+            jurMapLinkText.textContent = expand ? 'Shrink map' : 'Expand map';
+        }
+        if (jurMapLink) {
+            const linkIcon = jurMapLink.querySelector('i');
+            if (linkIcon) {
+                linkIcon.className = (expand ? 'bi bi-arrows-angle-contract' : 'bi bi-arrows-angle-expand') + ' me-1';
+            }
+            jurMapLink.setAttribute('aria-expanded', expand ? 'true' : 'false');
+        }
+        // Recentre the taller frame so the pin is not left off-screen.
+        if (expand && jurPanel.scrollIntoView) {
+            jurPanel.scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    [jurMapToggle, jurMapLink].forEach(function (control) {
+        if (!control) return;
+        control.addEventListener('click', function (event) {
+            event.preventDefault();
+            setMapExpanded(!jurPanel.classList.contains('is-map-expanded'));
+        });
+    });
+
+    // Escape shrinks the map before it closes the whole modal.
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && jurPanel && jurPanel.classList.contains('is-map-expanded')) {
+            event.stopPropagation();
+            setMapExpanded(false);
+        }
+    }, true);
 
     function googleMapsUrl(path, query) {
         return path + encodeURIComponent(query + ', Philippines');
@@ -1482,9 +2093,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (jurMap) {
                 jurMap.src = googleMapsUrl('https://www.google.com/maps?q=', area) + '&hl=en&output=embed';
-            }
-            if (jurMapLink) {
-                jurMapLink.href = googleMapsUrl('https://www.google.com/maps/search/?api=1&query=', area);
             }
             if (jurMapLabel) {
                 jurMapLabel.innerHTML = '<i class="bi bi-pin-angle-fill me-1"></i>';
@@ -1506,8 +2114,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Chevron feedback + keyboard activation for the two clickable status cards
-    [['dutyStatusCard', 'dutyStatusModal'], ['offenseBreakdownCard', 'offenseBreakdownModal']].forEach(function (pair) {
+    // Chevron feedback + keyboard activation for the offense card modal.
+    [['offenseBreakdownCard', 'offenseBreakdownModal']].forEach(function (pair) {
         const card  = document.getElementById(pair[0]);
         const modal = document.getElementById(pair[1]);
         if (!card || !modal) return;
@@ -1523,26 +2131,389 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Reopening the duty modal starts from the status actually saved on the
-    // record, so a choice made but never saved never sticks around.
-    const savedDutyStatus = <?= json_encode($dutyStatus) ?>;
-    const dutyStatusModalEl = document.getElementById('dutyStatusModal');
-    if (dutyStatusModalEl) {
-        dutyStatusModalEl.addEventListener('show.bs.modal', function () {
-            document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (option) {
-                const input = option.querySelector('input[type="radio"]');
-                const selected = !!input && input.value === savedDutyStatus;
-                if (input) input.checked = selected;
-                option.classList.toggle('is-selected', selected);
+    // ═══ DUTY STATUS & BREAK TIME MANAGER ═══════════════════════
+    let savedDutyStatus = <?= json_encode($dutyStatus) ?>;
+    let currentBreakStartedAt = <?= json_encode($breakStartedAt) ?>;
+    let breakStartTimeMs = <?= !empty($breakStartedAt) ? (strtotime($breakStartedAt) * 1000) : 'null' ?>;
+    const serverTimeMs = <?= time() * 1000 ?>;
+    const clientSkewMs = Date.now() - serverTimeMs;
+    let breakTimerInterval = null;
+
+    function formatTimeAMPM(date) {
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const mins = minutes < 10 ? '0' + minutes : minutes;
+        return hours + ':' + mins + ' ' + ampm;
+    }
+
+    function formatElapsed(totalSec) {
+        if (totalSec < 0) totalSec = 0;
+        const hrs = Math.floor(totalSec / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = Math.floor(totalSec % 60);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
+    }
+
+    function tickBreakTimer() {
+        if (!breakStartTimeMs) return;
+        const nowServerMs = Date.now() - clientSkewMs;
+        const elapsedSec = Math.floor((nowServerMs - breakStartTimeMs) / 1000);
+        const formatted = formatElapsed(elapsedSec);
+
+        const bannerTimer = document.getElementById('breakTimerText');
+        if (bannerTimer) bannerTimer.textContent = formatted;
+
+        const cardTimer = document.getElementById('cardBreakTimer');
+        if (cardTimer) cardTimer.textContent = formatted;
+    }
+
+    function startBreakTimer(startTimeMs) {
+        if (breakTimerInterval) clearInterval(breakTimerInterval);
+        breakStartTimeMs = startTimeMs || (Date.now() - clientSkewMs);
+        tickBreakTimer();
+        breakTimerInterval = setInterval(tickBreakTimer, 1000);
+    }
+
+    function stopBreakTimer() {
+        if (breakTimerInterval) {
+            clearInterval(breakTimerInterval);
+            breakTimerInterval = null;
+        }
+        breakStartTimeMs = null;
+    }
+
+    function applyDutyStatusUI(newStatus, breakStartedAt) {
+        const statusChanged = savedDutyStatus !== newStatus;
+        savedDutyStatus = newStatus;
+        currentBreakStartedAt = breakStartedAt;
+        if (statusChanged && dutyStatusCard) {
+            dutyStatusCard.classList.remove('is-status-changing');
+            requestAnimationFrame(function () {
+                dutyStatusCard.classList.add('is-status-changing');
             });
+            window.setTimeout(function () {
+                dutyStatusCard.classList.remove('is-status-changing');
+            }, 450);
+        }
+
+        // 1. Break Time Banner
+        const banner = document.getElementById('breakTimeBanner');
+        const breakStartedText = document.getElementById('breakStartedText');
+        if (newStatus === 'On Break') {
+            let startMs = null;
+            if (breakStartedAt) {
+                const parts = breakStartedAt.split(/[- :]/);
+                if (parts.length >= 6) {
+                    const parsedDate = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5]);
+                    startMs = parsedDate.getTime();
+                    if (breakStartedText) {
+                        breakStartedText.textContent = formatTimeAMPM(parsedDate);
+                    }
+                }
+            }
+            if (!startMs) {
+                startMs = Date.now() - clientSkewMs;
+                if (breakStartedText) {
+                    breakStartedText.textContent = formatTimeAMPM(new Date());
+                }
+            }
+            if (banner) {
+                banner.classList.remove('d-none');
+            }
+            startBreakTimer(startMs);
+        } else {
+            if (banner) {
+                banner.classList.add('d-none');
+            }
+            stopBreakTimer();
+        }
+
+        // 3. Status Card in metrics strip
+        const dutyCard = document.getElementById('dutyStatusCard');
+        const dutyIconBox = document.getElementById('dutyStatusIconBox');
+        const dutyIcon = document.getElementById('dutyStatusIcon');
+        const dutyVal = document.getElementById('dutyStatusValue');
+        const dutySub = document.getElementById('dutyStatusSubtitle');
+        const dutyCaret = document.getElementById('dutyStatusCaret');
+
+        if (dutyCard) {
+            dutyCard.classList.remove('duty-on-break', 'duty-off-duty');
+            if (newStatus === 'On Break') {
+                dutyCard.classList.add('duty-on-break');
+            } else if (newStatus === 'Off Duty') {
+                dutyCard.classList.add('duty-off-duty');
+            }
+        }
+        if (dutyVal) dutyVal.textContent = newStatus;
+
+        if (dutyIconBox && dutyIcon && dutyCaret) {
+            if (newStatus === 'On Break') {
+                dutyIconBox.className = 'op-icon-box bg-warning-subtle text-warning-emphasis';
+                dutyIcon.className = 'bi bi-cup-hot-fill fs-4';
+                dutyCaret.className = 'bi bi-chevron-down op-card-caret text-warning';
+                if (dutySub) dutySub.innerHTML = 'Break Time: <span id="cardBreakTimer">00:00:00</span>';
+                tickBreakTimer();
+            } else if (newStatus === 'Off Duty') {
+                dutyIconBox.className = 'op-icon-box bg-secondary-subtle text-secondary';
+                dutyIcon.className = 'bi bi-moon-stars fs-4';
+                dutyCaret.className = 'bi bi-chevron-down op-card-caret text-secondary';
+                if (dutySub) dutySub.textContent = 'Shift Finished \u00b7 Standby';
+            } else {
+                dutyIconBox.className = 'op-icon-box bg-success-subtle text-success';
+                dutyIcon.className = 'bi bi-broadcast fs-4';
+                dutyCaret.className = 'bi bi-chevron-down op-card-caret text-success';
+                if (dutySub) dutySub.textContent = 'Call Sign: Unit #<?= esc($officer['id']) ?> \u00b7 Active';
+            }
+        }
+
+        // 4. Hero Duty HUD
+        const hudBadge = document.getElementById('hudStatusBadge');
+        const hudRadarDot = document.getElementById('hudRadarDot');
+        const hudStatusLabel = document.getElementById('hudStatusLabel');
+        const hudTimeIcon = document.getElementById('hudTimeIcon');
+        const hudSectorIcon = document.getElementById('hudSectorIcon');
+        const hudSectorLabel = document.getElementById('hudSectorLabel');
+
+        if (hudBadge && hudRadarDot && hudStatusLabel) {
+            hudBadge.classList.remove('hud-badge-break', 'hud-badge-off');
+            hudRadarDot.classList.remove('radar-amber', 'radar-gray');
+
+            if (newStatus === 'On Break') {
+                hudBadge.classList.add('hud-badge-break');
+                hudRadarDot.classList.add('radar-amber');
+                hudStatusLabel.textContent = 'BREAK TIME ACTIVE';
+                if (hudTimeIcon) hudTimeIcon.className = 'bi bi-stopwatch text-warning me-1.5';
+                if (hudSectorIcon) hudSectorIcon.className = 'bi bi-pause-circle-fill text-warning me-1';
+                if (hudSectorLabel) hudSectorLabel.innerHTML = 'Patrol Paused &middot; On Break';
+            } else if (newStatus === 'Off Duty') {
+                hudBadge.classList.add('hud-badge-off');
+                hudRadarDot.classList.add('radar-gray');
+                hudStatusLabel.textContent = 'OFF DUTY';
+                if (hudTimeIcon) hudTimeIcon.className = 'bi bi-clock-history text-secondary me-1.5';
+                if (hudSectorIcon) hudSectorIcon.className = 'bi bi-moon-stars-fill text-secondary me-1';
+                if (hudSectorLabel) hudSectorLabel.innerHTML = 'Shift Concluded &middot; Standby';
+            } else {
+                hudStatusLabel.textContent = 'ON ACTIVE PATROL';
+                if (hudTimeIcon) hudTimeIcon.className = 'bi bi-clock-history text-warning me-1.5';
+                if (hudSectorIcon) hudSectorIcon.className = 'bi bi-geo-alt-fill text-danger me-1';
+                if (hudSectorLabel) hudSectorLabel.innerHTML = 'CTRAMO &middot; <?= esc($topLocation) ?>';
+            }
+        }
+    }
+
+    if (savedDutyStatus === 'On Break') {
+        startBreakTimer(breakStartTimeMs);
+    }
+
+    const dutyStatusForm = document.getElementById('dutyStatusForm');
+    const dutyStatusCard = document.getElementById('dutyStatusCard');
+    const dutyStatusOptionsTemplate = document.getElementById('dutyStatusOptionsTemplate');
+    let isSavingDutyStatus = false;
+
+    async function openDutyStatusDialog() {
+        if (isSavingDutyStatus) return;
+        if (!dutyStatusForm || !dutyStatusOptionsTemplate) {
+            console.error('Duty status dialog is missing its form or options template.');
+            return;
+        }
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert is required to change duty status.');
+            return;
+        }
+
+        const dialogResult = await Swal.fire({
+            title: '<span class="duty-status-title-kicker">FIELD STATUS</span><span class="duty-status-title-main"><i class="bi bi-broadcast"></i>Set your duty status</span>',
+            html: dutyStatusOptionsTemplate.innerHTML,
+            customClass: {
+                popup: 'duty-status-swal',
+                title: 'duty-status-swal-title',
+                htmlContainer: 'duty-status-swal-html',
+                actions: 'duty-status-swal-actions',
+                confirmButton: 'duty-status-swal-confirm',
+                cancelButton: 'duty-status-swal-cancel'
+            },
+            showCancelButton: true,
+            reverseButtons: true,
+            confirmButtonText: '<i class="bi bi-check2-circle me-1"></i>Save Status',
+            cancelButtonText: 'Cancel',
+            focusConfirm: false,
+            didOpen: function (popup) {
+                if (dutyStatusCard) dutyStatusCard.classList.add('is-open');
+                const options = Array.from(popup.querySelectorAll('.duty-option'));
+                let selectedOption = options.find(option => option.dataset.status === savedDutyStatus) || options[0];
+                options.forEach(function (option) {
+                    const isSelected = option === selectedOption;
+                    option.classList.toggle('is-selected', isSelected);
+                    option.setAttribute('aria-checked', String(isSelected));
+                    option.tabIndex = isSelected ? 0 : -1;
+                    option.addEventListener('click', function () {
+                        selectedOption = option;
+                        options.forEach(function (other) {
+                            const isCurrent = other === selectedOption;
+                            other.classList.toggle('is-selected', isCurrent);
+                            other.setAttribute('aria-checked', String(isCurrent));
+                            other.tabIndex = isCurrent ? 0 : -1;
+                        });
+                    });
+                    option.addEventListener('keydown', function (event) {
+                        if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+                        event.preventDefault();
+                        const direction = event.key === 'ArrowDown' ? 1 : -1;
+                        const nextIndex = (options.indexOf(option) + direction + options.length) % options.length;
+                        options[nextIndex].click();
+                        options[nextIndex].focus();
+                    });
+                });
+            },
+            willClose: function () {
+                if (dutyStatusCard) dutyStatusCard.classList.remove('is-open');
+            },
+            preConfirm: function () {
+                const selectedOption = Swal.getPopup()?.querySelector('.duty-option.is-selected');
+                const selectedStatus = selectedOption?.dataset.status;
+                if (!selectedStatus) {
+                    Swal.showValidationMessage('Choose a duty status before saving.');
+                    return false;
+                }
+                return selectedStatus;
+            }
         });
 
-        document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (option) {
-            option.addEventListener('click', function () {
-                document.querySelectorAll('#dutyStatusForm .duty-option').forEach(function (other) {
-                    other.classList.toggle('is-selected', other === option);
-                });
+        if (!dialogResult.isConfirmed || !dialogResult.value) return;
+
+        const selectedStatus = dialogResult.value;
+        const previousStatus = savedDutyStatus;
+        const previousBreakStartedAt = currentBreakStartedAt;
+        isSavingDutyStatus = true;
+        if (dutyStatusCard) {
+            dutyStatusCard.setAttribute('aria-busy', 'true');
+            dutyStatusCard.classList.add('is-saving');
+        }
+        applyDutyStatusUI(selectedStatus, null);
+        Swal.fire({
+            icon: 'info',
+            title: 'Saving duty status…',
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end',
+            timer: false,
+            customClass: { popup: 'duty-status-update-toast' }
+        });
+
+        try {
+            const formData = new FormData(dutyStatusForm);
+            formData.set('duty_status', selectedStatus);
+            const response = await fetch(dutyStatusForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
             });
+            let res;
+            try {
+                res = await response.json();
+            } catch (error) {
+                throw new Error('The server returned an invalid response.');
+            }
+            if (!response.ok || !res.success) {
+                throw new Error(res.message || 'Could not save the duty status. Please try again.');
+            }
+
+            applyDutyStatusUI(res.duty_status, res.break_started_at);
+            Swal.fire({
+                icon: res.duty_status === 'On Break' ? 'warning' : (res.duty_status === 'Active Patrol' ? 'success' : 'info'),
+                title: res.duty_status === 'On Break' ? 'Break Time Active' : res.duty_status,
+                text: res.duty_status === 'On Break'
+                    ? 'Your break has started. Field assignments are temporarily paused.'
+                    : (res.duty_status === 'Active Patrol' ? 'Duty status updated to Active Patrol.' : 'Shift finished. You are now Off Duty.'),
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                customClass: { popup: 'duty-status-update-toast' }
+            });
+        } catch (error) {
+            applyDutyStatusUI(previousStatus, previousBreakStartedAt);
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: error.message || 'Could not update status. Please try again.',
+                toast: true,
+                position: 'top-end',
+                timer: 4500,
+                showConfirmButton: false,
+                customClass: { popup: 'duty-status-update-toast' }
+            });
+        } finally {
+            isSavingDutyStatus = false;
+            if (dutyStatusCard) {
+                dutyStatusCard.removeAttribute('aria-busy');
+                dutyStatusCard.classList.remove('is-saving');
+            }
+        }
+    }
+
+    if (dutyStatusCard) {
+        dutyStatusCard.addEventListener('click', openDutyStatusDialog);
+        dutyStatusCard.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                openDutyStatusDialog();
+            }
+        });
+    }
+
+    // One-click "Resume Active Patrol" from Break Time Banner
+    const btnResumeActiveDuty = document.getElementById('btnResumeActiveDuty');
+    if (btnResumeActiveDuty) {
+        btnResumeActiveDuty.addEventListener('click', async function () {
+            btnResumeActiveDuty.disabled = true;
+            const origHtml = btnResumeActiveDuty.innerHTML;
+            btnResumeActiveDuty.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Resuming...';
+
+            const csrfInput = dutyStatusForm ? dutyStatusForm.querySelector('input[type="hidden"]') : null;
+            const formData = new FormData();
+            formData.append('duty_status', 'Active Patrol');
+            if (csrfInput) {
+                formData.append(csrfInput.name, csrfInput.value);
+            }
+
+            try {
+                const response = await fetch('<?= base_url('officer/profile/duty-status') ?>', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                const res = await response.json();
+                if (res.success) {
+                    applyDutyStatusUI('Active Patrol', null);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Active Patrol Resumed',
+                            text: 'Break ended. Welcome back on active duty!',
+                            timer: 3000,
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top-end'
+                        });
+                    }
+                }
+            } catch (err) {
+                window.location.reload();
+            } finally {
+                btnResumeActiveDuty.disabled = false;
+                btnResumeActiveDuty.innerHTML = origHtml;
+            }
         });
     }
 
@@ -1861,5 +2832,187 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateLiveClock, 1000);
 
 });
+
+    /* ── Citation Enforcement Record: switch the period in place ──
+       The card used to reload the whole profile page for every pill click.
+       Now only the card's figures change, and the previous numbers stay on
+       screen until the new ones arrive, so nothing blinks or jumps. */
+    (function () {
+        const endpoint = '<?= base_url('officer/profile/enforcement-summary') ?>';
+        const card     = document.querySelector('.record-card');
+        let inFlight = null;
+
+        function setText(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        }
+
+        function paint(data) {
+            const total = parseInt(data.total, 10) || 0;
+            const pct   = parseInt(data.pct, 10) || 0;
+
+            setText('cfrDateNote', data.dateNote || '');
+            setText('cfrTotalIssued', total);
+            setText('cfrPaidCount', parseInt(data.paid, 10) || 0);
+            setText('cfrPendingCount', parseInt(data.pending, 10) || 0);
+            setText('cfrPct', pct + '%');
+            setText('cfrTotalAmount', '\u20B1' + data.amount);
+
+            const bar = document.getElementById('cfrPctBar');
+            if (bar) bar.style.width = pct + '%';
+
+            document.querySelectorAll('[data-cfr-period]').forEach(function (pill) {
+                const on = pill.getAttribute('data-cfr-period') === data.period;
+                pill.classList.toggle('active', on);
+                if (on) {
+                    pill.setAttribute('aria-current', 'page');
+                } else {
+                    pill.removeAttribute('aria-current');
+                }
+            });
+
+            const customPill = document.getElementById('cfrCustomPill');
+            if (customPill) customPill.classList.toggle('active', data.period === 'custom');
+
+            const startBox = document.getElementById('cfrStartDate');
+            const endBox   = document.getElementById('cfrEndDate');
+            if (startBox && data.customStart) startBox.value = data.customStart;
+            if (endBox && data.customEnd) endBox.value = data.customEnd;
+
+            if (data.period === 'custom' && window.bootstrap) {
+                const panel = document.getElementById('cfrCustomRange');
+                if (panel) window.bootstrap.Collapse.getOrCreateInstance(panel).show();
+            }
+        }
+
+        function load(params) {
+            if (inFlight) inFlight.abort();
+            inFlight = new AbortController();
+
+            if (card) card.classList.add('cfr-refreshing');
+
+            fetch(endpoint + '?' + new URLSearchParams(params).toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin',
+                signal: inFlight.signal
+            })
+                .then(function (res) { return res.json(); })
+                .then(function (data) { if (data && data.ok) paint(data); })
+                .catch(function () { /* keep the last good figures rather than blanking the card */ })
+                .finally(function () { if (card) card.classList.remove('cfr-refreshing'); });
+        }
+
+        document.querySelectorAll('[data-cfr-period]').forEach(function (pill) {
+            pill.addEventListener('click', function (event) {
+                event.preventDefault();
+                load({ period: pill.getAttribute('data-cfr-period') });
+            });
+        });
+
+        const customForm   = document.getElementById('cfrCustomForm');
+        const monthSelect  = document.getElementById('cfrMonthSelect');
+        const yearSelect   = document.getElementById('cfrYearSelect');
+        const startBox     = document.getElementById('cfrStartDate');
+        const endBox       = document.getElementById('cfrEndDate');
+
+        function padZero(num) {
+            return num < 10 ? '0' + num : String(num);
+        }
+
+        function formatDate(d) {
+            return d.getFullYear() + '-' + padZero(d.getMonth() + 1) + '-' + padZero(d.getDate());
+        }
+
+        if (monthSelect && yearSelect) {
+            function handleMonthDropdown() {
+                const m = parseInt(monthSelect.value, 10);
+                const y = parseInt(yearSelect.value, 10);
+                if (m >= 1 && m <= 12 && y > 2000) {
+                    const firstDay = new Date(y, m - 1, 1);
+                    const lastDay  = new Date(y, m, 0);
+                    const startStr = formatDate(firstDay);
+                    const endStr   = formatDate(lastDay);
+                    if (startBox) startBox.value = startStr;
+                    if (endBox) endBox.value     = endStr;
+                    load({
+                        period: 'custom',
+                        start_date: startStr,
+                        end_date: endStr
+                    });
+                }
+            }
+            monthSelect.addEventListener('change', handleMonthDropdown);
+            yearSelect.addEventListener('change', function () {
+                if (monthSelect.value) handleMonthDropdown();
+            });
+        }
+
+        /* Committing a date answers straight away: the picker fires `change` the
+           moment a day is chosen, so the card updates in place with no Apply
+           click and no page reload. `input` only clears the dropdowns while the
+           officer is still choosing, so nothing fires mid-pick. */
+        if (startBox && endBox) {
+            let dateTimer = null;
+
+            // A range that happens to be one whole month keeps the Month / Year
+            // dropdowns honest instead of leaving them on "Choose Month".
+            function syncDropdownsToRange() {
+                if (!monthSelect || !yearSelect || !startBox.value || !endBox.value) return;
+
+                const startDate = new Date(startBox.value + 'T00:00:00');
+                const endDate   = new Date(endBox.value + 'T00:00:00');
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
+
+                const yearExists = Array.prototype.some.call(yearSelect.options, function (option) {
+                    return option.value === String(startDate.getFullYear());
+                });
+                const lastDayOfMonth = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate();
+                const wholeMonth = yearExists
+                    && startDate.getFullYear() === endDate.getFullYear()
+                    && startDate.getMonth() === endDate.getMonth()
+                    && startDate.getDate() === 1
+                    && endDate.getDate() === lastDayOfMonth;
+
+                if (wholeMonth) {
+                    monthSelect.value = padZero(startDate.getMonth() + 1);
+                    yearSelect.value  = String(startDate.getFullYear());
+                } else {
+                    monthSelect.value = '';
+                }
+            }
+
+            function applyPickedRange() {
+                if (!startBox.value || !endBox.value) return;
+                syncDropdownsToRange();
+                load({
+                    period: 'custom',
+                    start_date: startBox.value,
+                    end_date: endBox.value
+                });
+            }
+
+            [startBox, endBox].forEach(function (box) {
+                box.addEventListener('input', function () {
+                    if (monthSelect) monthSelect.value = '';
+                });
+                box.addEventListener('change', function () {
+                    // Tabbing straight from From to To settles into one request.
+                    if (dateTimer) clearTimeout(dateTimer);
+                    dateTimer = setTimeout(applyPickedRange, 180);
+                });
+            });
+        }
+
+        if (customForm) {
+            customForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                load({
+                    period: 'custom',
+                    start_date: customForm.elements.start_date.value,
+                    end_date: customForm.elements.end_date.value
+                });
+            });
+        }
+    })();
 </script>
 <?= $this->endSection() ?>

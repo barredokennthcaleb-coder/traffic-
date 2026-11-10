@@ -70,8 +70,14 @@ class Security extends BaseConfig
      * --------------------------------------------------------------------------
      *
      * Regenerate CSRF Token on every submission.
+     *
+     * Kept OFF on purpose: this app has several pages with multiple forms and
+     * AJAX actions (duty status, profile photo, modals). Rotating the token on
+     * every request invalidates the other forms still on the page and makes the
+     * second action fail with a 403. The token is still per-browser, expiring
+     * after `$expires` seconds.
      */
-    public bool $regenerate = true;
+    public bool $regenerate = false;
 
     /**
      * --------------------------------------------------------------------------
@@ -82,5 +88,5 @@ class Security extends BaseConfig
      *
      * @see https://codeigniter4.github.io/userguide/libraries/security.html#redirection-on-failure
      */
-    public bool $redirect = (ENVIRONMENT === 'production');
+    public bool $redirect = true;
 }

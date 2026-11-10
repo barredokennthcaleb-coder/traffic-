@@ -8,6 +8,10 @@ class CreateInspectionsTable extends Migration
 {
     public function up()
     {
+        if ($this->db->tableExists('inspections')) {
+            return;
+        }
+
         $this->forge->addField([
             'id' => [
                 'type'           => 'INT',
@@ -60,89 +64,89 @@ class CreateInspectionsTable extends Migration
             ],
             // Checkboxes
             'cert_attendance' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'outside_route' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'outside_route_8x8' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'city_proper' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'trash_can' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'mtop_8x16_route' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'mtop_8x8_route' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'mtop_dashboard' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'signal_light_left' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'signal_light_right' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'head_light' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'stop_light' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'side_mirror' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'horn' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'standard_muffler' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'color_coding' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'tarifa' => [
-                'type'    => 'TINYINT',
+                'type'       => 'TINYINT',
                 'constraint' => 1,
-                'default' => 0,
+                'default'    => 0,
             ],
             'inspected_by' => [
                 'type'       => 'VARCHAR',
@@ -165,11 +169,13 @@ class CreateInspectionsTable extends Migration
             ],
         ]);
         $this->forge->addKey('id', true);
-        $this->forge->createTable('inspections');
+        $this->forge->createTable('inspections', true);
     }
 
     public function down()
     {
-        $this->forge->dropTable('inspections');
+        if ($this->db->tableExists('inspections')) {
+            $this->forge->dropTable('inspections', true);
+        }
     }
 }

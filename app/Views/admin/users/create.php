@@ -92,7 +92,7 @@
         left: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         font-size: 0.95rem;
         pointer-events: none;
         transition: color 0.2s ease, transform 0.2s ease;
@@ -151,7 +151,7 @@
         transform: translateY(-50%);
         background: transparent;
         border: none;
-        color: #94a3b8;
+        color: var(--text-subtle, #5c6b80);
         padding: 6px 10px;
         border-radius: 8px;
         cursor: pointer;
@@ -187,7 +187,7 @@
     }
 
     .role-card-item:hover {
-        border-color: #94a3b8;
+        border-color: var(--text-subtle, #5c6b80);
         background: #fafafa;
         transform: translateY(-2px);
         box-shadow: 0 6px 16px -4px rgba(15, 23, 42, 0.08);
@@ -406,7 +406,7 @@
     <div class="form-wrapper">
         <!-- Top Navigation -->
         <div class="d-flex align-items-center justify-content-between mb-3 px-1">
-            <a href="<?= base_url('users') ?>" class="btn btn-sm btn-light border text-secondary px-3 py-1.5" style="border-radius: 8px;">
+            <a href="<?= base_url('users') ?>" class="btn btn-sm btn-light border text-secondary px-3 py-1.5 btn-back-electric" style="border-radius: 8px;">
                 <i class="bi bi-arrow-left me-1"></i> Back to Users
             </a>
             <span class="text-muted small fw-medium">New System Account</span>
@@ -496,7 +496,7 @@
                             <i class="bi bi-person field-icon"></i>
                             <input type="text" name="firstname" id="firstname" class="form-control"
                                    required autocomplete="off"
-                                   value="<?= old('firstname', $defaults['firstname']) ?>">
+                                   value="<?= esc(old('firstname', $defaults['firstname'])) ?>">
                         </div>
                     </div>
 
@@ -506,7 +506,7 @@
                             <i class="bi bi-person field-icon"></i>
                             <input type="text" name="lastname" id="lastname" class="form-control"
                                    required autocomplete="off"
-                                   value="<?= old('lastname', $defaults['lastname']) ?>">
+                                   value="<?= esc(old('lastname', $defaults['lastname'])) ?>">
                         </div>
                     </div>
 
@@ -516,7 +516,7 @@
                             <i class="bi bi-fonts field-icon"></i>
                             <input type="text" name="middle_initial" id="middle_initial" class="form-control text-center"
                                    maxlength="10" autocomplete="off"
-                                   value="<?= old('middle_initial', $defaults['middle_initial'] ?? '') ?>">
+                                   value="<?= esc(old('middle_initial', $defaults['middle_initial'] ?? '')) ?>">
                         </div>
                     </div>
                 </div>
@@ -528,7 +528,7 @@
                         <div class="field-group">
                             <i class="bi bi-calendar-event field-icon"></i>
                             <input type="date" name="birthdate" id="birthdate" class="form-control" required
-                                   value="<?= old('birthdate', $defaults['birthdate'] ?? '') ?>">
+                                   value="<?= esc(old('birthdate', $defaults['birthdate'] ?? '')) ?>">
                         </div>
                     </div>
 
@@ -541,7 +541,7 @@
                             <i class="bi bi-hash field-icon"></i>
                             <input type="number" name="age" id="age" class="form-control"
                                    min="1" max="120" step="1" required
-                                   value="<?= old('age', (string) $defaults['age']) ?>">
+                                   value="<?= esc(old('age', (string) $defaults['age'])) ?>">
                         </div>
                     </div>
                 </div>
@@ -553,7 +553,18 @@
                         <i class="bi bi-geo-alt field-icon"></i>
                         <input type="text" name="address" id="address" class="form-control"
                                required autocomplete="off"
-                               value="<?= old('address', $defaults['address']) ?>">
+                               value="<?= esc(old('address', $defaults['address'])) ?>">
+                    </div>
+                </div>
+
+                <!-- Driver's License (optional) -->
+                <div class="mb-3">
+                    <label for="license_number" class="form-label">Driver's License No. <span class="text-muted fw-normal small">(Optional)</span></label>
+                    <div class="field-group">
+                        <i class="bi bi-card-text field-icon"></i>
+                        <input type="text" name="license_number" id="license_number" class="form-control"
+                               placeholder="e.g. F02-00-123456" autocomplete="off"
+                               value="<?= esc(old('license_number', $defaults['license_number'] ?? '')) ?>">
                     </div>
                 </div>
 
@@ -565,7 +576,7 @@
                             <i class="bi bi-geo field-icon"></i>
                             <input type="text" name="assigned_station" id="assigned_station" class="form-control"
                                    placeholder="e.g. Ceres Terminal, Main Crossing..." autocomplete="off"
-                                   value="<?= old('assigned_station', $defaults['assigned_station'] ?? '') ?>">
+                                   value="<?= esc(old('assigned_station', $defaults['assigned_station'] ?? '')) ?>">
                         </div>
                     </div>
                 </div>
@@ -583,7 +594,7 @@
                             <i class="bi bi-person-badge field-icon"></i>
                             <input type="text" name="username" id="username" class="form-control" 
                                    required autocomplete="off"
-                                   value="<?= old('username', $defaults['username']) ?>">
+                                   value="<?= esc(old('username', $defaults['username'])) ?>">
                         </div>
                     </div>
 
@@ -593,7 +604,7 @@
                             <i class="bi bi-envelope field-icon"></i>
                             <input type="email" name="email" id="email" class="form-control" 
                                    required autocomplete="off"
-                                   value="<?= old('email') ?>">
+                                   value="<?= esc(old('email')) ?>">
                         </div>
                     </div>
                 </div>

@@ -8,23 +8,39 @@ class AddBirthdateAndMiddleInitialToUsersTable extends Migration
 {
     public function up()
     {
-        $this->forge->addColumn('users', [
+        $this->db->resetDataCache();
+        $columns = [
             'middle_initial' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 10,
                 'null'       => true,
-                'after'      => 'firstname',
             ],
             'birthdate' => [
                 'type' => 'DATE',
                 'null' => true,
-                'after' => 'age',
             ],
-        ]);
+        ];
+
+        $missing = [];
+
+        foreach ($columns as $name => $definition) {
+            if (! $this->db->fieldExists($name, 'users')) {
+                $missing[$name] = $definition;
+            }
+        }
+
+        if ($missing !== []) {
+            $this->forge->addColumn('users', $missing);
+        }
     }
 
     public function down()
     {
-        $this->forge->dropColumn('users', ['middle_initial', 'birthdate']);
+        $this->db->resetDataCache();
+        foreach (['middle_initial', 'birthdate'] as $name) {
+            if ($this->db->fieldExists($name, 'users')) {
+                $this->forge->dropColumn('users', $name);
+            }
+        }
     }
 }

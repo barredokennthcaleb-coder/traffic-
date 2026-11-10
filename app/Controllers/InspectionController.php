@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\InspectionChecklist;
 use App\Models\InspectionModel;
 
 class InspectionController extends BaseController
@@ -45,20 +46,7 @@ class InspectionController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $data = $this->request->getPost();
-        
-        // Handle checkboxes
-        $checkboxes = [
-            'cert_attendance', 'outside_route', 'outside_route_8x8', 'city_proper', 'trash_can',
-            'mtop_8x16_route', 'mtop_8x8_route', 'mtop_dashboard',
-            'signal_light_left', 'signal_light_right', 'head_light',
-            'stop_light', 'side_mirror', 'horn', 'standard_muffler',
-            'color_coding', 'tarifa'
-        ];
-
-        foreach ($checkboxes as $cb) {
-            $data[$cb] = isset($data[$cb]) ? 1 : 0;
-        }
+        $data = InspectionChecklist::normalize((array) $this->request->getPost());
 
         if ($this->inspectionModel->save($data)) {
             return redirect()->to(base_url('inspections'))->with('success', 'Inspection report saved successfully.');
@@ -83,6 +71,11 @@ class InspectionController extends BaseController
 
     public function update($id)
     {
+        $inspection = $this->inspectionModel->find($id);
+        if (! $inspection) {
+            return redirect()->to(base_url('inspections'))->with('error', 'Inspection report not found.');
+        }
+
         $rules = [
             'mtop_no'       => 'required',
             'operator_name' => 'required',
@@ -94,21 +87,8 @@ class InspectionController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $data = $this->request->getPost();
+        $data = InspectionChecklist::normalize((array) $this->request->getPost());
         $data['id'] = $id;
-
-        // Handle checkboxes
-        $checkboxes = [
-            'cert_attendance', 'outside_route', 'outside_route_8x8', 'city_proper', 'trash_can',
-            'mtop_8x16_route', 'mtop_8x8_route', 'mtop_dashboard',
-            'signal_light_left', 'signal_light_right', 'head_light',
-            'stop_light', 'side_mirror', 'horn', 'standard_muffler',
-            'color_coding', 'tarifa'
-        ];
-
-        foreach ($checkboxes as $cb) {
-            $data[$cb] = isset($data[$cb]) ? 1 : 0;
-        }
 
         if ($this->inspectionModel->save($data)) {
             return redirect()->to(base_url('inspections'))->with('success', 'Inspection report updated successfully.');
@@ -119,6 +99,11 @@ class InspectionController extends BaseController
 
     public function delete($id)
     {
+        $inspection = $this->inspectionModel->find($id);
+        if (! $inspection) {
+            return redirect()->to(base_url('inspections'))->with('error', 'Inspection report not found.');
+        }
+
         if ($this->inspectionModel->delete($id)) {
             return redirect()->to(base_url('inspections'))->with('success', 'Inspection report deleted successfully.');
         }

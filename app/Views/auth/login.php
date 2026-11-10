@@ -195,21 +195,21 @@
 
         <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
+                <i class="bi bi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
+                <i class="bi bi-exclamation-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
 
         <?php if (session()->getFlashdata('warning')): ?>
             <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-2"></i><?= session()->getFlashdata('warning') ?>
+                <i class="bi bi-exclamation-triangle me-2"></i><?= esc(session()->getFlashdata('warning')) ?>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -223,7 +223,7 @@
                     <input type="email" name="email" class="form-control" id="email" 
                            placeholder="Enter your email" 
                            required 
-                           value="<?= old('email') ?>"
+                           value="<?= esc(old('email')) ?>"
                            autocomplete="email"
                            list="emailSuggestions">
                     <datalist id="emailSuggestions"></datalist>
@@ -242,12 +242,11 @@
                     </span>
                 </div>
             </div>
-            <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div class="mb-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="rememberMe" style="border-color: #cbd5e0;">
                     <label class="form-check-label text-muted small" for="rememberMe">Remember me</label>
                 </div>
-                <a href="<?= base_url('forgot-password') ?>" class="text-decoration-none small" style="color: #059669; font-weight: 600;">Forgot password?</a>
             </div>
 
             <div class="d-grid gap-2 mt-4">
@@ -345,5 +344,6 @@
     document.addEventListener('DOMContentLoaded', loadSavedEmails);
 </script>
 
+<?= view('theme/posthog') ?>
 </body>
 </html>

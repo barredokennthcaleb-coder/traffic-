@@ -37,3 +37,27 @@ node_modules/
 .DS_Store
 Thumbs.db
 /scratch/
+
+# Generated / regenerated at will, never hand-edited
+build/
+screenshots/
+mockups/
+.freebuff/
+_ide_helper.php
+writable/backups/
+*.bak
+
+# Local tool data and database backups must never be committed
+.appdata/
+.localappdata/
+writable/_db_backup_*/
+*.ibd
+*.frm
+
+# Stray artifacts: local database dumps, page previews, screenshots
+database.sql
+preview_report.html
+/screenshot_*.png
+vibe_images/
+writable/*.png
+writable/*.pdf

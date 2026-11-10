@@ -8,7 +8,8 @@ class AddLicenseNumberToViolationsTable extends Migration
 {
     public function up()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         if (!$db->fieldExists('license_number', 'violations')) {
             $this->forge->addColumn('violations', [
                 'license_number' => [
@@ -23,7 +24,8 @@ class AddLicenseNumberToViolationsTable extends Migration
 
     public function down()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         if ($db->fieldExists('license_number', 'violations')) {
             $this->forge->dropColumn('violations', 'license_number');
         }

@@ -18,7 +18,7 @@
                         <h5 class="mb-0 fw-bold" style="color: var(--text-strong);">Violations Summary Report</h5>
                         <span class="badge bg-danger-subtle text-danger fw-bold border border-danger-subtle" style="font-size: 0.72rem;">Violations Only</span>
                     </div>
-                    <p class="mb-0 text-muted small">Analyze violation counts, frequency, and offense rankings without revenue data</p>
+                    <p class="mb-0 text-muted small">Officer citation tallies for the selected period.</p>
                 </div>
             </div>
 
@@ -32,6 +32,9 @@
                     <a href="<?= base_url('reports/violations') ?>" class="btn btn-danger active fw-bold" title="Currently viewing Violations Summary Only">
                         <i class="bi bi-shield-check me-1"></i> Violations Only
                     </a>
+                    <a href="<?= base_url('reports/violators') ?>" class="btn btn-outline-primary fw-semibold" title="Open the apprehension and sanction report of one violator">
+                        <i class="bi bi-person-vcard me-1"></i> Violator Reports
+                    </a>
                 </div>
 
                 <!-- Real-time Status Chip & Quick Refresh -->
@@ -43,9 +46,13 @@
                     <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-2xs" id="btnQuickRefresh" title="Check for real-time ticket additions">
                         <i class="bi bi-arrow-repeat" id="refreshSpinner"></i> <span class="d-none d-lg-inline">Check Updates</span>
                     </button>
+                    <label class="auto-sync-toggle" for="autoSyncToggle" title="Automatically reload the report when new citations are recorded (read-only check, every minute)">
+                        <input type="checkbox" id="autoSyncToggle"> Auto-update
+                    </label>
                 </div>
             </div>
 
+            <?php if (empty($awaiting_filter)): ?>
             <div class="d-flex gap-2 flex-wrap align-items-center">
                 <a href="<?= base_url('reports/violations-export-csv?' . http_build_query($_GET)) ?>" class="btn btn-outline-success btn-sm fw-semibold d-flex align-items-center gap-2 px-3">
                     <i class="bi bi-file-earmark-excel-fill"></i> Export CSV
@@ -54,11 +61,16 @@
                     <i class="bi bi-printer-fill"></i> Print / Save PDF
                 </button>
             </div>
+            <?php endif; ?>
         </div>
         <div class="card-body bg-transparent pt-0 pb-3 px-4">
             <div class="text-end mb-3 pb-2 border-bottom">
                 <div class="text-muted small" style="font-size: 0.74rem;">
-                    <i class="bi bi-info-circle me-1 text-danger"></i>Report Period: <strong><?= date('M d, Y', strtotime($start_date)) ?> &ndash; <?= date('M d, Y', strtotime($end_date)) ?></strong>
+                    <?php if (empty($awaiting_filter)): ?>
+                        <i class="bi bi-info-circle me-1 text-danger"></i>Report Period: <strong><?= date('M d, Y', strtotime($start_date)) ?> &ndash; <?= date('M d, Y', strtotime($end_date)) ?></strong>
+                    <?php else: ?>
+                        <i class="bi bi-info-circle me-1 text-danger"></i>No period selected yet &mdash; pick a report type below.
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -69,6 +81,9 @@
                 <div class="col-xl-2 col-lg-2 col-md-2 col-sm-6 col-12">
                     <label for="period_type" class="form-label filter-label">Report Type</label>
                     <select name="period_type" id="period_type" class="form-select form-select-sm" onchange="togglePeriodInputs(this.value)">
+                        <?php if (! empty($awaiting_filter)): ?>
+                        <option value="" selected disabled>— Choose report type —</option>
+                        <?php endif; ?>
                         <option value="weekly"  <?= ($period_type === 'weekly')  ? 'selected' : '' ?>>📅 Weekly Report</option>
                         <option value="monthly" <?= ($period_type === 'monthly') ? 'selected' : '' ?>>📆 Monthly Report</option>
                         <option value="yearly"  <?= ($period_type === 'yearly')  ? 'selected' : '' ?>>📊 Full Year Report</option>
@@ -102,10 +117,11 @@
                                 '05' => 'May',       '06' => 'June',     '07' => 'July',      '08' => 'August',
                                 '09' => 'September', '10' => 'October',  '11' => 'November',  '12' => 'December'
                             ];
-                            $selectedMonth = sprintf('%02d', (int)$month);
+                            $selectedMonth = (int)$month;
                             foreach($monthList as $mCode => $mTitle):
+                                $mVal = sprintf('%02d', (int)$mCode);
                             ?>
-                                <option value="<?= $mCode ?>" <?= ($selectedMonth === $mCode) ? 'selected' : '' ?>><?= $mTitle ?></option>
+                                <option value="<?= $mVal ?>" <?= ($selectedMonth === (int)$mCode) ? 'selected' : '' ?>><?= $mTitle ?></option>
                             <?php endforeach; ?>
                         </select>
                         <select name="year" id="monthYearSelect" class="form-select form-select-sm px-1" style="max-width: 80px;" onchange="updateMonthBadge()" <?= ($period_type === 'monthly') ? '' : 'disabled' ?>>
@@ -144,9 +160,9 @@
                     <label for="status" class="form-label filter-label">Citation Status</label>
                     <select name="status" id="status" class="form-select form-select-sm">
                         <option value="">All Statuses</option>
-                        <option value="Paid"      <?= ($status_filter === 'Paid')      ? 'selected' : '' ?>>✅ Paid Only</option>
-                        <option value="Pending"   <?= ($status_filter === 'Pending')   ? 'selected' : '' ?>>⏳ Pending</option>
-                        <option value="Cancelled" <?= ($status_filter === 'Cancelled') ? 'selected' : '' ?>>❌ Cancelled</option>
+                        <option value="Paid"      <?= ($status_filter === 'Paid')      ? 'selected' : '' ?>>Paid only</option>
+                        <option value="Pending"   <?= ($status_filter === 'Pending')   ? 'selected' : '' ?>>Pending</option>
+                        <option value="Cancelled" <?= ($status_filter === 'Cancelled') ? 'selected' : '' ?>>Cancelled</option>
                     </select>
                 </div>
 
@@ -169,11 +185,31 @@
                 </div>
 
             </form>
+
         </div>
     </div>
 
+    <?php if (! empty($awaiting_filter)): ?>
+    <!-- Same rule as the revenue report: the document waits for a period. -->
+    <div class="card border-0 shadow-sm premium-reveal" id="reportEmptyState" style="--reveal-delay: 0.1s;">
+        <div class="card-body text-center py-5 px-4">
+            <div class="mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:56px;height:56px;border-radius:16px;background:rgba(220,38,38,0.1);color:#dc2626;font-size:1.5rem;">
+                <i class="bi bi-funnel"></i>
+            </div>
+            <h5 class="fw-bold mb-1" style="color: var(--text-strong);">Choose a report period</h5>
+            <p class="text-muted small mb-4">The summary is built only from the period you ask for — weekly, monthly or full year.</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="<?= base_url('reports/violations?period_type=weekly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-week me-1"></i>Weekly</a>
+                <a href="<?= base_url('reports/violations?period_type=monthly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-month me-1"></i>Monthly</a>
+                <a href="<?= base_url('reports/violations?period_type=yearly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar3 me-1"></i>Full Year</a>
+                <a href="<?= base_url('reports/violations?period_type=custom') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-range me-1"></i>Custom Range</a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Printable Official Report Document -->
-    <div class="report-document-card premium-reveal" id="reportDocument" style="--reveal-delay: 0.15s;">
+    <div class="report-document-card premium-reveal<?= empty($awaiting_filter) ? '' : ' d-none' ?>" id="reportDocument" style="--reveal-delay: 0.15s;">
 
         <!-- Header Section -->
         <div class="report-header">
@@ -185,7 +221,7 @@
                 <div class="rep-office">OFFICE OF THE CITY MAYOR</div>
                 <div class="rep-city">Kabankalan City, Negros Occidental</div>
                 <div class="rep-dept">CITY TRAFFIC MANAGEMENT &amp; TRANSPORT REGULATION OFFICE (CTRAMO)</div>
-                <h2 class="rep-main-title">TRAFFIC VIOLATIONS &amp; OFFENSE FREQUENCY SUMMARY REPORT</h2>
+                <h2 class="rep-main-title">TRAFFIC VIOLATIONS SUMMARY REPORT</h2>
                 <div class="rep-period">
                     Covered Period: <strong><?= date('M d, Y', strtotime($start_date)) ?> &ndash; <?= date('M d, Y', strtotime($end_date)) ?></strong>
                     (<?= ($period_type === 'yearly') ? "Annual Summary CY " . esc($year) : ucfirst($period_type) . " Summary" ?>)
@@ -200,178 +236,131 @@
         </div>
 
         <?php
-            $totalIncidents   = (int)($summary['total_violations'] ?? 0);
-            $totalTickets     = (int)($summary['total_tickets'] ?? 0);
-            $paidCount        = (int)($status_counts['Paid'] ?? 0);
-            $pendingCount     = (int)($status_counts['Pending'] ?? 0);
-            $cancelledCount   = (int)($status_counts['Cancelled'] ?? 0);
-            $resolutionRate   = $totalIncidents > 0 ? round(($paidCount / $totalIncidents) * 100, 1) : 0;
-            $pendingRate      = $totalIncidents > 0 ? round(($pendingCount / $totalIncidents) * 100, 1) : 0;
-            $topShare         = $totalIncidents > 0 ? round(((int)($top_offense['count'] ?? 0) / $totalIncidents) * 100, 1) : 0;
-            // Charts grow with the category count: the full-year report lists every
-            // offense, and each wrapped category label needs room for two lines.
-            $chartHeight      = max(230, (int) $unique_categories * 28);
+        // ── The three units this report counts ────────────────────────────
+        // A citation (ticket) is one apprehension and may carry several
+        // offenses; a violator is a person; an offense entry is one row in the
+        // violations table. They are different quantities, so every figure.
+        // below names its unit instead of leaving the reader to guess why
+        // "16 citations" sits beside "41 offenses".
+        $sumCitations = (int) ($summary['total_tickets'] ?? 0);
+        $sumOffenses  = (int) ($summary['total_violations'] ?? 0);
+        $sumViolators = (int) ($violator_count ?? 0);
+        $sumTypes     = (int) $unique_categories;
+
+        // Offense entries per citation: the ratio that ties the two units
+        // together, and the number people ask about first.
+        $sumPerCitation = $sumCitations > 0 ? $sumOffenses / $sumCitations : 0;
+
+        $sumTopName  = (string) ($top_offense['violation_type'] ?? '—');
+        $sumTopCount = (int) ($top_offense['count'] ?? 0);
+
+        $sumPeakCount = (int) ($peak_period['count'] ?? 0);
+
+        // The peak card names the bucket the chart is actually divided into, so
+        // it never says "Peak Month" while showing a day (weekly) or a week
+        // (monthly). A full-year report reads Peak Month, as intended.
+        $sumPeakTitle = match ($period_type) {
+            'yearly'  => 'Peak Month',
+            'monthly' => 'Peak Week',
+            'weekly'  => 'Peak Day',
+            default   => 'Peak Period',
+        };
+
+        // Entry-level status split, straight from the rows the report read.
+        $sumPaid      = (int) ($status_counts['Paid'] ?? 0);
+        $sumPending   = (int) ($status_counts['Pending'] ?? 0);
+        $sumCancelled = (int) ($status_counts['Cancelled'] ?? 0);
+
+        // The dashboard's violation palette (--dash-nature-palette), in the
+        // same order. The dashboard paints offense ranks with it, so ranking
+        // an offense here by the same count gives it the same color it has on
+        // the dashboard: Unlicensed Driver indigo, Invalid/Suspended CR teal,
+        // Discourteous Driver green, and so on down the list.
+        $naturePalette = [
+            '#4f46e5', '#0891b2', '#059669', '#d97706', '#db2777',
+            '#dc2626', '#7c3aed', '#0f766e', '#ea580c', '#65a30d',
+            '#0284c7', '#9333ea', '#16a34a', '#c2410c', '#be123c',
+            '#6d28d9', '#0e7490', '#047857', '#b45309', '#be185d',
+        ];
         ?>
 
-        <!-- Summary KPI Cards (Incident Status Aligned with Dashboard) -->
-        <div class="report-kpi-grid">
-            <div class="report-kpi-box border-start border-4 border-primary">
-                <div class="d-flex align-items-center justify-content-between text-muted mb-1">
-                    <span class="kpi-label">Total Incidents</span>
-                    <i class="bi bi-file-earmark-text text-primary opacity-75 fs-6"></i>
-                </div>
-                <div class="kpi-val text-primary"><?= number_format($totalIncidents) ?></div>
-                <div class="kpi-sub d-flex align-items-center justify-content-between">
-                    <span><?= number_format($totalTickets) ?> Citations Issued</span>
-                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-0.5" style="font-size:0.68rem;">All Records</span>
+        <!-- ═══ Key figures for the period ═══
+             Every number below is read from the same record set the dashboard
+             uses, so this sheet and the dashboard cannot disagree about how
+             many citations, people or offenses the period produced. -->
+        <div class="vsum-kpi-grid">
+            <div class="vsum-kpi">
+                <div class="vsum-kpi-label">Total Citations</div>
+                <div class="vsum-kpi-value"><?= number_format($sumCitations) ?></div>
+                <div class="vsum-kpi-sub">apprehension tickets issued in the period</div>
+            </div>
+            <div class="vsum-kpi">
+                <div class="vsum-kpi-label">Most Committed Violations</div>
+                <div class="vsum-kpi-value vsum-kpi-value--sm"><?= esc($sumTopName) ?></div>
+                <div class="vsum-kpi-sub">
+                    <?= number_format($sumTopCount) ?> sanctions recorded
                 </div>
             </div>
-
-            <div class="report-kpi-box success border-start border-4 border-success">
-                <div class="d-flex align-items-center justify-content-between text-muted mb-1">
-                    <span class="kpi-label">Settled / Paid Status</span>
-                    <i class="bi bi-check-circle-fill text-success opacity-75 fs-6"></i>
-                </div>
-                <div class="kpi-val text-success"><?= number_format($paidCount) ?></div>
-                <div class="kpi-sub d-flex align-items-center justify-content-between">
-                    <span>Resolution Rate</span>
-                    <span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.68rem;"><?= $resolutionRate ?>% Settled</span>
-                </div>
-            </div>
-
-            <div class="report-kpi-box warning border-start border-4 border-warning">
-                <div class="d-flex align-items-center justify-content-between text-muted mb-1">
-                    <span class="kpi-label">Pending / Unsettled</span>
-                    <i class="bi bi-clock-fill text-warning-emphasis opacity-75 fs-6"></i>
-                </div>
-                <div class="kpi-val text-warning-emphasis"><?= number_format($pendingCount) ?></div>
-                <div class="kpi-sub d-flex align-items-center justify-content-between">
-                    <span>Awaiting Payment</span>
-                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.68rem;"><?= $pendingRate ?>% Pending</span>
-                </div>
-            </div>
-
-            <div class="report-kpi-box border-start border-4 border-danger">
-                <div class="d-flex align-items-center justify-content-between text-muted mb-1">
-                    <span class="kpi-label">Most Prevalent Offense</span>
-                    <i class="bi bi-exclamation-octagon text-danger opacity-75 fs-6"></i>
-                </div>
-                <div class="kpi-val kpi-val-offense text-danger" title="<?= esc($top_offense['violation_type'] ?? 'None') ?>">
-                    <?= esc($top_offense['violation_type'] ?? 'None') ?>
-                </div>
-                <div class="kpi-sub d-flex align-items-center justify-content-between">
-                    <span><?= number_format($top_offense['count'] ?? 0) ?> Occurrences</span>
-                    <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.68rem;"><?= $topShare ?>% Share</span>
+            <div class="vsum-kpi">
+                <div class="vsum-kpi-label"><?= esc($sumPeakTitle) ?></div>
+                <div class="vsum-kpi-value vsum-kpi-value--sm"><?= esc($peak_period['label'] ?? '—') ?></div>
+                <div class="vsum-kpi-sub">
+                    <?= number_format($sumPeakCount) ?> sanctions &mdash; the most in the period
                 </div>
             </div>
         </div>
 
-        <!-- ═══ Section: Violation Frequency & Category Breakdown (Fully Formatted - No Buttons) ═══ -->
-        <div class="report-section mb-4" id="reportTrendSection">
-            <div class="mb-2">
-                <h5 class="report-sec-title mb-1">
-                    <i class="bi bi-bar-chart-fill me-2 text-danger"></i>Incident Frequency &amp; Offense Distribution Analysis
-                </h5>
-                <p class="text-muted small mb-0">
-                    <?php if ($period_type === 'weekly'): ?>
-                        Weekly Analysis: Daily incident breakdown across the week (Monday through Sunday) alongside ranked offense categories.
-                    <?php elseif ($period_type === 'monthly'): ?>
-                        Monthly Analysis: Weekly incident breakdown across <?= date('F Y', strtotime($start_date)) ?> alongside ranked offense categories.
-                    <?php elseif ($period_type === 'yearly'): ?>
-                        Annual Analysis: Monthly incident breakdown across CY <?= esc($year) ?> (January through December) alongside ranked offense categories.
-                    <?php else: ?>
-                        Timeline incident breakdown alongside ranked offense categories across the reporting period.
-                    <?php endif; ?>
-                </p>
-            </div>
-
-            <?php if (!empty($peak_period) && $peak_period['count'] > 0): ?>
-            <!-- Smart Insight Callout -->
-            <div class="p-2.5 rounded mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(239,68,68,0.06); border-left: 3.5px solid #ef4444;">
-                <div class="small text-dark">
-                    <i class="bi bi-lightning-charge-fill text-warning me-1.5"></i>
-                    <strong>Peak Activity Period:</strong> <span class="fw-semibold text-danger"><?= esc($peak_period['label']) ?></span>
-                    (<?= number_format($peak_period['count']) ?> incidents recorded)
-                    &nbsp;&bull;&nbsp;
-                    <strong>Top Offense:</strong> <span class="badge bg-danger-subtle text-danger fw-bold"><?= esc($peak_period['top']) ?></span> (<?= $peak_period['top_count'] ?> occurrences)
-                </div>
-                <div class="small text-muted fw-semibold" style="font-size: 0.78rem;">
-                    <i class="bi bi-graph-up-arrow text-danger me-1"></i>Comprehensive Situation Overview
-                </div>
-            </div>
-            <?php endif; ?>
-
-            <?php if (empty($nature_breakdown)): ?>
-                <div class="p-4 text-center border rounded bg-white text-muted">
-                    <i class="bi bi-bar-chart fs-1 d-block opacity-25 mb-1"></i>
-                    No violation incidents recorded for this reporting period.
-                </div>
-            <?php else: ?>
-                <!-- Side-by-Side Dual Visualizations (Timeline on Left, Offenses on Right) -->
-                <div class="row g-3">
-                    <!-- Left: Timeline Breakdown (Daily for Weekly, Weekly for Monthly, Monthly for Yearly) -->
-                    <div class="col-lg-6 col-12">
-                        <div class="p-3 border rounded bg-white h-100 shadow-2xs">
-                            <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom">
-                                <span class="fw-bold small text-dark">
-                                    <i class="bi bi-calendar3 me-1 text-primary"></i>
-                                    <?php if ($period_type === 'weekly'): ?>
-                                        Weekly Timeline (Daily Breakdown: Mon &ndash; Sun)
-                                    <?php elseif ($period_type === 'monthly'): ?>
-                                        Monthly Timeline (Weekly Breakdown)
-                                    <?php elseif ($period_type === 'yearly'): ?>
-                                        Annual Timeline (Monthly Breakdown: Jan &ndash; Dec)
-                                    <?php else: ?>
-                                        Incident Timeline Trend
-                                    <?php endif; ?>
-                                </span>
-                                <span class="badge bg-light text-muted border" style="font-size:0.68rem;">Incident Count</span>
-                            </div>
-                            <div style="position: relative; height: <?= $chartHeight ?>px;">
-                                <canvas id="reportTimelineCanvas"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right: Offense Category Ranking -->
-                    <div class="col-lg-6 col-12">
-                        <div class="p-3 border rounded bg-white h-100 shadow-2xs">
-                            <div class="d-flex align-items-center justify-content-between mb-2 pb-1 border-bottom">
-                                <span class="fw-bold small text-dark">
-                                    <i class="bi bi-bar-chart-steps me-1 text-danger"></i>Offense Category Ranking &amp; Distribution
-                                </span>
-                                <span class="badge bg-light text-muted border" style="font-size:0.68rem;"><?= $unique_categories ?> Categories</span>
-                            </div>
-                            <div style="position: relative; height: <?= $chartHeight ?>px;">
-                                <canvas id="reportRankingCanvas"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endif; ?>
+        <!-- Reconciliation: how the units relate, in one sentence. A reader
+             who only reads this line still understands where 41 offenses come
+             from when the sheet says 16 citations. -->
+        <div class="vsum-recon">
+            <i class="bi bi-link-45deg"></i>
+            <span>
+                <strong><?= number_format($sumCitations) ?> citations</strong>
+                from <strong><?= number_format($sumViolators) ?> violators</strong>
+                carry <strong><?= number_format($sumOffenses) ?> offense entries</strong>
+                (<?= number_format($sumPerCitation, 1) ?> per citation).
+                Status of those entries:
+                <strong><?= number_format($sumPaid) ?> paid</strong>,
+                <strong><?= number_format($sumPending) ?> pending</strong><?php if ($sumCancelled > 0): ?>,
+                <strong><?= number_format($sumCancelled) ?> cancelled (void)</strong><?php endif; ?>.
+            </span>
         </div>
 
-        <!-- ═══ Section I: Enforcer / Officer Activity Summary (Apprehensions Only) ═══ -->
-        <div class="report-section mb-4">
-            <h5 class="report-sec-title"><i class="bi bi-shield-check me-2"></i>I. Enforcer / Officer Activity Summary</h5>
-            <table class="table table-bordered table-sm report-table">
+        <!-- ═══ I. Enforcer / Officer Activity Summary (Apprehensions Only) ═══
+             Leads the sheet: who recorded the citations is the first question
+             an office copy is checked against. -->
+        <div class="report-section mb-4" id="officerActivitySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-shield-check me-2"></i>I. Enforcer / Officer Activity Summary</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printReportPart('summary')"
+                        title="Prints Parts I and II on their own, with the letterhead and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this part</span>
+                </button>
+            </h5>
+            <div class="table-responsive report-table-scroll">
+            <table class="table table-bordered table-sm report-table officer-activity-table">
+                <colgroup>
+                    <col>
+                    <col>
+                    <col>
+                </colgroup>
                 <thead>
                     <tr>
-                        <th style="width:50px;" class="text-center">#</th>
+                        <th class="text-center">#</th>
                         <th>Apprehending Officer</th>
-                        <th class="text-center" style="width: 150px;">Citations Issued</th>
-                        <th class="text-center" style="min-width: 170px;">% Enforcement Share</th>
+                        <th class="text-center">Citations Issued</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($officer_breakdown)): ?>
-                        <tr><td colspan="4" class="text-center text-muted">No officer citations found.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted">No officer citations found.</td></tr>
                     <?php else: ?>
-                        <?php 
-                        $totalOfficerCitations = array_sum(array_column($officer_breakdown, 'count'));
-                        $i=1; 
-                        foreach($officer_breakdown as $ob): 
-                            $offShare = $totalOfficerCitations > 0 ? round(($ob['count'] / $totalOfficerCitations) * 100, 1) : 0;
+                        <?php
+                        $i = 1;
+                        $officerCitations = array_sum(array_map(static fn ($ob) => (int) $ob['count'], $officer_breakdown));
+                        foreach($officer_breakdown as $ob):
                             $offInitial = strtoupper(substr(trim($ob['officer_name'] ?? 'O'), 0, 1));
                         ?>
                         <tr>
@@ -382,135 +371,161 @@
                                     <span class="fw-bold"><?= esc($ob['officer_name']) ?></span>
                                 </div>
                             </td>
-                            <td class="text-center fw-bold"><span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1"><?= number_format($ob['count']) ?></span></td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1" style="height: 8px; background: #e2e8f0; border-radius: 6px; overflow: hidden;">
-                                        <div class="progress-bar bg-primary" style="width: <?= $offShare ?>%; border-radius: 6px;"></div>
-                                    </div>
-                                    <span class="font-monospace fw-semibold small text-end" style="min-width: 42px;"><?= $offShare ?>%</span>
-                                </div>
-                            </td>
+                            <td class="text-center fw-bold"><span class="badge bg-primary-subtle text-primary rounded-pill py-1"><?= number_format($ob['count']) ?></span></td>
                         </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
-            </table>
-        </div>
-
-        <!-- ═══ Section II: Offense Category Breakdown & Distribution (NO Revenue) ═══ -->
-        <div class="report-section mb-4">
-            <h5 class="report-sec-title"><i class="bi bi-bar-chart-steps me-2"></i>II. Offense Category Breakdown &amp; Percentage Distribution</h5>
-            <table class="table table-bordered table-sm report-table">
-                <thead>
-                    <tr>
-                        <th style="width:50px;" class="text-center">#</th>
-                        <th>Violation / Offense Nature</th>
-                        <th class="text-center">Total Incidents</th>
-                        <th class="text-center" style="min-width: 170px;">Visual Distribution &amp; % Share</th>
+                <?php if (! empty($officer_breakdown)): ?>
+                <tfoot>
+                    <tr class="report-total-row">
+                        <td></td>
+                        <td>TOTAL CITATIONS</td>
+                        <td class="text-center fw-bold"><?= number_format($officerCitations) ?></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($nature_breakdown)): ?>
-                        <tr><td colspan="4" class="text-center text-muted">No offenses recorded during this period.</td></tr>
-                    <?php else: ?>
-                        <?php $i=1; foreach($nature_breakdown as $nb):
-                            $share = ($summary['total_violations'] ?? 0) > 0 ? round(($nb['count'] / $summary['total_violations']) * 100, 1) : 0;
-                        ?>
-                        <tr>
-                            <td class="text-center"><?= $i++ ?></td>
-                            <td class="fw-bold"><?= esc($nb['violation_type']) ?></td>
-                            <td class="text-center fw-bold"><span class="badge bg-danger-subtle text-danger rounded-pill px-2.5 py-1"><?= number_format($nb['count']) ?></span></td>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="progress flex-grow-1" style="height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden;">
-                                        <div class="progress-bar <?= $share >= 50 ? 'bg-danger' : ($share >= 25 ? 'bg-primary' : 'bg-info') ?>" 
-                                             style="width: <?= $share ?>%; border-radius: 6px;"></div>
-                                    </div>
-                                    <span class="font-monospace fw-bold small text-end" style="min-width: 44px;"><?= $share ?>%</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
+                </tfoot>
+                <?php endif; ?>
             </table>
-        </div>
-
-        <!-- ═══ Section III: Detailed Incident Records (Violations Only - NO Amount) ═══ -->
-        <div class="report-section mb-4" id="detailedRecordsSection">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                <h5 class="report-sec-title mb-0"><i class="bi bi-list-check me-2"></i>III. Detailed Citation Records</h5>
-                <div class="no-print d-flex align-items-center gap-2">
-                    <div class="input-group input-group-sm" style="max-width: 320px;">
-                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-                        <input type="text" id="recordSearchInput" class="form-control form-control-sm border-start-0" placeholder="Filter driver, plate, officer, TCT..." aria-label="Search records">
-                    </div>
-                    <span class="badge bg-light text-dark border px-2.5 py-1.5 fw-semibold" id="recordCountBadge"><?= count($records) ?> records</span>
-                </div>
             </div>
-            <table class="table table-bordered table-sm report-table" id="citationRecordsTable">
-                <thead>
-                    <tr>
-                        <th style="width: 145px;">TCT No.</th>
-                        <th>Driver Information</th>
-                        <th style="width: 90px;">Plate No.</th>
-                        <th>Violation Committed</th>
-                        <th class="text-center" style="width: 100px;">Status</th>
-                        <th style="width: 150px;">Date &amp; Time</th>
-                        <th style="width: 120px;">Officer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($records)): ?>
-                        <tr id="emptyRecordsRow"><td colspan="7" class="text-center py-4 text-muted">No detailed citation records found for the selected criteria.</td></tr>
-                    <?php else: ?>
-                        <?php foreach($records as $r): ?>
-                        <tr class="citation-row" 
-                            data-ticket="<?= strtolower(esc($r['ticket_id'])) ?>"
-                            data-driver="<?= strtolower(esc($r['driver_name'])) ?>"
-                            data-plate="<?= strtolower(esc($r['license_plate'])) ?>"
-                            data-violation="<?= strtolower(esc($r['violation_name'] ?: $r['violation_type'])) ?>"
-                            data-officer="<?= strtolower(esc($r['officer_name'] ?? '')) ?>"
-                            data-status="<?= strtolower(esc($r['status'])) ?>">
-                            <td class="font-monospace fw-bold text-danger">
-                                <span><?= esc($r['ticket_id']) ?></span>
-                                <button type="button" class="copy-tct-btn no-print" onclick="copyTicketId('<?= esc($r['ticket_id']) ?>', this)" title="Copy Ticket Number">
-                                    <i class="bi bi-clipboard"></i>
-                                </button>
-                            </td>
-                            <td>
-                                <div><strong><?= esc($r['driver_name']) ?></strong></div>
-                                <?php if(!empty($r['license_number'])): ?>
-                                    <small class="text-muted font-monospace">DL: <?= esc($r['license_number']) ?></small>
-                                <?php endif; ?>
-                            </td>
-                            <td class="font-monospace fw-semibold"><?= esc($r['license_plate']) ?></td>
-                            <td class="fw-semibold text-dark"><?= esc($r['violation_name'] ?: $r['violation_type']) ?></td>
-                            <td class="text-center">
-                                <?php if($r['status'] === 'Paid'): ?>
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
-                                        <i class="bi bi-check-circle-fill me-1" style="font-size: 0.7rem;"></i>Paid
-                                    </span>
-                                <?php elseif($r['status'] === 'Pending'): ?>
-                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
-                                        <i class="bi bi-clock-fill me-1" style="font-size: 0.7rem;"></i>Pending
-                                    </span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
-                                        <i class="bi bi-x-circle-fill me-1" style="font-size: 0.7rem;"></i>Cancelled
-                                    </span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="small text-muted"><?= date('M d, Y h:i A', strtotime($r['violation_date'])) ?></td>
-                            <td class="small fw-semibold"><?= esc($r['officer_name'] ?? 'System') ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <tr id="noMatchRow" style="display:none;"><td colspan="7" class="text-center py-3 text-muted">No matching citations found for your search query.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
         </div>
+
+        <!-- ═══ II. Daily Traffic Apprehension Record ═══
+             The office tally sheet: the roster down the rows, one column per
+             day (or month, depending on the period), one mark per apprehension
+             recorded. -->
+        <div class="report-section mb-4" id="apprehensionSection">
+            <h5 class="report-sec-title"><i class="bi bi-table me-2"></i>II. Daily Traffic Apprehension Record</h5>
+            <p class="vsum-sec-note">
+                <?= esc($personnel_matrix['period_label']) ?> &middot;
+                one mark per apprehension (ticket) recorded by each personnel &mdash;
+                this sheet counts <strong>tickets, not offense entries</strong>, so its grand
+                total matches Total Citations above, not the offense totals in Sections III and IV.
+            </p>
+
+            <div class="table-responsive vsum-matrix-scroll">
+                <table class="table table-bordered table-sm report-table vsum-matrix">
+                    <thead>
+                        <tr>
+                            <th class="vsum-mx-no">No.</th>
+                            <th class="vsum-mx-name">PERSONNEL</th>
+                            <?php foreach ($personnel_matrix['columns'] as $col): ?>
+                                <th class="vsum-mx-day" title="<?= esc($col['title']) ?>">
+                                    <?= esc($col['label']) ?>
+                                    <?php if (! empty($col['sub'])): ?><span class="vsum-mx-sub"><?= esc($col['sub']) ?></span><?php endif; ?>
+                                </th>
+                            <?php endforeach; ?>
+                            <th class="vsum-mx-total">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $personnelNo = 1; ?>
+                        <?php foreach ($personnel_matrix['rows'] as $pRow): ?>
+                            <tr class="<?= (int) $pRow['total'] === 0 ? 'vsum-mx-idle' : '' ?>">
+                                <td class="vsum-mx-no"><?= $personnelNo++ ?></td>
+                                <td class="vsum-mx-name"><?= esc($pRow['name']) ?></td>
+                                <?php foreach ($pRow['cells'] as $cell): ?>
+                                    <td class="vsum-mx-cell<?= (int) $cell > 0 ? ' vsum-mx-hit' : '' ?>"><?= (int) $cell > 0 ? (int) $cell : '' ?></td>
+                                <?php endforeach; ?>
+                                <td class="vsum-mx-total"><?= (int) $pRow['total'] > 0 ? (int) $pRow['total'] : '' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="report-total-row">
+                            <td></td>
+                            <td class="vsum-mx-name">TOTAL</td>
+                            <?php foreach ($personnel_matrix['column_totals'] as $total): ?>
+                                <td class="vsum-mx-cell"><?= (int) $total > 0 ? (int) $total : '' ?></td>
+                            <?php endforeach; ?>
+                            <td class="vsum-mx-total"><?= (int) $personnel_matrix['grand_total'] ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <p class="text-muted small mb-0 mt-2">
+                <i class="bi bi-info-circle me-1"></i>
+                <?= (int) $personnel_matrix['active_officers'] ?> of
+                <?= (int) $personnel_matrix['officer_count'] ?> personnel recorded apprehensions in this period.
+                <?php if ((int) $personnel_matrix['excluded_cancelled'] > 0): ?>
+                    Cancelled (void) citations are excluded.
+                <?php endif; ?>
+            </p>
+        </div>
+
+        <!-- ═══ III. Violation Trend ═══ -->
+        <div class="report-section mb-4" id="trendSection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-graph-up me-2"></i>III. Violation Trend</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printReportPart('detail')"
+                        title="Prints Parts III and IV on their own, with the letterhead and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this part</span>
+                </button>
+            </h5>
+            <p class="vsum-sec-note">
+                Offenses recorded per
+                <?= $period_type === 'weekly' ? 'day of the week'
+                    : ($period_type === 'monthly' ? 'week of the month'
+                    : ($period_type === 'yearly' ? 'month of the year' : 'date in the range')) ?>.
+            </p>
+            <div class="vsum-chart-box">
+                <canvas id="trendChart" aria-label="Offenses per period" role="img"></canvas>
+            </div>
+        </div>
+
+        <!-- ═══ IV. Most Committed Offenses ═══ -->
+        <div class="report-section mb-4" id="topOffenseSection">
+            <h5 class="report-sec-title"><i class="bi bi-bar-chart-steps me-2"></i>IV. Most Committed Offenses</h5>
+            <?php if (empty($nature_breakdown)): ?>
+                <p class="text-muted small mb-0">No offenses recorded for this period.</p>
+            <?php else: ?>
+                <p class="vsum-sec-note">
+                    Ranked by offense entries &mdash; a citation carrying three offenses adds one
+                    entry to each of the three. Entries total <?= number_format($sumOffenses) ?>.
+                    <?php if (count($nature_breakdown) > 8): ?>The chart shows the top 8; the table lists all <?= number_format($sumTypes) ?>.<?php endif; ?>
+                </p>
+                <?php $offenseChartRows = min(8, count($nature_breakdown)); ?>
+                <div class="vsum-chart-box" style="height: <?= 70 + ($offenseChartRows * 34) ?>px;">
+                    <canvas id="offenseChart" aria-label="Incidents per offense" role="img"></canvas>
+                </div>
+
+                <!-- Exact counts under the chart: a bar shows which offense
+                     leads, this table shows by exactly how much. -->
+                <div class="table-responsive report-table-scroll mt-2">
+                <table class="table table-bordered table-sm report-table vsum-offense-table">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width:44px;">#</th>
+                            <th>Offense</th>
+                            <th class="text-center" style="width:130px;">Incidents</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $offNo = 1; foreach ($nature_breakdown as $nb): ?>
+                            <?php $nbColor = $naturePalette[($offNo - 1) % count($naturePalette)]; ?>
+                            <tr>
+                                <td class="text-center"><?= $offNo++ ?></td>
+                                <td>
+                                    <span class="vsum-offense-dot" style="background: <?= esc($nbColor) ?>;"></span>
+                                    <?= esc($nb['violation_type']) ?>
+                                </td>
+                                <td class="text-center fw-bold"><?= number_format((int) $nb['count']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="report-total-row">
+                            <td></td>
+                            <td>TOTAL OFFENSE ENTRIES</td>
+                            <td class="text-center fw-bold"><?= number_format($sumOffenses) ?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                </div>
+            <?php endif; ?>
+        </div>
+
 
         <!-- Sign-off Block with E-Signature Support -->
         <div class="report-sign-block mt-5 pt-3">
@@ -749,72 +764,50 @@
         font-weight: 700;
         flex-shrink: 0;
     }
-    .copy-tct-btn {
-        background: transparent;
-        border: none;
-        padding: 0 4px;
-        color: #94a3b8;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .copy-tct-btn:hover {
-        color: #ef4444;
-        transform: scale(1.15);
-    }
-
-    /* KPI Grid */
-    .report-kpi-grid {
-        display: grid;
-        /* minmax(0, ...) so a long offense name cannot widen its own column:
-           every card stays an equal quarter of the row. */
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 12px;
-        margin-bottom: 24px;
-        font-family: system-ui, -apple-system, sans-serif;
-    }
-    .report-kpi-box {
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 12px 14px;
-        min-width: 0;
-        background: #fff;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    }
-    .report-kpi-box:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 14px rgba(0,0,0,0.06);
-    }
-    .report-kpi-box.success { border-color: #10b981; }
-    .report-kpi-box.warning { border-color: #f59e0b; }
-    .kpi-label { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: #64748b; }
-    .kpi-val { font-size: 1.55rem; font-weight: 800; line-height: 1.2; margin: 4px 0 2px; }
-    /* Long offense names wrap inside the card instead of overflowing it. */
-    .kpi-val-offense {
-        font-size: 1.05rem;
-        line-height: 1.3;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        margin-bottom: 4px;
-    }
-    .kpi-sub { font-size: 0.72rem; color: #94a3b8; }
 
     @media (max-width: 991px) {
-        .report-kpi-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
         .report-document-card {
             padding: 24px 20px;
         }
     }
     @media (max-width: 575px) {
-        .report-kpi-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
         .report-header-seal {
             position: static;
             margin-bottom: 8px;
+        }
+        /* Toolbar: the title, its badge and the description share one line by
+           default; on a phone the badge wraps under the title instead of
+           pushing the card 27px past the screen edge. */
+        .rpt-toolbar-header {
+            padding: 14px 16px 12px;
+        }
+        .rpt-toolbar-header > div {
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+        .rpt-toolbar-header > div > div {
+            min-width: 0;
+        }
+        .rpt-toolbar-header h5 {
+            font-size: 1rem;
+            overflow-wrap: anywhere;
+        }
+        /* Sign-off: two 240px pads cannot sit side by side on a phone, so they
+           stack and the rule shrinks to the card instead of pushing the whole
+           page sideways. Printing keeps the side-by-side A4 layout. */
+        .report-sign-block .row > [class*="col-"] {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        .report-sign-block .row > [class*="col-"] + [class*="col-"] {
+            margin-top: 1.25rem;
+        }
+        .report-sign-block .sig-container {
+            width: 100% !important;
+        }
+        .report-sign-block .sig-container .sig-line {
+            width: 100% !important;
+            max-width: 220px;
         }
     }
 
@@ -829,12 +822,171 @@
         letter-spacing: 0.03em;
     }
 
+    /* ── Key figures + charts on the document ─────────────────────── */
+    .vsum-kpi-grid {
+        display: grid;
+        /* Three figures: citations, the leading offense, and the busiest month. */
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* Reconciliation line under the figures: ties citations, people and
+       offense entries together in one readable sentence. */
+    .vsum-recon {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px 12px;
+        margin-bottom: 18px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 6px;
+        background: #f8fafc;
+        font-size: 0.78rem;
+        color: #334155;
+        line-height: 1.5;
+    }
+    .vsum-recon > i { color: #dc2626; font-size: 0.95rem; line-height: 1.35; }
+    .vsum-recon strong { color: #111827; }
+
+    /* Exact offense counts beneath the bar chart. */
+    .vsum-offense-table { font-size: 0.78rem; }
+    .vsum-offense-table th,
+    .vsum-offense-table td { padding: 5px 10px !important; }
+    /* Same color the dashboard uses for that offense, so the row and its bar
+       in the chart above read as one figure. */
+    .vsum-offense-dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 3px;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    .vsum-kpi {
+        border: 1px solid #e2e8f0;
+        border-left: 3px solid #dc2626;
+        border-radius: 6px;
+        padding: 10px 12px;
+        background: #fcfcfd;
+    }
+    .vsum-kpi-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        /* Dark enough to read at a glance; the muted slate it replaced almost
+           disappeared on a projector and in print. */
+        color: #475569;
+    }
+    .vsum-kpi-value {
+        font-size: 1.28rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 4px 0 2px;
+        line-height: 1.18;
+    }
+    .vsum-kpi-value--sm { font-size: 0.92rem; line-height: 1.3; }
+    .vsum-kpi-sub { font-size: 0.74rem; color: #475569; }
+
+    .vsum-sec-note {
+        font-size: 0.76rem;
+        color: #475569;
+        margin: -4px 0 8px;
+    }
+    .vsum-chart-box {
+        position: relative;
+        height: 250px;
+        width: 100%;
+    }
+
+    /* ── Daily apprehension record: personnel × day ───────────────── */
+    .vsum-matrix-scroll { overflow-x: auto; }
+    .vsum-matrix { margin-bottom: 0; }
+    /* The general report header rule pads every th by 10px/12px, which alone
+       makes each day column 49px and pushes the TOTAL column out of the card.
+       The tally sheet sets its own tighter padding so the whole month fits. */
+    .report-table.vsum-matrix thead th { padding: 5px 3px !important; }
+    .vsum-matrix th,
+    .vsum-matrix td {
+        padding: 3px 2px;
+        font-size: 0.72rem;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+    .vsum-matrix .vsum-mx-no { width: 34px; color: #475569; }
+    .vsum-matrix .vsum-mx-name { text-align: left; min-width: 180px; white-space: normal; }
+    .vsum-matrix .vsum-mx-day { min-width: 26px; font-size: 0.7rem; }
+    .vsum-mx-sub { display: block; font-size: 0.58rem; color: #475569; font-weight: 700; }
+    .vsum-matrix .vsum-mx-hit { background: #fef2f2; color: #b91c1c; font-weight: 800; }
+    .vsum-matrix .vsum-mx-total { min-width: 48px; background: #f8fafc; font-weight: 800; }
+    .vsum-matrix tr.vsum-mx-idle td { color: #64748b; }
+
+    /* A section heading with its print action at the right edge. */
+    .report-sec-title--split {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .report-sec-title--split > span { display: inline-flex; align-items: center; min-width: 0; }
+    .report-sec-print {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        padding: 4px 11px;
+        border: 1px solid #e2e8f0;
+        border-radius: 999px;
+        background: #fff;
+        color: #475569;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .report-sec-print:hover { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
+
+    /* ── Letters you can actually read ────────────────────────────────
+       The palette stays exactly as it is — neutral ink, one blue accent,
+       the tally's red marks — but the type that was mixed too light for a
+       white sheet is darkened to a legible contrast. No new colours. */
+    .report-document-card .text-muted { color: #475569 !important; }
+    .officer-avatar-chip { background: #1d4ed8; }
+    .officer-activity-table .badge { color: #1e3a8a !important; background: #dbeafe !important; }
+    .report-sign-block .btn-outline-primary { color: #1d4ed8 !important; border-color: #93c5fd !important; }
+    .report-sign-block .btn-outline-primary:hover { color: #fff !important; background: #1d4ed8 !important; }
+
+    @media screen and (max-width: 767px) {
+        .vsum-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        /* Five figures in two columns would leave a lone card in the last row;
+           it takes the full width instead of a ragged gap. */
+        .vsum-kpi-grid > .vsum-kpi:last-child:nth-child(odd) { grid-column: 1 / -1; }
+        .vsum-chart-box { height: 220px; }
+        .officer-activity-table { min-width: 0; }
+    }
+
     /* Table */
     .report-table {
         border: 1.5px solid #000 !important;
         font-size: 0.85rem;
         margin-bottom: 0;
     }
+    .officer-activity-table {
+        width: 100%;
+        min-width: 520px;
+        table-layout: fixed;
+    }
+    .officer-activity-table col:first-child { width: 8%; }
+    .officer-activity-table col:nth-child(2) { width: 72%; }
+    .officer-activity-table col:last-child { width: 20%; }
+    .officer-activity-table td:nth-child(2) { overflow-wrap: anywhere; }
     .report-table thead th {
         background: #e2e8f0 !important;
         color: #000 !important;
@@ -854,11 +1006,27 @@
     .report-table tbody tr:nth-child(even) {
         background-color: #f8fafc;
     }
-
+    /* The report is a formal document: no row hover lift from the global theme. */
+    .report-table tbody tr {
+        transition: none !important;
+    }
+    .report-table tbody tr:hover {
+        background-color: transparent !important;
+        transform: none !important;
+    }
+    .report-table tbody tr:nth-child(even):hover {
+        background-color: #f8fafc !important;
+    }
+    /* A wide table scrolls inside the sheet instead of pushing the whole page
+       sideways, so every column stays reachable on a phone. */
+    .report-table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
     /* Sign-off */
     .sig-line { width: 220px; border-bottom: 1.5px solid #000; margin-top: 50px; }
 
-    /* Print Styling */
     /* Print Styling */
     @page {
         margin: 8mm 10mm;
@@ -899,6 +1067,19 @@
             print-color-adjust: exact !important;
         }
 
+        /* Print readability: the on-screen brand blues and greys are too faint
+           on an office laser printer, so every letter inside the document
+           prints solid black. The offense color dots are backgrounds, so they
+           keep their colors; anything that was white text on a filled pill
+           becomes black text on white. */
+        .report-document-card * { color: #000 !important; }
+        .report-document-card .badge {
+            background: #fff !important;
+            border: 1px solid #000 !important;
+            box-shadow: none !important;
+            color: #000 !important;
+        }
+
         /* Header - Standard natural proportions */
         .report-header {
             min-height: auto !important;
@@ -937,25 +1118,7 @@
             break-inside: avoid !important;
         }
 
-        /* KPI Grid - Uncompressed, clear */
-        .report-kpi-grid {
-            display: grid !important;
-            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-            gap: 10px !important;
-            margin-bottom: 16px !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-        .report-kpi-box {
-            padding: 10px 12px !important;
-            border: 1.5px solid #000 !important;
-            background: #fafafa !important;
-            box-shadow: none !important;
-            border-radius: 6px !important;
-        }
-        .kpi-label { font-size: 0.74rem !important; font-weight: bold !important; }
-        .kpi-val   { font-size: 1.25rem !important; font-weight: 900 !important; margin: 3px 0 !important; }
-        .kpi-sub   { font-size: 0.72rem !important; }
+
 
         /* Section Titles */
         .report-sec-title {
@@ -1007,12 +1170,52 @@
             break-inside: avoid !important;
         }
 
+        /* ── Paper organization, matching the revenue report ─────────────
+           Fixed column geometry so a long offense or officer name wraps
+           inside its own column instead of pushing the table off the sheet,
+           headings that repeat when a table spills onto a second page, and
+           headings that never end a sheet on their own. */
+        .report-table {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .report-table th,
+        .report-table td {
+            overflow-wrap: break-word !important;
+            word-break: normal !important;
+        }
+        .report-table thead {
+            display: table-header-group !important;
+        }
+        .report-sec-title {
+            page-break-after: avoid !important;
+            break-after: avoid-page !important;
+        }
+        /* Column shares for the two narrow-figure tables. Without them the
+           fixed layout would give the name and the count the same width. */
+        .officer-activity-table th:nth-child(1),
+        .officer-activity-table td:nth-child(1) { width: 8% !important; }
+        .officer-activity-table th:nth-child(3),
+        .officer-activity-table td:nth-child(3) { width: 26% !important; }
+        .vsum-offense-table th:nth-child(1),
+        .vsum-offense-table td:nth-child(1) { width: 9% !important; }
+        .vsum-offense-table th:nth-child(3),
+        .vsum-offense-table td:nth-child(3) { width: 20% !important; }
+
         /* Badges */
         .badge {
             border: 1px solid #64748b !important;
             color: #000 !important;
             background: transparent !important;
             font-size: 0.72rem !important;
+        }
+        /* The officer initial circle prints as an outlined badge so its letter
+           stays visible on paper (white text on white paper otherwise). */
+        .officer-avatar-chip {
+            background: #fff !important;
+            color: #000 !important;
+            border: 1px solid #64748b !important;
         }
 
         /* Sign-off section - Only eliminate the excessive 114px dead whitespace */
@@ -1045,19 +1248,120 @@
             color: #000 !important;
         }
 
-        #reportTrendSection {
+        /* Key figures and charts on paper: solid rules, no fills competing
+           with the figures, and every chart kept whole on one sheet. */
+        .vsum-kpi-grid {
+            display: grid !important;
+            /* Three figures per row keeps every label readable on A4; five in
+               a single row would squeeze them into 42mm columns. */
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+            margin-bottom: 8px !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
         }
-        #reportTrendSection .row {
-            display: flex !important;
-            flex-wrap: nowrap !important;
+        .vsum-recon {
+            background: #fff !important;
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            font-size: 0.76rem !important;
+            font-weight: 500 !important;
+            margin-bottom: 14px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
-        #reportTrendSection .col-lg-6 {
-            width: 50% !important;
-            flex: 0 0 50% !important;
-            max-width: 50% !important;
+        .vsum-recon strong { color: #000 !important; }
+        .vsum-offense-table th,
+        .vsum-offense-table td {
+            font-size: 0.78rem !important;
+            color: #000 !important;
+            border: 1px solid #000 !important;
         }
+        .vsum-offense-table .vsum-offense-dot {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .vsum-kpi {
+            background: #fff !important;
+            border: 1px solid #000 !important;
+            border-left: 3px solid #000 !important;
+            padding: 8px 10px !important;
+        }
+        .vsum-kpi-label { font-size: 0.72rem !important; color: #000 !important; font-weight: 800 !important; }
+        .vsum-kpi-value { font-size: 1.14rem !important; color: #000 !important; margin: 2px 0 !important; }
+        .vsum-kpi-value--sm { font-size: 0.86rem !important; }
+        .vsum-kpi-sub   { font-size: 0.72rem !important; color: #000 !important; font-weight: 600 !important; }
+        .vsum-sec-note  { font-size: 0.76rem !important; color: #000 !important; font-weight: 500 !important; }
+        .vsum-chart-box {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        /* Chart.js sizes the canvas in screen pixels. The sheet is narrower
+           than the screen, so without this the chart prints as a small block
+           in the corner of a tall blank box, with its right-hand labels past
+           the printable width. Stretched to the box it already sits in, the
+           chart fills the sheet like the revenue report's figures do. */
+        .vsum-chart-box canvas {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        /* Screen heights were tuned for a scrolling window; on paper they
+           spent a page's worth of height on air. These keep both charts
+           readable and let the document end on one sheet fewer. */
+        .vsum-chart-box { height: 200px !important; }
+        #topOffenseSection .vsum-chart-box { height: 300px !important; }
+        /* Slightly tighter section spacing, as the revenue sheet prints it. */
+        .report-section { margin-bottom: 14px !important; }
+
+        /* ── Printing one part at a time ─────────────────────────────────
+           The toolbar's Print button still delivers the whole document. These
+           two scopes keep only the chosen pair of sections on the sheet, and
+           the letterhead, covered period and summary figures travel with it,
+           so each part is a complete official copy on its own — the same
+           arrangement as the revenue report's per-section print buttons. */
+        body.print-scope-summary .report-section:not(#officerActivitySection):not(#apprehensionSection),
+        body.print-scope-detail .report-section:not(#trendSection):not(#topOffenseSection) {
+            display: none !important;
+        }
+        .report-sec-print { display: none !important; }
+
+        .vsum-matrix-scroll { overflow: visible !important; }
+        /* The screen keeps 26px day cells so the sheet is tappable; that
+           minimum alone is wider than A4, which used to push the last day
+           columns and TOTAL off the right edge of the paper. On paper the
+           table is laid out fixed to the printable width instead, so the
+           whole month, the names and the TOTAL column always land on the
+           sheet. */
+        .vsum-matrix {
+            table-layout: fixed !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .vsum-matrix th,
+        .vsum-matrix td {
+            font-size: 0.58rem !important;
+            padding: 2px 0 !important;
+            border: 1px solid #000 !important;
+            color: #000 !important;
+        }
+        .vsum-matrix thead { display: table-header-group !important; }
+        .vsum-matrix .vsum-mx-name { width: 15% !important; }
+        /* Wide enough for the word TOTAL on its heading row, which stays on
+           one line like the day numbers beside it. */
+        .vsum-matrix .vsum-mx-total { width: 8% !important; }
+        .vsum-matrix .vsum-mx-no,
+        .vsum-matrix .vsum-mx-day,
+        .vsum-matrix .vsum-mx-total {
+            min-width: 0 !important;
+        }
+        .vsum-matrix .vsum-mx-day { width: auto !important; }
+        .vsum-matrix .vsum-mx-hit { background: #fff !important; color: #000 !important; font-weight: 800 !important; }
+        .vsum-matrix .vsum-mx-total { background: #f1f5f9 !important; }
+        .vsum-matrix tr.vsum-mx-idle td { color: #000 !important; }
+        .vsum-mx-sub { color: #000 !important; }
     }
 </style>
 
@@ -1071,6 +1375,31 @@
             const yVal = ySelect.value;
             badge.textContent = `${mText} ${yVal}`;
         }
+    }
+
+    /* Print one part on its own: the scope class hides the other sections and
+       is removed as soon as the dialog closes, so the screen and any later
+       print are untouched. Both parts print portrait on the document's own
+       A4 sheet — the tally table is laid out to fit the printable width. */
+    function printReportPart(scope) {
+        if (!scope) {
+            window.print();
+            return;
+        }
+
+        const scopeClass = 'print-scope-' + scope;
+        document.body.classList.add(scopeClass);
+
+        const restore = function () {
+            document.body.classList.remove(scopeClass);
+        };
+
+        window.addEventListener('afterprint', restore, { once: true });
+        window.print();
+
+        // Chrome and Edge block until the dialog closes; this also covers a
+        // browser that returns at once, where afterprint may never fire.
+        setTimeout(restore, 800);
     }
 
     function togglePeriodInputs(val, fromSwitcher = false) {
@@ -1098,8 +1427,12 @@
                 const mSelect = document.getElementById('monthSelect');
                 const ySelect = document.getElementById('monthYearSelect');
                 if (fromSwitcher) {
-                    if (mSelect) mSelect.value = curM;
-                    if (ySelect) ySelect.value = curY;
+                    if (mSelect && !mSelect.value) {
+                        mSelect.value = curM;
+                    }
+                    if (ySelect && !ySelect.value) {
+                        ySelect.value = curY;
+                    }
                     updateMonthBadge();
                 }
             }
@@ -1293,326 +1626,199 @@
     }
 </script>
 
-<!-- Chart.js CDN for Violation Frequency Analysis -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // The document keeps its own order: the enforcer activity summary
+        // leads the sheet. Nothing is shuffled after load.
+
+        // Live check: compares this page's ticket count with the read-only
+        // summary API. It only ever READS — nothing here can change, delete
+        // or write to the database.
+        const refreshBtn     = document.getElementById('btnQuickRefresh');
+        const refreshSpinner = document.getElementById('refreshSpinner');
+        const liveSyncStatus = document.getElementById('liveSyncStatus');
+        const autoToggle     = document.getElementById('autoSyncToggle');
+
+        const currentTotal = <?= (int)($summary['total_violations'] ?? 0) ?>;
+        const summaryUrl   = '<?= base_url('api/nature-summary') ?>';
+        const AUTO_KEY     = 'reportAutoSync';
+        let autoTimer      = null;
+
+        function checkForUpdates(auto) {
+            if (refreshSpinner) refreshSpinner.classList.add('spin-animation');
+            if (liveSyncStatus && !auto) liveSyncStatus.textContent = 'Checking CTRAMO server...';
+
+            fetch(summaryUrl)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    setTimeout(function () {
+                        if (refreshSpinner) refreshSpinner.classList.remove('spin-animation');
+                        if (!data || data.status !== 'ok') return;
+
+                        const timeStr = data.updated_at ? data.updated_at.split(' ')[1] : 'Just now';
+                        if (liveSyncStatus) liveSyncStatus.textContent = 'Live Synced (' + timeStr + ')';
+
+                        if (Number(data.total) === currentTotal) return;
+
+                        if (liveSyncStatus) {
+                            liveSyncStatus.innerHTML = '<span class="text-danger fw-bold">' + Math.abs(data.total - currentTotal) + ' changes detected!</span>';
+                        }
+
+                        if (auto) {
+                            // Auto mode: quietly reload so the sheets always
+                            // match the dashboard the moment data changes.
+                            setTimeout(function () { window.location.reload(); }, 1200);
+                            return;
+                        }
+
+                        if (typeof Swal !== 'undefined') {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Real-Time Update Detected',
+                                text: 'New traffic citation entries were recorded (' + data.total + ' total). Would you like to reload the report?',
+                                showCancelButton: true,
+                                confirmButtonText: 'Reload Report',
+                                confirmButtonColor: '#ef4444'
+                            }).then(function (res) {
+                                if (res.isConfirmed) {
+                                    window.location.reload();
+                                }
+                            });
+                        }
+                    }, 400);
+                })
+                .catch(function () {
+                    if (refreshSpinner) refreshSpinner.classList.remove('spin-animation');
+                    if (liveSyncStatus) liveSyncStatus.textContent = 'Connected (Local)';
+                });
+        }
+
+        refreshBtn?.addEventListener('click', function () { checkForUpdates(false); });
+
+        function setAutoSync(on) {
+            if (autoTimer) {
+                clearInterval(autoTimer);
+                autoTimer = null;
+            }
+            if (on) {
+                // One read-only poll per minute; nothing is written anywhere.
+                autoTimer = setInterval(function () { checkForUpdates(true); }, 60000);
+            }
+            if (autoToggle) {
+                autoToggle.checked = !!on;
+            }
+        }
+
+        if (autoToggle) {
+            setAutoSync(localStorage.getItem(AUTO_KEY) === '1');
+            autoToggle.addEventListener('change', function () {
+                localStorage.setItem(AUTO_KEY, autoToggle.checked ? '1' : '0');
+                setAutoSync(autoToggle.checked);
+            });
+        }
+    });
+</script>
+
+<?php
+    // Chart data comes from the same arrays the tables are built from, so a
+    // bar can never tell a different story than the numbers beside it.
+    $trendLabels = array_values(array_map(static fn ($b) => (string) ($b['short_label'] ?? ''), $timeline_buckets ?? []));
+    $trendCounts = array_values(array_map(static fn ($b) => (int) ($b['count'] ?? 0), $timeline_buckets ?? []));
+
+    $topOffenseRows = array_slice($nature_breakdown ?? [], 0, 8);
+    $offenseLabels  = array_values(array_map(static fn ($n) => (string) ($n['violation_type'] ?? ''), $topOffenseRows));
+    $offenseCounts  = array_values(array_map(static fn ($n) => (int) ($n['count'] ?? 0), $topOffenseRows));
+    // One bar per offense, each in the dashboard's color for that offense.
+    $offenseColors  = array_slice($naturePalette, 0, count($topOffenseRows));
+
+    $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+?>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Copy TCT Number Helper
-    function copyTicketId(tct, btn) {
-        if (!navigator.clipboard) return;
-        navigator.clipboard.writeText(tct).then(() => {
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.className = 'bi bi-check2 text-success';
-                setTimeout(() => { icon.className = 'bi bi-clipboard'; }, 1500);
-            }
-        });
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Chart === 'undefined') return;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const timelineData   = <?= json_encode($timeline_buckets ?? []) ?>;
-        const natureData     = <?= json_encode($nature_breakdown ?? []) ?>;
-        const topTypes       = <?= json_encode($top_types ?? []) ?>;
-        const totalIncidents = <?= (int)($summary['total_violations'] ?? 0) ?>;
+        const trendLabels = <?= json_encode($trendLabels, $jsonFlags) ?>;
+        const trendCounts = <?= json_encode($trendCounts, $jsonFlags) ?>;
 
-        const timelineCanvas = document.getElementById('reportTimelineCanvas');
-        const rankingCanvas  = document.getElementById('reportRankingCanvas');
-
-        const chartColors = [
-            '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4',
-            '#6366f1', '#8b5cf6', '#ec4899', '#64748b', '#3b82f6'
-        ];
-
-        // 1. Render Left Timeline Chart (Daily for weekly, Weekly for monthly, Monthly for yearly)
-        if (timelineCanvas && timelineData && timelineData.length > 0) {
-            const ctxTimeline = timelineCanvas.getContext('2d');
-            const datasets = [];
-
-            // Group by top offense types so stacked bars show breakdown cleanly
-            if (topTypes && topTypes.length > 0) {
-                topTypes.forEach((vType, idx) => {
-                    const color = chartColors[idx % chartColors.length];
-                    const dataPoints = timelineData.map(b => (b.by_type && b.by_type[vType]) ? parseInt(b.by_type[vType]) : 0);
-
-                    datasets.push({
-                        label: vType,
-                        data: dataPoints,
-                        backgroundColor: color,
-                        borderRadius: 4,
-                        borderSkipped: false,
-                        stack: 'timelineStack',
-                        maxBarThickness: 34
-                    });
-                });
-
-                const allTypes = (natureData || []).map(n => n.violation_type);
-                const otherTypes = allTypes.filter(t => !topTypes.includes(t));
-                if (otherTypes.length > 0) {
-                    const otherPoints = timelineData.map(b => {
-                        let sum = 0;
-                        otherTypes.forEach(t => {
-                            sum += (b.by_type && b.by_type[t]) ? parseInt(b.by_type[t]) : 0;
-                        });
-                        return sum;
-                    });
-
-                    datasets.push({
-                        label: 'Other Offenses',
-                        data: otherPoints,
-                        backgroundColor: '#94a3b8',
-                        borderRadius: 4,
-                        borderSkipped: false,
-                        stack: 'timelineStack',
-                        maxBarThickness: 34
-                    });
-                }
-            }
-
-            // Fallback dataset if topTypes is empty
-            if (datasets.length === 0) {
-                datasets.push({
-                    label: 'Incidents Recorded',
-                    data: timelineData.map(b => parseInt(b.count || 0)),
-                    backgroundColor: '#ef4444',
-                    borderRadius: 4,
-                    borderSkipped: false,
-                    maxBarThickness: 34
-                });
-            }
-
-            new Chart(ctxTimeline, {
+        const trendEl = document.getElementById('trendChart');
+        if (trendEl) {
+            new Chart(trendEl, {
                 type: 'bar',
                 data: {
-                    labels: timelineData.map(b => b.short_label || b.label),
-                    datasets: datasets
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Offenses',
+                        data: trendCounts,
+                        // The dashboard's violation color (its Violators KPI and
+                        // the lead bar in the offense-nature chart), so a reader
+                        // recognises "this is the violation figure" on sight.
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 4,
+                        maxBarThickness: 38
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: { duration: 400 },
-                    plugins: {
-                        legend: {
-                            display: datasets.length > 1,
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                font: { size: 10, weight: '600' },
-                                padding: 8
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const val = context.raw || 0;
-                                    return ` ${context.dataset.label || 'Incidents'}: ${Number(val).toLocaleString('en-PH')}`;
-                                },
-                                afterBody: function(context) {
-                                    if (context.length > 0) {
-                                        const idx = context[0].dataIndex;
-                                        const bucket = timelineData[idx];
-                                        if (bucket) {
-                                            let info = `Total in period: ${bucket.count || 0}`;
-                                            if (bucket.top_violation && bucket.top_violation !== 'None') {
-                                                info += `\nTop: ${bucket.top_violation} (${bucket.top_violation_count})`;
-                                            }
-                                            return info;
-                                        }
-                                    }
-                                    return '';
-                                }
-                            }
-                        }
-                    },
+                    animation: false,
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: {
-                            stacked: true,
-                            grid: { display: false },
-                            ticks: {
-                                font: { size: 10, weight: 'bold' }
-                            }
-                        },
                         y: {
-                            stacked: true,
                             beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: {
-                                precision: 0,
-                                stepSize: 1,
-                                font: { size: 10 }
-                            }
+                            ticks: { precision: 0, color: '#334155', font: { size: 11 } },
+                            grid: { color: '#eef2f7' }
+                        },
+                        x: {
+                            ticks: { color: '#334155', font: { size: 11 }, autoSkip: false, maxRotation: 60, minRotation: 0 },
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
 
-        // 2. Render Right Offense Category Ranking Chart
-        if (rankingCanvas && natureData && natureData.length > 0) {
-            const ctxRanking = rankingCanvas.getContext('2d');
-            const sorted = [...natureData].sort((a, b) => parseInt(b.count || 0) - parseInt(a.count || 0));
+        const offenseLabels = <?= json_encode($offenseLabels, $jsonFlags) ?>;
+        const offenseCounts = <?= json_encode($offenseCounts, $jsonFlags) ?>;
+        const offenseColors = <?= json_encode($offenseColors, $jsonFlags) ?>;
 
-            // Long offense names are wrapped onto at most two lines so the widest
-            // category fits the value axis instead of being clipped at the canvas
-            // edge (the full-year report lists every category).
-            const wrapOffenseLabel = (text) => {
-                text = String(text);
-                if (text.length <= 24) {
-                    return text;
-                }
-                const words = text.split(' ');
-                let best = null;
-                let bestGap = Infinity;
-                for (let i = 1; i < words.length; i++) {
-                    const gap = Math.abs(words.slice(0, i).join(' ').length - words.slice(i).join(' ').length);
-                    if (gap < bestGap) {
-                        bestGap = gap;
-                        best = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
-                    }
-                }
-                return best || text;
-            };
-
-            new Chart(ctxRanking, {
+        const offenseEl = document.getElementById('offenseChart');
+        if (offenseEl) {
+            new Chart(offenseEl, {
                 type: 'bar',
                 data: {
-                    labels: sorted.map(n => wrapOffenseLabel(n.violation_type)),
+                    labels: offenseLabels,
                     datasets: [{
                         label: 'Incidents',
-                        data: sorted.map(n => parseInt(n.count || 0)),
-                        backgroundColor: sorted.map((_, i) => chartColors[i % chartColors.length]),
+                        data: offenseCounts,
+                        // Dashboard palette by rank: the same offense carries the
+                        // same color on both screens.
+                        backgroundColor: offenseColors,
                         borderRadius: 4,
-                        borderSkipped: false,
-                        maxBarThickness: 24
+                        maxBarThickness: 22
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: { duration: 400 },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                title: function(items) {
-                                    const idx = items.length ? items[0].dataIndex : -1;
-                                    return idx >= 0 && sorted[idx] ? sorted[idx].violation_type : '';
-                                },
-                                label: function(context) {
-                                    const val = context.raw || 0;
-                                    const pct = totalIncidents > 0 ? ((val / totalIncidents) * 100).toFixed(1) : 0;
-                                    return ` ${val} incident(s) (${pct}% of total)`;
-                                }
-                            }
-                        }
-                    },
+                    animation: false,
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: {
                             beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: {
-                                precision: 0,
-                                stepSize: 1,
-                                font: { size: 10 }
-                            }
+                            ticks: { precision: 0, color: '#334155', font: { size: 11 } },
+                            grid: { color: '#eef2f7' }
                         },
                         y: {
-                            grid: { display: false },
-                            // Never auto-skip: a full-year report lists every category,
-                            // and skipping silently hides offense names from the ranking.
-                            ticks: {
-                                autoSkip: false,
-                                padding: 2,
-                                font: { size: 10, weight: 'bold' }
-                            }
+                            ticks: { color: '#334155', font: { size: 11 } },
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
-
-        // Realtime Quick Refresh & Polling check
-        const refreshBtn = document.getElementById('btnQuickRefresh');
-        const refreshSpinner = document.getElementById('refreshSpinner');
-        const liveSyncStatus = document.getElementById('liveSyncStatus');
-
-        refreshBtn?.addEventListener('click', function() {
-            if (refreshSpinner) refreshSpinner.classList.add('spin-animation');
-            if (liveSyncStatus) liveSyncStatus.textContent = 'Checking CTRAMO server...';
-
-            fetch('<?= base_url('api/nature-summary') ?>')
-                .then(r => r.json())
-                .then(data => {
-                    setTimeout(() => {
-                        if (refreshSpinner) refreshSpinner.classList.remove('spin-animation');
-                        if (data && data.status === 'ok') {
-                            const timeStr = data.updated_at ? data.updated_at.split(' ')[1] : 'Just now';
-                            if (liveSyncStatus) liveSyncStatus.textContent = `Live Synced (${timeStr})`;
-
-                            const currentTotal = <?= (int)($summary['total_violations'] ?? 0) ?>;
-                            if (data.total !== currentTotal) {
-                                if (liveSyncStatus) {
-                                    liveSyncStatus.innerHTML = `<span class="text-danger fw-bold">${Math.abs(data.total - currentTotal)} changes detected!</span>`;
-                                }
-                                if (typeof Swal !== 'undefined') {
-                                    Swal.fire({
-                                        icon: 'info',
-                                        title: 'Real-Time Update Detected',
-                                        text: `New traffic citation entries were recorded (${data.total} total). Would you like to reload the report?`,
-                                        showCancelButton: true,
-                                        confirmButtonText: 'Reload Report',
-                                        confirmButtonColor: '#ef4444'
-                                    }).then(res => {
-                                        if (res.isConfirmed) {
-                                            window.location.reload();
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    }, 400);
-                })
-                .catch(() => {
-                    if (refreshSpinner) refreshSpinner.classList.remove('spin-animation');
-                    if (liveSyncStatus) liveSyncStatus.textContent = 'Connected (Local)';
-                });
-        });
-
-        // Instant in-table search for Section III records
-        const recordSearchInput = document.getElementById('recordSearchInput');
-        const recordCountBadge = document.getElementById('recordCountBadge');
-        const citationRows = document.querySelectorAll('.citation-row');
-        const noMatchRow = document.getElementById('noMatchRow');
-
-        recordSearchInput?.addEventListener('input', function() {
-            const q = this.value.trim().toLowerCase();
-            let visibleCount = 0;
-
-            citationRows.forEach(row => {
-                const searchable = (
-                    row.getAttribute('data-ticket') + ' ' +
-                    row.getAttribute('data-driver') + ' ' +
-                    row.getAttribute('data-plate') + ' ' +
-                    row.getAttribute('data-violation') + ' ' +
-                    row.getAttribute('data-officer') + ' ' +
-                    row.getAttribute('data-status')
-                ).toLowerCase();
-
-                if (q === '' || searchable.includes(q)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            if (noMatchRow) {
-                noMatchRow.style.display = (visibleCount === 0 && q !== '') ? '' : 'none';
-            }
-            if (recordCountBadge) {
-                recordCountBadge.textContent = q === '' ? `${citationRows.length} records` : `${visibleCount} of ${citationRows.length} matched`;
-            }
-        });
     });
 </script>
 

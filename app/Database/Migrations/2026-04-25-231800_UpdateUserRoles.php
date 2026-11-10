@@ -8,6 +8,7 @@ class UpdateUserRoles extends Migration
 {
     public function up()
     {
+        $this->db->resetDataCache();
         // Make role flexible (avoid ENUM alteration issues) and normalize values.
         if ($this->db->fieldExists('role', 'users')) {
             $this->forge->modifyColumn('users', [
@@ -27,6 +28,7 @@ class UpdateUserRoles extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         // Best-effort rollback: map back to previous values.
         $this->db->query("UPDATE users SET role = 'user' WHERE role = 'driver'");
         $this->db->query("UPDATE users SET role = 'traffic_officer' WHERE role = 'enforcer'");

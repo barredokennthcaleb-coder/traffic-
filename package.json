@@ -1,0 +1,8 @@
+{
+    "name": "traffic-system-assets",
+    "private": true,
+    "description": "Front-end dependencies for the Traffic System app. The PostHog SDK is pinned here and resolved in the browser by the import map printed in app/Views/theme/posthog.php; run `npm install` if you prefer to bundle public/js/posthog.js with the local copy.",
+    "dependencies": {
+        "posthog-js": "1.443.0"
+    }
+}

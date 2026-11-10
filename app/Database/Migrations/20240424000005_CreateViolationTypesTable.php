@@ -63,7 +63,7 @@ class CreateViolationTypesTable extends Migration
             ['violation_name' => 'Running Stop Sign', 'description' => 'Failing to stop at a stop sign', 'fine_amount' => 175.00, 'points' => 3],
         ];
 
-        $db = \Config\Database::connect();
+        $db = $this->db;
         $builder = $db->table('violation_types');
         foreach ($seedData as $data) {
             $existing = $builder->where('violation_name', $data['violation_name'])->get()->getRow();

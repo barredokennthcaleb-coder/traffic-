@@ -14,7 +14,7 @@ $routes->get('forgot-password', 'AuthController::forgotPassword');
 $routes->post('forgot-password', 'AuthController::forgotPasswordPost');
 $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::registerPost');
-$routes->get('logout', 'AuthController::logout');
+$routes->post('logout', 'AuthController::logout');
 
 // Public Portal Route
 $routes->get('lookup', 'LookupController::index');
@@ -23,10 +23,10 @@ $routes->get('lookup', 'LookupController::index');
 $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'Officer\OfficerController::index');
     $routes->get('profile', 'Officer\OfficerController::profile');
+    $routes->get('profile/enforcement-summary', 'Officer\OfficerController::enforcementSummary');
     $routes->post('profile/photo', 'Officer\OfficerController::updateProfilePhoto');
     $routes->post('profile/photo/remove', 'Officer\OfficerController::removeProfilePhoto');
     $routes->post('profile/update', 'Officer\OfficerController::updateProfile');
-    $routes->post('profile/update-station', 'Officer\OfficerController::updateAssignedStation');
     $routes->post('profile/confirm-area', 'Officer\OfficerController::confirmAssignedArea');
     $routes->post('profile/duty-status', 'Officer\OfficerController::updateDutyStatus');
 
@@ -35,13 +35,11 @@ $routes->group('officer', ['filter' => 'officer'], function($routes) {
     $routes->get('violations', 'Officer\OfficerController::violations');
     $routes->get('violator-records', 'Officer\OfficerController::violatorRecordsApi');
     $routes->get('violator-profile/(:num)', 'Officer\OfficerController::violatorProfile/$1');
+    $routes->post('violator/(:num)/photo', 'Officer\OfficerController::updateViolatorPhoto/$1');
+    $routes->post('violator/(:num)/photo/remove', 'Officer\OfficerController::removeViolatorPhoto/$1');
     $routes->get('violator/(:any)', 'Officer\OfficerController::violatorRecord/$1');
     $routes->get('view/(:num)', 'Officer\OfficerController::view/$1');
-    $routes->get('tct/(:num)', 'Officer\OfficerController::tct/$1');
     $routes->post('update/(:num)', 'Officer\OfficerController::update/$1');
-    $routes->post('update-violation/(:num)', 'Officer\OfficerController::updateViolation/$1');
-    $routes->post('add-violation', 'Officer\OfficerController::addViolationToTicket');
-    $routes->post('delete-violation/(:num)', 'Officer\OfficerController::deleteViolationItem/$1');
     $routes->post('delete/(:num)', 'Officer\OfficerController::delete/$1');
     $routes->post('cancel/(:num)', 'Officer\OfficerController::cancel/$1');
     $routes->post('violation-types/store', 'Officer\OfficerController::storeViolationType');
@@ -63,6 +61,11 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('dashboard', 'Admin\AdminController::index');
 
     
+    // Violator registry (every apprehension on record)
+    $routes->get('violators', 'Admin\ViolatorController::index');
+    // Printable apprehension and sanction report for one violator
+    $routes->get('violators/report/(:num)', 'Admin\ViolatorController::report/$1');
+
     // User CRUD Routes
     $routes->get('users', 'Admin\UserController::index');
     $routes->get('users/view/(:num)', 'Admin\UserController::viewDriver/$1');
@@ -83,7 +86,9 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('penalties/cancel/(:num)', 'Admin\PenaltyController::cancel/$1');
     $routes->post('penalties/delete/(:num)', 'Admin\PenaltyController::delete/$1');
     $routes->get('penalties/history', 'Admin\PenaltyController::history');
-    $routes->get('penalties/reverse/(:num)', 'Admin\PenaltyController::reverse/$1');
+    $routes->get('penalties/receipt/(:segment)', 'Admin\PenaltyController::receipt/$1');
+    $routes->post('penalties/receipt/update/(:num)', 'Admin\PenaltyController::updateReceiptNumber/$1');
+    $routes->post('penalties/reverse/(:num)', 'Admin\PenaltyController::reverse/$1');
     $routes->get('penalties/search', 'Admin\PenaltyController::search');
     $routes->get('penalties/violator-records', 'Officer\OfficerController::violatorRecordsApi');
     $routes->get('penalties/violator/(:num)', 'Admin\PenaltyController::violatorProfile/$1');
@@ -92,12 +97,18 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('violation-types', 'Admin\ViolationTypeController::index');
     $routes->post('violation-types/store', 'Admin\ViolationTypeController::store');
     $routes->post('violation-types/update', 'Admin\ViolationTypeController::update');
-    $routes->get('violation-types/delete/(:num)', 'Admin\ViolationTypeController::delete/$1');
+    $routes->post('violation-types/delete/(:num)', 'Admin\ViolationTypeController::delete/$1');
 
     // Reports Routes
     $routes->get('reports', 'Admin\AdminController::reports');
     $routes->get('reports/violations', 'Admin\AdminController::violationsReport');
     $routes->get('reports/violations-export-csv', 'Admin\AdminController::exportViolationsCsv');
+    // Violator reports: pick a person, then open their apprehension sheet
+    $routes->get('reports/violators', 'Admin\ViolatorController::directory');
+    // Full calendar year, all violators, month by month
+    $routes->get('reports/violators/year', 'Admin\ViolatorController::yearReport');
+    // Old "all violators" address still sits in open tabs and bookmarks
+    $routes->get('reports/violators/all', 'Admin\ViolatorController::yearReport');
     $routes->get('reports/export-csv', 'Admin\AdminController::exportReportCsv');
 
     // Real-time API Routes (JSON)
@@ -105,7 +116,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
 });
 
 // Inspection Routes (Accessible by Admin and Officer)
-$routes->group('inspections', ['filter' => 'auth'], function($routes) {
+$routes->group('inspections', ['filter' => 'officer'], function($routes) {
     $routes->get('/', 'InspectionController::index');
     $routes->get('create', 'InspectionController::create');
     $routes->post('store', 'InspectionController::store');

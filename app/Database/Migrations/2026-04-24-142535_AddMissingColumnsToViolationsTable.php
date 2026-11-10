@@ -8,7 +8,8 @@ class AddMissingColumnsToViolationsTable extends Migration
 {
     public function up()
     {
-        $db = \Config\Database::connect();
+        $this->db->resetDataCache();
+        $db = $this->db;
         $fieldsToAdd = [];
 
         $fields = [
@@ -49,6 +50,7 @@ class AddMissingColumnsToViolationsTable extends Migration
 
     public function down()
     {
+        $this->db->resetDataCache();
         $this->forge->dropColumn('violations', 'points');
         $this->forge->dropColumn('violations', 'remarks');
         $this->forge->dropColumn('violations', 'location');

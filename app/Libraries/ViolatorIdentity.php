@@ -28,24 +28,27 @@ class ViolatorIdentity
 
     public static function licenseKey(?string $value): string
     {
-        $value = strtoupper(self::clean($value));
+        // Strip punctuation before the placeholder check so variants such as
+        // "N/A.", "N.A." or "n.a" are recognized as placeholders too — otherwise
+        // they collapse to "NA" and merge different people under one key.
+        $value = (string) preg_replace('/[^A-Z0-9]/', '', strtoupper(self::clean($value)));
 
-        if (self::isPlaceholder($value)) {
+        if ($value === '' || self::isPlaceholder($value)) {
             return '';
         }
 
-        return (string) preg_replace('/[^A-Z0-9]/', '', $value);
+        return $value;
     }
 
     public static function plateKey(?string $value): string
     {
-        $value = strtoupper(self::clean($value));
+        $value = (string) preg_replace('/[^A-Z0-9]/', '', strtoupper(self::clean($value)));
 
-        if (self::isPlaceholder($value)) {
+        if ($value === '' || self::isPlaceholder($value)) {
             return '';
         }
 
-        return (string) preg_replace('/[^A-Z0-9]/', '', $value);
+        return $value;
     }
 
     public static function nameKey(?string $firstName, ?string $lastName, ?string $driverName = null): string
@@ -100,15 +103,21 @@ class ViolatorIdentity
             return strlen($key) <= 191 ? $key : 'tk-h:' . sha1($key);
         }
 
-        return 'tmp:' . md5(json_encode($data));
+        // Invalid UTF-8 would make json_encode() return false, collapsing all such
+        // rows onto the same md5 of an empty string and merging unrelated people.
+        return 'tmp:' . md5(json_encode($data, JSON_INVALID_UTF8_SUBSTITUTE) ?: serialize($data));
     }
 
     /**
-     * Compact name for ledgers and lists: first name, middle initial(s), last name.
+     * Name for ledgers and lists: first name, middle initial, last name.
      *
-     * The complete middle name stays on the violator's record and on the printed
-     * citation; only the listing is shortened. Legacy rows that carry nothing but
-     * the free-text driver name are split the same way.
+     * The middle name is shortened to one letter, which is how a citation
+     * ledger is normally written. A recorded "batongbakal" reads as "B." and a
+     * recorded "Caleb T." reads as "C." — one initial per person, not one
+     * letter per word, which is what turned "Caleb T." into "C.T.".
+     * The complete middle name stays on the violator's record and on the
+     * printed citation. Legacy rows that carry nothing but the free-text
+     * driver name are split the same way.
      */
     public static function shortName(?string $firstName, ?string $middleName, ?string $lastName, ?string $driverName = null): string
     {
@@ -130,66 +139,59 @@ class ViolatorIdentity
                 return $parts[0];
             }
 
-            $first  = (string) array_shift($parts);
-            $last   = (string) array_pop($parts);
-            $middle = implode(' ', $parts);
-        }
+            if (count($parts) === 2) {
+                return $parts[0] . ' ' . $parts[1];
+            }
 
-        $initials = '';
-
-        foreach (preg_split('/\s+/', $middle) ?: [] as $word) {
-            $word = trim($word, " .");
-
-            if ($word !== '') {
-                $initials .= strtoupper(mb_substr($word, 0, 1)) . '.';
+            $last = (string) array_pop($parts);
+            $secondToLast = end($parts);
+            // If the penultimate part is a single-letter initial (e.g. 't.' or 't') and earlier parts are full names
+            if (count($parts) >= 2 && mb_strlen(trim((string) $secondToLast, " .")) === 1) {
+                $middle = (string) array_pop($parts);
+                $first  = implode(' ', $parts);
+            } else {
+                $first  = (string) array_shift($parts);
+                $middle = implode(' ', $parts);
             }
         }
 
-        return trim(implode(' ', array_filter([$first, $initials, $last])));
-    }
+        $words = preg_split('/\s+/', $middle) ?: [];
+        $words = array_values(array_filter($words, static fn ($w) => $w !== ''));
 
-    /**
-     * Prefer the most complete display name available in a set of rows.
-     */
-    public static function bestName(array $rows): string
-    {
-        $best = '';
-
-        foreach ($rows as $row) {
-            $name = self::clean(implode(' ', array_filter([
-                $row['first_name'] ?? '',
-                $row['middle_name'] ?? '',
-                $row['last_name'] ?? '',
-            ], static fn ($part) => trim((string) $part) !== '')));
-
-            if ($name === '') {
-                $name = self::clean($row['driver_name'] ?? '');
+        if (count($words) >= 2) {
+            $lastWord = end($words);
+            $lastWordClean = trim((string) $lastWord, " .");
+            // If the last word of middle is a single-letter initial (e.g. "t." or "t") and earlier words are full names (e.g. "caleb")
+            // then earlier words are part of a double first name, not a middle name.
+            if (mb_strlen($lastWordClean) === 1) {
+                $doubleParts = array_slice($words, 0, -1);
+                $first = trim($first . ' ' . implode(' ', $doubleParts));
+                $middle = strtoupper($lastWordClean) . '.';
+            } else {
+                // Otherwise keep the first initial of the middle surname
+                $firstWordClean = trim((string) ($words[0] ?? ''), " .");
+                $middle = $firstWordClean !== '' ? strtoupper(mb_substr($firstWordClean, 0, 1)) . '.' : '';
             }
-
-            if (strlen($name) > strlen($best)) {
-                $best = $name;
-            }
+        } elseif (count($words) === 1) {
+            $word = trim((string) $words[0], " .");
+            $middle = $word !== '' ? strtoupper(mb_substr($word, 0, 1)) . '.' : '';
+        } else {
+            $middle = '';
         }
 
-        return $best;
-    }
-
-    public static function firstValue(array $rows, string $field, bool $requireRealValue = false): string
-    {
-        foreach ($rows as $row) {
-            $value = self::clean($row[$field] ?? '');
-            if ($value === '') {
-                continue;
+        // Cleanly format casing so lowercase entries become proper names
+        $formatWord = static function(string $str): string {
+            if ($str === '') return '';
+            if (strtolower($str) === $str) {
+                return mb_convert_case($str, MB_CASE_TITLE, 'UTF-8');
             }
+            return $str;
+        };
 
-            if ($requireRealValue && self::isPlaceholder($value)) {
-                continue;
-            }
+        $firstFormatted = implode(' ', array_map($formatWord, explode(' ', $first)));
+        $lastFormatted  = implode(' ', array_map($formatWord, explode(' ', $last)));
 
-            return $value;
-        }
-
-        return '';
+        return trim(implode(' ', array_filter([$firstFormatted, $middle, $lastFormatted])));
     }
 
     public static function isPlaceholder(?string $value): bool

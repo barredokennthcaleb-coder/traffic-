@@ -15,7 +15,7 @@
             <!-- Prev -->
             <li class="page-item <?= $pager->hasPreviousPage() ? '' : 'disabled' ?>">
                 <?php if ($pager->hasPreviousPage()): ?>
-                    <a class="page-link pag-btn pag-btn--nav" href="<?= $pager->getPreviousPage() ?>" aria-label="Previous">
+                    <a class="page-link pag-btn pag-btn--nav" href="<?= $pager->getPreviousPage() ?><?= (isset($month_stats) && $month_stats['key'] ? '?month=' . $month_stats['key'] : '') ?>" aria-label="Previous">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 <?php else: ?>
@@ -26,14 +26,14 @@
             <!-- Numbers -->
             <?php foreach ($pager->links() as $link): ?>
                 <li class="page-item <?= $link['active'] ? 'active' : '' ?>">
-                    <a class="page-link pag-btn" href="<?= $link['uri'] ?>"><?= $link['title'] ?></a>
+                    <a class="page-link pag-btn" href="<?= $link['uri'] ?><?= (isset($month_stats) && $month_stats['key'] ? '?month=' . $month_stats['key'] : '') ?>"><?= $link['title'] ?></a>
                 </li>
             <?php endforeach ?>
 
             <!-- Next -->
             <li class="page-item <?= $pager->hasNextPage() ? '' : 'disabled' ?>">
                 <?php if ($pager->hasNextPage()): ?>
-                    <a class="page-link pag-btn pag-btn--nav" href="<?= $pager->getNextPage() ?>" aria-label="Next">
+                    <a class="page-link pag-btn pag-btn--nav" href="<?= $pager->getNextPage() ?><?= (isset($month_stats) && $month_stats['key'] ? '?month=' . $month_stats['key'] : '') ?>" aria-label="Next">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 <?php else: ?>
@@ -43,14 +43,13 @@
 
         </ul>
     </div>
-</nav>
 
 
 <style>
 .pag-wrapper { padding: 0.5rem 0; }
 
 /* Info badges */
-.pag-info-label { font-size: 0.72rem !important; font-weight: 700 !important; color: #94a3b8 !important; text-transform: uppercase; letter-spacing: 0.07em; }
+.pag-info-label { font-size: 0.72rem !important; font-weight: 700 !important; color: var(--text-subtle, #5c6b80) !important; text-transform: uppercase; letter-spacing: 0.07em; }
 .pag-current {
     display: inline-flex !important; align-items: center !important; justify-content: center !important;
     min-width: 30px; height: 30px; padding: 0 0.55rem; border-radius: 9px !important;
@@ -119,4 +118,4 @@
     .custom-pagination .page-item .pag-btn { width: 30px !important; height: 30px !important; font-size: 0.74rem !important; }
 }
 </style>
-
+</nav>

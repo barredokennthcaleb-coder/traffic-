@@ -2,42 +2,643 @@
 
 <?= $this->section('title') ?>Admin Dashboard<?= $this->endSection() ?>
 
+<?= $this->section('styles') ?>
+<style>
+    :root {
+        --dash-surface: #ffffff;
+        --dash-panel: #f8fafc;
+        --dash-text: #0f172a;
+        --dash-muted: #64748b;
+        --dash-blue: #2563eb;
+        --dash-green: #047857;
+        --dash-kpi-blue-start: #2e5cf7;
+        --dash-kpi-blue-end: #0040e5;
+        --dash-kpi-green-start: #10b981;
+        --dash-kpi-green-end: #047857;
+        --dash-kpi-cyan-start: #06b6d4;
+        --dash-kpi-cyan-end: #0891b2;
+        --dash-kpi-amber-start: #d97706;
+        --dash-kpi-amber-end: #92400e;
+        --dash-kpi-white: #ffffff;
+        --dash-indigo: #6366f1;
+        --dash-chart-amber: #ca8a04;
+        --dash-chart-red: #ef4444;
+        --dash-status-pending: #d6a52f;
+        --dash-status-paid: #047857;
+        --dash-status-neutral: #64748b;
+        --dash-role-admin: #0066ff;
+        --dash-role-enforcer: #047857;
+        --dash-role-driver: #64748b;
+        --dash-nature-palette: #4f46e5, #0891b2, #059669, #d97706, #db2777, #dc2626, #7c3aed, #0f766e, #ea580c, #65a30d, #0284c7, #9333ea, #16a34a, #c2410c, #be123c, #6d28d9, #0e7490, #047857, #b45309, #be185d;
+        --dash-skeleton: #e2e8f0;
+        --dash-chart-grid: rgba(148, 163, 184, 0.22);
+        --dash-highlight: rgba(37, 99, 235, 0.07);
+        --dash-ease: cubic-bezier(.22, .61, .36, 1);
+    }
+
+    :root[data-bs-theme="dark"] {
+        --dash-surface: #0f172a;
+        --dash-panel: #111b2f;
+        --dash-text: #f8fafc;
+        --dash-muted: #cbd5e1;
+        --dash-skeleton: #334155;
+        --dash-chart-grid: rgba(148, 163, 184, 0.3);
+        --dash-highlight: rgba(96, 165, 250, 0.12);
+    }
+
+    .admin-dashboard .dashboard-kpi-row {
+        --bs-gutter-x: 1.5rem;
+        --bs-gutter-y: 1.5rem;
+    }
+
+    .admin-dashboard .dashboard-kpi-grid {
+        --bs-gutter-x: clamp(0.75rem, 1.5vw, 1.5rem);
+        --bs-gutter-y: clamp(0.75rem, 1.5vw, 1.5rem);
+    }
+
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3 > a {
+        display: block;
+        height: 100%;
+    }
+
+    .admin-dashboard .premium-kpi {
+        transition: transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 240ms ease;
+    }
+
+    /* The KPI cards float on an infinite keyframe animation and carry
+       `will-change: transform`, so each one is its own stacking context. This
+       header is one too (it animates in via .premium-reveal). With both at
+       z-index auto they paint in tree order, so these later cards covered the
+       header — which is what put the Generate Reports menu behind them. A
+       positive z-index lifts the whole header, dropdown included, above the
+       grid; a z-index on the menu itself could never escape its parent's
+       stacking context. */
+    .admin-dashboard .dashboard-page-heading {
+        position: relative;
+        z-index: 20;
+    }
+
+    .admin-dashboard .premium-kpi i {
+        transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 220ms ease;
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .premium-kpi:hover {
+            transform: translateY(-3px) scale(1.005) !important;
+            box-shadow: 0 16px 32px -14px rgba(15, 23, 42, 0.38) !important;
+        }
+
+        .admin-dashboard .premium-kpi:hover i {
+            transform: scale(1.06);
+        }
+    }
+
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3 > a:focus-visible .premium-kpi {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #2563eb !important;
+    }
+
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3 > a:active .premium-kpi {
+        transform: scale(0.99) !important;
+    }
+
+    .admin-dashboard .premium-kpi .kpi-top-violation-name {
+        display: -webkit-box;
+        overflow: hidden;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        font-size: clamp(0.9rem, 2.2vw, 1.35rem);
+        line-height: 1.15;
+    }
+
+    @media (min-width: 576px) and (max-width: 1199.98px) {
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    .admin-dashboard .dashboard-kpi {
+        --mouse-x: 50%;
+        --mouse-y: 50%;
+        position: relative;
+        overflow: hidden;
+        min-height: 236px;
+        color: var(--dash-kpi-white) !important;
+        background: linear-gradient(135deg, var(--dash-kpi-blue-start), var(--dash-kpi-blue-end)) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 22px;
+        box-shadow: 0 10px 25px -5px rgba(46, 92, 247, 0.2);
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        transition: transform 280ms var(--dash-ease), box-shadow 280ms var(--dash-ease), opacity 280ms var(--dash-ease), filter 280ms var(--dash-ease);
+        opacity: 0;
+        transform: translateY(16px);
+        outline: none !important;
+    }
+
+    .admin-dashboard .dashboard-kpi:focus-visible {
+        box-shadow: 0 0 0 3px var(--dash-surface), 0 0 0 6px var(--dash-kpi-white);
+        transform: translateY(-5px);
+    }
+
+    .admin-dashboard .dashboard-kpi.is-revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .admin-dashboard:has(.dashboard-kpi:hover) .dashboard-kpi:not(:hover) {
+        opacity: 0.82;
+        filter: saturate(0.8) brightness(0.95);
+    }
+
+    @media (pointer: coarse) {
+        .admin-dashboard:has(.dashboard-kpi:hover) .dashboard-kpi:not(:hover) {
+            opacity: 1;
+            filter: none;
+        }
+    }
+
+    .admin-dashboard .dashboard-kpi::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.05), transparent 55%);
+        opacity: 0;
+        transition: opacity 320ms var(--dash-ease);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .admin-dashboard .dashboard-kpi:hover::before {
+        opacity: 1;
+    }
+
+    .admin-dashboard .dashboard-kpi::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -150%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+        transform: skewX(-25deg);
+        pointer-events: none;
+        z-index: 3;
+    }
+
+    .admin-dashboard .dashboard-kpi:hover::after {
+        animation: dashboard-kpi-sweep 900ms var(--dash-ease) forwards;
+    }
+
+    @keyframes dashboard-kpi-sweep {
+        from { left: -150%; }
+        to { left: 150%; }
+    }
+
+    .admin-dashboard .dashboard-kpi:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 22px 42px -12px rgba(46, 92, 247, 0.45);
+    }
+
+    .admin-dashboard .dashboard-kpi:active {
+        transform: translateY(-2px) scale(0.99);
+        box-shadow: 0 10px 20px -5px rgba(46, 92, 247, 0.3);
+    }
+
+    .admin-dashboard .dashboard-kpi--revenue {
+        background: linear-gradient(135deg, var(--dash-kpi-green-start), var(--dash-kpi-green-end)) !important;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2);
+    }
+    .admin-dashboard .dashboard-kpi--revenue:hover { box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.4); }
+    .admin-dashboard .dashboard-kpi--revenue:active { box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.3); }
+
+    .admin-dashboard .dashboard-kpi--collection {
+        background: linear-gradient(135deg, var(--dash-kpi-cyan-start), var(--dash-kpi-cyan-end)) !important;
+        box-shadow: 0 10px 25px -5px rgba(8, 145, 178, 0.2);
+    }
+    .admin-dashboard .dashboard-kpi--collection:hover { box-shadow: 0 20px 40px -10px rgba(8, 145, 178, 0.4); }
+    .admin-dashboard .dashboard-kpi--collection:active { box-shadow: 0 10px 20px -5px rgba(8, 145, 178, 0.3); }
+
+    .admin-dashboard .dashboard-kpi--drivers {
+        background: linear-gradient(135deg, var(--dash-kpi-amber-start), var(--dash-kpi-amber-end)) !important;
+        box-shadow: 0 10px 25px -5px rgba(146, 64, 14, 0.2);
+    }
+    .admin-dashboard .dashboard-kpi--drivers:hover { box-shadow: 0 22px 42px -12px rgba(120, 53, 15, 0.45); }
+    .admin-dashboard .dashboard-kpi--drivers:active { box-shadow: 0 10px 20px -5px rgba(120, 53, 15, 0.3); }
+
+    /* ── Uniform internal structure: top row ── */
+    .admin-dashboard .dashboard-kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .admin-dashboard .dashboard-kpi h6 {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        opacity: 0.9;
+        margin-bottom: 0.35rem;
+    }
+
+    .admin-dashboard .dashboard-kpi h3 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-bottom: 0;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .admin-dashboard .dashboard-kpi-icon {
+        flex: 0 0 auto;
+        width: 46px;
+        height: 46px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        transition: transform 280ms var(--dash-ease);
+    }
+
+    .admin-dashboard .dashboard-kpi:hover .dashboard-kpi-icon {
+        transform: scale(1.1) rotate(6deg);
+    }
+
+    /* ── Short rounded chip under the number ── */
+    .admin-dashboard .dashboard-kpi-chip {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-top: 0.85rem;
+        padding: 0.28rem 0.7rem;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        transition: transform 280ms var(--dash-ease);
+    }
+
+    .admin-dashboard .dashboard-kpi:hover .dashboard-kpi-chip {
+        transform: translateX(3px);
+    }
+
+    /* ── Middle area (larger sparkline / progress) ── */
+    .admin-dashboard .dashboard-kpi-middle {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.9rem 0 0.4rem;
+        min-height: 88px;
+    }
+
+    .admin-dashboard .dashboard-sparkline {
+        width: 100%;
+        height: 72px;
+        overflow: visible;
+    }
+
+    .admin-dashboard .dashboard-sparkline path {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: stroke-width 280ms var(--dash-ease);
+        stroke-dasharray: 400;
+        stroke-dashoffset: 400;
+    }
+
+    .admin-dashboard .dashboard-kpi.is-revealed .dashboard-sparkline path {
+        animation: sparkline-draw 1s var(--dash-ease) forwards;
+    }
+
+    @keyframes sparkline-draw {
+        to { stroke-dashoffset: 0; }
+    }
+
+    .admin-dashboard .dashboard-kpi:hover .dashboard-sparkline path {
+        stroke-width: 4;
+    }
+
+    .admin-dashboard .sparkline-dot {
+        fill: currentColor;
+        transform-box: fill-box;
+        transform-origin: center;
+        opacity: 0;
+    }
+
+    .admin-dashboard .dashboard-kpi.is-revealed .sparkline-dot {
+        transition: opacity 300ms var(--dash-ease) 1s;
+        opacity: 1;
+    }
+
+    .admin-dashboard .dashboard-kpi:hover .sparkline-dot {
+        animation: sparkline-dot-pulse 2s var(--dash-ease) infinite;
+    }
+
+    @keyframes sparkline-dot-pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.9); opacity: 0.45; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .admin-dashboard .dashboard-collection-amounts {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .admin-dashboard .dashboard-collection-amounts .is-primary { font-size: 1.05rem; }
+    .admin-dashboard .dashboard-collection-amounts .is-secondary { font-size: 0.78rem; opacity: 0.82; }
+
+    /* ── Footer: divider, text left, arrow right ── */
+    .admin-dashboard .dashboard-kpi-footer {
+        padding-top: 0.85rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.18);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .admin-dashboard .dashboard-kpi-footer-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.96);
+        line-height: 1.3;
+    }
+
+    .admin-dashboard .dashboard-kpi-arrow {
+        flex: 0 0 auto;
+        transition: transform 280ms var(--dash-ease);
+    }
+
+    .admin-dashboard .dashboard-kpi:hover .dashboard-kpi-arrow {
+        transform: translateX(5px);
+    }
+
+    .admin-dashboard .dashboard-collection-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .admin-dashboard .dashboard-collection-progress {
+        height: 100%;
+        background: var(--dash-kpi-white);
+        width: 0%;
+        border-radius: 999px;
+        transition: width 1s var(--dash-ease);
+    }
+
+    /* Keep both analytics card headers on one line so the charts below
+       start at the same height. The month hint could otherwise squeeze
+       the title into a three-line stack on narrower desktops. */
+    .admin-dashboard .dashboard-chart-title {
+        font-size: 1.0625rem;
+        white-space: nowrap;
+    }
+
+    /* Just above the four-up breakpoint the two chart cards are at their
+       narrowest. A small step down keeps each header on one line. */
+    @media (min-width: 1200px) and (max-width: 1279.98px) {
+        .admin-dashboard .dashboard-chart-title { font-size: 1rem; }
+    }
+
+    /* ── Chart shells ────────────────────────────────────────────
+       Chart.js runs with maintainAspectRatio:false, so each canvas
+       takes its height from this wrapper. Without an explicit height
+       the wrapper grows with the canvas, and Chart.js keeps resizing
+       it taller on every frame — the runaway "melting" bars. */
+    .admin-dashboard .dashboard-chart-shell {
+        position: relative;
+        width: 100%;
+        height: 320px;
+        min-height: 240px;
+        overflow: hidden;
+    }
+
+    .admin-dashboard .dashboard-chart-shell > canvas {
+        display: block;
+        max-width: 100%;
+    }
+
+    .admin-dashboard .chart-panel-muted {
+        background: var(--surface-muted, var(--dash-panel));
+    }
+
+    /* Skeleton + empty-state overlays */
+    .admin-dashboard .chart-skeleton,
+    .admin-dashboard .chart-empty-state {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 1rem;
+        text-align: center;
+        background: var(--surface-card, var(--dash-surface));
+        border-radius: 12px;
+        pointer-events: none;
+        transition: opacity 200ms var(--dash-ease), visibility 200ms var(--dash-ease);
+    }
+
+    .admin-dashboard .chart-skeleton {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .admin-dashboard .dashboard-chart-shell.is-loaded .chart-skeleton {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .admin-dashboard .chart-empty-state {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .admin-dashboard .dashboard-chart-shell.is-empty .chart-empty-state {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .admin-dashboard .dashboard-chart-shell.is-empty > canvas {
+        visibility: hidden;
+    }
+
+    .admin-dashboard .chart-empty-state i {
+        font-size: 1.6rem;
+        color: var(--dash-muted);
+        opacity: 0.6;
+    }
+
+    .admin-dashboard .chart-empty-state strong {
+        font-size: 0.92rem;
+        color: var(--text-strong, var(--dash-text));
+    }
+
+    .admin-dashboard .chart-empty-state span {
+        max-width: 28ch;
+        font-size: 0.78rem;
+        color: var(--dash-muted);
+    }
+
+    .admin-dashboard .chart-skeleton-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        width: min(70%, 340px);
+        height: 52%;
+    }
+
+    .admin-dashboard .chart-skeleton-bars span {
+        flex: 1 1 0;
+        height: 60%;
+        border-radius: 6px 6px 2px 2px;
+        background: var(--surface-muted, var(--dash-skeleton));
+        transform-origin: bottom;
+        animation: chart-skeleton-pulse 1.5s var(--dash-ease) infinite;
+    }
+
+    .admin-dashboard .chart-skeleton-bars span:nth-child(2n) { height: 82%; animation-delay: 0.12s; }
+    .admin-dashboard .chart-skeleton-bars span:nth-child(3n) { height: 100%; animation-delay: 0.24s; }
+    .admin-dashboard .chart-skeleton-bars span:nth-child(4n) { height: 46%; animation-delay: 0.36s; }
+
+    .admin-dashboard .chart-skeleton-line {
+        width: min(70%, 340px);
+        height: 8px;
+        margin-top: 12px;
+        border-radius: 999px;
+        background: var(--surface-muted, var(--dash-skeleton));
+    }
+
+    @keyframes chart-skeleton-pulse {
+        0%, 100% { opacity: 0.55; transform: scaleY(0.85); }
+        50%      { opacity: 1; transform: scaleY(1); }
+    }
+
+    @media (max-width: 575.98px) {
+        .admin-dashboard .dashboard-chart-shell { height: 260px; }
+        .admin-dashboard .chart-skeleton-bars,
+        .admin-dashboard .chart-skeleton-line { width: 82%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .admin-dashboard .chart-skeleton-bars span { animation: none; }
+    }
+
+    @media (max-width: 1199.98px) {
+        .col-lg-3 { width: 50%; }
+    }
+
+    @media (max-width: 575.98px) {
+        .col-lg-3 { width: 100%; }
+        .admin-dashboard .dashboard-kpi h3 { font-size: 1.85rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .admin-dashboard .dashboard-kpi,
+        .admin-dashboard .dashboard-kpi::after,
+        .admin-dashboard .dashboard-kpi-icon,
+        .admin-dashboard .dashboard-kpi-chip,
+        .admin-dashboard .dashboard-sparkline path,
+        .admin-dashboard .sparkline-dot,
+        .admin-dashboard .dashboard-kpi-arrow,
+        .admin-dashboard .dashboard-collection-progress {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+            stroke-dashoffset: 0 !important;
+        }
+        .admin-dashboard .dashboard-kpi { opacity: 1 !important; transform: none !important; }
+        .admin-dashboard .dashboard-kpi::before { opacity: 0 !important; }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 admin-dashboard">
+    <?php
+        // The report buttons carry the dashboard's own filters. Without this
+        // the Revenue Report always opened on the current calendar year even
+        // when the dashboard was showing an earlier one, so the printed
+        // records never matched the screen the admin clicked from.
+        $reportYear  = (int) $year;
+        $reportMonth = ! empty($selected_month) ? sprintf('%02d', (int) $selected_month) : date('m');
+
+        $reportWeekStart = $reportYear === (int) date('Y')
+            ? date('Y-m-d', strtotime('monday this week'))
+            : date('Y-m-d', strtotime('first monday of january ' . $reportYear));
+
+        $reportYearlyUrl  = base_url('reports?' . http_build_query(['period_type' => 'yearly',  'year' => $reportYear]));
+        $reportWeeklyUrl  = base_url('reports?' . http_build_query(['period_type' => 'weekly',  'start_date' => $reportWeekStart]));
+        $reportMonthlyUrl = base_url('reports?' . http_build_query(['period_type' => 'monthly', 'year' => $reportYear, 'month' => $reportMonth]));
+        $reportCustomUrl  = base_url('reports?' . http_build_query(['period_type' => 'custom',  'start_date' => sprintf('%04d-01-01', $reportYear), 'end_date' => sprintf('%04d-12-31', $reportYear)]));
+    ?>
     <!-- Header with Year Filter & Generate Report Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 premium-reveal" style="--reveal-delay: 0s;">
-        <div>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 premium-reveal dashboard-page-heading" style="--reveal-delay: 0s;">
+        <div class="dashboard-title-block">
             <h4 class="mb-1 fw-bold" style="color: var(--text-strong);"><i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard &amp; Analytics</h4>
             <p class="text-muted mb-0 small">Comprehensive insights into system activity, violation trends, and revenue.</p>
-            <div id="liveClock" class="d-inline-flex align-items-center gap-2 mt-1 px-3 py-1 rounded-pill small fw-semibold" style="background: rgba(99,102,241,0.1); color: var(--brand-primary); font-size: 0.78rem;">
+            <div id="liveClock" class="d-inline-flex align-items-center gap-2 mt-2 px-3 py-1 rounded-pill small fw-semibold dashboard-clock">
                 <i class="bi bi-clock-fill"></i> <span id="clockText">Loading...</span>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end dashboard-actions">
             <!-- Generate Reports Split Button -->
             <div class="btn-group shadow-sm">
-                <a href="<?= base_url('reports') ?>" class="btn btn-primary btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center">
+                <a href="<?= $reportYearlyUrl ?>" class="btn btn-primary btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center">
                     <i class="bi bi-file-earmark-pdf me-1"></i> Generate Reports
                 </a>
-                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split px-2" data-bs-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-primary btn-sm dropdown-toggle dropdown-toggle-split px-2" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More report options">
                     <span class="visually-hidden">Toggle Dropdown</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 220px; z-index: 1050;">
                     <li><h6 class="dropdown-header text-uppercase fw-bold text-muted px-2" style="font-size: 0.7rem;">Quick Reports</h6></li>
                     <li>
-                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= base_url('reports?period_type=weekly') ?>">
+                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= $reportWeeklyUrl ?>">
                             <i class="bi bi-calendar-week text-primary me-2 fs-6"></i> Weekly Report
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= base_url('reports?period_type=monthly') ?>">
+                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= $reportMonthlyUrl ?>">
                             <i class="bi bi-calendar-month text-success me-2 fs-6"></i> Monthly Report
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= base_url('reports?period_type=custom') ?>">
+                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= $reportCustomUrl ?>">
                             <i class="bi bi-sliders text-warning me-2 fs-6"></i> Custom Filter Report
                         </a>
                     </li>
@@ -62,7 +663,7 @@
             <i class="bi bi-bar-chart-line me-1 text-primary"></i>
             <span class="fw-bold" style="font-size:0.95rem;">Dashboard Analytics</span>
         </span>
-        <button type="button" id="adminAnalyticsToggleBtn" class="btn-admin-analytics-toggle ms-1" title="Toggle Analytics">
+        <button type="button" id="adminAnalyticsToggleBtn" class="btn-admin-analytics-toggle ms-1" title="Toggle Analytics" aria-label="Toggle dashboard analytics">
             <i class="bi bi-eye-slash me-1" id="adminAnalyticsToggleIcon"></i>
             <span id="adminAnalyticsToggleText">Hide</span>
         </button>
@@ -72,25 +673,25 @@
     <!-- ═══ ANALYTICS SECTION ══════════════════════════════════════ -->
     <div id="adminAnalyticsSection" class="admin-analytics-section-wrap">
     <div class="admin-analytics-inner">
-    <!-- Quick Statistics -->
-    <div class="row g-4 mb-4">
+    <div class="row g-4 mb-4 dashboard-kpi-grid">
         <div class="col-md-3">
-            <a href="<?= base_url('penalties/all') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.04s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+            <a href="<?= base_url('violators') ?>" class="text-decoration-none d-block h-100" aria-label="Open the violator directory">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.04s; --float-delay: 0s; cursor:pointer; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
-                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Tickets</h6>
+                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Violators (<?= esc((string) $year) ?>)</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_violations'] ?>" data-prefix="" data-suffix="">0</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= (int) ($summary['total_violators'] ?? count($top_violators_list)) ?>" data-prefix="" data-suffix="">0</h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                            <i class="bi bi-file-earmark-text text-white fs-4 lh-1"></i>
+                            <i class="bi bi-people-fill text-white fs-4 lh-1"></i>
                         </div>
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
-                        <div class="d-flex align-items-center justify-content-between">                                <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= esc($summary['report_year'] ?? $year) ?> tickets issued</span>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= number_format((int) ($summary['total_violations'] ?? 0)) ?> cited tickets · Open violator directory</span>
                             <i class="bi bi-arrow-right-circle opacity-75"></i>
                         </div>
                     </div>
@@ -98,10 +699,9 @@
             </div>
             </a>
         </div>
-        
         <div class="col-md-3">
-            <a href="<?= base_url('penalties/history') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.07s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+            <a href="<?= base_url('penalties/history') ?>" class="text-decoration-none d-block h-100">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.07s; --float-delay: 0.4s; cursor:pointer; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
@@ -125,9 +725,9 @@
             </a>
         </div>
         <div class="col-md-3">
-            <a href="<?= base_url('penalties') ?>" class="text-decoration-none">
-            <div class="card premium-kpi premium-reveal text-white border-0" style="--reveal-delay: 0.10s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
-                <div class="card-body p-3 p-xl-4">
+            <a href="<?= base_url('penalties') ?>" class="text-decoration-none d-block h-100">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.10s; --float-delay: 0.8s; cursor:pointer; background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
@@ -139,12 +739,7 @@
                             <i class="bi bi-pie-chart text-white fs-4 lh-1"></i>
                         </div>
                     </div>
-                    
                     <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;">Collected vs Assessed</span>
-                            <i class="bi bi-arrow-right-circle opacity-50 ms-auto"></i>
-                        </div>
                         <div class="progress" style="height: 6px; background-color: rgba(255,255,255,0.2); border-radius: 10px;">
                             <div class="progress-bar bg-white rounded-pill" role="progressbar" style="width: <?= $summary['collection_rate'] ?>%;" aria-valuenow="<?= $summary['collection_rate'] ?>" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
@@ -154,40 +749,34 @@
             </a>
         </div>
         <div class="col-md-3">
-            <button type="button" class="d-block w-100 border-0 p-0 bg-transparent text-start h-100"
-                data-bs-toggle="modal" data-bs-target="#topRankingsModal">
-            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.13s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            <?php
+                $topViolationName = trim((string) ($top_violations_list[0]['violation_type'] ?? ''));
+                $topViolationCount = (int) ($top_violations_list[0]['total_count'] ?? 0);
+            ?>
+            <a href="#topRankingsModal" class="text-decoration-none d-block h-100" data-bs-toggle="modal" data-rankings-tab="violations" aria-label="Open the most violations committed rankings">
+            <div class="card premium-kpi premium-reveal text-white border-0 h-100" style="--reveal-delay: 0.13s; --float-delay: 1.2s; cursor:pointer; background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);">
                 <div class="card-body p-3 p-xl-4 d-flex flex-column justify-content-between h-100">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="d-flex align-items-center mb-2">
-                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Top Violators</h6>
+                                <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Most Violations Committed</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder"><?= number_format((int) ($summary['total_violators'] ?? count($top_violators_list))) ?></h3>
+                            <h3 class="mb-0 fw-bolder kpi-top-violation-name"><?= esc($topViolationName !== '' ? $topViolationName : 'No violations yet') ?></h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded p-2 d-inline-flex">
-                            <i class="bi bi-person-lines-fill text-white fs-5 lh-1"></i>
+                            <i class="bi bi-exclamation-triangle-fill text-white fs-5 lh-1"></i>
                         </div>
                     </div>
-                    <?php if (!empty($top_violators_list)):
-                        $topViolatorName = trim((string) ($top_violators_list[0]['driver_name'] ?? '')) ?: 'Unknown Violator';
-                    ?>
-                    <div class="mb-2">
-                        <div class="fw-bold text-truncate" style="font-size:0.95rem;">🥇 <?= esc($topViolatorName) ?></div>
-                        <span class="badge bg-white text-warning fw-bold rounded-pill px-2 mt-1" style="font-size:0.75rem;"><?= number_format((int) $top_violators_list[0]['total_violations']) ?> attempt<?= (int) $top_violators_list[0]['total_violations'] === 1 ? '' : 's' ?></span>
-                    </div>
-                    <?php endif; ?>
-                    <div class="pt-2 border-top border-white border-opacity-25">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;">Click to view rankings</span>
+                    <div class="mt-4 pt-2 border-top border-white border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= number_format($topViolationCount) ?> cases recorded in <?= esc((string) $year) ?></span>
                             <i class="bi bi-arrow-right-circle opacity-75"></i>
                         </div>
                     </div>
                 </div>
             </div>
-            </button>
+            </a>
         </div>
-
     </div>
 
     <!-- Analytics Charts Row 1: Weekly & Monthly -->
@@ -196,16 +785,16 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.15s;">
                 <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h5 class="mb-0 fw-bold">
+                    <h5 class="mb-0 fw-bold dashboard-chart-title">
                         <i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend 
                         <small class="fw-normal text-muted" style="font-size:0.85rem;">
-                            <?= !empty($selected_month_name) ? '(' . esc($selected_month_name) . ' ' . esc($year) . ')' : '(Last 12 Weeks)' ?>
+                            <?= !empty($selected_month_name) ? '(' . esc($selected_month_name) . ' ' . esc($year) . ')' : ($year === (int) date('Y') ? '(Last 12 Weeks)' : '(Last 12 Weeks of ' . esc($year) . ')') ?>
                         </small>
                     </h5>
                     <div class="d-flex align-items-center gap-2">
                         <form method="GET" class="m-0 d-flex align-items-center gap-1">
                             <input type="hidden" name="year" value="<?= esc($year) ?>">
-                            <select name="month" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 145px; border-radius: 8px;" onchange="this.form.submit()">
+                            <select name="month" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 132px; border-radius: 8px;" aria-label="Select month for weekly trend" onchange="this.form.submit()">
                                 <option value="" <?= empty($selected_month) ? 'selected' : '' ?>>Last 12 Weeks</option>
                                 <optgroup label="<?= esc($year) ?> Breakdown">
                                     <?php 
@@ -236,7 +825,7 @@
                             $monthTotalRevenue = array_sum(array_column($weekly_trend, 'revenue'));
                             $monthPaidRevenue  = array_sum(array_column($weekly_trend, 'paid_revenue'));
                         ?>
-                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 bg-light rounded-3 border border-light-subtle gap-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 chart-panel-muted rounded-3 border border-light-subtle gap-2">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
                                     <i class="bi bi-ticket-perforated me-1"></i><?= $monthTotalTickets ?> Violations in <?= esc($selected_month_name) ?>
@@ -250,7 +839,11 @@
                             </span>
                         </div>
                     <?php endif; ?>
-                    <canvas id="weeklyChart" height="300"></canvas>
+                    <div class="dashboard-chart-shell" data-dashboard-chart-shell="weekly">
+                        <canvas id="weeklyChart" role="img" aria-label="Weekly ticket count and collected revenue trend"></canvas>
+                        <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="chart-skeleton-line"></div></div>
+                        <div class="chart-empty-state" role="status"><i class="bi bi-bar-chart"></i><strong>No weekly data yet</strong><span>Weekly activity will appear here when available.</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -260,14 +853,19 @@
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.17s;">
                 <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div class="d-flex align-items-center gap-2">
-                        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
-                        <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2 py-0.5 d-none d-sm-inline" style="font-size: 0.7rem;" title="Click any month to inspect its weekly trend">
-                            <i class="bi bi-cursor me-1"></i>Click month for weekly
+                        <h5 class="mb-0 fw-bold dashboard-chart-title"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
+                        <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2 py-0.5 d-none d-sm-inline chart-month-hint" style="font-size: 0.7rem;" title="Click any month to inspect its weekly trend">
+                            <i class="bi bi-cursor me-1"></i>Click month
+                            <button type="button" class="chart-hint-dismiss ms-1" aria-label="Dismiss month chart hint"><i class="bi bi-x" aria-hidden="true"></i></button>
                         </span>
                     </div>
                 </div>
                 <div class="card-body">
-                    <canvas id="monthlyChart" height="300"></canvas>
+                    <div class="dashboard-chart-shell" data-dashboard-chart-shell="monthly">
+                        <canvas id="monthlyChart" role="img" aria-label="Monthly citation, paid and pending totals"></canvas>
+                        <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="chart-skeleton-line"></div></div>
+                        <div class="chart-empty-state" role="status"><i class="bi bi-calendar-x"></i><strong>No monthly data yet</strong><span>Monthly activity will appear here when available.</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -301,8 +899,8 @@
                                 </button>
                             </div>
                             <!-- Manual Refresh -->
-                            <button class="btn btn-sm btn-light border shadow-sm" id="btnNatureRefresh" title="Refresh now">
-                                <i class="bi bi-arrow-clockwise" id="natureRefreshIcon"></i>
+                            <button class="btn btn-sm btn-light border shadow-sm" id="btnNatureRefresh" title="Refresh now" aria-label="Refresh violation chart">
+                                <i class="bi bi-arrow-clockwise" id="natureRefreshIcon" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -312,7 +910,7 @@
 
                     <!-- ── Search Bar ── -->
                     <div class="mt-2 position-relative">
-                        <i class="bi bi-search position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:0.8rem;"></i>
+                        <i class="bi bi-search position-absolute" style="left:10px; top:50%; transform:translateY(-50%); color:var(--text-subtle, #5c6b80); font-size:0.8rem;"></i>
                         <input type="text" id="natureSearchInput"
                             class="form-control form-control-sm ps-4 border-0 bg-light rounded-pill"
                             placeholder="Search violation type…"
@@ -320,7 +918,7 @@
                     </div>
 
                     <!-- ── Last Updated ── -->
-                    <div class="mt-1 text-end" style="font-size:0.72rem; color:#94a3b8;">
+                    <div class="mt-1 text-end" style="font-size:0.72rem; color:var(--text-subtle, #5c6b80);">
                         <i class="bi bi-clock me-1"></i>
                         Last updated: <span id="natureLastUpdated">—</span>
                         &nbsp;·&nbsp; <span id="natureRecordCount">0</span> violation type(s)
@@ -339,15 +937,19 @@
                     <div class="row align-items-start g-3">
                         <!-- Bar Chart -->
                         <div class="col-md-7">
-                            <div style="position: relative; height: 340px;">
-                                <canvas id="natureBarChart"></canvas>
+                            <div class="dashboard-chart-shell" data-dashboard-chart-shell="nature-bar" style="height:340px">
+                                <canvas id="natureBarChart" role="img" aria-label="Violation types by incident count"></canvas>
+                                <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="chart-skeleton-line"></div></div>
+                                <div class="chart-empty-state" role="status"><i class="bi bi-clipboard2-check"></i><strong>No violation data yet</strong><span>Records will appear when citations are available.</span></div>
                             </div>
                         </div>
                         <!-- Doughnut + Scrollable Legend -->
                         <div class="col-md-5">
                             <div class="d-flex flex-column align-items-center gap-2">
-                                <div style="width:200px; height:200px; position:relative;">
-                                    <canvas id="natureDoughnutChart"></canvas>
+                                <div class="dashboard-chart-shell" data-dashboard-chart-shell="nature-doughnut" style="width:200px;height:200px">
+                                    <canvas id="natureDoughnutChart" role="img" aria-label="Violation type distribution"></canvas>
+                                    <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
+                                    <div class="chart-empty-state" role="status"><strong>No data</strong></div>
                                 </div>
                                 <!-- Scrollable Legend -->
                                 <div class="nature-legend-scroll w-100" id="natureLegendContainer"></div>
@@ -364,7 +966,7 @@
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.21s;">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold" id="rightChartTitle">
-                        <i class="bi bi-pie-chart me-2 text-success"></i>Violator Status
+                        <i class="bi bi-pie-chart me-2 text-success"></i>Violator Status (<?= esc((string) $year) ?>)
                     </h5>
                     <div class="btn-group btn-group-sm shadow-sm" role="group">
                         <button type="button" class="btn btn-outline-success active" id="btnStatus" title="Show Violator Status">
@@ -376,8 +978,10 @@
                     </div>
                 </div>
                 <div class="card-body d-flex align-items-center justify-content-center">
-                    <div style="width: 100%; max-width: 300px;">
-                        <canvas id="secondaryAnalyticsChart"></canvas>
+                    <div class="dashboard-chart-shell" data-dashboard-chart-shell="secondary" style="width:100%;max-width:300px;height:300px">
+                        <canvas id="secondaryAnalyticsChart" role="img" aria-label="Violator status distribution"></canvas>
+                        <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
+                        <div class="chart-empty-state" role="status"><i class="bi bi-pie-chart"></i><strong>No chart data yet</strong></div>
                     </div>
                 </div>
             </div>
@@ -387,122 +991,253 @@
     </div> <!-- End Collapsible Analytics Inner & Wrapper -->
 
 <!-- Top Rankings Modal -->
+<style>
+    #topRankingsModal {
+        --dash-modal-surface: #ffffff;
+        --dash-modal-panel: #f8fafc;
+        --dash-modal-text: #0f172a;
+        --dash-modal-muted: #64748b;
+        --dash-modal-border: #e2e8f0;
+        --dash-modal-hover: #f1f5f9;
+        --dash-modal-amber-start: #d97706;
+        --dash-modal-amber-end: #b45309;
+        --dash-modal-amber-bg: #fef3c7;
+        --dash-modal-amber-text: #92400e;
+        --dash-modal-red-bg: #fee2e2;
+        --dash-modal-red-text: #b91c1c;
+    }
+
+    :root[data-theme="dark"] #topRankingsModal {
+        --dash-modal-surface: #111827;
+        --dash-modal-panel: #1f2937;
+        --dash-modal-text: #f8fafc;
+        --dash-modal-muted: #cbd5e1;
+        --dash-modal-border: #374151;
+        --dash-modal-hover: #273449;
+        --dash-modal-amber-bg: #422006;
+        --dash-modal-amber-text: #fcd34d;
+        --dash-modal-red-bg: #450a0a;
+        --dash-modal-red-text: #fca5a5;
+    }
+
+    /* One compact panel: the people and the offenses side by side on a wide
+       screen, stacked on a phone. Rows are links, so a name is one tap away
+       from its record and a violation one tap from its citations. */
+    #topRankingsModal .modal-content {
+        border-radius: 18px;
+        overflow: hidden;
+        color: var(--dash-modal-text);
+        background: var(--dash-modal-surface);
+        opacity: 1;
+    }
+    #topRankingsModal .trk-head {
+        display: flex; align-items: center; gap: 0.7rem;
+        padding: 0.85rem 1.1rem;
+        background: linear-gradient(135deg, var(--dash-modal-amber-start) 0%, var(--dash-modal-amber-end) 100%);
+        color: #fff;
+    }
+    #topRankingsModal .trk-head-icon {
+        width: 34px; height: 34px; border-radius: 11px; flex: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(255, 255, 255, 0.22); font-size: 0.95rem;
+    }
+    #topRankingsModal .trk-title { font-size: 1rem; font-weight: 800; line-height: 1.15; margin: 0; }
+    #topRankingsModal .trk-sub { font-size: 0.7rem; opacity: 0.85; }
+    #topRankingsModal .trk-switch {
+        display: flex; gap: 0.4rem; padding: 0.55rem 0.9rem;
+        background: var(--dash-modal-panel); border-bottom: 1px solid var(--dash-modal-border);
+    }
+    #topRankingsModal .trk-tab {
+        flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center;
+        gap: 0.4rem; padding: 0.42rem 0.6rem;
+        border: 1px solid var(--dash-modal-border); border-radius: 9px;
+        background: var(--dash-modal-surface); color: var(--dash-modal-muted);
+        font-size: 0.73rem; font-weight: 700; line-height: 1.2;
+        transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    #topRankingsModal .trk-tab.is-active {
+        background: var(--dash-modal-amber-bg); border-color: var(--dash-modal-amber-start); color: var(--dash-modal-amber-text);
+    }
+    #topRankingsModal .trk-tab[data-trk-tab="violations"].is-active {
+        background: var(--dash-modal-red-bg); border-color: var(--dash-modal-red-text); color: var(--dash-modal-red-text);
+    }
+    #topRankingsModal .trk-pane { display: none; }
+    #topRankingsModal .trk-pane.is-active { display: block; }
+    #topRankingsModal .trk-col-head {
+        display: flex; align-items: center; gap: 0.4rem;
+        padding: 0.5rem 1rem; background: var(--dash-modal-panel);
+        border-bottom: 1px solid var(--dash-modal-border);
+        font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em;
+        text-transform: uppercase; color: var(--dash-modal-muted);
+    }
+    #topRankingsModal .trk-list { padding: 0.3rem 0.5rem 0.6rem; }
+    #topRankingsModal .trk-row {
+        display: flex; align-items: center; gap: 0.55rem;
+        padding: 0.4rem 0.5rem; border-radius: 10px;
+        text-decoration: none; color: inherit;
+        transition: background 0.15s ease;
+    }
+    #topRankingsModal .trk-row:hover,
+    #topRankingsModal .trk-row:focus-visible { background: var(--dash-modal-hover); outline: none; }
+    #topRankingsModal .trk-rank {
+        width: 26px; flex: none; text-align: center;
+        font-size: 0.8rem; font-weight: 800; color: var(--dash-modal-muted);
+    }
+    #topRankingsModal .trk-main { min-width: 0; flex: 1 1 auto; }
+    #topRankingsModal .trk-name {
+        display: block; font-size: 0.84rem; font-weight: 700; color: var(--dash-modal-text);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #topRankingsModal .trk-note {
+        display: flex; align-items: center; gap: 0.3rem;
+        font-size: 0.68rem; color: var(--dash-modal-muted);
+    }
+    #topRankingsModal .trk-plate {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.64rem; font-weight: 700; color: var(--dash-modal-muted);
+        background: var(--dash-modal-panel); border: 1px solid var(--dash-modal-border);
+        border-radius: 6px; padding: 0 0.3rem;
+    }
+    #topRankingsModal .trk-bar {
+        display: block; height: 3px; margin-top: 0.25rem;
+        border-radius: 2px; background: var(--dash-modal-panel); overflow: hidden;
+    }
+    #topRankingsModal .trk-bar > span { display: block; height: 100%; border-radius: 2px; }
+    #topRankingsModal .trk-figure {
+        flex: none; font-size: 0.72rem; font-weight: 800;
+        border-radius: 999px; padding: 0.08rem 0.45rem;
+        background: var(--dash-modal-amber-bg); color: var(--dash-modal-amber-text);
+    }
+    #topRankingsModal .trk-figure--vio { background: var(--dash-modal-red-bg); color: var(--dash-modal-red-text); }
+    #topRankingsModal .trk-empty { padding: 1.1rem 1rem; text-align: center; font-size: 0.78rem; color: var(--dash-modal-muted); }
+</style>
 <div class="modal fade" id="topRankingsModal" tabindex="-1" aria-labelledby="topRankingsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                    <div class="d-flex flex-column w-100">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="modal-title text-white fw-bold mb-0" id="topRankingsModalLabel">
-                                <i class="bi bi-trophy-fill me-2"></i>Top Rankings
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <ul class="nav nav-tabs border-0" id="rankingTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active fw-semibold text-white border-0 border-bottom border-white" id="modalTabViolators"
-                                    data-bs-toggle="tab" data-bs-target="#modalPaneViolators" type="button" role="tab"
-                                    style="background:transparent; border-bottom: 3px solid white !important; border-radius:0;">
-                                    <i class="bi bi-person-lines-fill me-1"></i> Top Violators
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link fw-semibold text-white border-0 opacity-75" id="modalTabViolations"
-                                    data-bs-toggle="tab" data-bs-target="#modalPaneViolations" type="button" role="tab"
-                                    style="background:transparent; border-radius:0;">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Top Violations
-                                </button>
-                            </li>
-                        </ul>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="trk-head">
+                <span class="trk-head-icon"><i class="bi bi-trophy-fill"></i></span>
+                <div class="me-auto">
+                    <h5 class="trk-title" id="topRankingsModalLabel">Top Rankings</h5>
+                    <div class="trk-sub">Who is cited most often, and for what</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="trk-switch" role="tablist" aria-label="Ranking view">
+                <button type="button" class="trk-tab is-active" data-trk-tab="violations" role="tab"
+                        aria-selected="true" aria-controls="trkPaneViolations">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Most Violations Committed
+                </button>
+                <button type="button" class="trk-tab" data-trk-tab="violators" role="tab"
+                        aria-selected="false" aria-controls="trkPaneViolators">
+                    <i class="bi bi-person-lines-fill"></i> Top Apprehended Drivers
+                </button>
+            </div>
+
+            <div class="trk-body">
+
+                <!-- Leaderboard: one row per top apprehended driver (repeat offenders). -->
+                <div class="trk-pane" id="trkPaneViolators" role="tabpanel">
+                    <div class="trk-col-head">
+                        <i class="bi bi-person-lines-fill text-warning"></i>
+                        <span>Top Apprehended Drivers &middot; CY <?= esc((string) $year) ?></span>
+                        <span class="ms-auto text-lowercase fw-semibold" style="letter-spacing:0;">sanction</span>
+                    </div>
+                    <?php $maxModalV = !empty($top_violators_list) ? (int) $top_violators_list[0]['total_violations'] : 1; ?>
+                    <div class="trk-list">
+                        <?php if (empty($top_violators_list)): ?>
+                            <div class="trk-empty"><i class="bi bi-person-slash d-block fs-4 mb-1 opacity-50"></i>No repeat offenders yet (minimum 3 sanctions in <?= esc((string) $year) ?>).</div>
+                        <?php else: ?>
+                            <?php $r = 1; $medals = ['🥇', '🥈', '🥉']; foreach ($top_violators_list as $vl):
+                                $p             = $maxModalV > 0 ? round(($vl['total_violations'] / $maxModalV) * 100) : 0;
+                                $rl            = $r <= 3 ? $medals[$r - 1] : $r;
+                                $profileUrl    = base_url('penalties/violator/' . (int) $vl['violator_id']);
+                                $violatorName  = trim((string) ($vl['driver_name'] ?? '')) ?: 'Unknown Violator';
+                                $violatorPlate = trim((string) ($vl['license_plate'] ?? ''));
+                                $hasPlate      = $violatorPlate !== '' && ! \App\Libraries\ViolatorIdentity::isPlaceholder($violatorPlate);
+                            ?>
+                            <a class="trk-row" href="<?= $profileUrl ?>" title="Open <?= esc($violatorName, 'attr') ?>'s profile">
+                                <span class="trk-rank"><?= $rl ?></span>
+                                <span class="trk-main">
+                                    <span class="trk-name"><?= esc($violatorName) ?></span>
+                                    <?php if ($hasPlate): ?>
+                                        <span class="trk-note"><span class="trk-plate"><?= esc(strtoupper($violatorPlate)) ?></span></span>
+                                    <?php endif; ?>
+                                    <span class="trk-bar"><span style="width:<?= $p ?>%; background:var(--dash-modal-amber-start);"></span></span>
+                                </span>
+                                <span class="trk-figure"><?= number_format((int) $vl['total_violations']) ?></span>
+                            </a>
+                            <?php $r++; endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
-                <div class="modal-body p-0">
-                    <div class="tab-content">
 
-                        <!-- Tab: Top Violators -->
-                        <div class="tab-pane fade show active" id="modalPaneViolators" role="tabpanel">
-                            <?php $maxModalV = !empty($top_violators_list) ? (int)$top_violators_list[0]['total_violations'] : 1; ?>
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4" style="width:55px;">#</th>
-                                        <th>Driver Information</th>
-                                        <th style="width:42%;">Attempts</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($top_violators_list)): ?>
-                                        <tr><td colspan="3" class="text-center py-5 text-muted"><i class="bi bi-person-slash fs-1 d-block mb-2 opacity-25"></i>No records found.</td></tr>
-                                    <?php else: ?>
-                                        <?php $r = 1; $medals = ['🥇','🥈','🥉']; foreach ($top_violators_list as $vl):
-                                            $p = $maxModalV > 0 ? round(($vl['total_violations'] / $maxModalV) * 100) : 0;
-                                            $rl = $r <= 3 ? $medals[$r-1] : $r;
-                                            $profileUrl = base_url('penalties/violator/' . (int) $vl['violator_id']);
-                                            $violatorName = trim((string) ($vl['driver_name'] ?? '')) ?: 'Unknown Violator';
-                                            $violatorPlate = trim((string) ($vl['license_plate'] ?? ''));
-                                        ?>
-                                        <tr style="cursor:pointer;" onclick="window.location='<?= $profileUrl ?>'" title="Open violator profile">
-                                            <td class="ps-4 text-center fw-bold text-muted" style="font-size:1.1rem;"><?= $rl ?></td>
-                                            <td>
-                                                <a href="<?= $profileUrl ?>" class="fw-bold text-dark text-decoration-none" onclick="event.stopPropagation();"><?= esc($violatorName) ?></a>
-                                                <?php if ($violatorPlate !== '' && ! \App\Libraries\ViolatorIdentity::isPlaceholder($violatorPlate)): ?>
-                                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle font-monospace small"><?= esc($violatorPlate) ?></span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="pe-4">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="flex-grow-1"><div class="progress" style="height:8px;border-radius:4px;"><div class="progress-bar bg-warning" style="width:<?= $p ?>%;"></div></div></div>
-                                                    <span class="badge bg-warning text-dark rounded-pill fw-bold px-2" style="min-width:32px;"><?= number_format((int) $vl['total_violations']) ?></span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <?php $r++; endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Tab: Top Violations -->
-                        <div class="tab-pane fade" id="modalPaneViolations" role="tabpanel">
-                            <?php $maxModalVio = !empty($top_violations_list) ? (int)$top_violations_list[0]['total_count'] : 1; ?>
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-4" style="width:55px;">#</th>
-                                        <th>Violation Type</th>
-                                        <th style="width:42%;">Occurrences</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (empty($top_violations_list)): ?>
-                                        <tr><td colspan="3" class="text-center py-5 text-muted"><i class="bi bi-slash-circle fs-1 d-block mb-2 opacity-25"></i>No records found.</td></tr>
-                                    <?php else: ?>
-                                        <?php $r = 1; $medals = ['🥇','🥈','🥉']; foreach ($top_violations_list as $vio):
-                                            $p = $maxModalVio > 0 ? round(($vio['total_count'] / $maxModalVio) * 100) : 0;
-                                            $rl = $r <= 3 ? $medals[$r-1] : $r;
-                                        ?>
-                                        <tr style="cursor:pointer;" onclick="window.location='<?= base_url('penalties/search?q='.urlencode($vio['violation_type'])) ?>'">
-                                            <td class="ps-4 text-center fw-bold text-muted" style="font-size:1.1rem;"><?= $rl ?></td>
-                                            <td class="fw-bold text-dark"><?= esc($vio['violation_type']) ?></td>
-                                            <td class="pe-4">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="flex-grow-1"><div class="progress" style="height:8px;border-radius:4px;"><div class="progress-bar bg-danger" style="width:<?= $p ?>%;"></div></div></div>
-                                                    <span class="badge bg-danger text-white rounded-pill fw-bold px-2" style="min-width:32px;"><?= $vio['total_count'] ?></span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <?php $r++; endforeach; ?>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-
+                <!-- What those citations were for, ranked the same way. -->
+                <div class="trk-pane is-active" id="trkPaneViolations" role="tabpanel">
+                    <div class="trk-col-head">
+                        <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                        <span>Most Violations Committed &middot; CY <?= esc((string) $year) ?></span>
+                        <span class="ms-auto text-lowercase fw-semibold" style="letter-spacing:0;">cases</span>
+                    </div>
+                    <?php $maxModalVio = !empty($top_violations_list) ? (int) $top_violations_list[0]['total_count'] : 1; ?>
+                    <div class="trk-list">
+                        <?php if (empty($top_violations_list)): ?>
+                            <div class="trk-empty"><i class="bi bi-slash-circle d-block fs-4 mb-1 opacity-50"></i>No records yet.</div>
+                        <?php else: ?>
+                            <?php $r = 1; $medals = ['🥇', '🥈', '🥉']; foreach ($top_violations_list as $vio):
+                                $p  = $maxModalVio > 0 ? round(($vio['total_count'] / $maxModalVio) * 100) : 0;
+                                $rl = $r <= 3 ? $medals[$r - 1] : $r;
+                            ?>
+                            <a class="trk-row" href="<?= base_url('penalties/search?q=' . urlencode($vio['violation_type'])) ?>"
+                               title="Find every citation for <?= esc($vio['violation_type'], 'attr') ?>">
+                                <span class="trk-rank"><?= $rl ?></span>
+                                <span class="trk-main">
+                                    <span class="trk-name"><?= esc($vio['violation_type']) ?></span>
+                                    <span class="trk-bar"><span style="width:<?= $p ?>%; background:var(--dash-chart-red);"></span></span>
+                                </span>
+                                <span class="trk-figure trk-figure--vio"><?= number_format((int) $vio['total_count']) ?></span>
+                            </a>
+                            <?php $r++; endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+<script>
+    // The modal answers one question at a time: pick violators or violations
+    // and that list appears, with no page load and no stacked scrolling.
+    (function () {
+        const modal = document.getElementById('topRankingsModal');
+        if (!modal) return;
+
+        const tabs  = Array.from(modal.querySelectorAll('.trk-tab'));
+        const panes = Array.from(modal.querySelectorAll('.trk-pane'));
+
+        modal.addEventListener('show.bs.modal', function (event) {
+            const requestedTab = event.relatedTarget?.dataset.rankingsTab;
+            const selectedTab = tabs.find(tab => tab.dataset.trkTab === requestedTab) || tabs[0];
+            if (selectedTab && !selectedTab.classList.contains('is-active')) selectedTab.click();
+        });
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                tabs.forEach(function (other) {
+                    const on = other === tab;
+                    other.classList.toggle('is-active', on);
+                    other.setAttribute('aria-selected', on ? 'true' : 'false');
+                });
+
+                const wanted = 'trkPane' + (tab.dataset.trkTab || '').charAt(0).toUpperCase() + (tab.dataset.trkTab || '').slice(1);
+                panes.forEach(function (pane) {
+                    pane.classList.toggle('is-active', pane.id === wanted);
+                });
+            });
+        });
+    })();
+</script>
 <!-- End Top Rankings Modal -->
 
 <?= $this->endSection() ?>
@@ -515,6 +1250,7 @@
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
             new bootstrap.Tooltip(el);
         });
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         // === Live Clock ===
         function updateClock() {
@@ -532,16 +1268,23 @@
             const prefix    = el.dataset.prefix  || '';
             const suffix    = el.dataset.suffix  || '';
             const decimals  = parseInt(el.dataset.decimals || '0');
-            const duration  = 1400;
-            const step      = 16;
-            const steps     = Math.ceil(duration / step);
-            let current     = 0;
-            const increment = target / steps;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) { current = target; clearInterval(timer); }
-                el.textContent = prefix + (decimals > 0 ? current.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : Math.round(current).toLocaleString('en-PH')) + suffix;
-            }, step);
+            const duration = Number.parseInt(el.dataset.duration || '900', 10);
+            const format = value => prefix + (decimals > 0
+                ? value.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+                : Math.round(value).toLocaleString('en-PH')) + suffix;
+            if (prefersReducedMotion) {
+                el.textContent = format(target);
+                return;
+            }
+            const startedAt = performance.now();
+            const tick = now => {
+                const progress = Math.min((now - startedAt) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = format(target * eased);
+                if (progress < 1) window.requestAnimationFrame(tick);
+                else el.textContent = format(target);
+            };
+            window.requestAnimationFrame(tick);
         }
 
         // Trigger count-up when visible
@@ -556,16 +1299,66 @@
 
         document.querySelectorAll('.kpi-countup').forEach(el => kpiObserver.observe(el));
 
+        // === KPI Card Reveal (staggered fade-up) ===
+        Array.from(document.querySelectorAll('.dashboard-kpi')).forEach((card, index) => {
+            if (prefersReducedMotion) {
+                card.classList.add('is-revealed');
+                return;
+            }
+            card.style.transitionDelay = (index * 90) + 'ms';
+            window.requestAnimationFrame(() => card.classList.add('is-revealed'));
+            window.setTimeout(() => { card.style.transitionDelay = ''; }, index * 90 + 420);
+        });
+
         // Shared Chart Settings
+        const getCssToken = token => getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+        const reduceChartMotion = prefersReducedMotion;
+        const chartTextColor = getCssToken('--dash-muted');
+        const chartGridColor = getCssToken('--dash-chart-grid');
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = '#64748b';
-        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+        Chart.defaults.font.size = 13;
+        Chart.defaults.color = chartTextColor;
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.92)';
         Chart.defaults.plugins.tooltip.padding = 10;
         Chart.defaults.plugins.tooltip.cornerRadius = 8;
 
         const gridOptions = {
-            color: 'rgba(226, 232, 240, 0.5)',
+            color: chartGridColor,
             drawBorder: false,
+        };
+        const markChartShell = (key, hasData) => {
+            const shell = document.querySelector(`[data-dashboard-chart-shell="${key}"]`);
+            if (!shell) return;
+            shell.classList.add('is-loaded');
+            shell.classList.toggle('is-empty', !hasData);
+        };
+        const dashboardHighlightBand = {
+            id: 'dashboardHighlightBand',
+            beforeDatasetsDraw(chart) {
+                const active = chart.tooltip && chart.tooltip.getActiveElements();
+                if (!active || active.length === 0 || !chart.scales.x || chart.data.labels.length === 0) return;
+                const index = active[0].index;
+                const xScale = chart.scales.x;
+                const center = xScale.getPixelForValue(index);
+                const next = index < chart.data.labels.length - 1
+                    ? Math.abs(xScale.getPixelForValue(index + 1) - center)
+                    : 0;
+                const previous = index > 0
+                    ? Math.abs(center - xScale.getPixelForValue(index - 1))
+                    : 0;
+                const step = next || previous || chart.chartArea.right - chart.chartArea.left;
+                const left = Math.max(chart.chartArea.left, center - step / 2);
+                const right = Math.min(chart.chartArea.right, center + step / 2);
+                chart.ctx.save();
+                chart.ctx.fillStyle = getCssToken('--dash-highlight');
+                chart.ctx.fillRect(
+                    left,
+                    chart.chartArea.top,
+                    right - left,
+                    chart.chartArea.bottom - chart.chartArea.top
+                );
+                chart.ctx.restore();
+            }
         };
 
         // --- Weekly Trend Chart (Combo: Bar + Line) ---
@@ -576,7 +1369,7 @@
         // Report counts it: pending fines are owed, not received.
         const weekRevenues = weeklyData.map(w => w.paid_revenue);
 
-        new Chart(document.getElementById('weeklyChart'), {
+        const weeklyChart = new Chart(document.getElementById('weeklyChart'), {
             type: 'bar',
             data: {
                 labels: weekLabels,
@@ -584,7 +1377,7 @@
                     {
                         label: 'Violations',
                         data: weekCounts,
-                        backgroundColor: '#3b82f6', // blue-500
+                        backgroundColor: getCssToken('--dash-blue'),
                         borderRadius: 4,
                         order: 2,
                         yAxisID: 'y'
@@ -593,11 +1386,13 @@
                         label: 'Revenue (₱ collected)',
                         data: weekRevenues,
                         type: 'line',
-                        borderColor: '#10b981', // emerald-500
+                        borderColor: getCssToken('--dash-green'),
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         tension: 0.4,
-                        pointBackgroundColor: '#10b981',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: getCssToken('--dash-green'),
                         order: 1,
                         yAxisID: 'y1'
                     }
@@ -606,8 +1401,10 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
+                    legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
                     tooltip: {
                         callbacks: {
                             title: function(items) {
@@ -627,7 +1424,7 @@
                                     const item = weeklyData[ctx.dataIndex] || {};
                                     let txt = ' Collected: ₱' + Number(ctx.raw || 0).toLocaleString();
                                     if (item.revenue !== undefined) {
-                                        txt += ' · Assessed: ₱' + Number(item.revenue || 0).toLocaleString();
+                                        txt += ' · Fines: ₱' + Number(item.revenue || 0).toLocaleString();
                                     }
                                     return txt;
                                 }
@@ -641,20 +1438,24 @@
                     y: { 
                         beginAtZero: true, 
                         grid: gridOptions,
-                        title: { display: true, text: 'Count' }
+                        ticks: { font: { size: 13 } },
+                        title: { display: true, text: 'Count', font: { size: 13, weight: '600' } }
                     },
                     y1: {
                         beginAtZero: true,
                         position: 'right',
                         grid: { drawOnChartArea: false },
                         ticks: {
+                            font: { size: 13 },
                             callback: v => '₱' + Number(v).toLocaleString()
                         },
-                        title: { display: true, text: 'Revenue (₱)' }
+                        title: { display: true, text: 'Revenue (₱)', font: { size: 13, weight: '600' } }
                     }
                 }
-            }
+            },
+            plugins: [dashboardHighlightBand]
         });
+        markChartShell('weekly', weekCounts.some(Number) || weekRevenues.some(Number));
 
         // --- Monthly Breakdown Chart (Line) ---
         const monthlyData = <?= json_encode($monthly_breakdown) ?>;
@@ -663,7 +1464,7 @@
         const monthlyPaid = Object.values(monthlyData).map(m => m.paid);
         const monthlyPending = Object.values(monthlyData).map(m => m.pending);
 
-        new Chart(document.getElementById('monthlyChart'), {
+        const monthlyChart = new Chart(document.getElementById('monthlyChart'), {
             type: 'line',
             data: {
                 labels: monthNames,
@@ -671,33 +1472,43 @@
                     {
                         label: 'Total Issued',
                         data: monthlyCounts,
-                        borderColor: '#6366f1', // indigo-500
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: getCssToken('--dash-indigo'),
+                        backgroundColor: getCssToken('--dash-highlight'),
                         fill: true,
                         tension: 0.4,
-                        borderWidth: 3
+                        borderWidth: 3,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: getCssToken('--dash-indigo')
                     },
                     {
                         label: 'Paid',
                         data: monthlyPaid,
-                        borderColor: '#10b981', // emerald-500
+                        borderColor: getCssToken('--dash-green'),
                         borderDash: [5, 5],
                         tension: 0.4,
-                        borderWidth: 2
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: getCssToken('--dash-green')
                     },
                     {
                         label: 'Pending',
                         data: monthlyPending,
-                        borderColor: '#f59e0b', // amber-500
+                        borderColor: getCssToken('--dash-chart-amber'),
                         borderDash: [2, 4],
                         tension: 0.4,
-                        borderWidth: 2
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: getCssToken('--dash-chart-amber')
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
                 interaction: { mode: 'index', intersect: false },
                 onClick: (e, elements) => {
                     if (elements && elements.length > 0) {
@@ -715,7 +1526,7 @@
                     }
                 },
                 plugins: {
-                    legend: { position: 'top' },
+                    legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
                     tooltip: {
                         callbacks: {
                             title: function(items) {
@@ -727,9 +1538,19 @@
                 },
                 scales: {
                     x: { grid: { display: false } },
-                    y: { beginAtZero: true, grid: gridOptions }
+                    y: { beginAtZero: true, grid: gridOptions, ticks: { font: { size: 13 } }, title: { display: true, text: 'Count', font: { size: 13, weight: '600' } } }
                 }
-            }
+            },
+            plugins: [dashboardHighlightBand]
+        });
+        markChartShell('monthly', monthlyCounts.some(Number) || monthlyPaid.some(Number) || monthlyPending.some(Number));
+        document.querySelectorAll('.dashboard-collection-progress').forEach(bar => {
+            const width = Math.max(0, Math.min(Number(bar.dataset.targetWidth) || 0, 100));
+            if (reduceChartMotion) bar.style.width = width + '%';
+            else requestAnimationFrame(() => { bar.style.width = width + '%'; });
+        });
+        document.querySelector('.chart-hint-dismiss')?.addEventListener('click', () => {
+            document.querySelector('.chart-month-hint')?.remove();
         });
 
         // ═══════════════════════════════════════════════════════════════
@@ -739,15 +1560,10 @@
         const NATURE_REFRESH_MS = 30000; // 30 seconds
 
         // Full extended palette for all violation types
-        const naturePalette = [
-            '#4f46e5','#06b6d4','#10b981','#f59e0b','#ec4899',
-            '#ef4444','#8b5cf6','#14b8a6','#f97316','#84cc16',
-            '#0ea5e9','#a855f7','#22c55e','#fb923c','#e11d48',
-            '#7c3aed','#0891b2','#059669','#d97706','#db2777'
-        ];
+        let naturePalette = getCssToken('--dash-nature-palette').split(',').map(color => color.trim());
 
         let natureMode         = 'count';   // 'count' | 'revenue'
-        let natureLiveData     = <?= json_encode($nature_summary ?? []) ?>;
+        let natureLiveData     = <?= json_encode($nature_summary ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         let naturePrevData     = null;       // previous fetch for spike detection
         let natureBarInstance  = null;
         let natureDoughnutInstance = null;
@@ -765,6 +1581,13 @@
             // Revenue mode uses paid_amount ONLY (matches the KPI card "Total Revenue")
             // Incidents mode uses count
             return mode === 'revenue' ? (parseFloat(row.paid_amount) || 0) : (parseInt(row.count) || 0);
+        }
+
+        // Escapes user-entered labels before they are interpolated into HTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[ch]));
         }
 
         // ── KPI Summary Strip ──────────────────────────────────────────
@@ -796,13 +1619,13 @@
                 </div>
                 <div class="nature-kpi-chip" title="Outstanding fines from Pending violations">
                     <i class="bi bi-hourglass-split text-warning"></i>
-                    <span class="fw-bold" style="color: #b45309;">₱${Number(totalPend).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    <span class="fw-bold nature-pending-value">₱${Number(totalPend).toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
                     <span class="text-muted">Pending</span>
                 </div>
                 ${topType ? `
                 <div class="nature-kpi-chip nature-kpi-top" title="Top violation by ${natureMode === 'revenue' ? 'collected revenue' : 'incidents'}">
                     <i class="bi bi-trophy-fill text-danger"></i>
-                    <span class="fw-bold text-truncate" style="max-width:140px;" title="${topType.violation_type}">${topType.violation_type}</span>
+                    <span class="fw-bold text-truncate" style="max-width:140px;" title="${escapeHtml(topType.violation_type)}">${escapeHtml(topType.violation_type)}</span>
                     <span class="text-muted">Top</span>
                 </div>` : ''}
             `;
@@ -853,7 +1676,15 @@
 
         // ── Main Render ────────────────────────────────────────────────
         function renderNatureCharts(data, prevData) {
-            if (!data || data.length === 0) return;
+            if (!data || data.length === 0) {
+                markChartShell('nature-bar', false);
+                markChartShell('nature-doughnut', false);
+                const legend = document.getElementById('natureLegendContainer');
+                if (legend) legend.innerHTML = '<div class="empty-state"><i class="bi bi-clipboard2-check"></i><div class="empty-state-title">No violation data yet</div><span>Violation records will appear here when available.</span></div>';
+                const count = document.getElementById('natureRecordCount');
+                if (count) count.textContent = '0';
+                return;
+            }
             const prevMap = buildPrevMap(prevData);
 
             // Apply search filter
@@ -864,6 +1695,7 @@
 
             // Sort by active mode
             const sortedData = [...filtered].sort((a, b) => natureVal(b, natureMode) - natureVal(a, natureMode));
+            const hasNatureValues = sortedData.some(row => natureVal(row, natureMode) > 0);
 
             // Update meta
             const countEl = document.getElementById('natureRecordCount');
@@ -896,12 +1728,13 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: { duration: 600, easing: 'easeInOutQuart' },
+                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
                     plugins: {
                         legend: {
                             display: true,
                             position: 'top',
-                            labels: { boxWidth: 12, font: { size: 11 }, padding: 6 }
+                            onClick: Chart.defaults.plugins.legend.onClick,
+                            labels: { boxWidth: 12, font: { size: 13 }, padding: 12 }
                         },
                         tooltip: {
                             callbacks: {
@@ -937,12 +1770,12 @@
                         x: {
                             beginAtZero: true,
                             grid: gridOptions,
-                            ticks: { callback: v => natureMode === 'revenue' ? '₱' + Number(v).toLocaleString() : v }
+                            ticks: { font: { size: 13 }, callback: v => natureMode === 'revenue' ? '₱' + Number(v).toLocaleString() : v }
                         },
                         y: {
                             grid: { display: false },
                             ticks: {
-                                font: { size: 11 },
+                                font: { size: 13 },
                                 callback: function(val, idx) {
                                     const lbl = barLabels[idx] || '';
                                     return lbl.length > 24 ? lbl.substring(0, 22) + '…' : lbl;
@@ -976,7 +1809,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '62%',
-                    animation: { animateRotate: true, duration: 800, easing: 'easeInOutQuart' },
+                    animation: reduceChartMotion ? false : { animateRotate: true, duration: 800, easing: 'easeOutQuart' },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
@@ -991,6 +1824,8 @@
                     }
                 }
             });
+            markChartShell('nature-bar', hasNatureValues);
+            markChartShell('nature-doughnut', hasNatureValues);
 
             // ── 3. Scrollable Legend ───────────────────────────────────
             const legendBox = document.getElementById('natureLegendContainer');
@@ -1008,10 +1843,10 @@
                         ? `<span class="text-muted" style="font-size:0.64rem;">Paid: ${row.paid_count||0} &bull; Pend: ${row.pending_count||0}</span>`
                         : `<span class="text-muted" style="font-size:0.64rem;">Pend: ₱${Number(row.pending_amount||0).toLocaleString('en-PH')}</span>`;
                     html += `
-                    <div class="nature-legend-row ${idx === 0 ? 'nature-legend-top' : ''}" title="${lbl}">
+                    <div class="nature-legend-row ${idx === 0 ? 'nature-legend-top' : ''}" title="${escapeHtml(lbl)}">
                         <div class="d-flex align-items-center gap-1 text-truncate" style="max-width:160px;">
                             <span class="nature-legend-dot" style="background:${col}"></span>
-                            <span class="text-truncate ${isTop} text-dark" style="font-size:0.78rem;">${lbl}</span>
+                            <span class="text-truncate ${isTop} text-dark" style="font-size:0.78rem;">${escapeHtml(lbl)}</span>
                             ${trend}
                         </div>
                         <div class="text-end" style="flex-shrink:0;">
@@ -1115,7 +1950,7 @@
         function showStatusChart() {
             if (secondaryChart) secondaryChart.destroy();
 
-            rightChartTitle.innerHTML = '<i class="bi bi-pie-chart me-2 text-success"></i>Violator Status';
+            rightChartTitle.innerHTML = '<i class="bi bi-pie-chart me-2 text-success"></i>Violator Status (<?= (int) $year ?>)';
             document.getElementById('btnStatus').classList.add('active');
             document.getElementById('btnRole').classList.remove('active');
 
@@ -1126,18 +1961,28 @@
                     datasets: [{
                         data: statusValues,
                         backgroundColor: statusLabels.map(label => {
-                            if (label === 'Pending') return '#ffc107';
-                            if (label === 'Paid')    return '#198754';
-                            return '#6c757d';
+                            if (label === 'Pending') return getCssToken('--dash-status-pending');
+                            if (label === 'Paid')    return getCssToken('--dash-status-paid');
+                            return getCssToken('--dash-status-neutral');
                         })
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'bottom' } }
+                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 14 } } }
                 }
             });
+            markChartShell('secondary', statusValues.some(Number));
         }
+
+        // Role identity colors: admin is electric blue, enforcer is lime green.
+        const roleColorFor = (role) => {
+            const key = String(role || '').toLowerCase();
+            if (key === 'admin') return getCssToken('--dash-role-admin');
+            if (key === 'enforcer') return getCssToken('--dash-role-enforcer');
+            return getCssToken('--dash-role-driver');
+        };
 
         function showRoleChart() {
             if (secondaryChart) secondaryChart.destroy();
@@ -1152,14 +1997,16 @@
                     labels: roleLabels,
                     datasets: [{
                         data: roleCounts,
-                        backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#6c757d', '#dc3545'].slice(0, roleLabels.length),
+                        backgroundColor: roleLabels.map(roleColorFor),
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { position: 'bottom' } }
+                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 14 } } }
                 }
             });
+            markChartShell('secondary', roleCounts.some(Number));
         }
 
         // Initialize Secondary Chart
@@ -1168,6 +2015,27 @@
         // Event Listeners for Secondary Chart
         document.getElementById('btnStatus').addEventListener('click', showStatusChart);
         document.getElementById('btnRole').addEventListener('click', showRoleChart);
+
+        window.addEventListener('themechange', () => {
+            Chart.defaults.color = getCssToken('--dash-muted');
+            gridOptions.color = getCssToken('--dash-chart-grid');
+            weeklyChart.data.datasets[0].backgroundColor = getCssToken('--dash-blue');
+            weeklyChart.data.datasets[1].borderColor = getCssToken('--dash-green');
+            weeklyChart.data.datasets[1].pointBackgroundColor = getCssToken('--dash-green');
+            weeklyChart.update('none');
+            monthlyChart.data.datasets[0].backgroundColor = getCssToken('--dash-highlight');
+            monthlyChart.data.datasets[0].borderColor = getCssToken('--dash-indigo');
+            monthlyChart.data.datasets[0].pointBackgroundColor = getCssToken('--dash-indigo');
+            monthlyChart.data.datasets[1].borderColor = getCssToken('--dash-green');
+            monthlyChart.data.datasets[1].pointBackgroundColor = getCssToken('--dash-green');
+            monthlyChart.data.datasets[2].borderColor = getCssToken('--dash-chart-amber');
+            monthlyChart.data.datasets[2].pointBackgroundColor = getCssToken('--dash-chart-amber');
+            monthlyChart.update('none');
+            naturePalette = getCssToken('--dash-nature-palette').split(',').map(color => color.trim());
+            renderNatureCharts(natureLiveData, naturePrevData);
+            if (document.getElementById('btnRole').classList.contains('active')) showRoleChart();
+            else showStatusChart();
+        });
     });
 </script>
 
@@ -1300,11 +2168,49 @@
     border-color: #fed7aa;
     color: #c2410c;
 }
+.nature-pending-value {
+    color: #854d0e;
+}
+/* Dark palette: the chips are light surfaces by default, which read as holes
+   in the dark card. */
+[data-bs-theme="dark"] .nature-kpi-chip {
+    background: #0f2a44;
+    border-color: #1e4976;
+    color: #cbd5e1;
+}
+[data-bs-theme="dark"] .nature-kpi-top {
+    background: rgba(251, 146, 60, 0.12);
+    border-color: rgba(251, 146, 60, 0.35);
+    color: #fdba74;
+}
+[data-bs-theme="dark"] .nature-pending-value {
+    color: #fdba74;
+}
+[data-bs-theme="dark"] .nature-legend-row {
+    color: #e2e8f0;
+}
+[data-bs-theme="dark"] .nature-legend-row:hover,
+[data-bs-theme="dark"] .nature-legend-top {
+    background: #1e293b;
+}
+[data-bs-theme="dark"] .nature-legend-row .text-dark {
+    color: #f8fafc !important;
+}
+/* Header accents that are inline-coloured for the light palette. */
+[data-bs-theme="dark"] #liveClock {
+    color: #93c5fd !important;
+    background: rgba(99, 102, 241, 0.22) !important;
+}
+[data-bs-theme="dark"] .btn-admin-analytics-toggle {
+    color: #cbd5e1;
+    border-color: var(--border-soft);
+    background: var(--surface-muted);
+}
 
 /* Spike Alert Banner */
 .nature-spike-alert {
     background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
-    border-left: 4px solid #f59e0b;
+    border-left: 4px solid #eab308;
     border-radius: 8px;
     padding: 0.55rem 1rem;
     font-size: 0.8rem;
@@ -1345,8 +2251,8 @@
 .nature-legend-top { background: #fafaf5; }
 .nature-legend-dot {
     display: inline-block;
-    width: 9px; height: 9px;
-    border-radius: 50%;
+    width: 10px; height: 10px;
+    border-radius: 2px;
     flex-shrink: 0;
     margin-top: 3px;
 }
@@ -1409,6 +2315,32 @@
         const isCollapsed = section.classList.contains('analytics-collapsed');
         setHidden(!isCollapsed, true);
     });
+
+    // ═══ KPI SHINE OBSERVER ═══
+    if ('IntersectionObserver' in window) {
+        const shineObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('shining');
+                    // Remove after animation finishes to allow re-trigger
+                    setTimeout(() => entry.target.classList.remove('shining'), 1500);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.dashboard-kpi').forEach(kpi => {
+            shineObserver.observe(kpi);
+
+            // ═══ DYNAMIC MOUSE-FOLLOWING SHINE ═══
+            kpi.addEventListener('mousemove', e => {
+                const rect = kpi.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                kpi.style.setProperty('--mouse-x', `${x}px`);
+                kpi.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    }
 })();
 </script>
 <?= $this->endSection() ?>

@@ -1,10 +1,16 @@
-<?php $layoutRole = (string) session()->get('role'); ?>
+<?php
+    $layoutRole = (string) session()->get('role');
+    $isAdminDashboard = $layoutRole === 'admin' && uri_string() === 'dashboard';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $this->renderSection('title') ?> - Traffic System</title>
+    <!-- saveData: the same title is shown again in the phone bar and the
+         desktop header, and the first render used to consume it, leaving both
+         of them empty. -->
+    <title><?= $this->renderSection('title', true) ?> - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,46 +25,189 @@
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
             --transition-speed: 0.3s;
-            /* Blue Theme */
-            --brand-primary: #2563eb;
-            --brand-secondary: #1e40af;
-            --brand-accent: #3b82f6;
-            --brand-highlight: #60a5fa;
-            --brand-gradient: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            --surface-bg: #f0f9ff;
-            --surface-muted: #e0f2fe;
+            /* Electric Blue & Emerald Green Color System */
+            --brand-primary: #0066ff;
+            --brand-secondary: #0052cc;
+            --brand-accent: #0080ff;
+            --brand-highlight: #38bdf8;
+            --brand-500: #3b82f6;
+            --brand-600: #2563eb;
+            --brand-800: #1e40af;
+            --brand-900: #1e3a8a;
+            --brand-tint-50: #eff6ff;
+            --brand-tint-100: #dbeafe;
+            --brand-tint-300: #93c5fd;
+            --brand-tint-400: #60a5fa;
+            --brand-rgb: 0, 102, 255;
+            --brand-500-rgb: 59, 130, 246;
+            --surface-bg: #f8fafc;
+            --surface-muted: #f1f5f9;
             --surface-card: #ffffff;
-            --text-strong: #0c4a6e;
-            --text-body: #0369a1;
-            --text-muted: #0284c7;
-            --border-soft: #bae6fd;
+            --text-strong: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --focus-ring: var(--brand-primary);
+            --border-soft: #e2e8f0;
             --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
-            --shadow-sm: 0 2px 8px rgba(37, 99, 235, 0.1);
-            --shadow-md: 0 4px 16px rgba(37, 99, 235, 0.15);
-            --shadow-lg: 0 8px 32px rgba(37, 99, 235, 0.2);
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.12);
         }
 
+        .btn-back-electric {
+            background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%) !important;
+            border-color: #0066ff !important;
+            color: #ffffff !important;
+            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+        .btn-back-electric:hover,
+        .btn-back-electric:focus-visible {
+            background: linear-gradient(135deg, #0052cc 0%, #0047b3 100%) !important;
+            border-color: #0047b3 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(0, 82, 204, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .desktop-header.dashboard-shell-header {
+            min-height: 62px;
+            gap: 1rem;
+        }
+        .dashboard-breadcrumb {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .dashboard-breadcrumb a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .dashboard-breadcrumb a:hover,
+        .dashboard-breadcrumb [aria-current="page"] { color: var(--text-strong); }
+        .dashboard-header-actions { min-width: 0; }
+        .dashboard-header-search {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            width: min(250px, 24vw);
+            height: 40px;
+            padding: 0 0.65rem;
+            color: var(--text-muted);
+            background: var(--surface-muted);
+            border: 1px solid var(--border-soft);
+            border-radius: 10px;
+        }
+        .dashboard-header-search:focus-within {
+            border-color: var(--brand-primary);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 18%, transparent);
+        }
+        .dashboard-header-search input {
+            min-width: 0;
+            flex: 1;
+            border: 0;
+            outline: 0;
+            color: var(--text-strong);
+            background: transparent;
+            font-size: 0.82rem;
+        }
+        .dashboard-header-search input::placeholder { color: var(--text-muted); }
+        .dashboard-header-search button,
+        .dashboard-notification,
+        .mobile-header-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            background: transparent;
+            border: 0;
+            text-decoration: none;
+        }
+        .dashboard-header-search button { padding: 0.2rem; }
+        .dashboard-notification,
+        .mobile-header-icon {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-soft);
+            border-radius: 10px;
+            font-size: 1.05rem;
+        }
+        .dashboard-notification:hover,
+        .mobile-header-icon:hover,
+        .dashboard-header-search button:hover { color: var(--brand-primary); }
+        .notification-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border: 2px solid var(--surface-card);
+            border-radius: 50%;
+            background: #dc2626;
+        }
+        .mobile-header-icon { display: none; }
+
         :root[data-theme="dark"] {
-            --surface-bg: #0a1929;
-            --surface-muted: #0f2942;
-            --surface-card: #132f4c;
-            --text-strong: #e3f2fd;
-            --text-body: #90caf9;
-            --text-muted: #64b5f6;
-            --border-soft: #1e4976;
-            --shadow-sm: 0 2px 8px rgba(25, 118, 210, 0.3);
-            --shadow-md: 0 4px 16px rgba(25, 118, 210, 0.4);
-            --shadow-lg: 0 8px 32px rgba(25, 118, 210, 0.5);
+            --surface-bg: #0b0f19;
+            --surface-muted: #131c2e;
+            --surface-card: #0f172a;
+            --text-strong: #f8fafc;
+            --text-body: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-subtle: #64748b;
+            --focus-ring: var(--brand-accent);
+            --border-soft: #1e293b;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+        }
+        @media (max-width: 768px) {
+            .mobile-header-icon { display: inline-flex; width: 36px; height: 38px; border: 0; }
+            .mobile-header-icon .notification-dot { top: 4px; right: 3px; }
+            .dashboard-breadcrumb { display: none; }
+            .dashboard-shell-header .user-profile-badge { display: none; }
         }
 
         :root[data-theme="light"] {
-            --surface-bg: #f0f9ff;
-            --surface-muted: #e0f2fe;
+            --surface-bg: #f8fafc;
+            --surface-muted: #f1f5f9;
             --surface-card: #ffffff;
-            --text-strong: #0c4a6e;
-            --text-body: #0369a1;
-            --text-muted: #0284c7;
-            --border-soft: #bae6fd;
+            --text-strong: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            --focus-ring: var(--brand-primary);
+            --border-soft: #e2e8f0;
+        }
+
+        /* Role identity. The body carries the signed-in role as a class, so each
+           role recolors the brand tokens it renders with: admins read electric
+           blue (the :root defaults), enforcers read emerald green. The themed
+           selectors are repeated per color scheme so they outrank the
+           :root[data-theme] focus-ring declarations above. */
+        body.role-enforcer,
+        :root[data-theme="dark"] body.role-enforcer,
+        :root[data-theme="light"] body.role-enforcer {
+            --brand-primary: #047857;
+            --brand-secondary: #065f46;
+            --brand-accent: #10b981;
+            --brand-highlight: #34d399;
+            --brand-500: #10b981;
+            --brand-600: #059669;
+            --brand-800: #065f46;
+            --brand-900: #064e3b;
+            --brand-tint-50: #ecfdf5;
+            --brand-tint-100: #d1fae5;
+            --brand-tint-300: #6ee7b7;
+            --brand-tint-400: #34d399;
+            --brand-rgb: 4, 120, 87;
+            --brand-500-rgb: 16, 185, 129;
+            --focus-ring: #10b981;
         }
 
         * {
@@ -97,7 +246,7 @@
         .sidebar {
             width: var(--sidebar-width);
             min-height: 100vh;
-            background: linear-gradient(180deg, #2a2d35 0%, #1f2229 100%);
+            background: linear-gradient(180deg, #0b1329 0%, #070d1d 100%);
             color: white;
             transition: width var(--transition-speed) var(--ease-premium), 
                         transform var(--transition-speed) var(--ease-premium);
@@ -106,7 +255,7 @@
             top: 0;
             z-index: 1000;
             box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.07);
         }
 
         .sidebar::after {
@@ -185,54 +334,15 @@
 
         .sidebar a:hover {
             color: white;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             transform: translateX(4px);
         }
         
         .sidebar a.active {
             color: white;
-            background: rgba(255, 255, 255, 0.15);
+            background: var(--brand-primary);
             font-weight: 600;
-        }
-        
-        .sidebar .nav-link {
-            position: relative;
-        }
-
-        .sidebar .nav-link:hover i {
-            transform: scale(1.1);
-        }
-
-        .sidebar .nav-link.active i {
-            transform: scale(1.08);
-        }
-
-        .sidebar .nav-text {
-            transition: opacity var(--transition-speed) ease, 
-                        visibility var(--transition-speed) ease;
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar.collapsed .nav-text,
-        .sidebar.collapsed .sidebar-header-text {
-            opacity: 0;
-            visibility: hidden;
-            width: 0;
-            display: none;
-        }
-
-        .sidebar a:hover {
-            color: white;
-            background: rgba(96, 165, 250, 0.2);
-            transform: translateX(4px);
-        }
-        
-        .sidebar a.active {
-            color: white;
-            background: rgba(96, 165, 250, 0.3);
-            font-weight: 600;
-            box-shadow: 0 0 20px rgba(96, 165, 250, 0.4);
+            box-shadow: 0 4px 14px rgba(var(--brand-rgb), 0.4);
         }
         
         .sidebar .nav-link {
@@ -249,29 +359,39 @@
 
         .sidebar-toggle {
             position: absolute;
-            right: -20px;
+            right: -30px;
             top: 50%;
             transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-            border: 2px solid #ffffff;
+            width: 60px;
+            height: 60px;
+            padding: 0;
+            background: #0066ff;
+            border: 1px solid #0066ff;
             border-radius: 50%;
-            color: white;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 1001;
-            transition: all var(--transition-speed) var(--ease-premium);
-            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
-            font-size: 1.1rem;
+            transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+            opacity: 1;
+            box-shadow: 0 2px 8px rgba(0, 102, 255, 0.45);
+            font-size: 1.4rem;
         }
 
-        .sidebar-toggle:hover {
-            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
-            transform: translateY(-50%) scale(1.1);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+        .role-admin .sidebar-toggle {
+            right: -29.5px;
+            width: 59px;
+            height: 59px;
+        }
+
+        .sidebar-toggle:hover,
+        .sidebar-toggle:focus-visible {
+            background: #0052cc;
+            border-color: #0052cc;
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(0, 102, 255, 0.55);
         }
 
         .sidebar.collapsed .sidebar-toggle {
@@ -279,7 +399,11 @@
         }
 
         .sidebar.collapsed .sidebar-toggle:hover {
-            transform: translateY(-50%) rotate(180deg) scale(1.1);
+            transform: translateY(-50%) rotate(180deg) scale(1.05);
+        }
+        .sidebar-toggle:focus-visible {
+            outline: 3px solid #ffffff;
+            outline-offset: 2px;
         }
 
         @keyframes pageFadeIn {
@@ -370,58 +494,60 @@
             transform: translateY(0) scale(0.98);
         }
 
-        /* Primary Blue Buttons */
+        /* Primary Electric Blue Buttons */
         .btn-primary {
-            background: #2563eb;
-            border: 2px solid #2563eb;
+            background: var(--brand-primary);
+            border: 2px solid var(--brand-primary);
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+            box-shadow: 0 2px 10px rgba(var(--brand-rgb), 0.35);
         }
 
         .btn-primary:hover {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
+            background: var(--brand-secondary);
+            border-color: var(--brand-secondary);
             color: #ffffff;
-            box-shadow: 0 4px 16px rgba(29, 78, 216, 0.45);
+            box-shadow: 0 4px 18px rgba(var(--brand-rgb), 0.45);
         }
 
         .btn-outline-primary {
-            border: 2px solid #2563eb;
-            color: #2563eb;
+            border: 2px solid var(--brand-primary);
+            color: var(--brand-primary);
             background: transparent;
         }
 
         .btn-outline-primary:hover {
-            background: #2563eb;
-            border-color: #2563eb;
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
             color: #ffffff;
         }
 
+        /* Success Emerald Green Buttons */
         .btn-success {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: 2px solid #10b981;
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
         }
 
         .btn-success:hover {
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
             color: #ffffff;
-            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45);
         }
 
+        /* Warning/Pending Mustard Buttons */
         .btn-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border: 2px solid #f59e0b;
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+            border: 2px solid #ca8a04;
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 2px 10px rgba(202, 138, 4, 0.35);
         }
 
         .btn-warning:hover {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-            border-color: #d97706;
+            background: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);
+            border-color: #a16207;
             color: #ffffff;
-            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 16px rgba(202, 138, 4, 0.45);
         }
 
         .btn-danger {
@@ -520,8 +646,8 @@
 
         .form-control:focus,
         .form-select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+            border-color: var(--brand-500);
+            box-shadow: 0 0 0 0.2rem rgba(var(--brand-rgb), 0.25);
             transform: translateY(-1px);
             transition: all 0.2s var(--ease-premium);
         }
@@ -598,14 +724,14 @@
 
         /* Colorful KPI Card Backgrounds */
         .premium-kpi.bg-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-secondary) 100%) !important;
             color: #ffffff !important;
             border: none !important;
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 8px 24px rgba(var(--brand-rgb), 0.4);
         }
 
         .premium-kpi.bg-primary:hover {
-            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5) !important;
+            box-shadow: 0 12px 32px rgba(var(--brand-rgb), 0.5) !important;
         }
 
         .premium-kpi.bg-primary i {
@@ -613,7 +739,7 @@
         }
 
         .premium-kpi.bg-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
             color: #ffffff !important;
             border: none !important;
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
@@ -643,14 +769,14 @@
         }
 
         .premium-kpi.bg-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
             color: #ffffff !important;
             border: none !important;
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 8px 24px rgba(202, 138, 4, 0.4);
         }
 
         .premium-kpi.bg-warning:hover {
-            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.5) !important;
+            box-shadow: 0 12px 32px rgba(202, 138, 4, 0.5) !important;
         }
 
         .premium-kpi.bg-warning i {
@@ -759,18 +885,6 @@
             50% { box-shadow: 0 24px 54px rgba(212, 160, 23, 0.38); }
         }
 
-        @keyframes cinematicDriftA {
-            0% { transform: translate3d(0, 0, 0) scale(1); }
-            50% { transform: translate3d(-26px, 18px, 0) scale(1.08); }
-            100% { transform: translate3d(16px, -22px, 0) scale(1.04); }
-        }
-
-        @keyframes cinematicDriftB {
-            0% { transform: translate3d(0, 0, 0) scale(1); }
-            50% { transform: translate3d(22px, -18px, 0) scale(1.07); }
-            100% { transform: translate3d(-18px, 22px, 0) scale(1.03); }
-        }
-
         @keyframes kpiFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
@@ -805,9 +919,9 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        /* Success/Paid - Green */
+        /* Success/Paid - Emerald */
         .badge.bg-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
             color: #ffffff !important;
             box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
         }
@@ -817,16 +931,16 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
         }
 
-        /* Warning/Pending - Orange */
+        /* Warning/Pending - Mustard */
         .badge.bg-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
             color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 2px 8px rgba(202, 138, 4, 0.4);
         }
 
         .badge.bg-warning:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+            box-shadow: 0 4px 12px rgba(202, 138, 4, 0.5);
         }
 
         /* Danger/Cancelled - Red */
@@ -841,16 +955,16 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
         }
 
-        /* Primary - Blue */
+        /* Primary - Electric Blue */
         .badge.bg-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-secondary) 100%) !important;
             color: #ffffff !important;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.4);
         }
 
         .badge.bg-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 12px rgba(var(--brand-rgb), 0.5);
         }
 
         /* Secondary - Gray (keeping monochrome) */
@@ -900,6 +1014,21 @@
             padding: 0.4em 1.2em;
         }
 
+        /* Warning / Pending Color Palette - Mustard */
+        .text-warning {
+            color: #ca8a04 !important;
+        }
+        .bg-warning-subtle {
+            background-color: #fef9c3 !important;
+            color: #854d0e !important;
+        }
+        .text-warning-emphasis {
+            color: #854d0e !important;
+        }
+        .border-warning-subtle {
+            border-color: #fef08a !important;
+        }
+
         .btn {
             border-radius: 10px;
             font-weight: 600;
@@ -909,9 +1038,12 @@
             background: var(--surface-card);
             border: 1px solid var(--border-soft);
             border-radius: 16px;
-            padding: 1rem 1.5rem !important;
+            /* The bar carries only the theme switch and the profile badge, so
+               it stays a slim control strip instead of a mostly empty band
+               at the top of every screen. */
+            padding: 0.5rem 1rem !important;
             box-shadow: var(--shadow-sm);
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -952,6 +1084,89 @@
             border: 1px solid var(--border-soft);
         }
 
+        /* Utility colours are written for light cards, so on the dark palette
+           they turn into near-black text on navy. Remap them; badges keep
+           their own colour pairing and are left alone. */
+        [data-bs-theme="dark"] .text-dark:not(.badge) {
+            color: #e2e8f0 !important;
+        }
+
+        [data-bs-theme="dark"] .text-primary:not(.badge) {
+            color: var(--brand-tint-300) !important;
+        }
+
+        [data-bs-theme="dark"] .text-danger:not(.badge) {
+            color: #fca5a5 !important;
+        }
+
+        [data-bs-theme="dark"] .text-success:not(.badge) {
+            color: #6ee7b7 !important;
+        }
+
+        [data-bs-theme="dark"] .text-warning:not(.badge) {
+            color: #fde047 !important;
+        }
+
+        [data-bs-theme="dark"] .bg-warning-subtle {
+            background-color: rgba(202, 138, 4, 0.22) !important;
+            color: #fef08a !important;
+        }
+
+        [data-bs-theme="dark"] .text-warning-emphasis {
+            color: #fef08a !important;
+        }
+
+        [data-bs-theme="dark"] .border-warning-subtle {
+            border-color: rgba(202, 138, 4, 0.4) !important;
+        }
+
+        /* Bootstrap ships .bg-white / .bg-light with !important, so a panel
+           painted with one of them stayed white while its text took the dark
+           palette's near-white -- a 1.05:1 card header. Remap the surfaces
+           themselves. Only the background is touched: .card-header already
+           sets its own colour and the .text-* remaps above still apply.
+           Badges, progress fills and the small white discs (avatar circles,
+           KPI medallions) are intentionally light and stay that way. */
+        [data-bs-theme="dark"] .bg-white:not(.badge):not(.progress-bar):not(.bg-opacity-25):not(.rounded-circle),
+        [data-bs-theme="dark"] .bg-light:not(.badge):not(.progress-bar) {
+            background-color: var(--surface-muted) !important;
+            border-color: var(--border-soft);
+        }
+
+        /* The phone top bar is the one surface the page slides under, so it has
+           to read as a layer above the content. In dark mode the bar and the
+           panels beneath it are painted from the same slate ramp and the light
+           theme's black drop shadow disappears against a near-black page, so a
+           half-scrolled KPI row looked like a stray sliver glued to the bar
+           rather than content passing beneath it. A lit surface plus a
+           visible hairline marks the edge. z-index stays at 990: the drawer
+           (1000) still has to cover the menu button. */
+        [data-bs-theme="dark"] .mobile-topbar {
+            background-color: var(--surface-muted);
+            border-bottom-color: #334155;
+        }
+
+        [data-bs-theme="dark"] .mobile-topbar.is-scrolled {
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05),
+                        0 10px 26px rgba(0, 0, 0, 0.55);
+        }
+
+        [data-bs-theme="dark"] .btn-outline-danger {
+            --bs-btn-color: #fca5a5;
+            --bs-btn-border-color: #f87171;
+            --bs-btn-hover-bg: #7f1d1d;
+            --bs-btn-hover-border-color: #f87171;
+            --bs-btn-hover-color: #fee2e2;
+            --bs-btn-active-bg: #991b1b;
+            --bs-btn-active-border-color: #f87171;
+            --bs-btn-active-color: #fee2e2;
+        }
+
+        [data-bs-theme="dark"] .desktop-header .text-danger,
+        [data-bs-theme="dark"] .mobile-topbar .text-danger {
+            color: #fca5a5 !important;
+        }
+
         .user-profile-badge:hover {
             background: var(--surface-card);
             transform: translateY(-2px);
@@ -961,7 +1176,7 @@
         .avatar-circle {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            background: linear-gradient(135deg, var(--brand-600) 0%, var(--brand-800) 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -969,10 +1184,10 @@
             color: white;
             font-weight: 700;
             font-size: 0.85rem;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.3);
             overflow: hidden;
             flex-shrink: 0;
-            border: 2px solid #60a5fa;
+            border: 2px solid var(--brand-tint-400);
         }
 
         .topbar-avatar-img {
@@ -1046,144 +1261,250 @@
             color: var(--text-muted) !important;
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           INTERACTION & ACCESSIBILITY LAYER
+           One set of rules for every screen: keyboard focus you can see,
+           finger-sized controls, and text colours that stay readable.
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Keyboard focus. Browsers drop the default ring on styled buttons and
+           links, which left keyboard users with no idea where they were. */
+        a:focus-visible,
+        button:focus-visible,
+        [role="button"]:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible,
+        summary:focus-visible,
+        .nav-link:focus-visible,
+        .dropdown-item:focus-visible,
+        .page-link:focus-visible {
+            outline: 3px solid var(--focus-ring) !important;
+            outline-offset: 2px !important;
+            border-radius: 8px;
+        }
+
+        /* Mouse users keep the calm look: the ring is for keyboard only. */
+        a:focus:not(:focus-visible),
+        button:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Anything that behaves like a control should look clickable. */
+        [role="button"],
+        [data-bs-toggle]:not(button):not(a),
+        label[for],
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        ::selection {
+            background: rgba(var(--brand-rgb), 0.22);
+            color: inherit;
+        }
+
+        /* Form focus matches the ring above, so every field reacts the same. */
+        .form-control:focus,
+        .form-select:focus,
+        .form-check-input:focus {
+            border-color: var(--brand-tint-400);
+            box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
+        }
+
+        /* Disabled controls read as disabled without needing a hover. */
+        .btn:disabled,
+        .btn.disabled,
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* A submit that is on its way gets a spinner and stops accepting a
+           second click (see the busy-state script at the end of the layout). */
+        .btn.is-busy {
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .btn.is-busy .btn-busy-spinner {
+            display: inline-block;
+            width: 0.9em;
+            height: 0.9em;
+            margin-right: 0.45em;
+            vertical-align: -0.1em;
+            border: 2px solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: btnBusySpin 0.6s linear infinite;
+        }
+
+        @keyframes btnBusySpin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (prefers-color-scheme: dark) {
             /* The OS dark setting is only a fallback: an explicit "Light"
                pick must still render light, so everything below is skipped
-               when the user has chosen the light theme. */
+               when the user has chosen the light theme.
+
+               This palette is the same navy/blue the Dark option uses. It used
+               to be burgundy and gold, so "Auto" on a dark OS rendered a red
+               system while "Dark" rendered blue: two different products from
+               one setting. The matching tokens are declared here too, so Auto
+               on a dark OS also gets readable text on the dark surfaces. */
             :root:not([data-theme="light"]) {
+            --surface-bg: #0b0f19;
+            --surface-muted: #131c2e;
+            --surface-card: #0f172a;
+            --text-strong: #f8fafc;
+            --text-body: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-subtle: #64748b;
+            --focus-ring: var(--brand-500);
+            --border-soft: #1e293b;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+            --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.6);
+
             body {
-                background: radial-gradient(circle at 10% 0%, #2d0505 0%, #180202 35%, #0f0101 100%);
+                background: #0b0f19;
             }
 
             .sidebar {
-                background: linear-gradient(180deg, #0f0203 0%, #1c0406 100%);
-                border-right: 1px solid rgba(212,160,23,0.15);
+                background: linear-gradient(180deg, #0b1329 0%, #070d1d 100%);
+                border-right: 1px solid rgba(255, 255, 255, 0.07);
             }
 
             .sidebar a {
-                color: #f0c8c8;
+                color: #94a3b8;
             }
 
-            .sidebar a:hover,
+            .sidebar a:hover {
+                color: #f8fafc;
+                background: rgba(255, 255, 255, 0.08);
+            }
+
             .sidebar a.active {
-                color: #fff5f5;
-                background: rgba(200, 30, 43, 0.22);
+                color: #ffffff;
+                background: var(--brand-primary);
+                box-shadow: 0 4px 14px rgba(var(--brand-rgb), 0.45);
             }
 
             .mobile-topbar,
             .desktop-header {
-                background: rgba(22, 4, 4, 0.88);
-                border-color: #4d1010 !important;
+                background: #0f172a;
+                border-color: #1e293b !important;
             }
 
             .theme-select {
-                border-color: #6d2020;
-                background-color: rgba(30, 5, 5, 0.88);
-                color: #f5d0d0;
+                border-color: #1e293b;
+                background-color: #131c2e;
+                color: #cbd5e1;
             }
 
             .card {
-                border: 1px solid #3d1010;
-                box-shadow: 0 20px 52px rgba(10, 2, 2, 0.65);
-                background: linear-gradient(160deg, rgba(28,8,8,0.92) 0%, rgba(22,4,4,0.85) 100%);
+                border: 1px solid #1e293b;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+                background: #0f172a;
             }
 
             .card-header {
-                border-bottom-color: #3d1515;
+                border-bottom-color: #1e293b;
             }
 
             .btn-outline-primary {
-                color: #f5a0a8;
-                border-color: #c04050;
+                color: var(--brand-tint-300);
+                border-color: var(--brand-500);
             }
 
             .btn-outline-primary:hover {
-                background: #6d1520;
-                border-color: #e05060;
-                color: #fff5f5;
+                background: var(--brand-900);
+                border-color: var(--brand-tint-400);
+                color: var(--brand-tint-50);
             }
 
             .form-control,
             .form-select,
             .input-group-text {
-                background-color: #1c0505;
-                border-color: #4d1515;
-                color: #f5d8d8;
+                background-color: #131c2e;
+                border-color: #1e293b;
+                color: #f8fafc;
             }
 
             .form-control::placeholder {
-                color: #c08080;
+                color: #64748b;
             }
 
             .table thead th {
-                color: #e8b0b0;
-                border-bottom-color: #4d1515;
+                color: #cbd5e1;
+                border-bottom-color: #1e293b;
+                background-color: #131c2e;
             }
 
             .table tbody tr {
-                border-color: #331010;
+                border-color: #1e293b;
             }
 
             .table tbody tr:hover {
-                background-color: #2d0a0a;
+                background-color: #162238;
             }
 
             .badge.bg-dark-subtle {
-                background-color: #3d1010 !important;
-                color: #f5d0d0 !important;
-                border-color: #5d1c1c !important;
+                background-color: #131c2e !important;
+                color: #cbd5e1 !important;
+                border-color: #1e293b !important;
             }
 
             .modal-content {
-                background: #160404;
-                border-color: #4d1515;
+                background: #0f172a;
+                border-color: #1e293b;
                 box-shadow: 0 26px 70px rgba(0, 0, 0, 0.65);
             }
 
             .modal-header,
             .modal-footer {
-                border-color: #4d1515;
+                border-color: #1e293b;
             }
 
             .modal-footer {
-                background: #0f0202;
+                background: #131c2e;
             }
 
             .alert {
-                color: #f5d8d8;
+                color: var(--brand-tint-100);
             }
 
             .alert-success {
-                background-color: #0f3020;
+                background-color: #0c3a2a;
             }
 
             .alert-danger {
-                background-color: #4d1010;
+                background-color: #3f1420;
             }
 
             .alert-warning {
-                background-color: #3d2800;
+                background-color: #3a2c08;
                 color: #ffe8a0;
             }
 
             .table-premium-mobile tr {
-                background: #1c0505;
-                border-color: #4d1515;
-                box-shadow: 0 10px 22px rgba(10, 2, 2, 0.45);
+                background: #0f2a44;
+                border-color: #1e4976;
+                box-shadow: 0 10px 22px rgba(2, 8, 20, 0.5);
             }
 
             .table-premium-mobile td::before {
-                color: #d09090;
+                color: #9dc2e0;
             }
 
             body::before {
-                background: #c81e2b;
-                opacity: 0.28;
+                background: var(--brand-600);
+                opacity: 0.22;
             }
 
             body::after {
-                background: #d4a017;
-                opacity: 0.24;
+                background: var(--brand-highlight);
+                opacity: 0.18;
             }
             }
         }
@@ -1208,6 +1529,17 @@
             .sidebar .nav-link {
                 transition: none !important;
             }
+
+            /* Respect the OS "reduce motion" setting everywhere, not just the
+               decorative layer: no slides, fades or count-up easing remain. */
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         /* Blue Theme Alerts */
@@ -1231,21 +1563,21 @@
         }
 
         .alert-warning {
-            background-color: #fef3c7;
-            color: #92400e;
-            border-color: #f59e0b;
+            background-color: #fef9c3;
+            color: #854d0e;
+            border-color: #eab308;
         }
 
         .alert-info {
-            background-color: #dbeafe;
-            color: #1e40af;
-            border-color: #3b82f6;
+            background-color: var(--brand-tint-100);
+            color: var(--brand-800);
+            border-color: var(--brand-500);
         }
 
         .alert-primary {
-            background-color: #dbeafe;
-            color: #1e3a8a;
-            border-color: #2563eb;
+            background-color: var(--brand-tint-100);
+            color: var(--brand-900);
+            border-color: var(--brand-600);
         }
 
         body.role-enforcer .card-header,
@@ -1254,7 +1586,7 @@
         }
 
         body.role-enforcer .border-bottom {
-            border-color: #dbe2ff !important;
+            border-color: var(--brand-tint-100) !important;
         }
 
         .mobile-topbar {
@@ -1289,16 +1621,86 @@
             margin: 0;
         }
 
+        /* The phone bar stays one line high whatever the page is called: the
+           title takes the space that is left and shortens with an ellipsis
+           instead of pushing the controls off the edge or wrapping. */
+        .mobile-topbar .page-title {
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+
+        /* The bar keeps its controls narrow and a touch shorter than the
+           form default, so it reads as a header rather than a form row. */
         @media (max-width: 768px) {
-            .sidebar {
-                left: calc(-1 * var(--sidebar-width));
-                width: min(var(--sidebar-width), 86vw);
-                box-shadow: var(--shadow-lg);
-                transition: left var(--transition-speed) var(--ease-premium);
+            .mobile-topbar .theme-select {
+                min-width: 0;
+                width: 92px;
+                min-height: 38px;
+                padding-left: 0.55rem;
+                font-size: 0.82rem;
             }
-            .sidebar.active {
+        }
+
+        @media (max-width: 400px) {
+            .mobile-topbar .page-title {
+                font-size: 0.98rem;
+            }
+
+            .mobile-topbar .theme-select {
+                width: 82px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* On a phone the sidebar is a drawer, not a rail: it is either
+               off-screen or open at a readable width. The desktop collapse state
+               is ignored here — an 80px rail with its labels clipped is what made
+               this menu look cramped and hard to read. */
+            .sidebar,
+            .sidebar.collapsed,
+            .sidebar.active.collapsed {
+                /* The drawer is wider than the desktop rail it used to be parked
+                   behind: at -var(--sidebar-width) a min(320px, 86vw) drawer kept
+                   40px on screen. Because the sidebar outranks the phone topbar
+                   (z-index 1000 vs 990) that strip also covered the menu button,
+                   so tapping it did nothing and the menu looked broken. Offset by
+                   the drawer's own width, and drop the shadow while shut so none
+                   of it bleeds back past the edge. */
+                --drawer-width: min(320px, 86vw);
+                left: calc(-1 * var(--drawer-width));
+                width: var(--drawer-width);
+                box-shadow: none;
+                /* A shut drawer must never swallow a tap meant for the page
+                   beneath it, whatever width it ends up with. */
+                pointer-events: none;
+                transition: left var(--transition-speed) var(--ease-premium), width var(--transition-speed) var(--ease-premium), box-shadow var(--transition-speed) var(--ease-premium);
+            }
+            .sidebar.active,
+            .sidebar.active.collapsed {
                 left: 0;
+                box-shadow: var(--shadow-lg);
+                pointer-events: auto;
             }
+            .sidebar.collapsed .nav-text,
+            .sidebar.collapsed .sidebar-header-text,
+            .sidebar.active.collapsed .nav-text {
+                display: inline;
+                opacity: 1;
+                visibility: visible;
+                width: auto;
+            }
+            .sidebar.collapsed a,
+            .sidebar.active.collapsed a {
+                justify-content: flex-start;
+                margin: 4px 12px;
+            }
+            .sidebar .brand-title { font-size: 1.05rem; }
+            .sidebar .brand-subtitle { font-size: 0.78rem; }
+            .sidebar-nav .nav-link { font-size: 0.95rem; }
             .sidebar-toggle {
                 display: none;
             }
@@ -1311,6 +1713,21 @@
             .container-fluid {
                 padding-left: 0.5rem;
                 padding-right: 0.5rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+            }
+
+            /* Thumb-sized controls: 44px rows, and buttons never smaller than
+               40px, so nothing has to be aimed at on a phone. */
+            .form-control,
+            .form-select,
+            .input-group-text,
+            .dropdown-item,
+            .nav-link {
+                min-height: 44px;
+            }
+
+            .btn:not(.btn-close):not(.btn-link) {
+                min-height: 40px;
             }
 
             .card {
@@ -1429,7 +1846,7 @@
 
             .table-premium-mobile tr {
                 background: #fff;
-                border: 1px solid #e5ebff;
+                border: 1px solid var(--brand-tint-100);
                 border-radius: 12px;
                 margin-bottom: 10px;
                 padding: 6px 0;
@@ -1509,14 +1926,24 @@
             opacity: 0;
         }
 
-        /* Wide tables scroll like a native pane: momentum, thin bar, no rubber
-           banding that drags the whole page sideways. */
+        /* Wide tables scroll like a native pane: momentum and a thin bar. */
         .table-responsive,
         .report-table-scroll {
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior-x: contain;
+            /* Scroll chaining stays enabled on purpose — do not put
+               "contain" back. Bootstrap's .table-responsive only sets
+               overflow-x, which quietly makes the pane a scroll container on
+               both axes. A tall ledger fills most of the screen, so the
+               wheel lands on that pane instead of the page; with containment
+               set on either axis Chrome kept the gesture inside it and the
+               page never moved — the list looked frozen under the mouse.
+               The page cannot slide sideways anyway (body is overflow-x
+               hidden), so nothing is lost by letting the gesture chain. */
+            overscroll-behavior: auto;
             scrollbar-width: thin;
+            touch-action: pan-x pan-y;
         }
+
 
         .table-responsive::-webkit-scrollbar,
         .report-table-scroll::-webkit-scrollbar {
@@ -1667,7 +2094,7 @@
             margin: 0.85rem 0 1.25rem !important;
         }
         :root[data-theme="dark"] .swal2-html-container {
-            color: #94a3b8 !important;
+            color: #5c6b80 !important;
         }
 
         /* Refined Icons with soft pulsing rings */
@@ -1701,8 +2128,8 @@
 
         /* Warning Icon */
         .swal2-icon.swal2-warning {
-            border-color: #f59e0b !important;
-            color: #f59e0b !important;
+            border-color: #eab308 !important;
+            color: #eab308 !important;
         }
 
         /* Error Icon */
@@ -1716,8 +2143,8 @@
 
         /* Info Icon */
         .swal2-icon.swal2-info {
-            border-color: #3b82f6 !important;
-            color: #3b82f6 !important;
+            border-color: var(--brand-500) !important;
+            color: var(--brand-500) !important;
         }
 
         /* Buttons & Actions */
@@ -1759,7 +2186,7 @@
             transform: scale(0.97) !important;
         }
         .swal2-styled:focus {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35) !important;
+            box-shadow: 0 0 0 3px rgba(var(--brand-500-rgb), 0.35) !important;
         }
         /* The ring is for keyboards, not for the finger that just tapped. */
         .swal2-styled:focus:not(:focus-visible) {
@@ -1773,12 +2200,32 @@
 
         /* Confirm button */
         .swal2-styled.swal2-confirm {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            background: linear-gradient(135deg, var(--brand-500) 0%, var(--brand-600) 100%) !important;
             color: #ffffff !important;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32) !important;
+            box-shadow: 0 4px 14px rgba(var(--brand-rgb), 0.32) !important;
         }
         .swal2-styled.swal2-confirm:hover {
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.44) !important;
+            box-shadow: 0 6px 20px rgba(var(--brand-rgb), 0.44) !important;
+        }
+
+        /* Dangerous confirmations (deleting a ticket, a record) opt in with
+           customClass: { popup: 'swal-danger' }. The icon, the title and the
+           confirm button turn red so the destructive answer cannot be mistaken
+           for a routine one. */
+        .swal2-popup.swal-danger .swal2-icon.swal2-warning {
+            border-color: #dc2626 !important;
+            color: #dc2626 !important;
+        }
+        .swal2-popup.swal-danger .swal2-title {
+            color: #b91c1c !important;
+        }
+        .swal2-popup.swal-danger .swal2-styled.swal2-confirm {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(190, 18, 60, 0.32) !important;
+        }
+        .swal2-popup.swal-danger .swal2-styled.swal2-confirm:hover {
+            box-shadow: 0 6px 20px rgba(190, 18, 60, 0.44) !important;
         }
 
         /* Cancel button */
@@ -1869,7 +2316,7 @@
         }
 
         .swal2-popup.swal2-toast .swal2-timer-progress-bar {
-            background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%) !important;
+            background: linear-gradient(90deg, var(--brand-500) 0%, #10b981 100%) !important;
             height: 3px !important;
             border-radius: 0 0 16px 16px !important;
         }
@@ -2098,6 +2545,224 @@
             }
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           DESIGN CRAFT LAYER
+           Alignment, scroll affordance and phone density for the screens
+           that already exist. No markup, wording, route or figure is
+           changed here — only how the same content is presented.
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* ── 1. Digits that line up ─────────────────────────────────────
+           Fines, counts, percentages and ticket numbers are read as
+           columns. Proportional figures make those columns ragged, so a
+           list of amounts looks unsettled and two totals are hard to
+           compare. Tabular figures give every digit the same advance
+           width, which stacks the decimal points and lets the eye scan a
+           column of pesos in one pass. */
+        .table,
+        .table th,
+        .table td,
+        .report-table,
+        .premium-kpi,
+        .stat-counter-value,
+        .nature-kpi-chip,
+        .badge,
+        .page-link,
+        .btn-group .btn,
+        [data-tabular] {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
+
+        /* ── 2. A wide table says that it scrolls ───────────────────────
+           A table wider than its card used to just stop at the card edge,
+           which reads as missing columns rather than more to the right.
+           Two soft shadows sit on the edges, and the local/scroll
+           background-attachment pattern fades each one out as soon as
+           that edge is reached. Pure CSS: no script, no extra markup. */
+        .table-responsive,
+        .report-table-scroll {
+            background-image:
+                linear-gradient(to right, var(--surface-card) 40%, rgba(255, 255, 255, 0)),
+                linear-gradient(to left, var(--surface-card) 40%, rgba(255, 255, 255, 0)),
+                radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0)),
+                radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0));
+            background-position: 0 0, 100% 0, 0 0, 100% 0;
+            background-repeat: no-repeat;
+            background-size: 34px 100%, 34px 100%, 14px 100%, 14px 100%;
+            background-attachment: local, local, scroll, scroll;
+        }
+
+        /* A printed report is white paper in every theme, so its tables fade
+           to paper white rather than to the card token — otherwise a dark
+           band would sit on the paper edges in dark mode. */
+        .report-document-card .table-responsive,
+        .report-document-card .report-table-scroll {
+            background-image:
+                linear-gradient(to right, #ffffff 40%, rgba(255, 255, 255, 0)),
+                linear-gradient(to left, #ffffff 40%, rgba(255, 255, 255, 0)),
+                radial-gradient(farthest-side at 0 50%, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0)),
+                radial-gradient(farthest-side at 100% 50%, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0));
+        }
+
+        /* Headline cards hold the same height however their footer line
+           wraps, in the same way the charts already share a row height. */
+        .premium-kpi {
+            height: 100%;
+            /* Lets the figure below size itself against the card it sits in
+               rather than against the window. */
+            container-type: inline-size;
+        }
+
+        /* The peso total is the longest string a headline card holds. At a
+           fixed 28px it overran the medallion, which flexbox then squashed
+           into an oval instead of letting it shrink. The figure now scales
+           with the card width, so it always fits with room to spare. */
+        .premium-kpi h3 {
+            font-size: clamp(1.05rem, 8.7cqi, 1.75rem);
+            white-space: nowrap;
+        }
+
+        .premium-kpi .bg-white.bg-opacity-25 {
+            flex-shrink: 0;
+        }
+
+        .admin-analytics-inner .col-md-3 > a {
+            display: block;
+            height: 100%;
+        }
+
+        /* ── 3. Phones: the four headline numbers share one screen ──────
+           The KPI row fell to one full-width card per row, so a phone user
+           scrolled past four tall cards before reaching any chart. Two-up
+           with a condensed scale keeps every word and figure, and puts the
+           whole summary in the first screen. */
+        @media (max-width: 575.98px) {
+            /* Two columns, tighter gutters. */
+            .admin-analytics-inner > .row:first-child {
+                --bs-gutter-x: 0.75rem;
+                --bs-gutter-y: 0.75rem;
+            }
+
+            .admin-analytics-inner > .row:first-child > .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+
+            .premium-kpi .card-body {
+                padding: 0.8rem 0.85rem !important;
+            }
+
+            /* The figure is what the card is for: it keeps one line, scales
+               with the phone, and the medallion shrinks to leave it room. */
+            .premium-kpi h3 {
+                font-size: clamp(1rem, 4.35vw, 1.42rem);
+                line-height: 1.15;
+                letter-spacing: -0.01em;
+                white-space: nowrap;
+            }
+
+            .premium-kpi h6 {
+                font-size: 0.64rem !important;
+                letter-spacing: 0.03em !important;
+                line-height: 1.25;
+            }
+
+            .premium-kpi > .card-body > div:first-child {
+                margin-bottom: 0.65rem !important;
+            }
+
+            .premium-kpi .bg-white.bg-opacity-25 {
+                width: 28px !important;
+                height: 28px !important;
+                padding: 0.24rem !important;
+                flex-shrink: 0;
+            }
+
+            .premium-kpi .bg-white.bg-opacity-25 i {
+                font-size: 0.85rem !important;
+            }
+
+            .premium-kpi .mt-4 {
+                margin-top: 0.6rem !important;
+            }
+
+            .premium-kpi .small,
+            .premium-kpi .badge {
+                font-size: 0.66rem !important;
+                line-height: 1.3;
+            }
+
+            .premium-kpi .fw-bold[style*="0.95rem"] {
+                font-size: 0.82rem !important;
+            }
+        }
+
+        /* Tablets sat between the two layouts with four cramped cards: a
+           700px screen put four headline figures in the space two need, and
+           a 1000px screen still squeezed them to 142px each once the sidebar
+           took its share. Two up holds until there is width for four. */
+        @media (min-width: 576px) and (max-width: 1199.98px) {
+            .admin-analytics-inner > .row:first-child > .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+
+        /* On the narrowest phones the medallion is the first thing to go: the
+           label and the figure both need the width more than the ornament
+           does. Nothing is lost from the card's meaning. */
+        @media (max-width: 359.98px) {
+            .premium-kpi .bg-white.bg-opacity-25 {
+                display: none;
+            }
+        }
+
+        /* ── 4. No ghost hover on a touch screen ────────────────────────
+           A finger has no pointer to move away, so the lift stayed applied
+           to whatever was tapped last and the card looked stuck in the air.
+           Touch screens get the settled state; the press still registers
+           through :active. */
+        @media (hover: none) {
+            .card:hover,
+            .premium-kpi:hover,
+            .user-profile-badge:hover,
+            .btn:hover,
+            .sidebar a:hover {
+                transform: none !important;
+            }
+
+            .premium-kpi:hover i,
+            .sidebar .nav-link:hover i {
+                transform: none !important;
+            }
+        }
+
+        /* ── 5. The phone bar steps forward as content passes under it ──
+           At rest the top bar is flat; once the page is scrolling it gets
+           the same soft elevation the desktop header has, so the heading
+           the user is reading never merges into the content behind it. */
+        .mobile-topbar {
+            transition: box-shadow 0.25s var(--ease-premium),
+                        background-color 0.25s var(--ease-premium);
+        }
+
+        .mobile-topbar.is-scrolled {
+            box-shadow: 0 6px 22px rgba(15, 23, 42, 0.16);
+        }
+
+        /* In-page jumps land below the sticky phone bar instead of under
+           it. */
+        html {
+            scroll-padding-top: 72px;
+        }
+
+        @media (max-width: 768px) {
+            html {
+                scroll-padding-top: 64px;
+            }
+        }
+
         /* ── PRINT: strip the app chrome ────────────────────────────────
            The print dialog has no preview, and the sidebar, topbar, theme
            picker and toasts used to be printed on top of the document. */
@@ -2144,10 +2809,53 @@
             .card {
                 box-shadow: none !important;
             }
+            /* The on-screen edge shadows are a "there is more to the right"
+               hint; on paper they would print as a grey smear on the table
+               border. */
+            .table-responsive,
+            .report-table-scroll {
+                background-image: none !important;
+            }
+            .mobile-topbar.is-scrolled {
+                box-shadow: none !important;
+            }
         }
     </style>
+    <style>
+        /* ── Cross-document view transitions (temporary demo) ──────────────
+           Opts every page into the browser's own cross-fade between
+           navigations: no JavaScript, no controller changes. Browsers
+           without support simply navigate as before, and the whole block
+           can be deleted to go back to instant page loads. */
+        @view-transition {
+            navigation: auto;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 220ms;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Motion-sensitive readers keep the instant switch. */
+        @media (prefers-reduced-motion: reduce) {
+            @view-transition {
+                navigation: none;
+            }
+        }
+    </style>
+    <?= $this->renderSection('styles') ?>
+    <?php
+        // SweetAlert takes concrete colors — it cannot read a CSS variable — so
+        // the signed-in role's accent is handed to JS here and read back through
+        // window.__brand. Keep these in step with the body.role-* block above.
+        $brandJs = $layoutRole === 'enforcer'
+            ? ['primary' => '#047857', 'accent' => '#10b981']
+            : ['primary' => '#0066ff', 'accent' => '#0080ff'];
+    ?>
+    <script>window.__brand = <?= json_encode($brandJs) ?>;</script>
 </head>
-<body class="role-<?= esc($layoutRole) ?>">
+<body class="role-<?= esc($layoutRole) ?> <?= $isAdminDashboard ? 'dashboard-layout' : '' ?>">
 
 <div class="d-flex">
     <?= $this->include('theme/sidebar') ?>
@@ -2156,29 +2864,48 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="mobile-topbar">
-            <button type="button" class="btn btn-outline-primary btn-sm" id="mobileMenuBtn">
-                <i class="bi bi-list fs-5"></i>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="mobileMenuBtn" aria-label="Expand sidebar" aria-expanded="false">
+                <i class="bi bi-list fs-5" aria-hidden="true"></i>
             </button>
-            <h2 class="page-title"><?= $this->renderSection('title') ?></h2>
+            <h2 class="page-title"><?= $this->renderSection('title', true) ?></h2>
             <div class="d-flex align-items-center gap-2">
+                <?php if ($isAdminDashboard): ?>
+                    <a class="mobile-header-icon" href="<?= base_url('lookup') ?>" aria-label="Search citations">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                    </a>
+                    <button class="mobile-header-icon" type="button" aria-label="Notifications">
+                        <i class="bi bi-bell" aria-hidden="true"></i><span class="notification-dot" aria-hidden="true"></span>
+                    </button>
+                <?php endif; ?>
                 <select class="form-select form-select-sm theme-select" id="themeSelectMobile" aria-label="Theme mode">
                     <option value="auto">Auto</option>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                 </select>
-                <span class="text-muted small text-truncate d-none d-sm-inline" style="max-width: 30vw;">Hi, <?= esc((string) session()->get('username')) ?></span>
-                <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm" title="Log out" aria-label="Log out">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
             </div>
         </div>
 
-        <header class="desktop-header">
-            <div class="d-flex align-items-center gap-3">
-                <h1 class="header-title"><?= $this->renderSection('title') ?></h1>
-            </div>
-            
-            <div class="d-flex align-items-center gap-3">
+        <header class="desktop-header <?= $isAdminDashboard ? 'dashboard-shell-header' : '' ?>">
+            <?php if ($isAdminDashboard): ?>
+                <nav class="dashboard-breadcrumb" aria-label="Breadcrumb">
+                    <a href="<?= base_url('dashboard') ?>">Home</a>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span aria-current="page">Dashboard</span>
+                </nav>
+            <?php else: ?>
+                <span></span>
+            <?php endif; ?>
+            <div class="dashboard-header-actions d-flex align-items-center gap-3">
+                <?php if ($isAdminDashboard): ?>
+                    <form class="dashboard-header-search" action="<?= base_url('lookup') ?>" method="get" role="search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <input type="search" name="query" aria-label="Search citations" placeholder="Search citations">
+                        <button type="submit" aria-label="Submit citation search"><i class="bi bi-arrow-return-left" aria-hidden="true"></i></button>
+                    </form>
+                    <button class="dashboard-notification" type="button" aria-label="Notifications">
+                        <i class="bi bi-bell" aria-hidden="true"></i><span class="notification-dot" aria-hidden="true"></span>
+                    </button>
+                <?php endif; ?>
                 <div class="btn-toolbar d-flex align-items-center gap-2">
                     <div class="position-relative">
                         <i class="bi bi-palette position-absolute start-0 top-50 translate-middle-y ms-2 text-muted" style="font-size: 0.8rem; pointer-events: none;"></i>
@@ -2208,11 +2935,6 @@
                         <span class="text-muted" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;"><?= esc($layoutRole) ?></span>
                     </div>
                 </div>
-
-                <a href="<?= base_url('logout') ?>" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" title="Log out of this account">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span class="d-none d-lg-inline">Logout</span>
-                </a>
             </div>
         </header>
 
@@ -2288,7 +3010,7 @@
                 showCancelButton: true,
                 confirmButtonText: options.confirmText || '<i class="bi bi-check2 me-1"></i> Confirm',
                 cancelButtonText: options.cancelText || 'Cancel',
-                confirmButtonColor: options.confirmColor || '#3b82f6',
+                confirmButtonColor: options.confirmColor || (window.__brand && window.__brand.primary) || '#0066ff',
                 reverseButtons: true,
                 focusCancel: true,
                 ...options
@@ -2302,7 +3024,7 @@
             if (!_isPrintMode) {
                 Toast.fire({
                     icon: 'success',
-                    title: '<?= addslashes(session()->getFlashdata('success')) ?>'
+                    title: <?= json_encode(session()->getFlashdata('success'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
                 });
             }
         <?php endif; ?>
@@ -2311,7 +3033,7 @@
             if (!_isPrintMode) {
                 Toast.fire({
                     icon: 'error',
-                    title: '<?= addslashes(session()->getFlashdata('error')) ?>'
+                    title: <?= json_encode(session()->getFlashdata('error'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
                 });
             }
         <?php endif; ?>
@@ -2331,7 +3053,7 @@
                         </div>
                     `,
                     confirmButtonText: 'Understood',
-                    confirmButtonColor: '#3b82f6'
+                    confirmButtonColor: (window.__brand && window.__brand.primary) || '#0066ff'
                 });
             }
         <?php endif; ?>
@@ -2366,6 +3088,14 @@
             } else {
                 root.setAttribute('data-theme', mode);
             }
+
+            // Bootstrap has its own theme hook, and the page styles use it for
+            // dark surfaces. Nothing was setting it, so every
+            // [data-bs-theme="dark"] rule was dead code and dark mode left
+            // light cards and dark text behind.
+            root.setAttribute('data-bs-theme', mode === 'auto'
+                ? (darkPreference.matches ? 'dark' : 'light')
+                : mode);
             if (themeSelectDesktop) themeSelectDesktop.value = mode;
             if (themeSelectMobile) themeSelectMobile.value = mode;
             if (shouldPersist) {
@@ -2406,6 +3136,8 @@
                 // Optional: Save state to localStorage
                 const isCollapsed = sidebar.classList.contains('collapsed');
                 localStorage.setItem('sidebarCollapsed', isCollapsed);
+                toggle.setAttribute('aria-expanded', String(!isCollapsed));
+                toggle.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
             });
         }
 
@@ -2414,15 +3146,32 @@
         if (savedState === 'true' && !isMobile()) {
             sidebar.classList.add('collapsed');
         }
+        if (toggle) {
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            toggle.setAttribute('aria-expanded', String(!isCollapsed));
+            toggle.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+        }
 
         const closeMobileSidebar = () => {
             sidebar.classList.remove('active');
+            sidebar.classList.remove('collapsed');
             document.body.classList.remove('sidebar-open');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+                mobileMenuBtn.setAttribute('aria-label', 'Expand sidebar');
+            }
         };
 
         const openMobileSidebar = () => {
+            // The drawer opens full width. It used to inherit the desktop rail
+            // state, which left a phone with an 80px strip of unreadable icons.
             sidebar.classList.add('active');
+            sidebar.classList.remove('collapsed');
             document.body.classList.add('sidebar-open');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.setAttribute('aria-expanded', 'true');
+                mobileMenuBtn.setAttribute('aria-label', 'Collapse sidebar');
+            }
         };
 
         if (mobileMenuBtn) {
@@ -2440,8 +3189,30 @@
         window.addEventListener('resize', function() {
             if (!isMobile()) {
                 closeMobileSidebar();
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                sidebar.classList.toggle('collapsed', isCollapsed);
+                if (toggle) {
+                    toggle.setAttribute('aria-expanded', String(!isCollapsed));
+                    toggle.setAttribute('aria-label', isCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+                }
             }
         });
+
+        /* The phone bar lifts off the page as soon as content moves beneath
+           it, and settles back at the top. Reads the scroll offset once per
+           frame at most, so it stays free on long pages. */
+        const mobileBar = document.querySelector('.mobile-topbar');
+
+        if (mobileBar) {
+            // One class toggle per scroll event: cheap enough to run inline,
+            // and it settles back the moment the page returns to the top.
+            const syncMobileBar = function() {
+                mobileBar.classList.toggle('is-scrolled', window.scrollY > 4);
+            };
+
+            window.addEventListener('scroll', syncMobileBar, { passive: true });
+            syncMobileBar();
+        }
 
         document.querySelectorAll('.main-content table').forEach(function(table) {
             if (!table.closest('.table-responsive')) {
@@ -2510,8 +3281,54 @@
                 document.body.appendChild(modal);
             }
         });
+
+        // ── One click, one submission ────────────────────────────────────
+        // A slow connection made it possible to click "Record Payment" twice
+        // and post the same cash twice. Forms that take over their own submit
+        // (SweetAlert confirmations, AJAX checks) call preventDefault(), so the
+        // guard below only ever touches a plain, about-to-navigate post.
+        // Opt a form out with data-no-busy.
+        document.addEventListener('submit', function(event) {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)) return;
+            if (form.hasAttribute('data-no-busy') || form.dataset.submitted === '1') return;
+
+            window.setTimeout(function() {
+                if (event.defaultPrevented || form.dataset.submitted === '1') return;
+                form.dataset.submitted = '1';
+
+                const buttons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+                buttons.forEach(function(button) {
+                    button.disabled = true;
+                    button.classList.add('is-busy');
+
+                    if (button.tagName === 'INPUT') {
+                        button.value = 'Submitting…';
+                    } else if (!button.querySelector('.btn-busy-spinner')) {
+                        const spinner = document.createElement('span');
+                        spinner.className = 'btn-busy-spinner';
+                        spinner.setAttribute('aria-hidden', 'true');
+                        button.prepend(spinner);
+                    }
+                });
+
+                // If the navigation never happens (blocked, offline), let the
+                // form be usable again instead of leaving it dead.
+                window.setTimeout(function() {
+                    form.dataset.submitted = '';
+                    buttons.forEach(function(button) {
+                        button.disabled = false;
+                        button.classList.remove('is-busy');
+                        button.querySelectorAll('.btn-busy-spinner').forEach(function(spinner) {
+                            spinner.remove();
+                        });
+                    });
+                }, 15000);
+            }, 0);
+        });
     });
 </script>
 <?= $this->renderSection('scripts') ?>
+<?= $this->include('theme/posthog') ?>
 </body>
 </html>

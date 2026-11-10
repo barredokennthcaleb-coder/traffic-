@@ -50,7 +50,7 @@
             <button onclick="window.print()" class="btn btn-outline-primary me-2">
                 <i class="bi bi-printer me-1"></i> Print Records
             </button>
-            <a href="<?= base_url('users?role=driver') ?>" class="btn btn-outline-secondary">
+            <a href="<?= base_url('users?role=driver') ?>" class="btn btn-outline-secondary btn-back-electric">
                 <i class="bi bi-arrow-left me-1"></i> Back to Users
             </a>
         </div>

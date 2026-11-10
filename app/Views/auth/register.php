@@ -229,7 +229,7 @@
                                id="username" 
                                placeholder="Choose a username" 
                                required 
-                               value="<?= old('username') ?>"
+                               value="<?= esc(old('username')) ?>"
                                autocomplete="username">
                     </div>
                 </div>
@@ -241,7 +241,7 @@
                                id="email" 
                                placeholder="Enter your email" 
                                required 
-                               value="<?= old('email') ?>"
+                               value="<?= esc(old('email')) ?>"
                                autocomplete="email">
                     </div>
                 </div>
@@ -250,32 +250,38 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-5">
                     <label for="lastname" class="form-label">Last Name</label>
-                    <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Last Name" required value="<?= old('lastname') ?>">
+                    <input type="text" name="lastname" class="form-control" id="lastname" placeholder="Last Name" required value="<?= esc(old('lastname')) ?>">
                 </div>
                 <div class="col-md-5">
                     <label for="firstname" class="form-label">First Name</label>
-                    <input type="text" name="firstname" class="form-control" id="firstname" placeholder="First Name" required value="<?= old('firstname') ?>">
+                    <input type="text" name="firstname" class="form-control" id="firstname" placeholder="First Name" required value="<?= esc(old('firstname')) ?>">
                 </div>
                 <div class="col-md-2">
                     <label for="middle_initial" class="form-label">M.I.</label>
-                    <input type="text" name="middle_initial" class="form-control" id="middle_initial" placeholder="M.I." maxlength="10" value="<?= old('middle_initial') ?>">
+                    <input type="text" name="middle_initial" class="form-control" id="middle_initial" placeholder="M.I." maxlength="10" value="<?= esc(old('middle_initial')) ?>">
                 </div>
             </div>
 
             <div class="row g-3 mb-3">
                 <div class="col-md-7">
                     <label for="birthdate" class="form-label">Birthdate</label>
-                    <input type="date" name="birthdate" class="form-control" id="birthdate" required value="<?= old('birthdate') ?>">
+                    <input type="date" name="birthdate" class="form-control" id="birthdate" required value="<?= esc(old('birthdate')) ?>">
                 </div>
                 <div class="col-md-5">
                     <label for="age" class="form-label">Age</label>
-                    <input type="number" name="age" class="form-control" id="age" min="16" max="120" required value="<?= old('age') ?>">
+                    <input type="number" name="age" class="form-control" id="age" min="16" max="120" required value="<?= esc(old('age')) ?>">
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="address" class="form-label">Current Address</label>
-                <input type="text" name="address" class="form-control" id="address" placeholder="Full Address" required value="<?= old('address') ?>">
+                <input type="text" name="address" class="form-control" id="address" placeholder="Full Address" required value="<?= esc(old('address')) ?>">
+            </div>
+
+            <div class="mb-3">
+                <label for="license_number" class="form-label">Driver's License No. <span class="text-muted">(optional)</span></label>
+                <input type="text" name="license_number" class="form-control" id="license_number" placeholder="e.g. F02-00-123456" value="<?= esc(old('license_number')) ?>">
+                <div class="form-text">Used to show your citations on your dashboard after you sign in.</div>
             </div>
 
             <div class="mb-3">
