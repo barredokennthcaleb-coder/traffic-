@@ -352,7 +352,11 @@ try {
     <?= $this->section('scripts') ?>
     <script>
         window.addEventListener('load', function () {
-            window.setTimeout(function () { window.print(); }, 250);
+            window.setTimeout(function () {
+                // On iOS the dialog only opens from a user tap; the helper
+                // shows a "Tap to Print" button there instead.
+                if (window.TrafficPrint) { window.TrafficPrint.autoOrPrompt(); } else { window.print(); }
+            }, 250);
         });
     </script>
     <?= $this->endSection() ?>

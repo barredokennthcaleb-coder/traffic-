@@ -234,3 +234,90 @@
         url.searchParams.delete('edit_ticket');
         window.history.replaceState({}, '', url.pathname + url.search + url.hash);
     });
+
+    // ═══ VEHICLE / PLACE COMBO PICKERS ════════════════════════
+    // Native <datalist> pickers cannot be opened on phones, so these fields
+    // get a tap-to-open suggestion list that also filters while typing. The
+    // values still come from the shared datalists on the page, and the field
+    // stays free-text for anything that is not on the list.
+    (function () {
+        const combos = [];
+
+        const closeCombos = (except) => {
+            combos.forEach(c => { if (c !== except) c.close(); });
+        };
+
+        document.querySelectorAll('input[data-combo-source]').forEach(input => {
+            const wrap = input.closest('.combo-wrap');
+            const list = wrap && wrap.querySelector('.combo-list');
+            const toggle = wrap && wrap.querySelector('.combo-toggle');
+            const source = document.getElementById(input.dataset.comboSource);
+            if (!wrap || !list || !toggle || !source) return;
+
+            const options = Array.from(source.options).map(o => o.value).filter(Boolean);
+
+            const render = () => {
+                const term = input.value.trim().toLowerCase();
+                const matches = term === ''
+                    ? options
+                    : options.filter(value => value.toLowerCase().includes(term));
+                list.innerHTML = '';
+                if (matches.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'combo-empty';
+                    empty.textContent = 'No match — keep typing to enter your own value.';
+                    list.appendChild(empty);
+                    return;
+                }
+                matches.forEach(value => {
+                    const option = document.createElement('button');
+                    option.type = 'button';
+                    option.className = 'combo-option';
+                    option.textContent = value;
+                    option.addEventListener('click', () => {
+                        input.value = value;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        api.close();
+                        input.blur();
+                    });
+                    list.appendChild(option);
+                });
+            };
+
+            const api = {
+                close() {
+                    list.hidden = true;
+                    toggle.setAttribute('aria-expanded', 'false');
+                },
+                open() {
+                    closeCombos(api);
+                    render();
+                    list.hidden = false;
+                    toggle.setAttribute('aria-expanded', 'true');
+                    // Centre the field so the list is never clipped by the
+                    // edge of the scrollable modal on small screens.
+                    if (window.matchMedia('(max-width: 767.98px)').matches) {
+                        input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }
+            };
+            combos.push(api);
+
+            toggle.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (list.hidden) api.open(); else api.close();
+            });
+
+            input.addEventListener('input', () => { if (!list.hidden) render(); });
+            input.addEventListener('keydown', (event) => { if (event.key === 'Escape') api.close(); });
+
+            // Keep the field from blurring on iOS before the tap on an option
+            // registers as a click.
+            list.addEventListener('mousedown', (event) => event.preventDefault());
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.combo-wrap')) closeCombos();
+        });
+    })();

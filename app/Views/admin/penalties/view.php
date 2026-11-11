@@ -661,7 +661,9 @@
 <?php if ($isPrintMode): ?>
 <script>
     window.addEventListener('load', function () {
-        window.print();
+        // On iOS the dialog only opens from a user tap; the helper shows a
+        // "Tap to Print" button there instead of failing silently.
+        if (window.TrafficPrint) { window.TrafficPrint.autoOrPrompt(); } else { window.print(); }
     });
 </script>
 <?php endif; ?>

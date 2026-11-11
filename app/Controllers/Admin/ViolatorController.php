@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\ReportPeriod;
 use App\Models\UserModel;
 use App\Models\ViolatorModel;
 use App\Models\ViolatorRecord;
@@ -163,11 +164,17 @@ class ViolatorController extends BaseController
         $pager->only(['search']);
         $pagerLinks = $pager->makeLinks($page, $perPage, $total, 'bootstrap_pagination');
 
+        // The report-type chooser offers the same year window the Reports
+        // module reads (this year and the five before it).
+        $currentYear = (int) date('Y');
+        $years       = range($currentYear, $currentYear - 5);
+
         return view('admin/violators/directory', [
             'title'      => 'Violator Reports - Admin',
             'violators'  => $result['rows'],
             'total'      => $total,
             'search'     => $search,
+            'years'      => $years,
             'pagerLinks' => $pagerLinks,
             'showPager'  => $total > $perPage,
         ]);
@@ -436,6 +443,287 @@ class ViolatorController extends BaseController
             'per_violator'   => $perViolator,
             'totals'         => $totals,
             'back_url'       => base_url('reports/violators'),
+        ]);
+    }
+
+    /**
+     * One document for one period: weekly, monthly or a custom range, every
+     * violator's apprehensions pooled together and summarised day by day.
+     *
+     * The full-year option keeps its own page (yearReport), because a calendar
+     * year is read month by month rather than day by day; every yearly call
+     * here hands over to it so there is only one annual document.
+     */
+    public function periodReport()
+    {
+        $periodType = strtolower(trim((string) $this->request->getGet('period_type')));
+        $periodType = ReportPeriod::isValid($periodType) ? $periodType : 'yearly';
+
+        $search = trim((string) $this->request->getGet('search'));
+
+        // The yearly document has a month-by-month page of its own.
+        if ($periodType === 'yearly') {
+            $yearIn = $this->request->getGet('year');
+            $query  = http_build_query(array_filter([
+                'year'   => ($yearIn === null || $yearIn === '') ? null : (string) (int) $yearIn,
+                'search' => $search !== '' ? $search : null,
+            ]));
+
+            return redirect()->to(base_url('reports/violators/year') . ($query !== '' ? '?' . $query : ''));
+        }
+
+        ['startDate' => $startDate, 'endDate' => $endDate, 'year' => $year, 'month' => $month]
+            = ReportPeriod::resolve($this->request, $periodType);
+
+        $startStamp = strtotime($startDate . ' 00:00:00');
+        $endStamp   = strtotime($endDate . ' 23:59:59');
+
+        $list = $this->violators->getViolatorList(
+            ['search' => $search, 'include_settled' => true],
+            500,
+            1
+        );
+
+        $rows        = [];   // every offense entry of the period, flat
+        $perViolator = [];   // one line per person for the period summary
+        $dayBuckets  = [];   // day => tickets, violators and money for that day
+        $years       = [(int) date('Y') => true];
+
+        foreach ($list['rows'] as $row) {
+            if (! empty($row['last_violation_at'])) {
+                $years[(int) date('Y', strtotime((string) $row['last_violation_at']))] = true;
+            }
+
+            $sheet = $this->buildReport((int) $row['id'], 'monthly', (int) date('Y', $startStamp), null);
+
+            if ($sheet === null) {
+                continue;
+            }
+
+            $entries  = 0;
+            $assessed = 0.0;
+            $paid     = 0.0;
+            $pending  = 0.0;
+            $tickets  = [];
+
+            foreach ($sheet['infractions'] as $infraction) {
+                $stamp = (int) $infraction['stamp'];
+
+                if ($stamp > 0) {
+                    $years[(int) date('Y', $stamp)] = true;
+                }
+
+                // Only the period's own apprehensions belong to this document.
+                if ($stamp <= 0 || $stamp < $startStamp || $stamp > $endStamp) {
+                    continue;
+                }
+
+                $entries++;
+
+                if ($infraction['status'] !== 'Cancelled') {
+                    $assessed += $infraction['amount'];
+                }
+
+                if ($infraction['status'] === 'Paid') {
+                    $paid += $infraction['amount'];
+                } elseif ($infraction['status'] === 'Pending') {
+                    $pending += $infraction['amount'];
+                }
+
+                $tickets[$infraction['ticket_id']] = true;
+
+                $dayKey = $infraction['day'];
+
+                $dayBuckets[$dayKey]['tickets'][$infraction['ticket_id']] = true;
+                $dayBuckets[$dayKey]['violators'][(int) $row['id']]       = true;
+                $dayBuckets[$dayKey]['entries']   = ($dayBuckets[$dayKey]['entries'] ?? 0) + 1;
+
+                if ($infraction['status'] !== 'Cancelled') {
+                    $dayBuckets[$dayKey]['assessed'] = ($dayBuckets[$dayKey]['assessed'] ?? 0) + $infraction['amount'];
+                }
+
+                if ($infraction['status'] === 'Pending') {
+                    $dayBuckets[$dayKey]['pending'] = ($dayBuckets[$dayKey]['pending'] ?? 0) + $infraction['amount'];
+                }
+
+                $rows[] = $infraction + [
+                    'violator_id'   => (int) $row['id'],
+                    'violator_name' => $sheet['fullName'],
+                    'plate'         => $sheet['plate'],
+                ];
+            }
+
+            if ($tickets !== []) {
+                $perViolator[] = [
+                    'name'          => $sheet['fullName'],
+                    'plate'         => $sheet['plate'],
+                    'apprehensions' => count($tickets),
+                    'entries'       => $entries,
+                    'assessed'      => $assessed,
+                    'paid'          => $paid,
+                    'pending'       => $pending,
+                ];
+            }
+        }
+
+        // ── Day by day: every date of the period, with its own figures ────
+        $daySummary = [];
+
+        $cursor    = strtotime($startDate . ' 00:00:00');
+        $cursorEnd = strtotime($endDate . ' 00:00:00');
+
+        while ($cursor <= $cursorEnd) {
+            $dayKey = date('Y-m-d', $cursor);
+            $day    = $dayBuckets[$dayKey] ?? [];
+
+            $daySummary[] = [
+                'label'         => date('M d, Y', $cursor),
+                'weekday'       => date('D', $cursor),
+                'apprehensions' => count($day['tickets'] ?? []),
+                'violators'     => count($day['violators'] ?? []),
+                'entries'       => (int) ($day['entries'] ?? 0),
+                'assessed'      => (float) ($day['assessed'] ?? 0),
+                'pending'       => (float) ($day['pending'] ?? 0),
+            ];
+
+            $cursor = strtotime('+1 day', $cursor);
+        }
+
+        // ── Apprehensions grouped by the day they happened ────────────────
+        usort($rows, static fn (array $a, array $b): int => $a['stamp'] <=> $b['stamp']);
+
+        $byDay = [];
+
+        foreach ($rows as $offense) {
+            $byDay[$offense['day']][] = $offense;
+        }
+
+        $dayDetail = [];
+
+        foreach ($byDay as $dayKey => $dayRows) {
+            $tickets    = [];
+            $violators  = [];
+            $assessed   = 0.0;
+            $pending    = 0.0;
+            $ticketRows = [];
+            $grouped    = [];
+
+            foreach ($dayRows as $offense) {
+                $tickets[$offense['ticket_id']]    = true;
+                $violators[$offense['violator_id']] = true;
+
+                if ($offense['status'] !== 'Cancelled') {
+                    $assessed += $offense['amount'];
+                }
+
+                if ($offense['status'] === 'Pending') {
+                    $pending += $offense['amount'];
+                }
+
+                $grouped[$offense['ticket_id']][] = $offense;
+            }
+
+            uasort($grouped, static fn (array $a, array $b): int => ($a[0]['stamp'] ?? 0) <=> ($b[0]['stamp'] ?? 0));
+
+            foreach ($grouped as $ticketId => $group) {
+                $first = $group[0];
+
+                $types    = array_values(array_unique(array_map(static fn (array $r): string => $r['type'], $group)));
+                $statuses = array_values(array_unique(array_map(static fn (array $r): string => $r['status'], $group)));
+
+                $status = in_array('Pending', $statuses, true)
+                    ? 'Pending'
+                    : (in_array('Paid', $statuses, true) ? 'Paid' : 'Cancelled');
+
+                $amount = 0.0;
+
+                foreach ($group as $entry) {
+                    if ($entry['status'] !== 'Cancelled') {
+                        $amount += $entry['amount'];
+                    }
+                }
+
+                $locations = array_values(array_unique(array_filter(array_map(static fn (array $r): string => $r['location'], $group))));
+
+                $ticketRows[] = [
+                    'date'      => $first['date'],
+                    'time'      => $first['time'],
+                    'ticket_id' => (string) $ticketId,
+                    'violator'  => $first['violator_name'],
+                    'plate'     => $first['plate'],
+                    'offenses'  => implode('; ', $types),
+                    'location'  => $locations === [] ? 'Not recorded' : implode('; ', $locations),
+                    'officer'   => $first['officer'] !== '' ? $first['officer'] : 'Not recorded',
+                    'amount'    => $amount,
+                    'status'    => $status,
+                ];
+            }
+
+            $dayDetail[] = [
+                'label'         => date('F d, Y', strtotime($dayKey)) . ' (' . date('D', strtotime($dayKey)) . ')',
+                'apprehensions' => count($tickets),
+                'violators'     => count($violators),
+                'entries'       => count($dayRows),
+                'assessed'      => $assessed,
+                'pending'       => $pending,
+                'rows'          => $ticketRows,
+            ];
+        }
+
+        usort($perViolator, static fn (array $a, array $b): int => $b['apprehensions'] <=> $a['apprehensions'] ?: strcasecmp($a['name'], $b['name']));
+
+        $totals = [
+            'apprehensions' => array_sum(array_column($perViolator, 'apprehensions')),
+            'entries'       => array_sum(array_column($perViolator, 'entries')),
+            'assessed'      => array_sum(array_column($perViolator, 'assessed')),
+            'paid'          => array_sum(array_column($perViolator, 'paid')),
+            'pending'       => array_sum(array_column($perViolator, 'pending')),
+            'violators'     => count($perViolator),
+            'active_days'   => count($dayDetail),
+        ];
+
+        $years = array_keys($years);
+        rsort($years);
+
+        // The requested year must always be selectable again from the toolbar.
+        if (! in_array((int) $year, $years, true)) {
+            $years[] = (int) $year;
+            rsort($years);
+        }
+
+        $periodName = match ($periodType) {
+            'weekly'  => 'Weekly',
+            'monthly' => 'Monthly',
+            default   => 'Custom Range',
+        };
+
+        $rangeLabel = $periodType === 'monthly'
+            ? date('F Y', $startStamp)
+            : date('M d, Y', $startStamp) . ' – ' . date('M d, Y', $endStamp);
+
+        $monthNames = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        return view('admin/violators/report_period', [
+            'title'        => $periodName . ' Violator Report',
+            'period_type'  => $periodType,
+            'period_name'  => $periodName,
+            'range_label'  => $rangeLabel,
+            'start_date'   => $startDate,
+            'end_date'     => $endDate,
+            'year'         => (string) (int) $year,
+            'month'        => (string) (int) $month,
+            'search'       => $search,
+            'years'        => $years,
+            'month_names'  => $monthNames,
+            'day_summary'  => $daySummary,
+            'day_detail'   => $dayDetail,
+            'per_violator' => $perViolator,
+            'totals'       => $totals,
+            'back_url'     => base_url('reports/violators'),
         ]);
     }
 

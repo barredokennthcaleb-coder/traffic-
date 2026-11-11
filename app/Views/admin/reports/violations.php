@@ -1734,7 +1734,7 @@
     $jsonFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 ?>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= base_url('vendor/chart.js/chart.umd.min.js') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof Chart === 'undefined') return;

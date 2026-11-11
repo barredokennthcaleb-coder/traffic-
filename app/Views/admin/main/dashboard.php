@@ -1243,7 +1243,7 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= base_url('vendor/chart.js/chart.umd.min.js') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize Bootstrap Tooltips

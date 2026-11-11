@@ -509,6 +509,7 @@
      CSRF-protected form that posts the deletion is kept here. -->
 <form id="deleteTicketForm" method="POST" class="d-none"><?= csrf_field() ?></form>
 
+<?= $this->include('officer/partials/tct_field_options') ?>
 <?= $this->include('officer/partials/edit_ticket_modal') ?>
 
 <style>

@@ -311,7 +311,7 @@
 </div>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('<?= base_url('vendor/inter/inter.css') ?>');
 .ht-page{font-family:'Inter',system-ui,sans-serif;padding:1.5rem 1.75rem 2rem;background:#f8fafc;min-height:100vh;}
 .ht-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;}
 .ht-header-left{display:flex;align-items:center;gap:.85rem;}

@@ -13,14 +13,23 @@
     <title><?= $this->renderSection('title', true) ?> - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('vendor/sweetalert2/sweetalert2.min.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('vendor/inter/inter.css') ?>">
     
     <style>
+        /* Mobile: keep form controls at >=16px so iOS Safari does not zoom in
+           when a field is focused and the keyboard opens. */
+        @media (max-width: 767.98px) {
+            input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+            select,
+            textarea,
+            .form-control,
+            .form-select {
+                font-size: 16px !important;
+            }
+        }
         :root {
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
@@ -2943,8 +2952,9 @@
 </div>
 
 <!-- Core Vendor Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('vendor/sweetalert2/sweetalert2.all.min.js') ?>"></script>
+<script src="<?= base_url('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('js/mobile-print.js?v=2') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Every dialog opens without the page jumping underneath it: SweetAlert

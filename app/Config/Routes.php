@@ -107,6 +107,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('reports/violators', 'Admin\ViolatorController::directory');
     // Full calendar year, all violators, month by month
     $routes->get('reports/violators/year', 'Admin\ViolatorController::yearReport');
+    // One period at a time — weekly, monthly or a custom range — all violators
+    $routes->get('reports/violators/period', 'Admin\ViolatorController::periodReport');
     // Old "all violators" address still sits in open tabs and bookmarks
     $routes->get('reports/violators/all', 'Admin\ViolatorController::yearReport');
     $routes->get('reports/export-csv', 'Admin\AdminController::exportReportCsv');

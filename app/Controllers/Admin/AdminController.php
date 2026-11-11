@@ -1,9 +1,11 @@
+
 <?php
 
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Libraries\CitationReportGrouper;
+use App\Libraries\ReportPeriod;
 use App\Libraries\ViolatorIdentity;
 use App\Models\UserModel;
 use App\Models\ViolationTypeModel;
@@ -164,7 +166,7 @@ class AdminController extends BaseController
         // an unfiltered dump of every result; now the toolbar waits for
         // Weekly / Monthly / Full Year and the document appears with it.
         $periodType     = (string) ($this->request->getGet('period_type') ?? '');
-        $awaitingFilter = ! in_array($periodType, ['weekly', 'monthly', 'yearly', 'custom'], true);
+        $awaitingFilter = ! ReportPeriod::isValid($periodType);
         $periodType     = $awaitingFilter ? 'yearly' : $periodType;
 
         $status     = $this->request->getGet('status');
@@ -230,7 +232,7 @@ class AdminController extends BaseController
         // Same rule as the revenue report: nothing is rendered until a period
         // is chosen, so the page never opens on a full-year result set.
         $periodType     = (string) ($this->request->getGet('period_type') ?? '');
-        $awaitingFilter = ! in_array($periodType, ['weekly', 'monthly', 'yearly', 'custom'], true);
+        $awaitingFilter = ! ReportPeriod::isValid($periodType);
         $periodType     = $awaitingFilter ? 'yearly' : $periodType;
 
         $status     = $this->request->getGet('status');
@@ -606,52 +608,15 @@ class AdminController extends BaseController
      * Resolves startDate, endDate, year, and month from query-string parameters
      * based on the given period type.
      *
-     * Centralises date logic so that reports(), violationsReport(),
-     * exportViolationsCsv(), and exportReportCsv() all share one implementation,
-     * eliminating the four previously copy-pasted blocks.
+     * The rules live in App\Libraries\ReportPeriod so that reports(),
+     * violationsReport(), exportViolationsCsv(), exportReportCsv() — and the
+     * Violator Reports under reports/violators — all share one implementation.
      *
      * @return array{startDate: string, endDate: string, year: string, month: string}
      */
     private function resolveDateRange(string $periodType): array
     {
-        $startDate = $this->request->getGet('start_date');
-        $endDate   = $this->request->getGet('end_date');
-        $year      = date('Y');
-        $month     = date('m');
-
-        if ($periodType === 'yearly') {
-            $year      = $this->request->getGet('year') ?? date('Y');
-            $startDate = "$year-01-01";
-            $endDate   = "$year-12-31";
-
-        } elseif ($periodType === 'monthly') {
-            $monthYear = $this->request->getGet('month_year');
-            if (!empty($monthYear) && preg_match('/^(\d{4})-(\d{2})$/', $monthYear, $mMatches)) {
-                $year  = $mMatches[1];
-                $month = $mMatches[2];
-            } else {
-                $month = $this->request->getGet('month') ? sprintf('%02d', (int)$this->request->getGet('month')) : date('m');
-                $year  = $this->request->getGet('year') ? (string)(int)$this->request->getGet('year') : date('Y');
-            }
-            $startDate = date('Y-m-d', strtotime("$year-$month-01"));
-            $endDate   = date('Y-m-t', strtotime($startDate));
-
-        } elseif ($periodType === 'weekly') {
-            $weekRef   = $this->request->getGet('start_date') ?: date('Y-m-d');
-            $ts        = strtotime($weekRef);
-            $dow       = (int) date('N', $ts); // 1 = Mon … 7 = Sun (ISO-8601)
-            $startDate = date('Y-m-d', strtotime('-' . ($dow - 1) . ' days', $ts));
-            $endDate   = date('Y-m-d', strtotime('+' . (7 - $dow) . ' days', $ts));
-
-        } else {
-            // custom range — fall back to current month if nothing was supplied
-            if (empty($startDate) || empty($endDate)) {
-                $startDate = date('Y-m-01');
-                $endDate   = date('Y-m-t');
-            }
-        }
-
-        return compact('startDate', 'endDate', 'year', 'month');
+        return ReportPeriod::resolve($this->request, $periodType);
     }
 
     /**

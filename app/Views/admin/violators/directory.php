@@ -19,10 +19,61 @@
             <a href="<?= base_url('reports') ?>" class="vdr-back">
                 <i class="bi bi-arrow-left"></i><span>Reports</span>
             </a>
-            <a href="<?= base_url('reports/violators/year' . ($search !== '' ? '?search=' . urlencode($search) : '')) ?>"
-               class="vdr-all" title="The whole calendar year for every violator, month by month">
-                <i class="bi bi-calendar-range"></i><span>Full-year report</span>
-            </a>
+            <!-- Report Type: the same four periods the Reports module reads —
+                 weekly, monthly, full year and a custom range — so any of
+                 them can be asked for straight from the directory. -->
+            <form method="get" action="<?= base_url('reports/violators/period') ?>" class="vdr-report" id="vdrReportForm">
+                <?php if ($search !== ''): ?>
+                    <input type="hidden" name="search" value="<?= esc($search) ?>">
+                <?php endif; ?>
+
+                <label for="period_type" class="vdr-report-label">Report Type</label>
+
+                <select name="period_type" id="period_type" class="vdr-select" required
+                        onchange="vdrTogglePeriod(this.value)">
+                    <option value="" selected disabled>— Choose report type —</option>
+                    <option value="weekly">Weekly Report</option>
+                    <option value="monthly">Monthly Report</option>
+                    <option value="yearly">Full Year Report</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+
+                <span class="vdr-period" data-period="weekly" style="display:none;">
+                    <input type="date" name="start_date" class="vdr-date" aria-label="Week starting date"
+                           value="<?= date('Y-m-d') ?>" title="Week starting date (the week runs Monday to Sunday)" disabled>
+                </span>
+
+                <span class="vdr-period" data-period="monthly" style="display:none;">
+                    <select name="month" class="vdr-mini" aria-label="Month" disabled>
+                        <?php for ($mNo = 1; $mNo <= 12; $mNo++): ?>
+                            <option value="<?= $mNo ?>" <?= $mNo === (int) date('n') ? 'selected' : '' ?>><?= date('M', mktime(0, 0, 0, $mNo, 1)) ?></option>
+                        <?php endfor; ?>
+                    </select>
+                    <select name="year" class="vdr-mini" aria-label="Year" disabled>
+                        <?php foreach ($years as $y): ?>
+                            <option value="<?= (int) $y ?>" <?= (int) $y === (int) date('Y') ? 'selected' : '' ?>><?= (int) $y ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </span>
+
+                <span class="vdr-period" data-period="yearly" style="display:none;">
+                    <select name="year" class="vdr-mini" aria-label="Year" disabled>
+                        <?php foreach ($years as $y): ?>
+                            <option value="<?= (int) $y ?>" <?= (int) $y === (int) date('Y') ? 'selected' : '' ?>><?= (int) $y ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </span>
+
+                <span class="vdr-period" data-period="custom" style="display:none;">
+                    <input type="date" name="start_date" class="vdr-date" aria-label="Range start" disabled>
+                    <span class="vdr-dash">&ndash;</span>
+                    <input type="date" name="end_date" class="vdr-date" aria-label="Range end" disabled>
+                </span>
+
+                <button type="submit" class="vdr-generate">
+                    <i class="bi bi-file-earmark-bar-graph"></i><span>Generate</span>
+                </button>
+            </form>
             <form method="get" action="<?= base_url('reports/violators') ?>" class="vdr-search">
                 <i class="bi bi-search"></i>
                 <input type="search" name="search" value="<?= esc($search) ?>"
@@ -226,15 +277,37 @@
     text-decoration: none; white-space: nowrap;
 }
 
-.vdr-all {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: .5rem 1rem; border-radius: 10px;
-    border: 1px solid #cbd5e1;
-    background: #f8fafc;
-    color: #334155;
-    font-size: .85rem; font-weight: 700; text-decoration: none;
+.vdr-report {
+    display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    border: 1px solid var(--border-soft, #e2e8f0);
+    background: var(--surface-card, #fff);
+    border-radius: 10px; padding: .3rem .35rem .3rem .7rem;
 }
-.vdr-all:hover { border-color: #93c5fd; color: #1d4ed8; }
+.vdr-report-label {
+    margin: 0; font-size: .68rem; font-weight: 800;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--text-muted, #64748b);
+}
+.vdr-select {
+    border: 0; background: transparent; outline: none;
+    font-size: .85rem; font-weight: 700; color: var(--text-body, #334155);
+    max-width: 175px;
+}
+.vdr-select:invalid { color: var(--text-subtle, #94a3b8); font-weight: 600; }
+.vdr-period { display: inline-flex; align-items: center; gap: 4px; }
+.vdr-date, .vdr-mini {
+    border: 1px solid var(--border-soft, #e2e8f0); border-radius: 7px;
+    background: var(--surface-muted, #f8fafc);
+    font-size: .8rem; color: var(--text-body, #334155);
+    padding: .28rem .45rem;
+}
+.vdr-dash { color: var(--text-subtle, #94a3b8); }
+.vdr-generate {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 0; border-radius: 7px; padding: .32rem .8rem;
+    background: #1d4ed8; color: #fff; font-size: .78rem; font-weight: 700;
+}
+.vdr-generate:hover { background: #1e40af; }
 
 .vdr-empty { padding: 38px 14px; text-align: center; color: var(--text-muted, #64748b); }
 .vdr-empty i { display: block; font-size: 1.5rem; margin-bottom: 6px; color: #94a3b8; }
@@ -259,7 +332,26 @@
     .vdr-table td.text-center, .vdr-table td.text-end { text-align: left; }
     .vdr-table td.text-center::before, .vdr-table td.text-end::before { display: none; }
     .vdr-search input { width: 150px; }
+
+    .vdr-report { width: 100%; }
+    .vdr-select { max-width: none; flex: 1; }
 }
 </style>
+
+<script>
+// One period box at a time: only the fields of the chosen report type stay
+// enabled, so the GET that generates the report carries just that period.
+function vdrTogglePeriod(type) {
+    document.querySelectorAll('#vdrReportForm .vdr-period').forEach(function (box) {
+        var active = box.getAttribute('data-period') === type;
+
+        box.style.display = active ? 'inline-flex' : 'none';
+
+        box.querySelectorAll('input, select').forEach(function (field) {
+            field.disabled = !active;
+        });
+    });
+}
+</script>
 
 <?= $this->endSection() ?>

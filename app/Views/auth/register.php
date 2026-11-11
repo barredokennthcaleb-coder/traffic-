@@ -6,8 +6,8 @@
     <title>Register - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
         body {
             background: radial-gradient(circle at 10% 20%, #28c4b5 0%, #1a9f95 40%, #127f7a 100%);
@@ -340,7 +340,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 <script>
     let isPasswordValid = false;
     let isPasswordMatch = false;

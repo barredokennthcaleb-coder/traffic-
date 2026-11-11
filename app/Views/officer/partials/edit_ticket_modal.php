@@ -92,7 +92,11 @@
                             <div class="tct-row align-items-end">
                                 <div class="d-flex flex-1 align-items-end me-3">
                                     <span class="tct-bold-label me-1">Vehicle</span>
-                                    <input type="text" name="vehicle_type" id="edit_vehicle_type" class="form-control form-control-sm tct-input flex-1 fw-bold" list="vehicleTypeOptions" placeholder="e.g. Tricycle">
+                                    <div class="combo-wrap flex-1">
+                                        <input type="text" name="vehicle_type" id="edit_vehicle_type" class="form-control form-control-sm tct-input fw-bold" data-combo-source="vehicleTypeOptions" autocomplete="off" placeholder="e.g. Tricycle">
+                                        <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show vehicle suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
+                                        <div class="combo-list" hidden></div>
+                                    </div>
                                 </div>
                                 <div class="d-flex flex-1 align-items-end me-3">
                                     <span class="tct-bold-label me-1">Owner:</span>
@@ -139,8 +143,12 @@
                                 <div class="col-md-12">
                                     <div class="d-flex align-items-center">
                                         <span class="tct-bold-label me-2">Place <span class="text-danger">*</span>:</span>
-                                        <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input flex-1"
-                                               required list="locationOptions" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
+                                        <div class="combo-wrap flex-1">
+                                            <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input"
+                                                   required data-combo-source="locationOptions" autocomplete="off" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
+                                            <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show place suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
+                                            <div class="combo-list" hidden></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

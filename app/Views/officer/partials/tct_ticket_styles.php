@@ -294,3 +294,83 @@
             width: 100%;
         }
     }
+
+    /* ── Combo pickers (Vehicle / Place) ──────────────────────────────
+       A tap-friendly suggestion list for fields that used to rely on a
+       native <datalist>, which phones cannot open. Typing still filters
+       the list and any custom value can be entered as before. */
+    .combo-wrap {
+        position: relative;
+        min-width: 0;
+    }
+    .combo-wrap .form-control {
+        width: 100%;
+        padding-right: 2.1rem !important;
+    }
+    .combo-toggle {
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        bottom: 2px;
+        width: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        background: transparent;
+        color: #475569;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 0.85rem;
+    }
+    .combo-toggle:hover {
+        background: #eff6ff;
+        color: #0052cc;
+    }
+    .combo-toggle i {
+        pointer-events: none;
+    }
+    .combo-list {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 4px);
+        z-index: 1080;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+        max-height: 15rem;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0.25rem;
+        text-align: left;
+    }
+    .combo-list[hidden] {
+        display: none;
+    }
+    .combo-option {
+        display: block;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        border-radius: 7px;
+        padding: 0.6rem 0.7rem;
+        text-align: left;
+        font-size: 0.92rem;
+        color: #1e293b;
+        cursor: pointer;
+        line-height: 1.3;
+    }
+    .combo-option:hover,
+    .combo-option:focus,
+    .combo-option:active {
+        background: #eff6ff;
+        color: #0052cc;
+    }
+    .combo-empty {
+        padding: 0.6rem 0.7rem;
+        font-size: 0.85rem;
+        color: #64748b;
+        font-style: italic;
+    }

@@ -649,7 +649,9 @@
     window.addEventListener('load', function () {
         // Short delay to ensure rendering is complete
         setTimeout(() => {
-            window.print();
+            // On iOS the dialog only opens from a user tap; the helper shows
+            // a "Tap to Print" button there instead of failing silently.
+            if (window.TrafficPrint) { window.TrafficPrint.autoOrPrompt(); } else { window.print(); }
         }, 500);
     });
     

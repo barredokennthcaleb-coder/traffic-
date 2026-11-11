@@ -6,8 +6,8 @@
     <title>Login - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
+    <link href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -168,7 +168,8 @@
                 margin-bottom: 0.35rem;
             }
             .form-control {
-                font-size: 0.9rem;
+                /* 16px minimum stops iOS Safari from auto-zooming when typing */
+                font-size: 16px;
                 padding: 0.68rem 0.78rem;
             }
             .btn-login,
@@ -225,6 +226,9 @@
                            required 
                            value="<?= esc(old('email')) ?>"
                            autocomplete="email"
+                           autocapitalize="none"
+                           autocorrect="off"
+                           spellcheck="false"
                            list="emailSuggestions">
                     <datalist id="emailSuggestions"></datalist>
                 </div>
@@ -236,7 +240,10 @@
                     <input type="password" name="password" class="form-control" id="password" 
                            placeholder="Enter your password" 
                            required
-                           autocomplete="current-password">
+                           autocomplete="current-password"
+                           autocapitalize="none"
+                           autocorrect="off"
+                           spellcheck="false">
                     <span class="input-group-text password-toggle" onclick="togglePassword()">
                         <i class="bi bi-eye" id="toggleIcon"></i>
                     </span>
@@ -263,7 +270,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 <script>
     function togglePassword() {
         const passwordInput = document.getElementById('password');

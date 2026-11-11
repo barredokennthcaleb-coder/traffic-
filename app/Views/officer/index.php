@@ -31,32 +31,10 @@
     <?php endif; ?>
 
     <!-- Record Violation Modal -->
-    <!-- Suggestions for the vehicle field. A tricycle is the common case here, but
-         the officer can type any make or model, so a specific unit is recorded. -->
-    <datalist id="vehicleTypeOptions">
-        <!-- ── Commonly Used Tricycles (Kabankalan City / Philippines) ── -->
-        <option value="Tricycle - Honda TMX 155"></option>
-        <option value="Tricycle - Kawasaki Barako 175"></option>
-        <option value="Tricycle - Bajaj 125"></option>
-        <option value="Tricycle - Honda TMX 125 Alpha"></option>
-        <option value="Tricycle - Honda XRM 125"></option>
-        <option value="Tricycle - Yamaha YTX 125"></option>
-        <option value="Tricycle - Kawasaki CT100B"></option>
-        <option value="Tricycle - Suzuki Smash 115"></option>
-        <option value="Tricycle - Suzuki GD110"></option>
-        <option value="Tricycle - TVS Max / Apache"></option>
-        <option value="Tricycle - Bajaj RE"></option>
-        <option value="Tricycle"></option>
-        <!-- ── Other Vehicle Types ── -->
-        <option value="Motorcycle"></option>
-        <option value="Car"></option>
-        <option value="Van"></option>
-        <option value="SUV"></option>
-        <option value="Jeepney"></option>
-        <option value="Bus"></option>
-        <option value="Truck"></option>
-        <option value="Mitsubishi L300"></option>
-    </datalist>
+    <!-- Vehicle / Place suggestions live in one shared partial so the record
+         form, the edit modal and the violator record page all agree on them
+         (and phones get a picker that can actually be opened). -->
+    <?= $this->include('officer/partials/tct_field_options') ?>
 
     <div class="modal fade" id="recordViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="recordViolationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -167,11 +145,16 @@
                                 <div class="tct-row align-items-end">
                                     <div class="d-flex flex-1 align-items-end me-3">
                                         <span class="tct-bold-label me-1">Vehicle</span>
-                                        <input type="text" name="vehicle_type" id="vehicle_type" 
-                                               class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               list="vehicleTypeOptions"
-                                               placeholder="e.g. Tricycle - Honda TMX 155" 
-                                               value="<?= esc(old('vehicle_type', $prefill['vehicle_type'] ?? '')) ?>">
+                                        <div class="combo-wrap flex-1">
+                                            <input type="text" name="vehicle_type" id="vehicle_type" 
+                                                   class="form-control form-control-sm tct-input fw-bold" 
+                                                   data-combo-source="vehicleTypeOptions"
+                                                   autocomplete="off"
+                                                   placeholder="e.g. Tricycle - Honda TMX 155" 
+                                                   value="<?= esc(old('vehicle_type', $prefill['vehicle_type'] ?? '')) ?>">
+                                            <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show vehicle suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
+                                            <div class="combo-list" hidden></div>
+                                        </div>
                                     </div>
                                     <div class="d-flex flex-1 align-items-end me-3">
                                         <span class="tct-bold-label me-1">Owner:</span>
@@ -246,17 +229,15 @@
                                 <div class="tct-row align-items-end mb-3">
                                     <div class="d-flex flex-1 align-items-end me-4">
                                         <span class="tct-bold-label me-1">Place:</span>
-                                        <input type="text" name="location" id="location" 
-                                               class="form-control form-control-sm tct-input flex-1 fw-bold"
-                                               required list="locationOptions" placeholder="e.g. Ceres Terminal, Kabankalan City"
-                                               value="<?= esc(old('location')) ?>">
-                                        <datalist id="locationOptions">
-                                            <option value="Ceres Terminal, Kabankalan City">
-                                            <option value="Biyarin, Kabankalan City">
-                                            <?php foreach (kabankalan_areas() as $brgy): ?>
-                                            <option value="<?= esc($brgy) ?>, Kabankalan City">
-                                            <?php endforeach; ?>
-                                        </datalist>
+                                        <div class="combo-wrap flex-1">
+                                            <input type="text" name="location" id="location" 
+                                                   class="form-control form-control-sm tct-input fw-bold"
+                                                   required data-combo-source="locationOptions" autocomplete="off"
+                                                   placeholder="e.g. Ceres Terminal, Kabankalan City"
+                                                   value="<?= esc(old('location')) ?>">
+                                            <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show place suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
+                                            <div class="combo-list" hidden></div>
+                                        </div>
                                     </div>
                                     <div class="d-flex flex-1 align-items-end">
                                         <span class="tct-bold-label me-1">Date &amp; Time</span>
@@ -2394,6 +2375,14 @@
 <?= $this->section('scripts') ?>
 <script>
     function printTicket(url) {
+        // iOS Safari cannot run window.print() inside a hidden iframe, so on
+        // phones the ticket opens in this tab instead; it triggers the print
+        // dialog itself and the Back button returns here.
+        if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '')) {
+            window.location.href = url;
+            return;
+        }
+
         // Remove existing print iframe if it exists
         const existing = document.getElementById('print-iframe');
         if (existing) existing.remove();

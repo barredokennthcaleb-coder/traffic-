@@ -241,7 +241,7 @@
 </div>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('<?= base_url('vendor/inter/inter.css') ?>');
 
 /* ── PAGE WRAPPER ───────────────────────────────────────────── */
 .pay-page {
