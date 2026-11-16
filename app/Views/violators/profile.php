@@ -96,7 +96,7 @@
 
     <!-- ═══ OUTCOME HERO — the same banner language as the enforcer profile,
          re-aimed at this violator's standing on record ═══ -->
-    <div class="vp-hero premium-reveal" style="--reveal-delay:0s;">
+    <div class="vp-hero premium-reveal<?= $sanctionCount >= 3 ? ' is-third-sanction' : '' ?>" style="--reveal-delay:0s;">
         <div class="vp-hero-orb vp-hero-orb-1"></div>
         <div class="vp-hero-orb vp-hero-orb-2"></div>
         <div class="vp-hero-orb vp-hero-orb-3"></div>
@@ -140,7 +140,21 @@
                     </span>
                 </div>
                 <div class="vp-hero-meta">
-                    <span class="badge sanction-level <?= $sanctionCount >= 3 ? 'sanction-level--third' : ($sanctionCount === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record"><i class="bi bi-patch-check me-1"></i><?= esc(sanction_label($sanctionCount)) ?></span>
+                                            <span class="badge sanction-level <?= $sanctionCount >= 3 ? 'sanction-level--third' : ($sanctionCount === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record"><?php if ($sanctionCount >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc(sanction_label($sanctionCount)) ?></span>
+                    <?php if ($sanctionCount >= 2): ?>
+                        <?php
+                            $warningText = $sanctionCount >= 3
+                                ? 'License at risk'
+                                : 'Last sanction';
+                            $warningTitle = $sanctionCount >= 3
+                                ? sprintf('%s on record — one sanction per apprehension; the three-strike rule can revoke the driver\'s license.', esc(sanction_label($sanctionCount)))
+                                : 'Second sanction on record — the next violation can put the driver\'s license in danger.';
+                        ?>
+                        <span class="sanction-warning" tabindex="0"
+                              title="<?= esc($warningTitle, 'attr') ?>">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i><?= esc($warningText) ?><span class="sanction-exclaim" aria-hidden="true">!</span>
+                        </span>
+                    <?php endif; ?>
                     <?php if ($license !== '' && ! $isPlaceholder($license)): ?>
                         <span><i class="bi bi-person-badge me-1"></i>DL: <?= esc($license) ?></span>
                     <?php endif; ?>
@@ -149,9 +163,6 @@
                     <?php endif; ?>
                     <?php if ($address !== ''): ?>
                         <span><i class="bi bi-geo-alt me-1"></i><?= esc($address) ?></span>
-                    <?php endif; ?>
-                    <?php if (! empty($violator['age'])): ?>
-                        <span><i class="bi bi-calendar3 me-1"></i><?= (int) $violator['age'] ?> years old</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -256,7 +267,11 @@
 
                                 <div class="vp-ticket-meta">
                                     <span><i class="bi bi-geo-alt me-1"></i><?= esc($ticket['location'] !== '' ? $ticket['location'] : 'Location not recorded') ?></span>
-                                    <span><i class="bi bi-person-badge me-1"></i><?= esc($ticket['officer_name'] !== '' ? $ticket['officer_name'] : 'Officer not recorded') ?></span>
+                                    <span class="vp-ticket-enforcer" title="Enforcer who recorded this ticket">
+                                        <i class="bi bi-shield-check"></i>
+                                        <span class="vp-ticket-enforcer-label">Enforcer:</span>
+                                        <?= esc($ticket['officer_name'] !== '' ? $ticket['officer_name'] : 'Not recorded') ?>
+                                    </span>
                                     <?php if (! empty($ticket['receipt_number'])): ?>
                                         <span title="Official Receipt (OR) number"><i class="bi bi-receipt me-1"></i>OR (Official Receipt): <?= esc($ticket['receipt_number']) ?></span>
                                     <?php endif; ?>
@@ -371,7 +386,10 @@
                             // not be clobbered by this loop.
                             foreach ($vehicles as $vehicleRow): ?>
                             <div class="vp-vehicle">
-                                <div class="vp-vehicle-plate"><?= esc($vehicleRow['plate']) ?></div>
+                                <div class="vp-vehicle-id">
+                                    <span class="vp-vehicle-label">Plate no.</span>
+                                    <div class="vp-vehicle-plate"><?= esc($vehicleRow['plate']) ?></div>
+                                </div>
                                 <div class="vp-vehicle-meta">
                                     <span><?= (int) $vehicleRow['count'] ?> ticket<?= (int) $vehicleRow['count'] === 1 ? '' : 's' ?></span>
                                     <?php if (! empty($vehicleRow['last_seen'])): ?>
@@ -388,7 +406,7 @@
                 <div class="vp-section-head">
                     <div>
                         <div class="vp-section-title"><i class="bi bi-info-circle me-2"></i>Identity Details</div>
-                        <div class="vp-section-sub">Matching uses licence, then name + plate.</div>
+                        <div class="vp-section-sub">Matching uses license, then name + plate.</div>
                     </div>
                 </div>
                 <div class="vp-detail-list">
@@ -397,12 +415,8 @@
                         <span class="vp-detail-value"><?= esc($fullName) ?></span>
                     </div>
                     <div class="vp-detail-row">
-                        <span class="vp-detail-label">Licence no.</span>
+                        <span class="vp-detail-label">License no.</span>
                         <span class="vp-detail-value"><?= esc($license !== '' && ! $isPlaceholder($license) ? $license : 'Not provided') ?></span>
-                    </div>
-                    <div class="vp-detail-row">
-                        <span class="vp-detail-label">Primary plate</span>
-                        <span class="vp-detail-value"><?= esc($plate !== '' && ! $isPlaceholder($plate) ? strtoupper($plate) : 'Not provided') ?></span>
                     </div>
                     <?php if ($vehicle !== '' && ! $isPlaceholder($vehicle)): ?>
                     <div class="vp-detail-row">
@@ -419,10 +433,6 @@
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">Address</span>
                         <span class="vp-detail-value"><?= esc($address !== '' ? $address : 'Not provided') ?></span>
-                    </div>
-                    <div class="vp-detail-row">
-                        <span class="vp-detail-label">Age</span>
-                        <span class="vp-detail-value"><?= ! empty($violator['age']) ? (int) $violator['age'] : 'Not provided' ?></span>
                     </div>
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">Owner</span>
@@ -493,7 +503,7 @@
 .vp-avatar-spinner { position:absolute; inset:0; border-radius:50%; background:rgba(15,23,42,.78); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:4; }
 .vp-outcome-dot { position:absolute; bottom:4px; right:4px; width:18px; height:18px; border-radius:50%; border:3px solid #fff; z-index:5; }
 .vp-outcome-dot--paid { background:#4ade80; box-shadow:0 0 10px rgba(74,222,128,.85); }
-.vp-outcome-dot--pending { background:#fbbf24; box-shadow:0 0 10px rgba(251,191,36,.85); }
+.vp-outcome-dot--pending { background:#ef4444; box-shadow:0 0 10px rgba(239,68,68,.85); }
 .vp-outcome-dot--cancelled { background:#94a3b8; }
 
 .vp-hero-info { min-width:0; flex:1 1 320px; }
@@ -501,7 +511,7 @@
 .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#1d4ed8; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
 .vp-hero-outcome { display:inline-flex; align-items:center; font-size:.73rem; font-weight:700; padding:.3rem .75rem; border-radius:20px; letter-spacing:.03em; text-transform:uppercase; }
 .vp-hero-outcome--paid { background:rgba(4,47,34,.55); border:1px solid rgba(167,243,208,.45); color:#a7f3d0; }
-.vp-hero-outcome--pending { background:rgba(69,26,3,.5); border:1px solid rgba(253,230,138,.5); color:#fde68a; }
+.vp-hero-outcome--pending { background:rgba(127,29,29,.55); border:1px solid rgba(254,202,202,.55); color:#fecaca; }
 .vp-hero-outcome--cancelled { background:rgba(15,23,42,.5); border:1px solid rgba(203,213,225,.4); color:#e2e8f0; }
 .vp-hero-meta { display:flex; flex-wrap:wrap; gap:.35rem 1.05rem; color:rgba(255,255,255,.82); font-size:.85rem; margin-top:.4rem; }
 .vp-hero-meta span { display:inline-flex; align-items:center; min-width:0; }
@@ -523,9 +533,104 @@
     color: #a16207;
 }
 .sanction-level--third {
-    background: #fee2e2;
+    background: #fef2f2;
     border-color: #fecaca;
-    color: #b91c1c;
+    color: #991b1b;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, .10);
+}
+/* The 3rd-sanction badge leads with a solid red exclamation mark, so the
+   escalation is read before the words are. */
+.sanction-badge-icon { display: none; }
+.sanction-level--third .sanction-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: .4rem;
+    border-radius: 50%;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: .78rem;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .16);
+    transform-origin: center;
+    animation: sanctionBadgeBeat 1.35s ease-in-out infinite;
+}
+/* Heartbeat on the mark itself: two soft beats per cycle, so the 3rd-sanction
+   badge reads as alive without the whole card moving. */
+@keyframes sanctionBadgeBeat {
+    0%, 26%, 58%, 100% { scale: 1;    box-shadow: 0 0 0 3px rgba(220, 38, 38, .16); }
+    12%                 { scale: 1.18; box-shadow: 0 0 0 6px rgba(220, 38, 38, .10); }
+    40%                 { scale: 1.12; box-shadow: 0 0 0 5px rgba(220, 38, 38, .12); }
+}
+.sanction-level--third .bi-patch-check { display: none; }
+/* 3rd sanction or worse: the record is red on screen at rest, so the
+   escalation is visible without hovering. Hover adds a heartbeat pulse. */
+.vp-hero.is-third-sanction {
+    background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #b91c1c 100%);
+    border-color: rgba(254, 202, 202, .5);
+    box-shadow: 0 12px 32px rgba(185, 28, 28, .32);
+    transition: border-color .28s ease, box-shadow .28s ease;
+}
+.vp-hero.is-third-sanction .sanction-level--third {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, .12), 0 4px 14px rgba(69, 10, 10, .28);
+}
+/* The detail line carries the license, plate and address: on the red hero it
+   goes full white and a step heavier so the labels stay readable. */
+.vp-hero.is-third-sanction .vp-hero-meta {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: .9rem;
+}
+.vp-hero.is-third-sanction .vp-hero-meta i { opacity: 1; }
+.vp-hero.is-third-sanction .vp-hero-plate { color: #b91c1c; }
+.vp-hero.is-third-sanction .vp-hero-outcome {
+    background: rgba(69, 10, 10, .55);
+    border-color: rgba(254, 202, 202, .6);
+    color: #fecaca;
+}
+.vp-hero.is-third-sanction .vp-hero-orb-2 { background: rgba(248, 113, 113, .45); }
+
+/* The heartbeat belongs to the warning sign only: the license-at-risk chip
+   beats gently, and nothing else on the hero moves. */
+.sanction-warning {
+    transform-origin: center;
+    animation: sanctionChipBeat 1.35s ease-in-out infinite;
+}
+@keyframes sanctionChipBeat {
+    0%, 26%, 58%, 100% { scale: 1; }
+    12%                { scale: 1.07; }
+    40%                { scale: 1.04; }
+}
+
+/* Exclamation closes the wording, so it reads as part of the label. */
+.sanction-exclaim {
+    display: none;
+    margin-left: .22rem;
+    font-weight: 900;
+    font-size: 1.15em;
+    line-height: 1;
+}
+.sanction-warning .sanction-exclaim {
+    display: inline-block;
+    color: #ffffff;
+}
+
+/* No hover state for the escalated hero. The card is already red and its
+   glow already beats, so pointing at it or dragging across it must not
+   change anything (an earlier hover animation collided with .premium-reveal
+   and collapsed the card). */
+/* Reduced motion: keep the red state, drop the beats and the easing. */
+@media (prefers-reduced-motion: reduce) {
+    .vp-hero.is-third-sanction { transition: none; }
+    .vp-hero.is-third-sanction .sanction-level { transition: none; }
+    .sanction-warning { animation: none; }
+    .sanction-level--third .sanction-badge-icon { animation: none; }
 }
 :root[data-bs-theme="dark"] .sanction-level--first {
     background: rgba(52, 211, 153, .14);
@@ -542,18 +647,79 @@
     border-color: rgba(248, 113, 113, .3);
     color: #fca5a5;
 }
+/* Third sanction: a red warning sign beside the badge, visible at rest and
+   hover responsive — it lifts, and its triangle nudges, on hover or focus. */
+.sanction-warning {
+    display: inline-flex;
+    align-items: center;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: .28rem .65rem;
+    border-radius: 999px;
+    background: #dc2626;
+    border: 1px solid #991b1b;
+    color: #ffffff;
+    white-space: nowrap;
+    cursor: help;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, .45);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.sanction-warning:hover,
+.sanction-warning:focus-visible {
+    background: #b91c1c;
+    border-color: #7f1d1d;
+    color: #ffffff;
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, .65);
+    outline: 2px solid rgba(255, 255, 255, .65);
+    outline-offset: 1px;
+}
+.sanction-warning i { transition: transform .16s ease; }
+.sanction-warning:hover i,
+.sanction-warning:focus-visible i { animation: sanctionWarnNudge .5s ease; }
+@keyframes sanctionWarnNudge {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-14deg); }
+    60% { transform: rotate(12deg); }
+}
+/* The hero banner is blue in both themes, so the warning keeps a solid red
+   fill with white letters instead of a tint that would sink into it. */
+:root[data-bs-theme="dark"] .sanction-warning {
+    background: #dc2626;
+    border-color: #991b1b;
+    color: #ffffff;
+}
+:root[data-bs-theme="dark"] .sanction-warning:hover,
+:root[data-bs-theme="dark"] .sanction-warning:focus-visible {
+    background: #b91c1c;
+    border-color: #7f1d1d;
+    color: #ffffff;
+}
+@media (hover: none) {
+    .sanction-warning:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sanction-warning,
+    .sanction-warning i { transition: none !important; }
+    .sanction-warning:hover,
+    .sanction-warning:focus-visible { transform: none !important; }
+    .sanction-warning:hover i,
+    .sanction-warning:focus-visible i { animation: none !important; }
+}
+
 
 .vp-hero-hud { background:rgba(15,23,42,.45); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.18); border-radius:16px; padding:.75rem 1.25rem; display:flex; flex-direction:column; gap:.35rem; box-shadow:0 8px 24px rgba(0,0,0,.2); min-width:0; }
 .vp-hud-status { display:inline-flex; align-items:center; gap:.45rem; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; }
 .vp-hud-status--paid { color:#4ade80; }
-.vp-hud-status--pending { color:#fbbf24; }
+.vp-hud-status--pending { color:#fca5a5; }
 .vp-hud-status--cancelled { color:#cbd5e1; }
 .vp-radar-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 .vp-radar-dot--paid { background:#4ade80; box-shadow:0 0 0 0 rgba(74,222,128,.7); animation:vpRadar 1.8s infinite; }
-.vp-radar-dot--pending { background:#fbbf24; box-shadow:0 0 0 0 rgba(251,191,36,.7); animation:vpRadarAmber 1.8s infinite; }
+.vp-radar-dot--pending { background:#ef4444; box-shadow:0 0 0 0 rgba(239,68,68,.7); animation:vpRadarAmber 1.8s infinite; }
 .vp-radar-dot--cancelled { background:#94a3b8; }
 @keyframes vpRadar { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(74,222,128,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(74,222,128,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(74,222,128,0)} }
-@keyframes vpRadarAmber { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(251,191,36,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(251,191,36,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(251,191,36,0)} }
+@keyframes vpRadarAmber { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(239,68,68,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(239,68,68,0)} }
 .vp-hud-money { color:#fff; font-size:.95rem; display:flex; align-items:baseline; }
 .vp-hud-money small { color:rgba(255,255,255,.75); font-size:.72rem; }
 .vp-hud-last { color:rgba(255,255,255,.78); font-size:.72rem; display:flex; align-items:center; flex-wrap:wrap; }
@@ -574,13 +740,13 @@
 /* ── OUTCOME STRIP — the three numbers behind the banner ──────────────── */
 .vp-outcome-card { background:#fff; border:1px solid #f1f5f9; border-radius:16px; box-shadow:0 3px 12px rgba(15,23,42,.05); padding:.9rem 1rem; display:flex; align-items:center; gap:.85rem; height:100%; }
 .vp-outcome-icon { width:46px; height:46px; border-radius:12px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
-.vp-outcome-icon--pending { background:#fef9c3; color:#a16207; }
+.vp-outcome-icon--pending { background:#fee2e2; color:#b91c1c; }
 .vp-outcome-icon--paid { background:#dcfce7; color:#15803d; }
 .vp-outcome-icon--cancelled { background:#f1f5f9; color:#475569; }
 .vp-outcome-icon--info { background:#dbeafe; color:#1d4ed8; }
 .vp-outcome-label { display:block; font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
 .vp-outcome-value { display:block; font-size:1.05rem; font-weight:800; color:#0b1730; line-height:1.3; }
-.vp-outcome-value--pending { color:#a16207; }
+.vp-outcome-value--pending { color:#b91c1c; }
 .vp-outcome-value--paid { color:#15803d; }
 .vp-outcome-value--cancelled { color:#475569; }
 .vp-outcome-sub { display:block; font-size:.72rem; color:#52627a; margin-top:.1rem; overflow-wrap:anywhere; }
@@ -592,12 +758,12 @@
 .vp-section-sub { font-size:.82rem; color:#52627a; margin-top:.16rem; }
 .vp-count-badge { background:#eff6ff; border:1px solid #bfdbfe; color:#174ea6; font-size:.78rem; font-weight:800; border-radius:999px; padding:.28rem .7rem; white-space:nowrap; }
 
-.vp-status-dot { width:7px; height:7px; border-radius:50%; background:#ca8a04; box-shadow:0 0 6px rgba(202,138,4,.6); animation:vpPulse 2s infinite ease-in-out; }
+.vp-status-dot { width:7px; height:7px; border-radius:50%; background:#ef4444; box-shadow:0 0 6px rgba(239,68,68,.6); animation:vpPulse 2s infinite ease-in-out; }
 
 .vp-ticket-list { padding:.85rem; display:flex; flex-direction:column; gap:.75rem; }
 .vp-ticket { border:1px solid #e1e9f2; border-radius:12px; padding:.9rem 1rem; background:#fff; position:relative; transition:border-color .18s ease, box-shadow .18s ease; }
 .vp-ticket:hover { border-color:#b9d5ff; box-shadow:0 4px 14px rgba(15,23,42,.06); }
-.vp-ticket::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:3px; border-radius:0 3px 3px 0; background:#ca8a04; }
+.vp-ticket::before { content:''; position:absolute; left:0; top:12px; bottom:12px; width:3px; border-radius:0 3px 3px 0; background:#ef4444; }
 .vp-ticket--paid::before { background:#10b981; }
 .vp-ticket--cancelled::before { background:#ef4444; }
 .vp-ticket-head { display:flex; align-items:center; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
@@ -605,13 +771,18 @@
 .vp-ticket-id:hover { background:#dbeafe; border-color:#93c5fd; }
 .vp-ticket-id i:last-child { opacity:.55; font-size:.68rem; }
 .vp-ticket-status { display:inline-flex; align-items:center; gap:4px; font-size:.73rem; font-weight:800; border-radius:999px; padding:.28rem .65rem; text-transform:uppercase; letter-spacing:.04em; }
-.vp-ticket-status--pending { background:#fef9c3; color:#854d0e; border:1px solid #eab308; }
+.vp-ticket-status--pending { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
 .vp-ticket-status--paid { background:#ecfccb; color:#3f6212; border:1px solid #84cc16; }
 .vp-ticket-status--cancelled { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 .vp-ticket-date { font-size:.8rem; color:#475569; font-weight:650; white-space:nowrap; }
 .vp-ticket-date i { margin-right:.2rem; color:#0066cc; }
 .vp-ticket-meta { display:flex; flex-wrap:wrap; gap:.3rem .9rem; margin-top:.48rem; font-size:.8rem; color:#475569; }
 .vp-ticket-meta i { color:#64748b; }
+/* The apprehending enforcer is part of the citation's identity, so it reads
+   as a labelled violet badge instead of blending into the metadata line. */
+.vp-ticket-enforcer { display:inline-flex; align-items:center; gap:.35rem; background:#f5f3ff; border:1px solid #c4b5fd; color:#6d28d9; border-radius:999px; padding:.2rem .62rem; font-weight:700; }
+.vp-ticket-meta .vp-ticket-enforcer i { color:#7c3aed; }
+.vp-ticket-enforcer-label { font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.05em; opacity:.8; }
 
 .vp-infraction-table { margin-top:.6rem; border-top:1px dashed #e2e8f0; }
 .vp-infraction-row { display:flex; justify-content:space-between; align-items:center; gap:.75rem; padding:.48rem 0; border-bottom:1px dashed #e7edf5; font-size:.86rem; }
@@ -619,7 +790,7 @@
 .vp-infraction-name { color:#17243a; font-weight:650; display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
 .vp-infraction-dot { width:5px; height:5px; border-radius:50%; background:#ef4444; flex-shrink:0; }
 .vp-infraction-state { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; padding:.16rem .4rem; border-radius:5px; }
-.vp-infraction-state--pending { background:#fef9c3; color:#854d0e; }
+.vp-infraction-state--pending { background:#fee2e2; color:#991b1b; }
 .vp-infraction-state--paid { background:#ecfccb; color:#3f6212; }
 .vp-infraction-state--cancelled { background:#fef2f2; color:#b91c1c; }
 .vp-infraction-amount { min-width:92px; text-align:right; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.84rem; font-weight:800; color:#1e293b; white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -632,7 +803,7 @@
 .vp-total-label { display:block; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
 .vp-total-value { font-size:.86rem; font-weight:900; color:#1e293b; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
 .vp-total-value--paid { color:var(--vp-green-dark); }
-.vp-total-value--balance { color:#854d0e; }
+.vp-total-value--balance { color:#b91c1c; }
 .vp-total-value--clear { color:var(--text-subtle, #5c6b80); }
 .vp-ticket-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.35rem; }
 /* The row's tools sit apart from its money, so the eye reaches the figures
@@ -672,6 +843,8 @@
 .vp-side-empty i { font-size:1.4rem; color:#cbd5e1; }
 .vp-vehicle-list { padding:.85rem; display:flex; flex-direction:column; gap:.5rem; }
 .vp-vehicle { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.55rem .65rem; border:1px solid #eef2f7; border-radius:9px; background:#f8fafc; }
+.vp-vehicle-id { display:flex; flex-direction:column; gap:.25rem; min-width:0; }
+.vp-vehicle-label { font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; color:#52627a; }
 .vp-vehicle-plate { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-weight:900; font-size:.85rem; color:#0f172a; letter-spacing:.06em; background:#fff; border:1.5px solid #cbd5e1; border-radius:5px; padding:.12rem .45rem; }
 .vp-vehicle-meta { display:flex; flex-direction:column; align-items:flex-end; font-size:.76rem; color:#52627a; }
 
@@ -732,6 +905,14 @@
 :root[data-bs-theme="dark"] .vp-ticket-meta i {
     color: #94a3b8;
 }
+:root[data-bs-theme="dark"] .vp-ticket-enforcer {
+    background: #2e1065;
+    border-color: #5b21b6;
+    color: #c4b5fd;
+}
+:root[data-bs-theme="dark"] .vp-ticket-meta .vp-ticket-enforcer i {
+    color: #a78bfa;
+}
 :root[data-bs-theme="dark"] .vp-ticket-id,
 :root[data-bs-theme="dark"] .vp-count-badge {
     background: #172554;
@@ -745,7 +926,7 @@
 :root[data-bs-theme="dark"] .vp-outcome-value {
     color: #f8fafc;
 }
-:root[data-bs-theme="dark"] .vp-outcome-value--pending { color: #fbbf24; }
+:root[data-bs-theme="dark"] .vp-outcome-value--pending { color: #fca5a5; }
 :root[data-bs-theme="dark"] .vp-outcome-value--paid { color: #bef264; }
 :root[data-bs-theme="dark"] .vp-outcome-value--cancelled { color: #cbd5e1; }
 :root[data-bs-theme="dark"] .vp-ticket-id:hover {
@@ -768,7 +949,7 @@
     border-color: #334155;
 }
 :root[data-bs-theme="dark"] .vp-total-value--balance {
-    color: #fbbf24;
+    color: #fca5a5;
 }
 :root[data-bs-theme="dark"] .vp-action {
     background: #1e293b;
@@ -811,6 +992,7 @@
     border-color: #475569;
     color: #f8fafc;
 }
+:root[data-bs-theme="dark"] .vp-vehicle-label { color: #94a3b8; }
 :root[data-bs-theme="dark"] .vp-empty-icon {
     background: #1e293b;
     border-color: #334155;

@@ -2,7 +2,9 @@
 
 namespace Config;
 
+use App\Exceptions\DatabaseExceptionHandler;
 use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\Debug\ExceptionHandler;
 use CodeIgniter\Debug\ExceptionHandlerInterface;
 use Psr\Log\LogLevel;
@@ -101,6 +103,12 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
+        // Database *connection* failures get a calm fallback page instead of a
+        // developer stack trace (see App\Exceptions\DatabaseExceptionHandler).
+        if ($exception instanceof DatabaseException) {
+            return new DatabaseExceptionHandler();
+        }
+
         return new ExceptionHandler($this);
     }
 }

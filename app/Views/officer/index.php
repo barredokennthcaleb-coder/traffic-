@@ -46,7 +46,28 @@
                 <div class="modal-body p-3 p-md-4" style="background-color: #f8f9fa;">
                     <form action="<?= base_url('officer/store') ?>" method="POST" id="violationForm">
                         <?= csrf_field() ?>
-                        <?php $prefill = is_array($prefillViolator ?? null) ? $prefillViolator : []; ?>
+                        <?php
+                            $prefill = is_array($prefillViolator ?? null) ? $prefillViolator : [];
+
+                            // A person on the ledger can have no plate or MTOP on file
+                            // (an unregistered vehicle, a pedestrian case). Plate# is a
+                            // required field on the TCT, so a blank left the officer
+                            // staring at "Please fill out this field". Prefilled rows get
+                            // N/A for those two blanks; a brand-new violator still types
+                            // the real value.
+                            $prefillPlate   = trim((string) ($prefill['license_plate'] ?? ''));
+                            $prefillMtop    = trim((string) ($prefill['mtop_number'] ?? ''));
+                            $prefillLicense = trim((string) ($prefill['license_number'] ?? ''));
+                            if ($prefill !== []) {
+                                $prefillPlate   = $prefillPlate !== '' ? $prefillPlate : 'N/A';
+                                $prefillMtop    = $prefillMtop !== '' ? $prefillMtop : 'N/A';
+                                $prefillLicense = $prefillLicense !== '' ? $prefillLicense : 'N/A';
+                            }
+
+                            // Offense names this person was cited for before, so the
+                            // checklist can shade them while the officer fills the form.
+                            $prefillOffenses = array_map('strval', (array) ($prefillOffenses ?? []));
+                        ?>
                         <input type="hidden" name="submission_token" id="submission_token" value="<?= esc($submissionToken ?? '') ?>">
                         <input type="hidden" name="violator_id" id="violator_id" value="<?= esc(old('violator_id', $prefill['id'] ?? '')) ?>">
 
@@ -86,6 +107,11 @@
                                     } else {
                                         $newRecordName = tct_split_name($oldFirst, old('middle_name'), $oldLast, null);
                                     }
+                                    // A stored last name can already carry its suffix
+                                    // ("Dimagiba Jr."); the form shows the two parts in
+                                    // separate boxes so the officer can change either one.
+                                    $newRecordSuffix = tct_split_name_suffix($newRecordName['last']);
+                                    $newSuffixValue  = old('name_suffix', $newRecordSuffix['suffix']);
                                     ?>
                                     <div class="d-flex flex-1 gap-2" style="min-width: 0;">
                                         <div class="flex-1 d-flex flex-column text-center">
@@ -102,12 +128,19 @@
                                                    value="<?= esc($newRecordName['middle']) ?>">
                                             <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
                                         </div>
-                                        <div class="flex-1 d-flex flex-column text-center">
+                                        <div class="d-flex flex-column text-center" style="flex: 1.6; min-width: 0;">
                                             <input type="text" name="last_name" id="last_name"
                                                    class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;"
                                                    placeholder="Last" required
-                                                   value="<?= esc($newRecordName['last']) ?>">
+                                                   value="<?= esc($newRecordSuffix['last']) ?>">
                                             <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                                        </div>
+                                        <div class="d-flex flex-column text-center" style="width: 56px; flex-shrink: 0;">
+                                            <input type="text" name="name_suffix" id="name_suffix"
+                                                   class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;"
+                                                   placeholder="Suffix" maxlength="20" aria-label="Name suffix, e.g. Jr. or III"
+                                                   value="<?= esc($newSuffixValue) ?>">
+                                            <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Suffix)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -121,30 +154,30 @@
                                     <input type="hidden" name="age" id="age" value="<?= esc(old('age', $prefill['age'] ?? '25')) ?>">
                                 </div>
 
-                                <div class="tct-row mb-2 align-items-end">
-                                    <div class="d-flex flex-1 align-items-end me-3">
-                                        <span class="tct-bold-label me-1">DL/Permit No.</span>
+                                <div class="tct-form-grid tct-form-grid-3 mb-3">
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">DL/Permit No.</span>
                                         <input type="text" name="license_number" id="license_number" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="e.g. F02-00-123456" value="<?= esc(old('license_number', $prefill['license_number'] ?? '')) ?>">
+                                               placeholder="e.g. F02-00-123456" value="<?= esc(old('license_number', $prefillLicense)) ?>">
                                     </div>
-                                    <div class="d-flex flex-1 align-items-end me-3">
-                                        <span class="tct-bold-label me-1">Plate#</span>
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Plate#</span>
                                         <input type="text" name="license_plate" id="license_plate" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="e.g. ABC 1234" required value="<?= esc(old('license_plate', $prefill['license_plate'] ?? '')) ?>">
+                                               placeholder="e.g. ABC 1234" value="<?= esc(old('license_plate', $prefillPlate)) ?>">
                                     </div>
-                                    <div class="d-flex flex-1 align-items-end">
-                                        <span class="tct-bold-label me-1">MTOP#</span>
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">MTOP#</span>
                                         <input type="text" name="mtop_number" id="mtop_number" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
-                                               placeholder="e.g. 1234 (optional)" value="<?= esc(old('mtop_number', $prefill['mtop_number'] ?? '')) ?>">
+                                               placeholder="e.g. 1234 (optional)" value="<?= esc(old('mtop_number', $prefillMtop)) ?>">
                                     </div>
                                 </div>
 
-                                <div class="tct-row align-items-end">
-                                    <div class="d-flex flex-1 align-items-end me-3">
-                                        <span class="tct-bold-label me-1">Vehicle</span>
+                                <div class="tct-form-grid tct-form-grid-3">
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Vehicle</span>
                                         <div class="combo-wrap flex-1">
                                             <input type="text" name="vehicle_type" id="vehicle_type" 
                                                    class="form-control form-control-sm tct-input fw-bold" 
@@ -156,14 +189,14 @@
                                             <div class="combo-list" hidden></div>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-1 align-items-end me-3">
-                                        <span class="tct-bold-label me-1">Owner:</span>
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Owner:</span>
                                         <input type="text" name="owner_name" id="owner_name" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
                                                placeholder="e.g. Same as driver" value="<?= esc(old('owner_name', $prefill['owner_name'] ?? '')) ?>">
                                     </div>
-                                    <div class="d-flex flex-1 align-items-end">
-                                        <span class="tct-bold-label me-1">Address</span>
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Address</span>
                                         <input type="text" name="owner_address" id="owner_address" 
                                                class="form-control form-control-sm tct-input flex-1 fw-bold" 
                                                placeholder="e.g. Same as above" value="<?= esc(old('owner_address', $prefill['owner_address'] ?? '')) ?>">
@@ -173,7 +206,7 @@
 
                             <!-- Section 2: Violations Checklist -->
                             <div class="tct-doc-section">
-                                <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+                                <div class="tct-violations-head d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
                                     <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="badge bg-light text-dark border fw-bold" id="fineBadge" style="font-size: 0.82rem;">Fine: ₱<span id="penalty_amount_display">0.00</span></span>
@@ -185,11 +218,17 @@
                                 <div class="tct-sec-notice text-center mb-3">
                                     You are hereby charged/cited for comitting the violations marked "x" hereunder:
                                 </div>
+                                <div class="tct-prev-legend<?= $prefillOffenses === [] ? ' d-none' : '' ?>">
+                                    <i class="bi bi-bookmark-fill"></i> Shaded offenses are ones this driver was cited for before
+                                </div>
 
                                 <div class="tct-checklist-container" id="violationChecklist">
                                     <?php foreach ($violationTypes as $type): ?>
-                                        <?php $isChecked = in_array((string)$type['id'], (array)old('violation_type_id', []), true); ?>
-                                        <label class="tct-check-label">
+                                        <?php
+                                            $isChecked  = in_array((string) $type['id'], (array) old('violation_type_id', []), true);
+                                            $isPrevious = in_array(trim((string) $type['violation_name']), $prefillOffenses, true);
+                                        ?>
+                                        <label class="tct-check-label<?= $isPrevious ? ' is-previous' : '' ?>"<?= $isPrevious ? ' title="This driver was cited for this offense before"' : '' ?>>
                                             <input type="checkbox" name="violation_type_id[]" class="violation-check d-none"
                                                    value="<?= $type['id'] ?>"
                                                    data-amount="<?= $type['fine_amount'] ?>"
@@ -226,9 +265,9 @@
 
                             <!-- Section 3: Place, Date & Legal Notice -->
                             <div class="tct-doc-section">
-                                <div class="tct-row align-items-end mb-3">
-                                    <div class="d-flex flex-1 align-items-end me-4">
-                                        <span class="tct-bold-label me-1">Place:</span>
+                                <div class="tct-form-grid tct-form-grid-2 mb-3">
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Place:</span>
                                         <div class="combo-wrap flex-1">
                                             <input type="text" name="location" id="location" 
                                                    class="form-control form-control-sm tct-input fw-bold"
@@ -239,8 +278,8 @@
                                             <div class="combo-list" hidden></div>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-1 align-items-end">
-                                        <span class="tct-bold-label me-1">Date &amp; Time</span>
+                                    <div class="tct-form-cell">
+                                        <span class="tct-bold-label">Date &amp; Time</span>
                                         <input type="datetime-local" name="violation_datetime" id="violation_datetime"
                                                class="form-control form-control-sm tct-input flex-1 fw-bold"
                                                value="<?= esc(old('violation_datetime') ?: date('Y-m-d\TH:i')) ?>">
@@ -308,6 +347,7 @@
                                     <div class="tct-officer-box position-relative" style="border: 1.5px solid #000; height: 60px; width: 100%; display: flex; align-items: center; justify-content: center; background: #fff;">
                                         <img id="officerSigPreview" src="" alt="Signature of the Apprehending Officer"
                                              style="display: none; max-height: 52px; z-index: 2;">
+                                        <span class="officer-printed-name"><?= esc($officerPrintName ?? '') ?></span>
                                     </div>
                                     <input type="hidden" name="officer_signature" id="officer_signature">
                                 </div>
@@ -413,6 +453,9 @@
                     </div>
                 </div>
 
+                <!-- Everything the status chips change lives in here, so it can
+                     be swapped in place instead of reloading the page. -->
+                <div id="ledgerResults">
                 <!-- Table Content -->
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -425,10 +468,14 @@
                             </colgroup>
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-4">Violator</th>
-                                    <th>Plate &amp; Vehicle</th>
-                                    <th>Status &amp; Offense</th>
-                                    <th class="text-end pe-4 col-actions">Actions</th>
+                                    <!-- Headings sit on the same edge as the data below them:
+                                         names, plate/vehicle and status all start at their
+                                         cell's left padding, so the labels line up with
+                                         the records instead of floating in the middle. -->
+                                    <th class="text-start">Violator</th>
+                                    <th class="text-start">Plate &amp; Vehicle</th>
+                                    <th class="text-start">Status</th>
+                                    <th class="text-end col-actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -471,10 +518,22 @@
                                         // instead of hiding the settled part of the record.
                                         $vPendingAmount = (float) ($v['pending_amount'] ?? 0);
                                         $vPaidAmount    = (float) ($v['paid_amount'] ?? 0);
-                                        $vHasPending    = (int) ($v['pending_citation_count'] ?? 0) > 0 || $vPendingAmount > 0;
-                                        $vHasPaid       = (int) ($v['paid_citation_count'] ?? 0) > 0 || $vPaidAmount > 0;
+                                        $vHasPending    = (int) ($v['pending_citation_count'] ?? 0) > 0;
+                                        $vHasPaid       = (int) ($v['paid_citation_count'] ?? 0) > 0;
                                         $vStatuses      = trim(($vHasPending ? 'pending ' : '') . ($vHasPaid ? 'paid' : ''));
                                         $vRowClass      = $vHasPending ? 'row-pending' : 'row-paid';
+
+                                        // Sanctions: one per apprehension on the person's whole
+                                        // record, settled ones included (the row's ticket line
+                                        // stays scoped to this ledger and to the active tab).
+                                        // The license count must not shrink just because a
+                                        // section or this officer's own citations are on show,
+                                        // so the query carries the record-wide count. The third
+                                        // sanction is the three-strike mark: the row wears the
+                                        // warning sign and its action buttons turn red, visible
+                                        // at rest, with the sign answering the pointer on hover.
+                                        $vSanctions      = (int) ($v['sanction_ticket_count'] ?? $v['citation_count'] ?? 0);
+                                        $vThirdSanction  = $vSanctions >= 3;
 
                                         $vLicense    = trim((string) ($v['license_number'] ?? ''));
                                         $vPlateNo    = trim((string) ($v['license_plate'] ?? ''));
@@ -486,19 +545,19 @@
                                         $vHasVehicle = ! $vBlankValue($vVehicle);
                                         $vHasMtop    = ! $vBlankValue($vMtop);
 
-                                        // Newest offense first, then a count of the others on
-                                        // the record, so the row reads "Overloading +2 more".
-                                        $vTypeList = array_values(array_unique(array_filter(array_map(
-                                            'trim',
-                                            explode('||', (string) ($v['violation_type_list'] ?? ''))
-                                        ), static fn ($type) => $type !== '')));
-                                        $vTopOffense   = $vTypeList[0] ?? '';
-                                        $vMoreOffenses = max(0, count($vTypeList) - 1);
                                     ?>
-                                    <tr class="officer-violation-row <?= esc($vRowClass) ?>" data-status="<?= esc($vStatuses !== '' ? $vStatuses : 'pending') ?>">
+                                    <tr class="officer-violation-row <?= esc($vRowClass) ?><?= $vThirdSanction ? ' row-third-sanction' : '' ?>" data-status="<?= esc($vStatuses !== '' ? $vStatuses : 'pending') ?>">
                                         <td class="ps-4" data-label="Violator">
                                             <div class="ledger-identity-text">
-                                                <div class="driver-name-text"><?= esc($vName) ?></div>
+                                                <div class="driver-name-text">
+                                                    <span><?= esc($vName) ?></span>
+                                                    <?php if ($vThirdSanction): ?>
+                                                        <span class="ledger-sanction-warn" tabindex="0"
+                                                              title="<?= esc(sanction_label($vSanctions), 'attr') ?> on this ledger — one sanction per apprehension; the three-strike rule can revoke the driver's license.">
+                                                            <span class="ledger-sanction-icon" aria-hidden="true">!</span><?= esc(sanction_label($vSanctions)) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <?php if ($vHasLicense): ?>
                                                     <div class="ledger-license">License <?= esc($vLicense) ?></div>
                                                 <?php endif; ?>
@@ -528,24 +587,15 @@
                                                 <div class="ledger-state-chips">
                                                     <?php if ($vHasPending): ?>
                                                         <span class="ledger-status-chip ledger-status-chip--pending" title="Still owed on this violator's citations">
-                                                            <i class="bi bi-hourglass-split"></i>Pending &#8369;<?= number_format($vPendingAmount, 2) ?>
+                                                            <i class="bi bi-hourglass-split"></i>Pending
                                                         </span>
                                                     <?php endif; ?>
                                                     <?php if ($vHasPaid): ?>
                                                         <span class="ledger-status-chip ledger-status-chip--paid" title="Already settled at the cashier">
-                                                            <i class="bi bi-check-circle-fill"></i>Paid &#8369;<?= number_format($vPaidAmount, 2) ?>
+                                                            <i class="bi bi-check-circle-fill"></i>Paid
                                                         </span>
                                                     <?php endif; ?>
                                                 </div>
-                                                <?php if ($vTopOffense !== ''): ?>
-                                                    <div class="ledger-offense">
-                                                        <i class="bi bi-exclamation-diamond"></i>
-                                                        <span><?= esc($vTopOffense) ?></span>
-                                                        <?php if ($vMoreOffenses > 0): ?>
-                                                            <span class="ledger-more">+<?= $vMoreOffenses ?> more</span>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                <?php endif; ?>
                                             </div>
                                         </td>
 
@@ -553,15 +603,25 @@
                                         <td class="text-end pe-4 col-actions" data-label="Actions">
                                             <div class="d-inline-flex align-items-center gap-2 justify-content-end">
                                                 <a href="<?= esc($vHistoryUrl) ?>"
-                                                   class="btn btn-sm btn-white border shadow-sm"
-                                                   title="View the records of <?= esc($vName) ?>">
+                                                   class="btn btn-sm btn-white border shadow-sm <?= $vThirdSanction ? 'btn-ledger-view--danger' : '' ?>"
+                                                   title="<?= $vThirdSanction
+                                                       ? 'View the records of ' . esc($vName, 'attr') . ' — ' . esc(sanction_label($vSanctions), 'attr') . ' on this ledger'
+                                                       : 'View the records of ' . esc($vName, 'attr') ?>">
                                                     <i class="bi bi-eye text-primary me-1"></i> View
+                                                    <?php if ($vThirdSanction): ?>
+                                                        <i class="bi bi-exclamation-triangle-fill btn-ledger-warn-sign" aria-hidden="true"></i>
+                                                    <?php endif; ?>
                                                 </a>
                                                 <a href="<?= esc($vAddUrl) ?>"
-                                                   class="btn btn-sm btn-primary btn-ledger-add rounded-circle shadow-sm"
+                                                   class="btn btn-sm btn-primary btn-ledger-add rounded-circle shadow-sm <?= $vThirdSanction ? 'btn-ledger-add--danger' : '' ?>"
                                                    style="width: 32px; height: 32px;"
-                                                   title="Record another violation for <?= esc($vName) ?>">
+                                                   title="<?= $vThirdSanction
+                                                       ? esc($vName, 'attr') . ' carries ' . esc(sanction_label($vSanctions), 'attr') . ' — record the next apprehension carefully'
+                                                       : 'Record another violation for ' . esc($vName, 'attr') ?>">
                                                     <i class="bi bi-plus-lg fw-bold"></i>
+                                                    <?php if ($vThirdSanction): ?>
+                                                        <span class="ledger-add-warn" aria-hidden="true"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                                    <?php endif; ?>
                                                 </a>
                                             </div>
                                         </td>
@@ -581,6 +641,7 @@
                         <?= $pager->links('violations', 'bootstrap_pagination') ?>
                     </div>
                 <?php endif; ?>
+                </div><!-- /#ledgerResults -->
             </div>
         </div>
     </div>
@@ -647,11 +708,11 @@
     /* ── DASHBOARD HERO BANNER ─────────────────────────────────── */
     .officer-hero-banner {
         position: relative;
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #2563eb 100%);
+        background: linear-gradient(135deg, #4c1d95 0%, #8b5cf6 50%, #7c3aed 100%);
         border-radius: 20px;
         padding: 1.75rem 2rem;
         overflow: hidden;
-        box-shadow: 0 12px 32px rgba(30, 58, 138, 0.25);
+        box-shadow: 0 12px 32px rgba(76, 29, 149, 0.25);
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .hero-bg-orb {
@@ -661,8 +722,8 @@
         pointer-events: none;
         opacity: 0.35;
     }
-    .orb-1 { width: 200px; height: 200px; background: #60a5fa; top: -60px; right: 10%; }
-    .orb-2 { width: 150px; height: 150px; background: #38bdf8; bottom: -50px; right: 25%; }
+    .orb-1 { width: 200px; height: 200px; background: #a78bfa; top: -60px; right: 10%; }
+    .orb-2 { width: 150px; height: 150px; background: #c4b5fd; bottom: -50px; right: 25%; }
     .hero-icon-badge {
         width: 52px;
         height: 52px;
@@ -692,7 +753,7 @@
     }
     .btn-record-hero {
         background: #fff;
-        color: #1e3a8a;
+        color: #4c1d95;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 12px;
@@ -703,8 +764,8 @@
         align-items: center;
     }
     .btn-record-hero:hover {
-        background: #f8faff;
-        color: #2563eb;
+        background: #f5f3ff;
+        color: #7c3aed;
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
     }
@@ -792,22 +853,22 @@
         gap: 0.35rem;
     }
     .btn-filter-chip:hover {
-        background: #eff6ff;
-        border-color: #93c5fd;
-        color: #0052cc;
+        background: #f5f3ff;
+        border-color: #c4b5fd;
+        color: #6d28d9;
         transform: translateY(-1px);
     }
     .btn-filter-chip.active,
     .btn-filter-all.active {
-        background: #0066ff;
-        border-color: #0066ff;
+        background: #7c3aed;
+        border-color: #7c3aed;
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(0, 102, 255, 0.32);
+        box-shadow: 0 2px 8px rgba(124, 58, 237, 0.32);
     }
     .btn-filter-chip.active:hover,
     .btn-filter-all.active:hover {
-        background: #0052cc;
-        border-color: #0052cc;
+        background: #6d28d9;
+        border-color: #6d28d9;
         color: #ffffff;
     }
     .btn-filter-all .badge {
@@ -831,30 +892,30 @@
         border: none !important;
     }
     .filter-badge-pending {
-        background: #fef9c3;
-        color: #854d0e;
-        border: 1px solid #facc15;
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #ef4444;
     }
     .btn-filter-pending:hover {
-        border-color: #facc15;
-        color: #854d0e;
-        background: #fef08a;
+        border-color: #ef4444;
+        color: #b91c1c;
+        background: #fee2e2;
     }
     .btn-filter-pending.active {
-        background: #fef9c3;
-        border-color: #facc15;
-        color: #854d0e;
-        box-shadow: 0 2px 8px rgba(202, 138, 4, 0.2);
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #b91c1c;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.22);
     }
     .btn-filter-pending.active:hover {
-        background: #fef08a;
-        border-color: #eab308;
-        color: #854d0e;
+        background: #fecaca;
+        border-color: #dc2626;
+        color: #991b1b;
     }
     .btn-filter-pending.active .badge {
-        background: #fff7b2 !important;
-        color: #854d0e !important;
-        border: 1px solid #facc15 !important;
+        background: #fecaca !important;
+        color: #991b1b !important;
+        border: 1px solid #ef4444 !important;
     }
     .filter-badge-paid {
         background: #ecfdf5;
@@ -903,9 +964,9 @@
         font-size: 0.72rem;
     }
     .ledger-status-chip--pending {
-        background: #fef9c3;
-        color: #854d0e;
-        border-color: #eab308;
+        background: #fee2e2;
+        color: #b91c1c;
+        border-color: #ef4444;
     }
     .ledger-status-chip--paid {
         background: #ecfdf5;
@@ -972,32 +1033,25 @@
     .ledger-state {
         display: flex;
         flex-direction: column;
+        /* The STATUS heading starts at the column's left edge on desktop, so
+           the pills and the offense line under it start on that same edge.
+           The phone card layout re-aligns them to the trailing edge further
+           down. */
         align-items: flex-start;
         gap: 0.3rem;
         min-width: 0;
     }
+    /* One status per line, all on the same left edge: a row with a single
+       state and a row with both states read as the same column instead of two
+       pills of different widths sitting side by side. */
     .ledger-state-chips {
         display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .ledger-offense {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.78rem;
-        color: #475569;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
         min-width: 0;
     }
-    .ledger-offense i { color: #ca8a04; font-size: 0.74rem; }
-    .ledger-more {
-        color: #64748b;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-    [data-bs-theme="dark"] .ledger-license,
-    [data-bs-theme="dark"] .ledger-offense {
+    [data-bs-theme="dark"] .ledger-license {
         color: #94a3b8;
     }
     [data-bs-theme="dark"] .ledger-plate {
@@ -1019,81 +1073,161 @@
 
     /* ── NEW VIOLATION BUTTON ── */
     .btn-new-violation {
-        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
         font-size: 0.85rem;
         padding: 0.45rem 1rem;
         border-radius: 999px;
-        box-shadow: 0 2px 10px rgba(0, 102, 255, 0.3);
+        box-shadow: 0 2px 10px rgba(124, 58, 237, 0.3);
         transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         text-decoration: none;
         white-space: nowrap;
     }
     .btn-new-violation:hover {
-        background: linear-gradient(135deg, #0052cc 0%, #003db3 100%);
+        background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
         color: #ffffff;
         transform: translateY(-1px);
-        box-shadow: 0 5px 16px rgba(0, 102, 255, 0.45);
+        box-shadow: 0 5px 16px rgba(124, 58, 237, 0.45);
     }
     .btn-new-violation:active {
         transform: translateY(0);
-        box-shadow: 0 2px 6px rgba(0, 102, 255, 0.2);
+        box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
     }
 
     #addNewInfractionBtn {
-        background: #0066ff;
-        border-color: #0066ff;
+        background: #7c3aed;
+        border-color: #7c3aed;
         color: #ffffff;
     }
     #addNewInfractionBtn:hover,
     #addNewInfractionBtn:focus-visible {
-        background: #0052cc;
-        border-color: #0052cc;
+        background: #6d28d9;
+        border-color: #6d28d9;
         color: #ffffff;
     }
 
     #recordViolationModal #submitPrintBtn {
-        background: #0066ff;
-        border-color: #0066ff;
+        background: #7c3aed;
+        border-color: #7c3aed;
         color: #ffffff;
     }
     #recordViolationModal #submitPrintBtn:hover,
     #recordViolationModal #submitPrintBtn:focus-visible {
-        background: #0052cc;
-        border-color: #0052cc;
+        background: #6d28d9;
+        border-color: #6d28d9;
         color: #ffffff;
     }
     #recordViolationModal [data-open-signature] {
-        color: #0066ff;
-        border-color: #0066ff;
+        color: #7c3aed;
+        border-color: #7c3aed;
     }
     #recordViolationModal [data-open-signature]:hover,
     #recordViolationModal [data-open-signature]:focus-visible {
-        background: #eff6ff;
-        color: #0052cc;
-        border-color: #0052cc;
+        background: #f5f3ff;
+        color: #6d28d9;
+        border-color: #6d28d9;
     }
 
     .officer-violations-table .btn-white {
-        color: #0052cc;
-        border-color: #bfdbfe;
+        color: #6d28d9;
+        border-color: #ddd6fe;
     }
     .officer-violations-table .btn-white:hover {
-        background: #eff6ff;
-        color: #003db3;
-        border-color: #60a5fa;
+        background: #f5f3ff;
+        color: #4c1d95;
+        border-color: #a78bfa;
     }
     .officer-violations-table .btn-ledger-add {
-        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
-        border-color: #0066ff;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        border-color: #7c3aed;
         color: #ffffff;
     }
     .officer-violations-table .btn-ledger-add:hover {
-        background: linear-gradient(135deg, #0052cc 0%, #003db3 100%);
-        border-color: #0052cc;
+        background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+        border-color: #6d28d9;
         color: #ffffff;
+    }
+
+    /* ── THIRD SANCTION — VISIBLE WARNING, RED ACTIONS ──
+       Three sanctions on this ledger is the three-strike mark: the warning
+       sign stays visible beside the name, the row wears a red spine and both
+       action buttons turn red at rest instead of only on hover. Hovering or
+       focusing a sign nudges its triangle, and the badge on the + button
+       pops, so the warning answers the pointer on the way to the click. */
+    .officer-violations-table .row-third-sanction td:first-child {
+        box-shadow: inset 3px 0 0 #dc2626;
+    }
+    .ledger-sanction-warn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 0.14rem 0.55rem 0.14rem 0.2rem;
+        border-radius: 999px;
+        background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+        font-size: 0.68rem; font-weight: 800; letter-spacing: 0.03em;
+        line-height: 1.35; white-space: nowrap; cursor: help;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08);
+        transition: background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .ledger-sanction-icon {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: #dc2626; color: #ffffff;
+        font-size: 0.68rem; font-weight: 900; line-height: 1;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.16);
+    }
+    .ledger-sanction-warn:hover,
+    .ledger-sanction-warn:focus-visible {
+        background: #fee2e2; border-color: #fca5a5; color: #7f1d1d;
+        transform: translateY(-1px) scale(1.03);
+        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12), 0 4px 12px rgba(220, 38, 38, 0.22);
+        outline: 2px solid rgba(220, 38, 38, 0.35); outline-offset: 1px;
+    }
+    @keyframes ledgerWarnNudge {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-14deg); }
+        60% { transform: rotate(12deg); }
+    }
+    .officer-violations-table .btn-ledger-view--danger {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #b91c1c;
+    }
+    .officer-violations-table .btn-ledger-view--danger:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #991b1b;
+    }
+    .officer-violations-table .btn-ledger-view--danger .bi-eye { color: #dc2626 !important; }
+    .btn-ledger-warn-sign { font-size: 0.68rem; color: #dc2626; margin-left: 2px; }
+    .officer-violations-table .btn-ledger-view--danger:hover .btn-ledger-warn-sign,
+    .officer-violations-table .btn-ledger-view--danger:focus-visible .btn-ledger-warn-sign {
+        animation: ledgerWarnNudge 0.5s ease;
+    }
+    .officer-violations-table .btn-ledger-add--danger {
+        position: relative;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        border-color: #dc2626;
+        color: #ffffff;
+    }
+    .officer-violations-table .btn-ledger-add--danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        border-color: #b91c1c;
+        color: #ffffff;
+    }
+    .ledger-add-warn {
+        position: absolute; top: -4px; right: -4px;
+        width: 15px; height: 15px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        background: #ffffff; color: #dc2626; font-size: 0.58rem; line-height: 1;
+        border: 1px solid #fca5a5;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.18);
+        transition: transform 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+    .officer-violations-table .btn-ledger-add--danger:hover .ledger-add-warn,
+    .officer-violations-table .btn-ledger-add--danger:focus-visible .ledger-add-warn {
+        color: #991b1b; border-color: #ef4444;
+        transform: scale(1.18) rotate(-8deg);
     }
 
     /* ── FLOATING QUICK-ADD BUTTON ── */
@@ -1108,9 +1242,9 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         color: #ffffff;
-        box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
         z-index: 1030;
         transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
     }
@@ -1121,25 +1255,42 @@
     .fab-new-violation:hover {
         color: #ffffff;
         transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5);
+        box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
     }
     .fab-new-violation:active {
         transform: translateY(0) scale(0.97);
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
     }
     .fab-new-violation:focus-visible {
-        outline: 3px solid rgba(37, 99, 235, 0.35);
+        outline: 3px solid rgba(124, 58, 237, 0.35);
         outline-offset: 3px;
     }
     @media (max-width: 768px) {
+        /* Phones: the quick-add button grows to a comfortable 60px tap target
+           and lifts off the bottom edge (safe-area aware) so browser chrome
+           does not clip it. */
         .fab-new-violation {
-            right: 1rem;
-            bottom: 1rem;
-            width: 52px;
-            height: 52px;
+            right: max(1rem, env(safe-area-inset-right, 0px));
+            bottom: calc(1.15rem + env(safe-area-inset-bottom, 0px));
+            width: 60px;
+            height: 60px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.45), 0 0 0 5px rgba(124, 58, 237, 0.1);
         }
         .fab-new-violation i {
-            font-size: 1.35rem;
+            font-size: 1.7rem;
+        }
+    }
+    @media (max-width: 576px) {
+        /* The row's round + button follows the same rule: 32px is below a
+           comfortable thumb target on a phone. */
+        .officer-violations-table .btn-ledger-add {
+            width: 38px !important;
+            height: 38px !important;
+        }
+        .officer-violations-table .btn-ledger-add i {
+            font-size: 1rem;
         }
     }
     @media print {
@@ -1165,15 +1316,15 @@
         padding-left: 34px !important;
         padding-right: 30px !important;
         border-radius: 20px !important;
-        border: 2px solid #0066ff !important;
+        border: 2px solid #7c3aed !important;
         background: #fff !important;
         font-size: 0.85rem !important;
         height: 36px;
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modern-search-input:focus {
-        border-color: #0066ff !important;
-        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.16) !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16) !important;
     }
     .btn-clear-search {
         position: absolute;
@@ -1192,6 +1343,8 @@
        Matches the Violators directory: a full-width strip under the last row,
        so the page count lines up at the left edge and the buttons at the
        right. The footer it used to sit in centred the whole strip. */
+    #ledgerResults { transition: opacity 0.15s ease; }
+    #ledgerResults.is-updating { opacity: 0.55; }
     .ledger-pager {
         padding: 12px 1.5rem;
         border-top: 1px solid #eef2f7;
@@ -1231,13 +1384,14 @@
         transition: all 0.15s ease;
     }
     .driver-name-link:hover .driver-name-text {
-        color: #0066ff !important;
+        color: #7c3aed !important;
         text-decoration: underline;
     }
     .driver-link-icon {
         transition: transform 0.18s ease, opacity 0.18s ease;
     }
     .driver-name-text {
+        display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px;
         color: #0f172a;
         font-weight: 700;
         font-size: 0.93rem;
@@ -1274,12 +1428,12 @@
         background: #ffffff;
     }
     .officer-violations-table tbody tr:hover td {
-        background-color: #f8faff !important;
+        background-color: #f5f3ff !important;
     }
     .officer-violations-table tbody tr:hover {
         z-index: 2;
         transform: translateY(-1.5px);
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.06);
+        box-shadow: 0 4px 14px rgba(124, 58, 237, 0.06);
     }
     /* Elevate row when its action dropdown is opened or focused */
     .officer-violations-table tbody tr:focus-within,
@@ -1372,9 +1526,9 @@
 
     /* Ticket ID Glass Pill */
     .ticket-id-pill {
-        background: #f0f7ff;
-        border: 1px solid #bfdbfe;
-        color: #1d4ed8;
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
+        color: #6d28d9;
         padding: 0.25rem 0.65rem;
         border-radius: 8px;
         font-size: 0.82rem;
@@ -1387,11 +1541,11 @@
         user-select: none;
     }
     .ticket-id-pill:hover {
-        background: #dbeafe;
-        border-color: #93c5fd;
-        color: #1e40af;
+        background: #ede9fe;
+        border-color: #c4b5fd;
+        color: #5b21b6;
         transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
+        box-shadow: 0 3px 8px rgba(124, 58, 237, 0.15);
     }
     .ticket-id-pill.copied {
         background: #dcfce7 !important;
@@ -1416,7 +1570,7 @@
         transition: all 0.2s ease;
     }
     .plate-pill i {
-        color: #2563eb !important;
+        color: #7c3aed !important;
         margin-right: 0.25rem;
     }
     .plate-pill:hover {
@@ -1567,10 +1721,10 @@
         box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
     }
     .btn-action-view:hover {
-        background: #eff6ff;
-        border-color: #93c5fd;
-        color: #2563eb;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        background: #f5f3ff;
+        border-color: #c4b5fd;
+        color: #7c3aed;
+        box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
     }
     .btn-action-more:hover {
         background: #f8fafc;
@@ -1638,10 +1792,10 @@
         transform: translateY(-1px);
     }
     .card-footer .page-item.active .page-link {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        border-color: #1d4ed8;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        border-color: #6d28d9;
         color: #fff;
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+        box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
     }
 
     /* Smooth Scrollbar for Table */
@@ -1675,15 +1829,27 @@
     [data-bs-theme="dark"] .main-table-header { background: #0f172a; border-color: #1e293b; }
     [data-bs-theme="dark"] .officer-violations-table thead th { background: #0f172a; border-color: #1e293b; color: #94a3b8; }
     [data-bs-theme="dark"] .officer-violations-table tbody td { border-color: #1e293b; }
-    [data-bs-theme="dark"] .officer-violations-table tbody tr:hover { background-color: #172554 !important; border-left-color: #60a5fa !important; }
-    [data-bs-theme="dark"] .ticket-id-pill { background: #1e293b; border-color: #3b82f6; color: #93c5fd; }
-    [data-bs-theme="dark"] .ticket-id-pill:hover { background: #1e3a8a; border-color: #60a5fa; color: #bfdbfe; }
+    [data-bs-theme="dark"] .officer-violations-table tbody tr:hover { background-color: #2e1065 !important; border-left-color: #a78bfa !important; }
+    [data-bs-theme="dark"] .ticket-id-pill { background: #1e293b; border-color: #8b5cf6; color: #c4b5fd; }
+    [data-bs-theme="dark"] .ticket-id-pill:hover { background: #4c1d95; border-color: #a78bfa; color: #ddd6fe; }
     [data-bs-theme="dark"] .dl-pill { background: #1e293b; color: #94a3b8; border-color: #334155; }
     [data-bs-theme="dark"] .violation-chip { background: #1e293b; border-color: #334155; color: #e2e8f0; }
     [data-bs-theme="dark"] .total-fine-pending { color: #f8fafc; background: #1e293b; border-color: #334155; }
     [data-bs-theme="dark"] .total-fine-paid { color: #34d399; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); }
-    [data-bs-theme="dark"] .ledger-status-chip--pending { background: rgba(202, 138, 4, 0.15); border-color: rgba(202, 138, 4, 0.35); color: #eab308; }
+    [data-bs-theme="dark"] .ledger-status-chip--pending { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.35); color: #fca5a5; }
     [data-bs-theme="dark"] .ledger-status-chip--paid { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #34d399; }
+    /* Third sanction in dark mode: solid red warning (white letters) and a
+       lifted red View button, so neither sinks into the dark card. */
+    [data-bs-theme="dark"] .ledger-sanction-warn { background: #dc2626; border-color: #991b1b; color: #ffffff; }
+    [data-bs-theme="dark"] .officer-violations-table .btn-ledger-view--danger {
+        background: rgba(239, 68, 68, 0.14); border-color: rgba(248, 113, 113, 0.45); color: #fca5a5;
+    }
+    [data-bs-theme="dark"] .officer-violations-table .btn-ledger-view--danger:hover {
+        background: rgba(239, 68, 68, 0.24); border-color: #ef4444; color: #fecaca;
+    }
+    [data-bs-theme="dark"] .officer-violations-table .btn-ledger-view--danger .bi-eye { color: #fca5a5 !important; }
+    [data-bs-theme="dark"] .btn-ledger-warn-sign { color: #fca5a5; }
+    [data-bs-theme="dark"] .ledger-add-warn { background: #0f172a; border-color: #7f1d1d; }
     [data-bs-theme="dark"] .filter-badge-paid { background: rgba(16, 185, 129, 0.18); border-color: rgba(16, 185, 129, 0.35); color: #34d399; }
     [data-bs-theme="dark"] .btn-action-icon { background: #1e293b; border-color: #334155; color: #94a3b8; }
     [data-bs-theme="dark"] .btn-action-more:hover { background: #334155; color: #f8fafc; }
@@ -1706,14 +1872,14 @@
         border-color: #1e293b !important;
     }
     [data-bs-theme="dark"] .officer-violations-table tbody tr:hover td {
-        background-color: #172554 !important;
+        background-color: #2e1065 !important;
     }
     /* Chips and amount badges repaint themselves white on row hover, which
        undid their dark colours at the moment the row was highlighted. */
     [data-bs-theme="dark"] .officer-violation-row:hover .violation-chip {
-        background: #1e3a8a;
-        border-color: #3b82f6;
-        color: #dbeafe;
+        background: #4c1d95;
+        border-color: #8b5cf6;
+        color: #ede9fe;
     }
     [data-bs-theme="dark"] .ledger-pager {
         background: #111b2f;
@@ -1740,27 +1906,27 @@
     [data-bs-theme="dark"] .btn-filter-chip:not(.active):hover,
     [data-bs-theme="dark"] .btn-filter-all:not(.active):hover {
         background: #334155;
-        border-color: #60a5fa;
-        color: #bfdbfe;
+        border-color: #a78bfa;
+        color: #ddd6fe;
     }
     [data-bs-theme="dark"] .btn-filter-all .badge {
         background: #334155;
         color: #cbd5e1;
     }
     [data-bs-theme="dark"] .filter-badge-pending {
-        background: rgba(250, 204, 21, 0.18);
-        border-color: rgba(250, 204, 21, 0.4);
-        color: #fde047;
+        background: rgba(239, 68, 68, 0.18);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
     }
     [data-bs-theme="dark"] .btn-filter-pending.active {
-        background: rgba(202, 138, 4, 0.2);
-        border-color: rgba(250, 204, 21, 0.5);
-        color: #fde047;
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(248, 113, 113, 0.5);
+        color: #fca5a5;
     }
     [data-bs-theme="dark"] .btn-filter-pending.active .badge {
-        background: rgba(250, 204, 21, 0.18) !important;
-        border-color: rgba(250, 204, 21, 0.4) !important;
-        color: #fde047 !important;
+        background: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(248, 113, 113, 0.4) !important;
+        color: #fca5a5 !important;
     }
     [data-bs-theme="dark"] .btn-filter-paid.active {
         background: rgba(16, 185, 129, 0.18);
@@ -1773,8 +1939,8 @@
         color: #6ee7b7 !important;
     }
     [data-bs-theme="dark"] .btn-filter-pending:not(.active):hover {
-        border-color: rgba(250, 204, 21, 0.5);
-        color: #fde047;
+        border-color: rgba(248, 113, 113, 0.5);
+        color: #fca5a5;
     }
     [data-bs-theme="dark"] .btn-filter-paid:not(.active):hover {
         border-color: rgba(16, 185, 129, 0.5);
@@ -1792,9 +1958,9 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.45rem 1rem;
         padding: 0.75rem;
-        border: 1px solid #dbe1ff;
+        border: 1px solid #e9d5ff;
         border-radius: 10px;
-        background: #fbfcff;
+        background: #fbfaff;
         max-height: 240px;
         overflow: auto;
     }
@@ -1821,13 +1987,13 @@
         padding: 0.375rem 0.75rem;
         min-height: 42px;
         background-color: #fff;
-        border: 1px solid #dbe1ff;
+        border: 1px solid #e9d5ff;
         border-radius: 10px;
         cursor: text;
     }
     .pill-select-wrapper:focus-within {
-        border-color: #5865f2;
-        box-shadow: 0 0 0 0.2rem rgba(88, 101, 242, 0.25);
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
     }
     .pill-selected-items {
         display: flex;
@@ -1841,9 +2007,9 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
         font-weight: 500;
-        background: #eef3ff;
-        color: #5865f2;
-        border: 1px solid #dbe4ff;
+        background: #f5f3ff;
+        color: #8b5cf6;
+        border: 1px solid #ddd6fe;
         border-radius: 6px;
     }
     .pill-badge .remove-pill {
@@ -1871,7 +2037,7 @@
         max-height: 200px;
         overflow-y: auto;
         background: #fff;
-        border: 1px solid #dbe1ff;
+        border: 1px solid #e9d5ff;
         border-radius: 8px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         z-index: 1050;
@@ -1891,12 +2057,12 @@
         justify-content: space-between;
     }
     .pill-option:hover, .pill-option.focused {
-        background: #f8faff;
-        color: #5865f2;
+        background: #f5f3ff;
+        color: #8b5cf6;
     }
     .pill-option.selected {
-        background: #eef3ff;
-        color: #5865f2;
+        background: #f5f3ff;
+        color: #8b5cf6;
         font-weight: 500;
     }
     .pill-option.selected::after {
@@ -1909,7 +2075,7 @@
         border-color: #2a3b60;
     }
     [data-bs-theme="dark"] .pill-search-input {
-        color: #d8e3ff;
+        color: #ddd6fe;
     }
     [data-bs-theme="dark"] .pill-dropdown {
         background: #111b2f;
@@ -1918,34 +2084,34 @@
     }
     [data-bs-theme="dark"] .pill-option:hover, [data-bs-theme="dark"] .pill-option.focused {
         background: #16233f;
-        color: #dce7ff;
+        color: #ddd6fe;
     }
     [data-bs-theme="dark"] .pill-option.selected {
         background: #1e293b;
-        color: #e5edff;
+        color: #ddd6fe;
     }
     [data-bs-theme="dark"] .pill-badge {
         background: #1e293b;
-        color: #dce7ff;
+        color: #ddd6fe;
         border-color: #2e3a59;
     }
     .enforcer-card {
         overflow: hidden;
-        border: 1px solid #e4e9ff !important;
+        border: 1px solid #e9d5ff !important;
         border-radius: 16px;
         background: linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(247,250,255,0.88) 100%);
         transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .enforcer-header {
-        background: linear-gradient(120deg, rgba(97,116,227,0.14) 0%, rgba(255,255,255,0.95) 65%);
-        border-bottom: 1px solid #e4e9ff;
+        background: linear-gradient(120deg, rgba(124, 58, 237,0.14) 0%, rgba(255,255,255,0.95) 65%);
+        border-bottom: 1px solid #e9d5ff;
     }
     .enforcer-header h4 {
-        color: #2a356d;
+        color: #4c1d95;
         font-weight: 700;
     }
     .enforcer-card .form-label {
-        color: #34406f;
+        color: #5b21b6;
         font-weight: 600;
     }
     .section-label {
@@ -1956,25 +2122,25 @@
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: #5e6b98;
-        background: #eef3ff;
-        border: 1px solid #dce4ff;
+        color: #6d28d9;
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
         border-radius: 999px;
         padding: 0.35rem 0.75rem;
     }
     .enforcer-card .form-text {
         font-size: 0.76rem;
-        color: #7b86ad;
+        color: #8b5cf6;
         margin-top: 0.25rem;
     }
     .enforcer-card .input-group-text {
-        background: #f7f9ff;
-        border-color: #dbe1ff;
-        color: #5a68a9;
+        background: #f5f3ff;
+        border-color: #e9d5ff;
+        color: #6d28d9;
     }
     .enforcer-card .form-control,
     .enforcer-card .form-select {
-        border-color: #dbe1ff;
+        border-color: #e9d5ff;
         border-radius: 10px;
     }
     .enforcer-card .form-control,
@@ -1983,12 +2149,12 @@
         min-height: 42px;
     }
     .enforcer-card .form-control.bg-light {
-        background: #f7f9ff !important;
+        background: #f5f3ff !important;
     }
     .info-box {
-        background: linear-gradient(120deg, #e7f2ff 0%, #f1f8ff 100%);
-        color: #22495f;
-        border: 1px solid #d6e8ff;
+        background: linear-gradient(120deg, #f3e8ff 0%, #f5f3ff 100%);
+        color: #4c1d95;
+        border: 1px solid #ddd6fe;
     }
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
@@ -1996,11 +2162,11 @@
         font-size: 0.78rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #4d5678;
-        border-bottom: 1px solid #e8ecff;
+        color: #5b21b6;
+        border-bottom: 1px solid #ede9fe;
     }
     .enforcer-card .table tbody tr:hover {
-        background-color: #f8faff;
+        background-color: #f5f3ff;
     }
     .enforcer-card .btn-group .btn {
         border-radius: 8px !important;
@@ -2057,7 +2223,7 @@
     .enforcer-card .card-header small {
         display: block;
         margin-top: 0.25rem;
-        color: #7b86ad !important;
+        color: #8b5cf6 !important;
     }
     #violationForm .row.g-4 {
         --bs-gutter-y: 1rem;
@@ -2066,8 +2232,8 @@
         opacity: 0.12;
     }
     .form-footer {
-        background: #f8faff;
-        border: 1px solid #e4eaff;
+        background: #f5f3ff;
+        border: 1px solid #f3e8ff;
         border-radius: 12px;
         padding: 0.75rem 0.9rem;
     }
@@ -2085,16 +2251,15 @@
     #tableSearchInput {
         border-radius: 0 10px 10px 0;
     }
-    /* The ledger search wears electric blue in every state; the enforcer role
-       theme would otherwise tint its border and focus ring emerald. */
+    /* Keep the ledger search aligned with the Enforcer violet accent. */
     #tableSearchInput.modern-search-input {
-        border: 2px solid #0066ff !important;
+        border: 2px solid #7c3aed !important;
         outline: none !important;
     }
     #tableSearchInput.modern-search-input:focus,
     #tableSearchInput.modern-search-input:focus-visible {
         outline: none !important;
-        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.16) !important;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16) !important;
     }
     @media (max-width: 768px) {
         .tct-checklist {
@@ -2265,11 +2430,6 @@
         .officer-violations-table tbody td .ledger-state-chips {
             justify-content: flex-end;
         }
-        .officer-violations-table tbody td .ledger-offense {
-            justify-content: flex-end;
-            flex-wrap: wrap;
-            text-align: right;
-        }
     }
 
     @media (max-width: 575.98px) {
@@ -2309,9 +2469,28 @@
     }
 
     /* A lifted row is a hover state, not a pressed one: touch screens would
-       otherwise keep it stuck after a tap. */
+       otherwise keep it stuck after a tap. The warning signs keep their full
+       colour on those screens, they just stop moving. */
     @media (hover: none), (pointer: coarse) {
         .officer-violations-table tbody tr:hover { transform: none !important; }
+        .ledger-sanction-warn:hover { transform: none; }
+        .officer-violations-table .btn-ledger-add--danger:hover .ledger-add-warn,
+        .officer-violations-table .btn-ledger-add--danger:focus-visible .ledger-add-warn { transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ledger-sanction-warn,
+        .ledger-sanction-warn i,
+        .ledger-add-warn,
+        .btn-ledger-warn-sign { transition: none !important; }
+        .ledger-sanction-warn:hover,
+        .ledger-sanction-warn:focus-visible { transform: none !important; }
+        .ledger-sanction-warn:hover i,
+        .ledger-sanction-warn:focus-visible i,
+        .officer-violations-table .btn-ledger-view--danger:hover .btn-ledger-warn-sign,
+        .officer-violations-table .btn-ledger-view--danger:focus-visible .btn-ledger-warn-sign,
+        .officer-violations-table .btn-ledger-add--danger:hover .ledger-add-warn,
+        .officer-violations-table .btn-ledger-add--danger:focus-visible .ledger-add-warn { animation: none !important; }
     }
 </style>
 
@@ -2928,28 +3107,85 @@
     // ═══ INTERACTIVE SEARCH & FILTER CHIPS ══════════════════════
     const tableSearchInput = document.getElementById('tableSearchInput');
     const btnClearSearch = document.getElementById('btnClearSearch');
-    const filterChips = document.querySelectorAll('.btn-filter-chip');
     let currentStatusFilter = <?= json_encode($statusFilter ?? '', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
 
-    filterChips.forEach(chip => {
-        chip.addEventListener('click', function() {
-            const url = new URL(window.location.href);
-            const status = (this.dataset.status || '').toLowerCase();
+    // Status chips load the chosen slice in place. The server still builds the
+    // rows (the Pending tab lists only pending citations, so its amounts and
+    // offenses describe the pending side of a record, not the whole person),
+    // but the page never reloads: the table, counts and pager are swapped in
+    // and the query string is updated for a refresh. Anything unexpected
+    // falls back to a normal navigation.
+    let ledgerInFlight = null;
 
-            if (status) {
-                url.searchParams.set('status', status);
-            } else {
-                url.searchParams.delete('status');
+    const ledgerSwap = function(status) {
+        const table   = document.getElementById('officerViolationTable');
+        const results = document.getElementById('ledgerResults');
+        const url     = new URL(window.location.href);
+
+        if (status) {
+            url.searchParams.set('status', status);
+        } else {
+            url.searchParams.delete('status');
+        }
+
+        for (const key of Array.from(url.searchParams.keys())) {
+            if (key === 'page' || key === 'violations' || /^page_/i.test(key)) {
+                url.searchParams.delete(key);
             }
+        }
 
-            for (const key of Array.from(url.searchParams.keys())) {
-                if (key === 'page' || key === 'violations' || /^page_/i.test(key)) {
-                    url.searchParams.delete(key);
-                }
-            }
-
+        if (!table || !results) {
             window.location.assign(url.toString());
-        });
+            return;
+        }
+
+        if (ledgerInFlight) ledgerInFlight.abort();
+
+        const controller = new AbortController();
+        ledgerInFlight   = controller;
+        results.classList.add('is-updating');
+
+        fetch(url.toString(), { signal: controller.signal })
+            .then(function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(function(html) {
+                const doc        = new DOMParser().parseFromString(html, 'text/html');
+                const nextTable  = doc.getElementById('officerViolationTable');
+                const nextChips  = doc.querySelector('.ledger-filter-chips');
+                const nextResult = doc.getElementById('ledgerResults');
+
+                if (!nextTable || !nextChips || !nextResult) throw new Error('no swap target');
+
+                const chipsNow = document.querySelector('.ledger-filter-chips');
+                if (chipsNow) chipsNow.replaceWith(nextChips);
+                results.replaceWith(nextResult);
+
+                // The server already scoped the rows, so the client-side
+                // status filter steps aside and only the search term applies.
+                currentStatusFilter = '';
+                applyTableFilters();
+
+                window.history.pushState({ ledgerStatus: status }, '', url.toString());
+            })
+            .catch(function(error) {
+                if (error && error.name === 'AbortError') return;
+                window.location.assign(url.toString());
+            })
+            .finally(function() {
+                if (ledgerInFlight === controller) ledgerInFlight = null;
+                const fresh = document.getElementById('ledgerResults');
+                if (fresh) fresh.classList.remove('is-updating');
+            });
+    };
+
+    document.addEventListener('click', function(event) {
+        const chip = event.target.closest && event.target.closest('.ledger-filter-chips .btn-filter-chip');
+        if (!chip) return;
+
+        event.preventDefault();
+        ledgerSwap((chip.dataset.status || '').toLowerCase());
     });
 
     const applyTableFilters = () => {
@@ -3019,12 +3255,15 @@
     const cancelViolationForm = document.getElementById('cancelViolationForm');
     if (cancelViolationModalEl && cancelViolationForm) {
         const cancelViolationModal = new bootstrap.Modal(cancelViolationModalEl);
-        document.querySelectorAll('.btn-cancel-violation').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                cancelViolationForm.action = `<?= base_url('officer/cancel') ?>/${id}`;
-                cancelViolationModal.show();
-            });
+        // Delegated: the ledger rows are replaced in place when a status chip
+        // is chosen, so a handler bound to each button would go stale.
+        document.addEventListener('click', function(event) {
+            const btn = event.target.closest && event.target.closest('.btn-cancel-violation');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            cancelViolationForm.action = `<?= base_url('officer/cancel') ?>/${id}`;
+            cancelViolationModal.show();
         });
         cancelViolationForm.addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -3041,12 +3280,13 @@
     const deleteForm = document.getElementById('deleteViolationForm');
     if (deleteModalEl && deleteForm) {
         const deleteModal = new bootstrap.Modal(deleteModalEl);
-        document.querySelectorAll('.btn-delete-violation').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                deleteForm.action = `<?= base_url('officer/delete') ?>/${id}`;
-                deleteModal.show();
-            });
+        document.addEventListener('click', function(event) {
+            const btn = event.target.closest && event.target.closest('.btn-delete-violation');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            deleteForm.action = `<?= base_url('officer/delete') ?>/${id}`;
+            deleteModal.show();
         });
         deleteForm.addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -3058,21 +3298,24 @@
     }
 
     // Elevate row stacking context dynamically whenever action dropdown opens
-    document.querySelectorAll('.officer-violations-table .dropdown').forEach(dropdownEl => {
-        dropdownEl.addEventListener('show.bs.dropdown', function () {
-            const tr = this.closest('tr');
-            if (tr) {
-                tr.classList.add('has-open-dropdown');
-                tr.style.zIndex = '1065';
-            }
-        });
-        dropdownEl.addEventListener('hidden.bs.dropdown', function () {
-            const tr = this.closest('tr');
-            if (tr) {
-                tr.classList.remove('has-open-dropdown');
-                tr.style.zIndex = '';
-            }
-        });
+    // Delegated so the rows surviving a chip switch keep their stacking fix.
+    document.addEventListener('show.bs.dropdown', function (event) {
+        const dropdownEl = event.target.closest && event.target.closest('.officer-violations-table .dropdown');
+        if (!dropdownEl) return;
+        const tr = dropdownEl.closest('tr');
+        if (tr) {
+            tr.classList.add('has-open-dropdown');
+            tr.style.zIndex = '1065';
+        }
+    });
+    document.addEventListener('hidden.bs.dropdown', function (event) {
+        const dropdownEl = event.target.closest && event.target.closest('.officer-violations-table .dropdown');
+        if (!dropdownEl) return;
+        const tr = dropdownEl.closest('tr');
+        if (tr) {
+            tr.classList.remove('has-open-dropdown');
+            tr.style.zIndex = '';
+        }
     });
 
     // Auto-close open action dropdowns upon scrolling page or table container so menus never float or follow screen

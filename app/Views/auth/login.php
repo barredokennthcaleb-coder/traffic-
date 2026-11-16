@@ -249,11 +249,13 @@
                     </span>
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 d-flex justify-content-between align-items-center">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="rememberMe" style="border-color: #cbd5e0;">
                     <label class="form-check-label text-muted small" for="rememberMe">Remember me</label>
                 </div>
+                <a href="<?= base_url('forgot-password') ?>" class="small text-decoration-none"
+                   style="color: #059669; font-weight: 600;">Forgot password?</a>
             </div>
 
             <div class="d-grid gap-2 mt-4">

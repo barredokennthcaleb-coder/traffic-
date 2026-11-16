@@ -436,6 +436,7 @@
        takes its height from this wrapper. Without an explicit height
        the wrapper grows with the canvas, and Chart.js keeps resizing
        it taller on every frame — the runaway "melting" bars. */
+    .admin-dashboard .dashboard-chart-shell.is-loading { opacity: .55; }
     .admin-dashboard .dashboard-chart-shell {
         position: relative;
         width: 100%;
@@ -602,6 +603,7 @@
             : date('Y-m-d', strtotime('first monday of january ' . $reportYear));
 
         $reportYearlyUrl  = base_url('reports?' . http_build_query(['period_type' => 'yearly',  'year' => $reportYear]));
+        $reportDailyUrl   = base_url('reports?' . http_build_query(['period_type' => 'custom',  'start_date' => date('Y-m-d'), 'end_date' => date('Y-m-d')]));
         $reportWeeklyUrl  = base_url('reports?' . http_build_query(['period_type' => 'weekly',  'start_date' => $reportWeekStart]));
         $reportMonthlyUrl = base_url('reports?' . http_build_query(['period_type' => 'monthly', 'year' => $reportYear, 'month' => $reportMonth]));
         $reportCustomUrl  = base_url('reports?' . http_build_query(['period_type' => 'custom',  'start_date' => sprintf('%04d-01-01', $reportYear), 'end_date' => sprintf('%04d-12-31', $reportYear)]));
@@ -626,6 +628,11 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="min-width: 220px; z-index: 1050;">
                     <li><h6 class="dropdown-header text-uppercase fw-bold text-muted px-2" style="font-size: 0.7rem;">Quick Reports</h6></li>
+                    <li>
+                        <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= $reportDailyUrl ?>">
+                            <i class="bi bi-calendar-day text-info me-2 fs-6"></i> Daily Report (Today)
+                        </a>
+                    </li>
                     <li>
                         <a class="dropdown-item rounded py-2 d-flex align-items-center" href="<?= $reportWeeklyUrl ?>">
                             <i class="bi bi-calendar-week text-primary me-2 fs-6"></i> Weekly Report
@@ -786,15 +793,26 @@
             <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.15s;">
                 <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h5 class="mb-0 fw-bold dashboard-chart-title">
-                        <i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Trend 
-                        <small class="fw-normal text-muted" style="font-size:0.85rem;">
+                        <i class="bi bi-calendar-week me-2 text-primary"></i><span id="trendModeTitle">Weekly Trend</span>
+                        <small id="trendPeriodLabel" class="fw-normal text-muted" style="font-size:0.85rem;"
+                               data-weekly="<?= !empty($selected_month_name) ? '(' . esc($selected_month_name) . ' ' . esc($year) . ')' : ($year === (int) date('Y') ? '(Last 12 Weeks)' : '(Last 12 Weeks of ' . esc($year) . ')') ?>"
+                               data-daily="(<?= esc(date('M d, Y', strtotime($daily_trend[0]['date']))) ?> &ndash; <?= esc(date('M d, Y', strtotime($daily_trend[count($daily_trend) - 1]['date']))) ?>)">
                             <?= !empty($selected_month_name) ? '(' . esc($selected_month_name) . ' ' . esc($year) . ')' : ($year === (int) date('Y') ? '(Last 12 Weeks)' : '(Last 12 Weeks of ' . esc($year) . ')') ?>
                         </small>
                     </h5>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Switch the same card between the weekly and the daily view. -->
+                        <div class="btn-group btn-group-sm shadow-sm" role="group" aria-label="Choose trend period">
+                            <button type="button" class="btn btn-outline-primary active" id="btnTrendWeekly" aria-pressed="true">
+                                <i class="bi bi-calendar-week"></i> Weekly
+                            </button>
+                            <button type="button" class="btn btn-outline-primary" id="btnTrendDaily" aria-pressed="false">
+                                <i class="bi bi-calendar-day"></i> Daily
+                            </button>
+                        </div>
                         <form method="GET" class="m-0 d-flex align-items-center gap-1">
                             <input type="hidden" name="year" value="<?= esc($year) ?>">
-                            <select name="month" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 132px; border-radius: 8px;" aria-label="Select month for weekly trend" onchange="this.form.submit()">
+                            <select name="month" id="trendMonthSelect" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 132px; border-radius: 8px;" aria-label="Select month for weekly trend">
                                 <option value="" <?= empty($selected_month) ? 'selected' : '' ?>>Last 12 Weeks</option>
                                 <optgroup label="<?= esc($year) ?> Breakdown">
                                     <?php 
@@ -812,7 +830,7 @@
                             </select>
                         </form>
                         <?php if (!empty($selected_month)): ?>
-                            <a href="?year=<?= esc($year) ?>" class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-2" style="font-size:0.75rem;" title="Reset to Last 12 Weeks">
+                            <a href="?year=<?= esc($year) ?>" class="btn btn-sm btn-outline-secondary py-1 px-2 rounded-2 trend-reset" style="font-size:0.75rem;" title="Reset to Last 12 Weeks">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
                             </a>
                         <?php endif; ?>
@@ -825,7 +843,7 @@
                             $monthTotalRevenue = array_sum(array_column($weekly_trend, 'revenue'));
                             $monthPaidRevenue  = array_sum(array_column($weekly_trend, 'paid_revenue'));
                         ?>
-                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 chart-panel-muted rounded-3 border border-light-subtle gap-2">
+                        <div id="trendMonthSummary" class="d-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 chart-panel-muted rounded-3 border border-light-subtle gap-2">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">
                                     <i class="bi bi-ticket-perforated me-1"></i><?= $monthTotalTickets ?> Violations in <?= esc($selected_month_name) ?>
@@ -840,9 +858,9 @@
                         </div>
                     <?php endif; ?>
                     <div class="dashboard-chart-shell" data-dashboard-chart-shell="weekly">
-                        <canvas id="weeklyChart" role="img" aria-label="Weekly ticket count and collected revenue trend"></canvas>
+                        <canvas id="weeklyChart" role="img" aria-label="Ticket counts and collected revenue trend, switchable between weekly and daily"></canvas>
                         <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="chart-skeleton-line"></div></div>
-                        <div class="chart-empty-state" role="status"><i class="bi bi-bar-chart"></i><strong>No weekly data yet</strong><span>Weekly activity will appear here when available.</span></div>
+                        <div class="chart-empty-state" role="status"><i class="bi bi-bar-chart"></i><strong>No trend data yet</strong><span>Weekly or daily activity will appear here when available.</span></div>
                     </div>
                 </div>
             </div>
@@ -1361,15 +1379,27 @@
             }
         };
 
-        // --- Weekly Trend Chart (Combo: Bar + Line) ---
-        const weeklyData = <?= json_encode($weekly_trend) ?>;
-        const weekLabels = weeklyData.map(w => w.label);
-        const weekCounts = weeklyData.map(w => w.count);
+        // --- Trend Chart: one card, switchable between Weekly and Daily ---
+        // Reassigned (not frozen) because the month dropdown loads another slice
+        // from api/dashboard-trend and redraws this card in place.
+        let weeklyData = <?= json_encode($weekly_trend) ?>;
+        let weekLabels = weeklyData.map(w => w.label);
+        let weekCounts = weeklyData.map(w => w.count);
         // Revenue means money actually collected, which is how the Revenue
         // Report counts it: pending fines are owed, not received.
-        const weekRevenues = weeklyData.map(w => w.paid_revenue);
+        let weekRevenues = weeklyData.map(w => w.paid_revenue);
 
-        const weeklyChart = new Chart(document.getElementById('weeklyChart'), {
+        let dailyData = <?= json_encode($daily_trend) ?>;
+        let dailyLabels = dailyData.map(d => d.short_label);
+        // Tickets, not offense rows: the Daily Report's month sheet counts one
+        // apprehension per ticket, so the dashboard bars read the same number.
+        let dailyCounts = dailyData.map(d => d.ticket_count ?? d.count);
+        let dailyCollected = dailyData.map(d => d.paid_revenue);
+
+        // Weekly view: bars are tickets issued, the line is money collected.
+        // Built fresh for every render so switching back and forth never reuses
+        // a config object a destroyed chart already mutated.
+        const weeklyTrendConfig = () => ({
             type: 'bar',
             data: {
                 labels: weekLabels,
@@ -1455,7 +1485,271 @@
             },
             plugins: [dashboardHighlightBand]
         });
-        markChartShell('weekly', weekCounts.some(Number) || weekRevenues.some(Number));
+
+        // Daily view: one point per day, same shape as the weekly chart —
+        // violations issued (bars) and money collected (line).
+        const dailyTrendConfig = () => ({
+            type: 'bar',
+            data: {
+                labels: dailyLabels,
+                datasets: [
+                    {
+                        label: 'Violations',
+                        data: dailyCounts,
+                        backgroundColor: getCssToken('--dash-blue'),
+                        borderRadius: 3,
+                        order: 2,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Revenue (₱ collected)',
+                        data: dailyCollected,
+                        type: 'line',
+                        borderColor: getCssToken('--dash-green'),
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: getCssToken('--dash-green'),
+                        order: 1,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) {
+                                if (!items.length) return '';
+                                const item = dailyData[items[0].dataIndex];
+                                return item ? item.label : items[0].label;
+                            },
+                            label: function(ctx) {
+                                if (ctx.dataset.yAxisID === 'y1') {
+                                    const item = dailyData[ctx.dataIndex] || {};
+                                    let txt = ' Collected: ₱' + Number(ctx.raw || 0).toLocaleString();
+                                    if (item.revenue !== undefined) {
+                                        txt += ' · Fines: ₱' + Number(item.revenue || 0).toLocaleString();
+                                    }
+                                    return txt;
+                                }
+                                return ' Tickets: ' + Number(ctx.raw || 0);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 14, font: { size: 12 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: gridOptions,
+                        ticks: { font: { size: 13 }, precision: 0 },
+                        title: { display: true, text: 'Count', font: { size: 13, weight: '600' } }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        stacked: false,
+                        grid: { drawOnChartArea: false },
+                        ticks: {
+                            font: { size: 13 },
+                            callback: v => '₱' + Number(v).toLocaleString()
+                        },
+                        title: { display: true, text: 'Revenue (₱)', font: { size: 13, weight: '600' } }
+                    }
+                }
+            },
+            plugins: [dashboardHighlightBand]
+        });
+
+        const trendCanvas = document.getElementById('weeklyChart');
+        const trendTitle = document.getElementById('trendModeTitle');
+        const trendPeriod = document.getElementById('trendPeriodLabel');
+        const btnTrendWeekly = document.getElementById('btnTrendWeekly');
+        const btnTrendDaily = document.getElementById('btnTrendDaily');
+        let trendChart = null;
+        let trendMode = 'weekly';
+
+        const renderTrendChart = (mode) => {
+            const isDaily = mode === 'daily';
+
+            // One canvas, one chart: rebuild it for the chosen period so both
+            // views share the card (and its height) without stacking canvases.
+            if (trendChart) {
+                trendChart.destroy();
+                trendChart = null;
+            }
+            trendChart = new Chart(trendCanvas, isDaily ? dailyTrendConfig() : weeklyTrendConfig());
+
+            trendMode = mode;
+            trendTitle.textContent = isDaily ? 'Daily Trend' : 'Weekly Trend';
+            trendPeriod.innerHTML = isDaily ? trendPeriod.dataset.daily : trendPeriod.dataset.weekly;
+
+            // The monthly totals banner describes the weekly breakdown, so it
+            // is hidden rather than shown with mismatched numbers. Re-queried
+            // on every render because an in-place month switch creates it.
+            const monthSummary = document.getElementById('trendMonthSummary');
+            if (monthSummary) {
+                monthSummary.classList.toggle('d-none', isDaily);
+            }
+
+            btnTrendWeekly.classList.toggle('active', !isDaily);
+            btnTrendDaily.classList.toggle('active', isDaily);
+            btnTrendWeekly.setAttribute('aria-pressed', String(!isDaily));
+            btnTrendDaily.setAttribute('aria-pressed', String(isDaily));
+
+            const hasData = isDaily
+                ? dailyData.some(d => Number(d.count)) || dailyCollected.some(Number)
+                : weekCounts.some(Number) || weekRevenues.some(Number);
+            markChartShell('weekly', hasData);
+        };
+
+        btnTrendWeekly.addEventListener('click', () => renderTrendChart('weekly'));
+        btnTrendDaily.addEventListener('click', () => renderTrendChart('daily'));
+        renderTrendChart('weekly');
+
+        // Month dropdown and the monthly chart now load their slice from the
+        // JSON endpoint and redraw this card, so the dashboard header, KPI
+        // cards and the other chart never reload.
+        const trendMonthSelect = document.getElementById('trendMonthSelect');
+        const trendShell = document.querySelector('[data-dashboard-chart-shell="weekly"]');
+        let trendRequest = null;
+
+        const formatTrendDay = (iso) => {
+            const parts = String(iso || '').split('-');
+            if (parts.length !== 3) return iso || '';
+            return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                .toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' });
+        };
+
+        const loadTrend = function (params) {
+            const url = new URL('<?= base_url('api/dashboard-trend') ?>', window.location.href);
+            const year = params.year || '<?= (int) $year ?>';
+
+            url.searchParams.set('year', year);
+            if (params.month) url.searchParams.set('month', params.month);
+
+            // Shared fallback: a plain visit to the same address, so a failed
+            // request still lands on the right data.
+            const fallback = () => {
+                const next = new URL(window.location.href);
+                next.searchParams.set('year', year);
+                if (params.month) next.searchParams.set('month', params.month);
+                else next.searchParams.delete('month');
+                window.location.assign(next.toString());
+            };
+
+            if (trendRequest) trendRequest.abort();
+
+            const controller = new AbortController();
+            trendRequest     = controller;
+            if (trendShell) trendShell.classList.add('is-loading');
+
+            fetch(url.toString(), { signal: controller.signal, headers: { Accept: 'application/json' } })
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.json();
+                })
+                .then(payload => {
+                    weeklyData = payload.weekly_trend || [];
+                    weekLabels = weeklyData.map(w => w.label);
+                    weekCounts = weeklyData.map(w => w.count);
+                    weekRevenues = weeklyData.map(w => w.paid_revenue);
+
+                    dailyData = payload.daily_trend || [];
+                    dailyLabels = dailyData.map(d => d.short_label);
+                    dailyCounts = dailyData.map(d => d.ticket_count ?? d.count);
+                    dailyCollected = dailyData.map(d => d.paid_revenue);
+
+                    if (trendPeriod) {
+                        trendPeriod.dataset.weekly = payload.month_name
+                            ? '(' + payload.month_name + ' ' + payload.year + ')'
+                            : (Number(payload.year) === new Date().getFullYear()
+                                ? '(Last 12 Weeks)'
+                                : '(Last 12 Weeks of ' + payload.year + ')');
+                        trendPeriod.dataset.daily = dailyData.length
+                            ? '(' + formatTrendDay(dailyData[0].date) + ' \u2013 ' + formatTrendDay(dailyData[dailyData.length - 1].date) + ')'
+                            : '';
+                    }
+
+                    // The month strip above the chart is server-rendered for a
+                    // month view; switching months in place keeps it honest.
+                    const chartBody   = trendShell ? trendShell.closest('.card-body') : null;
+                    let monthSummary  = document.getElementById('trendMonthSummary');
+
+                    if (chartBody && payload.month_name) {
+                        if (!monthSummary) {
+                            monthSummary = document.createElement('div');
+                            monthSummary.id = 'trendMonthSummary';
+                            monthSummary.className = 'd-flex flex-wrap align-items-center justify-content-between mb-3 px-3 py-2 chart-panel-muted rounded-3 border border-light-subtle gap-2';
+                            chartBody.insertBefore(monthSummary, chartBody.firstChild);
+                        }
+
+                        const monthTickets = weeklyData.reduce((sum, w) => sum + Number(w.count || 0), 0);
+                        const monthPaid    = weeklyData.reduce((sum, w) => sum + Number(w.paid_revenue || 0), 0);
+
+                        monthSummary.innerHTML =
+                            '<div class="d-flex align-items-center flex-wrap gap-2">' +
+                                '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">' +
+                                    '<i class="bi bi-ticket-perforated me-1"></i>' + monthTickets + ' Violations in ' + payload.month_name +
+                                '</span>' +
+                                '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">' +
+                                    '<i class="bi bi-cash-stack me-1"></i>\u20b1' + monthPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' Paid' +
+                                '</span>' +
+                            '</div>' +
+                            '<span class="small text-muted" style="font-size: 0.78rem;">' +
+                                '<i class="bi bi-calendar-check me-1"></i>Weekly Breakdown' +
+                            '</span>';
+                    } else if (monthSummary) {
+                        monthSummary.remove();
+                    }
+
+                    renderTrendChart(trendMode);
+
+                    const next = new URL(window.location.href);
+                    next.searchParams.set('year', payload.year);
+                    if (payload.month) next.searchParams.set('month', payload.month);
+                    else next.searchParams.delete('month');
+                    window.history.replaceState({ trendMonth: payload.month }, '', next.toString());
+                })
+                .catch(error => {
+                    if (error && error.name === 'AbortError') return;
+                    fallback();
+                })
+                .finally(() => {
+                    if (trendRequest === controller) trendRequest = null;
+                    if (trendShell) trendShell.classList.remove('is-loading');
+                });
+        };
+
+        trendMonthSelect?.addEventListener('change', function () {
+            loadTrend({ month: this.value });
+        });
+
+        // The "Reset to Last 12 Weeks" link keeps its address for a plain
+        // visit, but clicks reload the trend card instead of the page.
+        document.addEventListener('click', function (event) {
+            const reset = event.target.closest && event.target.closest('.trend-reset');
+            if (!reset) return;
+
+            event.preventDefault();
+            if (trendMonthSelect) trendMonthSelect.value = '';
+            loadTrend({});
+        });
+
+        // The monthly chart used to navigate on click; it now fills the month
+        // dropdown and redraws the trend card on the spot.
+        window.loadDashboardTrend = loadTrend;
 
         // --- Monthly Breakdown Chart (Line) ---
         const monthlyData = <?= json_encode($monthly_breakdown) ?>;
@@ -1512,8 +1806,16 @@
                 interaction: { mode: 'index', intersect: false },
                 onClick: (e, elements) => {
                     if (elements && elements.length > 0) {
-                        const monthIndex = elements[0].index;
-                        const monthNum = monthIndex + 1;
+                        const monthNum = elements[0].index + 1;
+                        const select   = document.getElementById('trendMonthSelect');
+
+                        if (select) select.value = String(monthNum);
+
+                        if (typeof window.loadDashboardTrend === 'function') {
+                            window.loadDashboardTrend({ month: monthNum });
+                            return;
+                        }
+
                         const url = new URL(window.location.href);
                         url.searchParams.set('year', '<?= esc($year) ?>');
                         url.searchParams.set('month', monthNum);
@@ -2019,10 +2321,14 @@
         window.addEventListener('themechange', () => {
             Chart.defaults.color = getCssToken('--dash-muted');
             gridOptions.color = getCssToken('--dash-chart-grid');
-            weeklyChart.data.datasets[0].backgroundColor = getCssToken('--dash-blue');
-            weeklyChart.data.datasets[1].borderColor = getCssToken('--dash-green');
-            weeklyChart.data.datasets[1].pointBackgroundColor = getCssToken('--dash-green');
-            weeklyChart.update('none');
+            if (trendChart) {
+                // Both views draw violations bars + a collected-revenue line.
+                const trendSets = trendChart.data.datasets;
+                trendSets[0].backgroundColor = getCssToken('--dash-blue');
+                trendSets[1].borderColor = getCssToken('--dash-green');
+                trendSets[1].pointBackgroundColor = getCssToken('--dash-green');
+                trendChart.update('none');
+            }
             monthlyChart.data.datasets[0].backgroundColor = getCssToken('--dash-highlight');
             monthlyChart.data.datasets[0].borderColor = getCssToken('--dash-indigo');
             monthlyChart.data.datasets[0].pointBackgroundColor = getCssToken('--dash-indigo');

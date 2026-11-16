@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Controllers\Admin;
@@ -85,6 +84,20 @@ class AdminController extends BaseController
                 : $this->violationRecord->getWeeklyTrend(12, null, sprintf('%04d-12-31', $year));
         }
 
+        // Daily apprehension report: the same kind of trend as the weekly card,
+        // but one point per calendar day. It follows the selected month when
+        // the admin drilled into one, otherwise it covers the last 14 days
+        // (a past year stops on its own Dec 31).
+        if ($selectedMonth !== null) {
+            $dailyEnd  = date('Y-m-t', strtotime(sprintf('%04d-%02d-01', $year, $selectedMonth)));
+            $dailyDays = (int) date('t', strtotime($dailyEnd));
+        } else {
+            $dailyEnd  = $year === (int) date('Y') ? date('Y-m-d') : sprintf('%04d-12-31', $year);
+            $dailyDays = 14;
+        }
+
+        $dailyTrend = $this->violationRecord->getDailyTrend($dailyDays, null, $dailyEnd);
+
         $monthlyBreakdown  = $this->violationRecord->getMonthlyBreakdown($year);
         $natureSummary     = $this->violationRecord->getViolationNatureSummary(null, $reportStart, $reportEnd);
 
@@ -99,6 +112,7 @@ class AdminController extends BaseController
             'selected_month'           => $selectedMonth,
             'selected_month_name'      => $selectedMonthName,
             'weekly_trend'             => $weeklyTrendLast12,
+            'daily_trend'              => $dailyTrend,
             'monthly_breakdown'        => $monthlyBreakdown,
             'nature_summary'           => $natureSummary,
             'recent_violations'        => $recentViolations,
@@ -159,6 +173,54 @@ class AdminController extends BaseController
             ]);
     }
 
+    /**
+     * JSON API: the Weekly/Daily trend card's data for one year, optionally
+     * narrowed to one month. The dashboard redraws the card from this instead
+     * of reloading the whole page when the month dropdown changes.
+     */
+    public function dashboardTrendJson()
+    {
+        $year = (int) ($this->request->getGet('year') ?? date('Y'));
+
+        if ($year < 2000 || $year > (int) date('Y') + 1) {
+            $year = (int) date('Y');
+        }
+
+        $month = (int) ($this->request->getGet('month') ?? 0);
+
+        if ($month < 1 || $month > 12) {
+            $month = 0;
+        }
+
+        if ($month > 0) {
+            // Same slice the page builds for a chosen month.
+            $weekly    = $this->violationRecord->getWeeklyTrendForMonth($year, $month);
+            $monthName = date('F', mktime(0, 0, 0, $month, 1, $year));
+            $dailyEnd  = date('Y-m-t', strtotime(sprintf('%04d-%02d-01', $year, $month)));
+            $dailyDays = (int) date('t', strtotime($dailyEnd));
+        } else {
+            $weekly    = ($year === (int) date('Y'))
+                ? $this->violationRecord->getWeeklyTrend(12)
+                : $this->violationRecord->getWeeklyTrend(12, null, sprintf('%04d-12-31', $year));
+            $monthName = null;
+            $dailyEnd  = $year === (int) date('Y') ? date('Y-m-d') : sprintf('%04d-12-31', $year);
+            $dailyDays = 14;
+        }
+
+        $daily = $this->violationRecord->getDailyTrend($dailyDays, null, $dailyEnd);
+
+        return $this->response
+            ->setContentType('application/json')
+            ->setJSON([
+                'status'       => 'ok',
+                'year'         => $year,
+                'month'        => $month > 0 ? $month : null,
+                'month_name'   => $monthName,
+                'weekly_trend' => array_values($weekly),
+                'daily_trend'  => array_values($daily),
+            ]);
+    }
+
     public function reports()
     {
         // A report is only built once a period has been asked for. Landing on
@@ -174,6 +236,29 @@ class AdminController extends BaseController
 
         ['startDate' => $startDate, 'endDate' => $endDate, 'year' => $year, 'month' => $month]
             = $this->resolveDateRange($periodType);
+
+        // A Daily Report carries a month sheet beside the day's detail. The
+        // month comes from report_month, or from the chosen day when the month
+        // is not supplied; the day then follows the month so the sheet and the
+        // detail always describe the same calendar month.
+        $dailyMonth = null;
+        $monthStart = null;
+        $monthEnd   = null;
+
+        if (! $awaitingFilter && $periodType === 'daily') {
+            $monthInput = (string) ($this->request->getGet('report_month') ?? '');
+
+            $dailyMonth = preg_match('/^(\d{4})-(\d{2})$/', $monthInput, $monthMatch)
+                ? ['year' => (int) $monthMatch[1], 'month' => (int) $monthMatch[2]]
+                : ['year' => (int) date('Y', strtotime($startDate)), 'month' => (int) date('n', strtotime($startDate))];
+
+            $monthStart = sprintf('%04d-%02d-01', $dailyMonth['year'], $dailyMonth['month']);
+            $monthEnd   = date('Y-m-t', strtotime($monthStart));
+
+            if (date('Y-m', strtotime($startDate)) !== date('Y-m', strtotime($monthStart))) {
+                $startDate = $endDate = $monthStart;
+            }
+        }
 
         $reportData = $this->violationRecord->getReportData($startDate, $endDate, $status, $typeId);
         // One organized block per violator: every offense keeps its own status,
@@ -200,6 +285,22 @@ class AdminController extends BaseController
             $reportData['nature_breakdown'] ?? []
         );
 
+        // The month sheet's three grids read one month record set, so their
+        // footers, the day's summary and the dashboard agree by construction.
+        $dailySheets = [];
+
+        if ($dailyMonth !== null && $monthStart !== null && $monthEnd !== null) {
+            $monthRecords = ($monthStart === $startDate && $monthEnd === $endDate)
+                ? $reportData
+                : $this->violationRecord->getReportData($monthStart, $monthEnd, $status, $typeId);
+
+            $dailySheets = $this->buildDailyMonthSheets(
+                $monthRecords['records'] ?? [],
+                $dailyMonth['year'],
+                $dailyMonth['month']
+            );
+        }
+
         $data = array_merge($reportData, [
             'title'            => 'Generated Traffic Violation Report',
             // An empty period keeps every period box closed and the document
@@ -218,9 +319,107 @@ class AdminController extends BaseController
             'top_types'        => $timelineInfo['top_types'],
             'citation_groups'   => $citationGroups,
             'status_counts'     => $statusCounts,
+            'daily_month'       => $dailyMonth,
+            'daily_sheets'      => $dailySheets,
         ]);
 
         return view('admin/reports/index', $data);
+    }
+
+    /**
+     * The Daily Report's month sheet: one column per calendar day and three
+     * tallies — apprehensions (distinct tickets), money collected (Paid only)
+     * and distinct violators — all read from the same month records.
+     *
+     * Cancelled (void) citations are excluded from every tally, a ticket with
+     * several offenses is one apprehension, and a person caught twice in the
+     * month is counted on each of those days but once in the unique total.
+     *
+     * @param array<int, array<string, mixed>> $records
+     *
+     * @return array<string, mixed>
+     */
+    private function buildDailyMonthSheets(array $records, int $year, int $month): array
+    {
+        $days = (int) date('t', strtotime(sprintf('%04d-%02d-01', $year, $month)));
+
+        // Every array is keyed 1–31 so the sheet can print a full grid even for
+        // February; days outside the month stay blank.
+        $tickets = array_fill(1, 31, 0);
+        $revenue = array_fill(1, 31, 0.0);
+        $people  = array_fill(1, 31, 0);
+
+        $seenTicketsByDay = [];
+        $seenPeopleByDay  = [];
+        $uniquePeople     = [];
+
+        foreach ($records as $record) {
+            $status = (string) ($record['status'] ?? 'Pending');
+
+            if ($status === 'Cancelled') {
+                continue;
+            }
+
+            $stamp = strtotime((string) ($record['violation_date'] ?? ''));
+
+            if ($stamp === false) {
+                continue;
+            }
+
+            $day = (int) date('j', $stamp);
+
+            if ($day < 1 || $day > $days) {
+                continue;
+            }
+
+            // One apprehension per ticket, however many offenses it carries.
+            $ticketKey = trim((string) ($record['ticket_id'] ?? ''));
+
+            if ($ticketKey === '') {
+                $ticketKey = 'row-' . ($record['id'] ?? uniqid('', true));
+            }
+
+            if (! isset($seenTicketsByDay[$day][$ticketKey])) {
+                $seenTicketsByDay[$day][$ticketKey] = true;
+                $tickets[$day]++;
+            }
+
+            // Revenue is money actually collected, on the citation's own date
+            // (the same basis the dashboard's revenue line uses).
+            if ($status === 'Paid') {
+                $revenue[$day] += (float) ($record['penalty_amount'] ?? 0);
+            }
+
+            // A person is the linked violator record, or their name and plate
+            // for legacy rows that were never linked.
+            $violatorId = (int) ($record['violator_id'] ?? 0);
+            $personKey  = $violatorId > 0
+                ? 'v' . $violatorId
+                : 'n' . mb_strtolower(trim((string) ($record['driver_name'] ?? '')))
+                    . '|' . mb_strtolower(trim((string) ($record['license_plate'] ?? '')));
+
+            $seenPeopleByDay[$day][$personKey] = true;
+            $uniquePeople[$personKey]          = true;
+        }
+
+        foreach ($seenPeopleByDay as $day => $set) {
+            $people[$day] = count($set);
+        }
+
+        return [
+            'year'          => $year,
+            'month'         => $month,
+            'days'          => $days,
+            'month_value'   => sprintf('%04d-%02d', $year, $month),
+            'label'         => date('F Y', strtotime(sprintf('%04d-%02d-01', $year, $month))),
+            'short_label'   => date('M', strtotime(sprintf('%04d-%02d-01', $year, $month))),
+            'tickets'       => $tickets,
+            'tickets_total' => array_sum($tickets),
+            'revenue'       => $revenue,
+            'revenue_total' => array_sum($revenue),
+            'people'        => $people,
+            'people_total'  => count($uniquePeople),
+        ];
     }
 
     /**
@@ -995,8 +1194,8 @@ class AdminController extends BaseController
      */
     private function buildApprehensionColumns(string $periodType, string $startDate, string $endDate): array
     {
-        $customDaily = $periodType === 'custom'
-            && ((int) ceil((strtotime($endDate) - strtotime($startDate)) / 86400)) <= 14;
+        $customDaily = $periodType === 'daily' || ($periodType === 'custom'
+            && ((int) ceil((strtotime($endDate) - strtotime($startDate)) / 86400)) <= 14);
 
         $columns = [];
 
@@ -1032,9 +1231,11 @@ class AdminController extends BaseController
                     'sub'   => $weekdayInitial($day),
                 ];
             }
-            $periodLabel = $periodType === 'weekly'
-                ? 'Week of ' . date('M d', strtotime($startDate)) . ' – ' . date('M d, Y', strtotime($endDate))
-                : date('M d, Y', strtotime($startDate)) . ' – ' . date('M d, Y', strtotime($endDate));
+            $periodLabel = match ($periodType) {
+                'weekly' => 'Week of ' . date('M d', strtotime($startDate)) . ' – ' . date('M d, Y', strtotime($endDate)),
+                'daily'  => date('l, M d, Y', strtotime($startDate)),
+                default  => date('M d, Y', strtotime($startDate)) . ' – ' . date('M d, Y', strtotime($endDate)),
+            };
             $columnNoun  = 'Day';
         } elseif ($periodType === 'yearly') {
             $y = (int) date('Y', strtotime($startDate));
@@ -1111,6 +1312,10 @@ class AdminController extends BaseController
 
         if ($periodType === 'weekly') {
             return date('M d', strtotime($startDate)) . '–' . date('d', strtotime($endDate));
+        }
+
+        if ($periodType === 'daily') {
+            return date('M d, Y', strtotime($startDate));
         }
 
         if ($customDaily) {

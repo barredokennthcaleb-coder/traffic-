@@ -134,6 +134,8 @@ final class ViolatorReportsViewTest extends CIUnitTestCase
         $this->assertStringContainsString('I. Daily Summary', $html);
         $this->assertStringContainsString('II. Apprehensions by Day', $html);
         $this->assertStringContainsString('III. Violator Summary for the Period', $html);
+        $this->assertSame(3, substr_count($html, 'onclick="printViolatorReportSection(this)"'));
+        $this->assertStringContainsString('function printViolatorReportSection(button)', $html);
 
         // The day figures, the ticket row and the violator line all print.
         $this->assertStringContainsString('Nov 10, 2026', $html);
@@ -152,5 +154,41 @@ final class ViolatorReportsViewTest extends CIUnitTestCase
         // The shared annual machinery stays out of the period document.
         $this->assertStringNotContainsString('ANNUAL APPREHENSION', $html);
         $this->assertStringNotContainsString('MONTHLY SUMMARY', $html);
+    }
+
+    public function testYearReportNamesSectionOneYearlyApprehensionRecord(): void
+    {
+        $html = service('renderer')->setData([
+            'title'           => 'Full-Year Violator Report 2026',
+            'year'            => 2026,
+            'years'           => [2026],
+            'search'          => '',
+            'month_names'     => [
+                1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+                5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+                9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+            ],
+            'calendar'        => [],
+            'calendar_totals' => [],
+            'month_summary'   => [],
+            'month_detail'    => [],
+            'per_violator'    => [],
+            'totals'          => [
+                'apprehensions' => 0,
+                'violators'     => 0,
+                'entries'       => 0,
+                'assessed'      => 0.0,
+                'paid'          => 0.0,
+                'pending'       => 0.0,
+                'status_amounts'=> ['Paid' => 0.0, 'Pending' => 0.0, 'Cancelled' => 0.0],
+                'status_entries'=> ['Paid' => 0, 'Pending' => 0, 'Cancelled' => 0],
+            ],
+            'back_url'        => 'http://localhost/reports/violators',
+        ])->render('admin/violators/report_year');
+
+        $this->assertStringContainsString('I. Yearly Traffic Apprehension Record', $html);
+        $this->assertStringNotContainsString('I. Daily Traffic Apprehension Record', $html);
+        $this->assertSame(5, substr_count($html, 'onclick="printViolatorReportSection(this)"'));
+        $this->assertStringContainsString('body.vpr-print-section .report-section:not(.vpr-print-target)', $html);
     }
 }

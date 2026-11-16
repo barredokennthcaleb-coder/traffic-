@@ -26,14 +26,16 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
+        // Credentials come from .env (database.default.*); never commit them here.
         'hostname'     => '127.0.0.1',
-        'username'     => 'root',
+        'username'     => '',
         'password'     => '',
         'database'     => 'database',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
-        'DBDebug'      => true,
+        // Show SQL errors only while developing; production must not leak them.
+        'DBDebug'      => ENVIRONMENT === 'development',
         'charset'      => 'utf8mb4',
         'DBCollat'     => 'utf8mb4_general_ci',
         'swapPre'      => '',

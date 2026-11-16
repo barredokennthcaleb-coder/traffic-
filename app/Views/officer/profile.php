@@ -157,7 +157,7 @@
             <div class="profile-hero-info">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                     <h2 class="hero-name mb-0"><?= esc($displayName) ?></h2>
-                    <span class="badge bg-white text-primary fw-bold px-2.5 py-1 rounded-pill shadow-sm" style="font-size:0.75rem;">
+                    <span class="badge hero-badge-number fw-bold px-2.5 py-1 rounded-pill shadow-sm" style="font-size:0.75rem;">
                         <i class="bi bi-shield-check me-1"></i><?= esc($badgeNumber) ?>
                     </span>
                     <span class="hero-role-badge"><i class="bi bi-person-badge me-1"></i>Traffic Enforcer</span>
@@ -230,7 +230,7 @@
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <small class="text-muted text-uppercase d-block fw-semibold" style="font-size:0.68rem; letter-spacing: 0.05em;">Field Status</small>
-                        <span class="fw-bold text-dark d-flex align-items-center gap-1.5" style="font-size:0.95rem;">
+                        <span class="fw-bold text-dark d-flex align-items-center gap-2" style="font-size:0.95rem;">
                             <span class="live-pulse-indicator" id="dutyStatusDot"></span>
                             <span id="dutyStatusValue"><?= esc($dutyStatus) ?></span>
                         </span>
@@ -240,7 +240,7 @@
                             <?php elseif ($dutyStatus === 'Off Duty'): ?>
                                 Shift Finished &middot; Standby
                             <?php else: ?>
-                                Call Sign: Unit #<?= esc($officer['id']) ?> &middot; Active
+                                Active
                             <?php endif; ?>
                         </small>
                     </div>
@@ -333,6 +333,19 @@
                                 <i class="bi bi-check2-circle me-1"></i>CONFIRMED
                             </span>
                         <?php endif; ?>
+                    </div>
+                    <div class="jurisdiction-area-search mb-2">
+                        <label for="jurisdictionAreaSearch" class="visually-hidden">Search assigned station areas</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-light-subtle">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                            </span>
+                            <input type="search" class="form-control" id="jurisdictionAreaSearch"
+                                   placeholder="Search station areas" autocomplete="off">
+                        </div>
+                        <small class="text-muted d-block mt-2 d-none" id="jurisdictionAreaSearchEmpty" role="status">
+                            No matching station areas.
+                        </small>
                     </div>
                     <div class="jurisdiction-area-list d-flex flex-column gap-1.5 mb-3" role="list">
                         <?php foreach ($loggedAreas as $areaItem): ?>
@@ -463,7 +476,7 @@
                                         <span class="offense-rank">#<?= $offenseIndex + 1 ?></span><?= esc($offenseRow['violation_type']) ?>
                                     </span>
                                     <span class="flex-shrink-0 fw-bold" style="font-size:0.78rem;">
-                                        <?= $offenseCount ?> <span class="text-muted fw-semibold"><?= $offenseShare ?>%</span>
+                                        <?= $offenseCount ?>
                                     </span>
                                 </div>
                                 <div class="offense-share-track">
@@ -561,7 +574,7 @@
                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                         <div>
                             <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.92rem;">
-                                <i class="bi bi-card-checklist me-1.5 text-success"></i>Citation Enforcement Record
+                                <i class="bi bi-card-checklist me-2 text-success"></i>Citation Enforcement Record
                             </h6>
                             <small class="text-muted d-block" style="font-size: 0.7rem;">
                                 Apprehension logs registered by this officer &middot; <span id="cfrDateNote"><?= esc($enforcementDateNote) ?></span>
@@ -687,7 +700,7 @@
                         <div class="p-3 rounded-3 bg-light-subtle border border-light-subtle mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1.5">
                                 <span class="fw-semibold text-dark" style="font-size:0.8rem;">
-                                    <i class="bi bi-shield-check text-success me-1"></i>Settlement Clearance Rate
+                                    <i class="bi bi-shield-check text-success me-2"></i>Settlement Clearance Rate
                                 </span>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.75rem;" id="cfrPct">
                                     <?= $collectionPct ?>%
@@ -875,7 +888,7 @@
     overflow: hidden;
     padding: 2.2rem 2rem;
     background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #2563eb 100%);
-    box-shadow: 0 12px 32px rgba(30, 58, 138, 0.25);
+    box-shadow: 0 12px 32px rgba(76, 29, 149, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.15);
     isolation: isolate;
 }
@@ -986,7 +999,15 @@
     color: #fff;
     letter-spacing: -0.03em;
 }
+.hero-badge-number {
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8;
+}
 .hero-role-badge {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
     background: rgba(4, 47, 34, 0.55);
     border: 1px solid rgba(167, 243, 208, 0.45);
     color: #a7f3d0;
@@ -1054,9 +1075,9 @@
     filter: blur(55px);
     opacity: 0.38;
 }
-.hero-orb-1 { width:240px;height:240px;background:#818cf8;top:-70px;right:8%;animation:orbf 14s ease-in-out infinite alternate; }
-.hero-orb-2 { width:160px;height:160px;background:#c084fc;bottom:-55px;right:28%;animation:orbf 18s ease-in-out infinite alternate-reverse; }
-.hero-orb-3 { width:120px;height:120px;background:#38bdf8;top:20%;right:4%;animation:orbf 11s ease-in-out infinite alternate; }
+.hero-orb-1 { width:240px;height:240px;background:#60a5fa;top:-70px;right:8%;animation:orbf 14s ease-in-out infinite alternate; }
+.hero-orb-2 { width:160px;height:160px;background:#38bdf8;bottom:-55px;right:28%;animation:orbf 18s ease-in-out infinite alternate-reverse; }
+.hero-orb-3 { width:120px;height:120px;background:#93c5fd;top:20%;right:4%;animation:orbf 11s ease-in-out infinite alternate; }
 @keyframes orbf { from{transform:translate(0,0)} to{transform:translate(18px,14px)} }
 
 /* ── STAT KPI GLASS CARDS ──────────────────────────────────── */
@@ -1358,12 +1379,14 @@
     flex-shrink: 0;
 }
 .live-pulse-indicator {
-    width: 7px;
-    height: 7px;
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
     border-radius: 50%;
     background: #10b981;
     display: inline-block;
-    box-shadow: 0 0 6px rgba(16, 185, 129, 0.9);
+    border: 1px solid #047857;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16), 0 0 7px rgba(16, 185, 129, 0.8);
     animation: radarPulse 1.8s infinite;
 }
 
@@ -1372,7 +1395,7 @@
     cursor: pointer;
 }
 .jurisdiction-card:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #7c3aed;
     outline-offset: 2px;
 }
 .jurisdiction-caret {
@@ -1388,7 +1411,7 @@
     cursor: pointer;
 }
 .op-status-card.is-clickable:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #7c3aed;
     outline-offset: 2px;
 }
 .op-card-caret {
@@ -1435,17 +1458,17 @@ button.duty-option {
     background: #ffffff;
 }
 .duty-option:hover {
-    border-color: #bfdbfe;
+    border-color: #ddd6fe;
     background: #f8fafc;
     transform: translateY(-1px);
 }
 .duty-option.is-selected {
-    border-color: #0066ff;
-    background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12);
+    border-color: #7c3aed;
+    background: #f5f3ff;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 .duty-option.is-selected .fw-bold {
-    color: #0052cc !important;
+    color: #6d28d9 !important;
 }
 .duty-option-dot {
     width: 12px;
@@ -1464,7 +1487,7 @@ button.duty-option {
     box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
 }
 .duty-option-check {
-    color: #0066ff;
+    color: #7c3aed;
     opacity: 0;
     transform: scale(0.7);
     transition: opacity 0.18s ease, transform 0.18s ease;
@@ -1513,7 +1536,7 @@ button.duty-option {
 .offense-share-fill {
     height: 100%;
     border-radius: 99px;
-    background: linear-gradient(90deg, #3b82f6, #2563eb);
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
     transition: width 0.4s ease;
 }
 .offense-breakdown-item.is-top .offense-share-fill {
@@ -1542,7 +1565,7 @@ button.duty-option {
     background: rgba(255, 255, 255, 0.04);
 }
 :root[data-theme="dark"] .duty-option.is-selected {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgba(124, 58, 237, 0.16);
 }
 .jurisdiction-dialog {
     max-width: 420px;
@@ -1583,7 +1606,7 @@ button.duty-option {
     font-weight: 800;
 }
 .duty-status-title-main i {
-    color: #0066ff;
+    color: #7c3aed;
     margin-right: 0.2rem;
 }
 .swal2-popup.duty-status-swal .duty-status-swal-html {
@@ -1601,7 +1624,7 @@ button.duty-option {
     border-radius: 12px;
 }
 .swal2-popup.duty-status-swal .duty-option:focus-visible {
-    outline: 3px solid rgba(0, 102, 255, 0.25);
+    outline: 3px solid rgba(124, 58, 237, 0.25);
     outline-offset: 2px;
 }
 .duty-status-swal-note {
@@ -1621,11 +1644,11 @@ button.duty-option {
     border-top: 1px solid #e2e8f0;
 }
 .swal2-popup.duty-status-swal .duty-status-swal-confirm {
-    background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%) !important;
-    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.28) !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28) !important;
 }
 .swal2-popup.duty-status-swal .duty-status-swal-confirm:hover {
-    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.38) !important;
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.38) !important;
 }
 .swal2-popup.duty-status-swal .duty-status-swal-cancel {
     background: #f1f5f9 !important;
@@ -1646,7 +1669,7 @@ button.duty-option {
     color: #f8fafc !important;
 }
 :root[data-theme="dark"] .swal2-popup.duty-status-swal .duty-option.is-selected {
-    background: rgba(0, 102, 255, 0.18);
+    background: rgba(124, 58, 237, 0.18);
 }
 :root[data-theme="dark"] .duty-status-swal-note {
     color: #94a3b8;
@@ -1685,9 +1708,9 @@ button.duty-option {
     border-color: #cbd5e1;
 }
 .jurisdiction-area-item.is-active {
-    background: #eff6ff;
-    border-color: #2563eb;
-    color: #1d4ed8;
+    background: #f5f3ff;
+    border-color: #7c3aed;
+    color: #6d28d9;
     font-weight: 600;
 }
 .jurisdiction-area-item .area-count {
@@ -1701,8 +1724,8 @@ button.duty-option {
     white-space: nowrap;
 }
 .jurisdiction-area-item.is-active .area-count {
-    color: #1d4ed8;
-    background: #dbeafe;
+    color: #6d28d9;
+    background: #ede9fe;
 }
 .jurisdiction-map-frame {
     position: relative;
@@ -1740,6 +1763,7 @@ button.duty-option {
 /* Expanded: the map takes the modal's room and the area list steps aside,
    keeping the officer on this page with a standard-size map. */
 .jurisdiction-panel.is-map-expanded .jurisdiction-area-head,
+.jurisdiction-panel.is-map-expanded .jurisdiction-area-search,
 .jurisdiction-panel.is-map-expanded .jurisdiction-area-list {
     display: none !important;
 }
@@ -1747,9 +1771,9 @@ button.duty-option {
     height: min(62vh, 460px) !important;
 }
 .jurisdiction-panel.is-map-expanded #jurisdictionMapToggle {
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    color: #1d4ed8;
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+    color: #6d28d9;
 }
 :root[data-theme="dark"] .jurisdiction-map-expand {
     background: rgba(30, 41, 59, 0.96);
@@ -1759,7 +1783,7 @@ button.duty-option {
 
 /* ── ENFORCER CREDENTIAL CARD ────────────────────────────── */
 .enforcer-cred-card {
-    border-top: 3px solid #2563eb !important;
+    border-top: 3px solid #0066ff !important;
 }
 .tct-red-no {
     color: #dc2626 !important;
@@ -1821,6 +1845,14 @@ button.duty-option {
 }
 
 @media (max-width: 576px) {
+    .profile-hero-info > .d-flex {
+        row-gap: 0.55rem;
+    }
+    .hero-role-badge {
+        flex: 0 0 auto;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.65rem;
+    }
     .hero-duty-hud {
         flex-direction: column;
         align-items: flex-start;
@@ -1955,7 +1987,7 @@ button.duty-option {
     }
 }
 :root[data-bs-theme="dark"] .cfr-total-issued-tile {
-    border-color: rgba(59, 130, 246, .38) !important;
+    border-color: rgba(96, 165, 250, .38) !important;
     box-shadow: 0 2px 8px rgba(0, 102, 255, .1);
 }
 :root[data-bs-theme="dark"] .cfr-total-issued-label,
@@ -1982,6 +2014,36 @@ button.duty-option {
    button sat on top of the total-fines figure. Spacing only: each
    part gets its own line and the tiles get a little more room. */
 @media (max-width: 575.98px) {
+    .enforcer-cred-card > .card-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.75rem;
+    }
+    .enforcer-cred-card > .card-header > .d-flex:first-child {
+        width: 100%;
+        min-width: 0;
+        align-items: flex-start !important;
+    }
+    .enforcer-cred-card > .card-header > .d-flex:first-child > div {
+        min-width: 0;
+    }
+    .enforcer-cred-card > .card-header h6 {
+        font-size: 0.9rem !important;
+        line-height: 1.25;
+    }
+    .enforcer-cred-card > .card-header > .d-flex:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .enforcer-cred-card > .card-header .badge {
+        max-width: calc(100% - 5.5rem);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .enforcer-cred-card > .card-body {
+        padding: 1rem !important;
+    }
+
     .record-card > .card-header {
         flex-wrap: wrap;
         gap: 0.5rem;
@@ -2081,7 +2143,31 @@ document.addEventListener('DOMContentLoaded', function () {
         return path + encodeURIComponent(query + ', Philippines');
     }
 
-    document.querySelectorAll('.jurisdiction-area-item').forEach(function (item) {
+    const jurisdictionAreaSearch = document.getElementById('jurisdictionAreaSearch');
+    const jurisdictionAreaSearchEmpty = document.getElementById('jurisdictionAreaSearchEmpty');
+    const jurisdictionAreaItems = Array.from(document.querySelectorAll('.jurisdiction-area-item'));
+
+    function filterJurisdictionAreas() {
+        const query = (jurisdictionAreaSearch.value || '').trim().toLowerCase();
+        let matches = 0;
+
+        jurisdictionAreaItems.forEach(function (item) {
+            const area = (item.getAttribute('data-area') || '').toLowerCase();
+            const isMatch = area.includes(query);
+            item.classList.toggle('d-none', !isMatch);
+            if (isMatch) matches++;
+        });
+
+        if (jurisdictionAreaSearchEmpty) {
+            jurisdictionAreaSearchEmpty.classList.toggle('d-none', query === '' || matches > 0);
+        }
+    }
+
+    if (jurisdictionAreaSearch) {
+        jurisdictionAreaSearch.addEventListener('input', filterJurisdictionAreas);
+    }
+
+    jurisdictionAreaItems.forEach(function (item) {
         item.addEventListener('click', function () {
             const area = (item.getAttribute('data-area') || '').trim();
             if (!area) return;
@@ -2266,7 +2352,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 dutyIconBox.className = 'op-icon-box bg-success-subtle text-success';
                 dutyIcon.className = 'bi bi-broadcast fs-4';
                 dutyCaret.className = 'bi bi-chevron-down op-card-caret text-success';
-                if (dutySub) dutySub.textContent = 'Call Sign: Unit #<?= esc($officer['id']) ?> \u00b7 Active';
+                if (dutySub) dutySub.textContent = 'Active';
             }
         }
 
@@ -2569,7 +2655,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         icon: 'warning',
                         title: 'No area selected',
                         text: 'Pick an area from the list first.',
-                        confirmButtonColor: '#2563eb'
+                        confirmButtonColor: '#7c3aed'
                     });
                 } else {
                     window.alert('Please select an area from the list first.');
@@ -2597,7 +2683,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 showCancelButton: true,
                 confirmButtonText: 'Yes, confirm area',
                 cancelButtonText: 'Cancel',
-                confirmButtonColor: '#2563eb'
+                confirmButtonColor: '#7c3aed'
             }).then(function (result) {
                 if (result.isConfirmed) {
                     submitChoice();

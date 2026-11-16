@@ -205,34 +205,97 @@ class AuthController extends BaseController
     public function forgotPasswordPost()
     {
         $model = new UserModel();
-        $email = $this->request->getVar('email');
-        $email = is_string($email) ? trim($email) : '';
 
-        // Throttle reset attempts per IP + email so the public endpoint cannot
-        // be used to hammer accounts.
+        $email        = strtolower(trim((string) $this->request->getVar('email')));
+        $recoveryCode = trim((string) $this->request->getVar('recovery_code'));
+        $new          = (string) $this->request->getVar('new_password');
+        $confirm      = (string) $this->request->getVar('confirm_password');
+
+        // Throttle recovery attempts per IP + email so the public endpoint
+        // cannot be used to brute-force someone's personal details.
         $throttler   = \Config\Services::throttler();
-        $throttleKey = 'forgot-password-' . md5($this->request->getIPAddress() . '|' . strtolower($email));
+        $throttleKey = 'recover-' . md5($this->request->getIPAddress() . '|' . $email);
 
-        if (! $throttler->check($throttleKey, 3, MINUTE * 5)) {
-            return redirect()->back()->with('error', 'Too many reset attempts. Please try again in a few minutes.');
+        if (! $throttler->check($throttleKey, 5, MINUTE * 10)) {
+            return redirect()->back()->withInput()->with('error', 'Too many recovery attempts. Please wait a few minutes and try again.');
         }
 
-        $user = $email !== '' ? $model->where('email', $email)->first() : null;
-
-        if ($user) {
-            // Demo behaviour: reset to the shared default password. The
-            // response never confirms whether the account exists and never
-            // echoes the password.
-            $defaultPassword = (string) (env('auth.defaultUserPassword') ?? '00000');
-
-            if (! $model->update($user['id'], ['password' => $defaultPassword])) {
-                log_message('error', 'Password reset failed for user {id}.', ['id' => $user['id']]);
-            }
+        if ($email === '' || $recoveryCode === '' || $new === '' || $confirm === '') {
+            return redirect()->back()->withInput()->with('error', 'Please fill in all fields.');
         }
 
-        return redirect()->back()->with(
+        $user = $model->where('email', $email)->first();
+
+        // Two ways in: the account's own one-time recovery code, or the
+        // owner-level master key from .env (break-glass for the day even the
+        // last administrator is locked out). Codes are stored as bcrypt
+        // hashes, the master key is compared in constant time.
+        $normalized = $this->normalizeRecoveryCode($recoveryCode);
+        $masterKey  = $this->normalizeRecoveryCode((string) (env('auth.masterRecoveryKey') ?? ''));
+
+        $usedMaster = $user && $masterKey !== '' && $normalized !== '' && hash_equals($masterKey, $normalized);
+        $usedCode   = $user && ! $usedMaster && $normalized !== ''
+            && password_verify($normalized, (string) ($user['recovery_code_hash'] ?? ''));
+
+        // The same message goes out whenever the details do not line up, so
+        // the page never reveals whether the email exists or the code was
+        // simply wrong.
+        if (! $user || (! $usedMaster && ! $usedCode)) {
+            return redirect()->back()->withInput()->with(
+                'error',
+                'We could not verify that email and recovery code. Ask the administrator for a fresh recovery code.'
+            );
+        }
+
+        if ($usedMaster) {
+            log_message('warning', 'Master recovery key used to reset user {id} from IP {ip}.', [
+                'id' => $user['id'],
+                'ip' => $this->request->getIPAddress(),
+            ]);
+        }
+
+        if (strlen($new) < 8) {
+            return redirect()->back()->withInput()->with('error', 'The new password must be at least 8 characters long.');
+        }
+
+        if ($new !== $confirm) {
+            return redirect()->back()->withInput()->with('error', 'The new passwords do not match.');
+        }
+
+        if (password_verify($new, (string) $user['password'])) {
+            return redirect()->back()->withInput()->with('error', 'Please choose a password different from your current one.');
+        }
+
+        // Everything checked out: the account owner gets a fresh password and
+        // the used recovery code is burned so it can never be replayed.
+        $update = ['password' => $new];
+        if ($usedCode) {
+            $update['recovery_code_hash']   = null;
+            $update['recovery_code_set_at'] = null;
+        }
+
+        if (! $model->update($user['id'], $update)) {
+            return redirect()->back()->with('error', 'The password could not be saved. Please try again.');
+        }
+
+        $throttler->remove($throttleKey);
+        log_message('info', 'Account recovery: password reset for user {id} from IP {ip}.', [
+            'id' => $user['id'],
+            'ip' => $this->request->getIPAddress(),
+        ]);
+
+        return redirect()->to(base_url('login'))->with(
             'success',
-            'If that email matches an account, its password has been reset. Please log in and change it immediately.'
+            'Your password has been reset. Sign in with your new password.'
         );
+    }
+
+    /**
+     * Upper-case, dashless form used for hashing and comparisons, so a code
+     * is accepted whether it is typed with or without the dashes.
+     */
+    private function normalizeRecoveryCode(string $code): string
+    {
+        return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $code));
     }
 }

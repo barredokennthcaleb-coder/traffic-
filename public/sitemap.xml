@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SITEMAP TEMPLATE
+  After the site is deployed to web hosting, replace every
+  https://YOUR-DOMAIN with your real domain (example: https://traffic.ustp.gov.ph)
+  and keep this file at: public/sitemap.xml  (it will then be reachable at
+  https://your-domain/sitemap.xml - submit that URL to Google Search Console
+  and Bing Webmaster Tools).
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://YOUR-DOMAIN/</loc>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://YOUR-DOMAIN/lookup</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+</urlset>

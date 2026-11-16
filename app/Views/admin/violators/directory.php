@@ -19,9 +19,9 @@
             <a href="<?= base_url('reports') ?>" class="vdr-back">
                 <i class="bi bi-arrow-left"></i><span>Reports</span>
             </a>
-            <!-- Report Type: the same four periods the Reports module reads —
-                 weekly, monthly, full year and a custom range — so any of
-                 them can be asked for straight from the directory. -->
+            <!-- Report Type: the same periods the Reports module reads —
+                 daily, weekly, monthly, full year and a custom range — so any
+                 of them can be asked for straight from the directory. -->
             <form method="get" action="<?= base_url('reports/violators/period') ?>" class="vdr-report" id="vdrReportForm">
                 <?php if ($search !== ''): ?>
                     <input type="hidden" name="search" value="<?= esc($search) ?>">
@@ -32,11 +32,17 @@
                 <select name="period_type" id="period_type" class="vdr-select" required
                         onchange="vdrTogglePeriod(this.value)">
                     <option value="" selected disabled>— Choose report type —</option>
+                    <option value="daily">Daily Report</option>
                     <option value="weekly">Weekly Report</option>
                     <option value="monthly">Monthly Report</option>
                     <option value="yearly">Full Year Report</option>
                     <option value="custom">Custom Range</option>
                 </select>
+
+                <span class="vdr-period" data-period="daily" style="display:none;">
+                    <input type="date" name="report_date" class="vdr-date" aria-label="Report date"
+                           value="<?= date('Y-m-d') ?>" title="Report date" disabled>
+                </span>
 
                 <span class="vdr-period" data-period="weekly" style="display:none;">
                     <input type="date" name="start_date" class="vdr-date" aria-label="Week starting date"
@@ -101,7 +107,7 @@
                         <th>Plate &amp; Vehicle</th>
                         <th class="text-center">Citations</th>
                         <th>Standing</th>
-                        <th>Last Apprehension</th>
+                        <th>Date Issued</th>
                         <th class="text-end">Report</th>
                     </tr>
                 </thead>
@@ -158,7 +164,7 @@
                                         <?php endif; ?>
                                     </span>
                                 </td>
-                                <td data-label="Last Apprehension" class="vdr-meta">
+                                <td data-label="Date Issued" class="vdr-meta">
                                     <?php if (! empty($v['last_violation_at'])): ?>
                                         <?= esc(date('M d, Y g:i A', strtotime((string) $v['last_violation_at']))) ?>
                                     <?php else: ?>

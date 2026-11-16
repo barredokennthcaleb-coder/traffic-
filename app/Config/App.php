@@ -204,4 +204,60 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    /**
+     * Work out the site URL from the actual request instead of hard-coding one
+     * machine's address, so the app runs unchanged on localhost:8080 (offline
+     * or dev), on the office LAN IP and on any other whitelisted hostname.
+     *
+     * The request's Host header is only trusted when the hostname is listed in
+     * $allowedHostnames above; anything else keeps the configured $baseURL, so
+     * a spoofed Host header cannot rewrite asset or form URLs.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        if (is_cli()) {
+            return;
+        }
+
+        $httpHost = (string) ($_SERVER['HTTP_HOST'] ?? '');
+
+        // host[:port] only - no userinfo, no path, no junk.
+        if ($httpHost === '' || preg_match('/\A[A-Za-z0-9\-\.]+(:\d{1,5})?\z/', $httpHost) !== 1) {
+            return;
+        }
+
+        $host = strtolower((string) preg_replace('/:\d{1,5}\z/', '', $httpHost));
+
+        $allowedHosts = array_map('strtolower', $this->allowedHostnames);
+
+        // Phones and tablets on the office LAN reach the app by its private IP
+        // (10.x, 172.16-31.x, 192.168.x), and that address can change when the
+        // router hands out a new lease. Private ranges are therefore trusted
+        // without having to edit the allow-list every time the IP moves; the
+        // public internet is still refused, so a spoofed Host header from
+        // outside cannot rewrite asset or form URLs.
+        $isPrivateLan = preg_match(
+            '/\A(?:10\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+            . '|192\.168\.\d{1,3}\.\d{1,3}'
+            . '|172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})\z/',
+            $host
+        ) === 1;
+
+        if (! $isPrivateLan && ! in_array($host, $allowedHosts, true)) {
+            return;
+        }
+
+        $https = (! empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? '') === '443')
+            || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
+
+        // Keep any sub-directory the app is served from (e.g. /traffic-/public/).
+        $scriptDir = str_replace('\\', '/', dirname((string) ($_SERVER['SCRIPT_NAME'] ?? '/index.php')));
+        $path      = in_array($scriptDir, ['', '.', '/'], true) ? '/' : rtrim($scriptDir, '/') . '/';
+
+        $this->baseURL = ($https ? 'https' : 'http') . '://' . $httpHost . $path;
+    }
 }

@@ -82,6 +82,25 @@
             border-radius: 0 12px 12px 0;
             padding: 0.78rem 0.9rem;
         }
+        .form-control-password {
+            border-radius: 0 !important;
+            border-right: none !important;
+        }
+        .password-toggle {
+            cursor: pointer;
+            border-left: none !important;
+            border-radius: 0 12px 12px 0 !important;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            color: #aebce8;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .password-toggle:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+        }
         .form-control::placeholder {
             color: #9caad6;
         }
@@ -127,8 +146,8 @@
 <body>
     <div class="reset-shell">
         <div class="form-head">
-            <h2>Reset Password</h2>
-            <p>To reset your password, type in your email address and click the Reset button.</p>
+            <h2>Forgot your password?</h2>
+            <p>Enter your email and your one-time recovery code, then choose a new password.</p>
         </div>
 
         <?php if (session()->getFlashdata('error')) : ?>
@@ -145,20 +164,74 @@
 
         <form action="<?= base_url('forgot-password') ?>" method="POST">
             <?= csrf_field() ?>
-            <div class="mb-4">
+
+            <div class="mb-3">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" name="email" class="form-control" id="email" 
-                           placeholder="username@email.com" required>
+                    <input type="email" name="email" class="form-control" id="email"
+                           placeholder="username@email.com" required value="<?= esc(old('email')) ?>">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="recovery_code" class="form-label">Recovery Code</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-shield-lock"></i></span>
+                    <input type="text" name="recovery_code" class="form-control" id="recovery_code"
+                           placeholder="XXXX-XXXX-XXXX" required autocomplete="off" spellcheck="false"
+                           autocapitalize="characters">
+                </div>
+                <div class="small mt-1" style="color:#9caad6;">Ask the administrator for your one-time recovery code.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="new_password" class="form-label">New Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <input type="password" name="new_password" class="form-control form-control-password" id="new_password"
+                           placeholder="At least 8 characters" minlength="8" required autocomplete="new-password">
+                    <span class="input-group-text password-toggle" onclick="togglePasswordVisibility('new_password', 'toggleNewPassIcon')" title="Show / Hide Password">
+                        <i class="bi bi-eye" id="toggleNewPassIcon"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                    <input type="password" name="confirm_password" class="form-control form-control-password" id="confirm_password"
+                           placeholder="Type the new password again" minlength="8" required autocomplete="new-password">
+                    <span class="input-group-text password-toggle" onclick="togglePasswordVisibility('confirm_password', 'toggleConfirmPassIcon')" title="Show / Hide Password">
+                        <i class="bi bi-eye" id="toggleConfirmPassIcon"></i>
+                    </span>
                 </div>
             </div>
 
             <div class="d-grid gap-3">
-                <button type="submit" class="btn btn-reset">Reset</button>
-                <a href="<?= base_url('login') ?>" class="btn btn-cancel text-center text-decoration-none">Cancel</a>
+                <button type="submit" class="btn btn-reset">Reset Password</button>
+                <a href="<?= base_url('login') ?>" class="btn btn-cancel text-center text-decoration-none">Back to Sign In</a>
             </div>
         </form>
     </div>
+
+    <script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
 </body>
 </html>

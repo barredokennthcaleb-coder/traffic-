@@ -95,6 +95,35 @@ class ViolatorModel extends Model
             }
         }
 
+        // The officer may not know this person is already on file (no license
+        // number typed, or a different plate for the same driver). A single
+        // same-name record is the same violator, so the new ticket is filed
+        // under their existing history instead of starting a duplicate.
+        // Only a unique name match is accepted: two people who share a name
+        // stay separate records, and a real plate that contradicts the record
+        // on file means a different person (or a typo) we must not merge.
+        if ($nameKey !== '') {
+            $nameMatches = $this->where('name_key', $nameKey)
+                ->orderBy('id', 'ASC')
+                ->findAll(2);
+
+            if (count($nameMatches) === 1) {
+                $candidate        = $nameMatches[0];
+                $candidatePlate   = ViolatorIdentity::plateKey($candidate['license_plate'] ?? null);
+                $candidateLicense = (string) ($candidate['license_key'] ?? '');
+                $platesAgree      = $plateKey === '' || $candidatePlate === '' || $candidatePlate === $plateKey;
+                // Two different license numbers mean two different people who
+                // happen to share a name.
+                $licensesAgree    = $licenseKey === '' || $candidateLicense === '' || $candidateLicense === $licenseKey;
+
+                if ($platesAgree && $licensesAgree) {
+                    $this->updateSnapshot((int) $candidate['id'], $data);
+
+                    return (int) $candidate['id'];
+                }
+            }
+        }
+
         $identityKey = ViolatorIdentity::key($data, $ticketId);
         $snapshot    = $this->snapshotData($data);
 
@@ -260,16 +289,21 @@ class ViolatorModel extends Model
         $includeSettled = ! empty($filters['include_settled']);
         $hideSettled    = false;
 
-        if ($status === 'Pending') {
-            // Show violators who have at least one Pending violation,
-            // even if they also have Paid violations.
-            $having[] = 'COUNT(CASE WHEN vi.status = ? THEN 1 END) > 0';
-            $params[] = 'Pending';
-        } elseif ($status === 'Paid') {
-            // Show violators who have at least one Paid violation,
-            // even if they also have Pending violations.
-            $having[] = 'COUNT(CASE WHEN vi.status = ? THEN 1 END) > 0';
-            $params[] = 'Paid';
+        if ($status === 'Pending' || $status === 'Paid') {
+            // A section narrows the row, not the invitation: calling Pending
+            // lists everyone who still owes something — including people who
+            // already paid other tickets — and then shows only what is still
+            // owed. The settled amounts, tickets and offenses belong to the
+            // Paid section, which shows the same in reverse, and "All" keeps
+            // both sides together.
+            //
+            // Scoping the joined citations is what keeps the row's balance,
+            // ticket count, offense list and recorded date on the side the
+            // reader asked for. It also states the section rule by itself: the
+            // people listed are exactly the ones with a citation on this side,
+            // so no extra HAVING is needed.
+            $where[] = 'vi.status = ?';
+            $params[] = $status;
         } elseif ($status === 'Cancelled') {
             // A cancelled record is one where no live ticket is left, which is
             // exactly what the aggregate's overall_status already reports.
@@ -305,6 +339,13 @@ class ViolatorModel extends Model
             COALESCE(NULLIF(TRIM(v.vehicle_type), ''), (SELECT NULLIF(TRIM(v2.vehicle_type), '') FROM violations v2 WHERE v2.violator_id = v.id AND TRIM(COALESCE(v2.vehicle_type, '')) <> '' ORDER BY v2.violation_date DESC LIMIT 1)) AS vehicle_type,
             COALESCE(NULLIF(TRIM(v.mtop_number), ''), (SELECT NULLIF(TRIM(v2.mtop_number), '') FROM violations v2 WHERE v2.violator_id = v.id AND TRIM(COALESCE(v2.mtop_number, '')) <> '' ORDER BY v2.violation_date DESC LIMIT 1)) AS mtop_number,
             COUNT(DISTINCT vi.ticket_id) AS attempt_count,
+            -- Sanctions on the whole record, not on the slice this query was
+            -- asked for. A section (or an enforcer filter) narrows what the row
+            -- shows, but the three-strike count is a fact about the driver and
+            -- must not shrink just because the reader picked a side; cancelled
+            -- (void) citations are left out the way the lookup page leaves them
+            -- out of its sanction badges.
+            (SELECT COUNT(DISTINCT svi.ticket_id) FROM violations svi WHERE svi.violator_id = v.id AND svi.status <> 'Cancelled') AS sanction_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status <> 'Cancelled' THEN vi.ticket_id END) AS active_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status = 'Cancelled' THEN vi.ticket_id END) AS cancelled_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status = 'Paid' THEN vi.ticket_id END) AS paid_ticket_count,
@@ -379,6 +420,8 @@ class ViolatorModel extends Model
         foreach ($rows as &$row) {
             $row['id']               = (int) $row['id'];
             $row['attempt_count']    = (int) $row['attempt_count'];
+            $row['sanction_ticket_count'] = (int) $row['sanction_ticket_count'];
+            $row['paid_ticket_count'] = (int) ($row['paid_ticket_count'] ?? 0);
             $row['active_ticket_count'] = (int) $row['active_ticket_count'];
             $row['cancelled_ticket_count'] = (int) $row['cancelled_ticket_count'];
             $row['infraction_count'] = (int) $row['infraction_count'];
@@ -550,7 +593,7 @@ class ViolatorModel extends Model
         $rows = $this->db->query(
             "SELECT vi.*,
                     u.username AS officer_username,
-                    TRIM(CONCAT(COALESCE(u.firstname, ''), ' ', COALESCE(u.lastname, ''))) AS officer_fullname
+                    " . ViolatorRecord::officerNameSql('u') . " AS officer_fullname
              FROM violations vi
              LEFT JOIN users u ON u.id = COALESCE(vi.officer_id, vi.created_by)
              WHERE vi.violator_id = ?

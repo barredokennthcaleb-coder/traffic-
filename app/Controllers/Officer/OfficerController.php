@@ -439,8 +439,14 @@ class OfficerController extends BaseController
             return redirect()->to(base_url('officer/profile'))->with('error', 'Cannot create upload directory.');
         }
 
-        $extension = $file->getExtension() ?: 'jpg';
-        $newName = 'officer_' . $officerId . '_' . time() . '.' . strtolower($extension);
+        // Only ever write whitelisted extensions into the upload folder,
+        // even though the image itself is already validated above.
+        $extension = strtolower($file->getExtension() ?: 'jpg');
+        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            $extension = 'jpg';
+        }
+
+        $newName = 'officer_' . $officerId . '_' . time() . '.' . $extension;
 
         if (!$file->move($uploadPath, $newName, true)) {
             if ($isAjax) {
@@ -577,9 +583,10 @@ class OfficerController extends BaseController
         $rules = [
             'first_name'        => 'required|max_length[100]',
             'last_name'         => 'required|max_length[100]',
+            'name_suffix'       => 'permit_empty|max_length[20]',
             'age'               => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
             'address'           => 'required|max_length[255]',
-            'license_plate'     => 'required|max_length[20]',
+            'license_plate'     => 'permit_empty|max_length[20]',
             'vehicle_type'      => 'permit_empty|max_length[100]',
             'violation_type_id' => 'required',
             'location'          => 'permit_empty|max_length[255]',
@@ -630,11 +637,21 @@ class OfficerController extends BaseController
 
         $firstName = trim((string) $this->request->getPost('first_name'));
         $middleName = trim((string) $this->request->getPost('middle_name'));
-        $lastName = trim((string) $this->request->getPost('last_name'));
+        // The suffix has its own box on the ticket but is stored as part of the
+        // last name, so every view and printout that already prints last_name or
+        // driver_name shows the complete name ("Dimagiba Jr.").
+        $lastName = tct_join_name_suffix($this->request->getPost('last_name'), $this->request->getPost('name_suffix'));
+        // A cited driver may carry no plate, no license and no MTOP at all. Those
+        // blanks are recorded as N/A instead of stopping the officer at a
+        // "Please fill out this field" prompt; nothing else about the citation
+        // changes.
         $licensePlate = strtoupper(trim((string) $this->request->getPost('license_plate')));
         $licenseNumber = trim((string) $this->request->getPost('license_number'));
         $vehicleType = trim((string) $this->request->getPost('vehicle_type'));
         $mtopNumber = trim((string) $this->request->getPost('mtop_number'));
+        $licensePlate  = $licensePlate !== '' ? $licensePlate : 'N/A';
+        $licenseNumber = $licenseNumber !== '' ? $licenseNumber : 'N/A';
+        $mtopNumber    = $mtopNumber !== '' ? $mtopNumber : 'N/A';
         $ownerName = trim((string) $this->request->getPost('owner_name'));
         $acknowledgment = trim((string) $this->request->getPost('acknowledgment'));
         
@@ -817,6 +834,19 @@ class OfficerController extends BaseController
             );
         }
 
+        // The ledger belongs to enforcers. For an administrator the same
+        // records already sit in the Violators registry, so a plain visit
+        // returns there; the record and edit flows below still open the form.
+        $role = (string) session()->get('role');
+
+        if ($role === 'admin'
+            && (int) ($this->request->getGet('edit_ticket') ?? 0) <= 0
+            && (int) (session()->get('violation_prefill_id') ?? 0) <= 0) {
+            return redirect()->to(
+                base_url('violators') . ($statusFilter !== '' ? '?status=' . ucfirst($statusFilter) : '')
+            );
+        }
+
         // The ledger lists people, not tickets: every citation this officer
         // issued collapses into one row for that violator, so a repeat
         // apprehension never shows up as a second row with the same name. The
@@ -847,25 +877,19 @@ class OfficerController extends BaseController
         $violationsQuery = $this->violationRecord
             // The ledger row names what the person was caught for, so the newest
             // offense is ordered first and the rest of the list is counted.
-            ->select('violations.violator_id, violators.driver_name, violators.first_name, violators.middle_name, violators.last_name, violators.license_plate, COALESCE(NULLIF(TRIM(violators.vehicle_type), \'\'), (SELECT NULLIF(TRIM(vt.vehicle_type), \'\') FROM violations vt WHERE vt.violator_id = violations.violator_id AND TRIM(COALESCE(vt.vehicle_type, \'\')) <> \'\' ORDER BY vt.violation_date DESC LIMIT 1)) as vehicle_type, COALESCE(NULLIF(TRIM(violators.mtop_number), \'\'), (SELECT NULLIF(TRIM(mt.mtop_number), \'\') FROM violations mt WHERE mt.violator_id = violations.violator_id AND TRIM(COALESCE(mt.mtop_number, \'\')) <> \'\' ORDER BY mt.violation_date DESC LIMIT 1)) as mtop_number, violators.license_number, violators.address, COUNT(DISTINCT violations.ticket_id) as citation_count, COUNT(violations.id) as infraction_count, SUM(violations.penalty_amount) as total_penalty_sum, MAX(violations.violation_date) as last_violation_date, SUM(CASE WHEN violations.status = \'Pending\' THEN violations.penalty_amount ELSE 0 END) as pending_amount, SUM(CASE WHEN violations.status = \'Paid\' THEN violations.penalty_amount ELSE 0 END) as paid_amount, COUNT(DISTINCT CASE WHEN violations.status = \'Pending\' THEN violations.ticket_id END) as pending_citation_count, COUNT(DISTINCT CASE WHEN violations.status = \'Paid\' THEN violations.ticket_id END) as paid_citation_count, GROUP_CONCAT(violations.violation_type ORDER BY violations.violation_date DESC, violations.id DESC SEPARATOR \'||\') as violation_type_list')
+            ->select('violations.violator_id, violators.driver_name, violators.first_name, violators.middle_name, violators.last_name, violators.license_plate, COALESCE(NULLIF(TRIM(violators.vehicle_type), \'\'), (SELECT NULLIF(TRIM(vt.vehicle_type), \'\') FROM violations vt WHERE vt.violator_id = violations.violator_id AND TRIM(COALESCE(vt.vehicle_type, \'\')) <> \'\' ORDER BY vt.violation_date DESC LIMIT 1)) as vehicle_type, COALESCE(NULLIF(TRIM(violators.mtop_number), \'\'), (SELECT NULLIF(TRIM(mt.mtop_number), \'\') FROM violations mt WHERE mt.violator_id = violations.violator_id AND TRIM(COALESCE(mt.mtop_number, \'\')) <> \'\' ORDER BY mt.violation_date DESC LIMIT 1)) as mtop_number, violators.license_number, violators.address, COUNT(DISTINCT violations.ticket_id) as citation_count, (SELECT COUNT(DISTINCT sanc.ticket_id) FROM violations sanc WHERE sanc.violator_id = violations.violator_id AND sanc.status <> \'Cancelled\') as sanction_ticket_count, COUNT(violations.id) as infraction_count, SUM(violations.penalty_amount) as total_penalty_sum, MAX(violations.violation_date) as last_violation_date, SUM(CASE WHEN violations.status = \'Pending\' THEN violations.penalty_amount ELSE 0 END) as pending_amount, SUM(CASE WHEN violations.status = \'Paid\' THEN violations.penalty_amount ELSE 0 END) as paid_amount, COUNT(DISTINCT CASE WHEN violations.status = \'Pending\' THEN violations.ticket_id END) as pending_citation_count, COUNT(DISTINCT CASE WHEN violations.status = \'Paid\' THEN violations.ticket_id END) as paid_citation_count, GROUP_CONCAT(violations.violation_type ORDER BY violations.violation_date DESC, violations.id DESC SEPARATOR \'||\') as violation_type_list')
             ->join('violators', 'violators.id = violations.violator_id', 'left')
             ->where('violations.officer_id', $officerId)
             ->where('violations.violator_id IS NOT NULL', null, false)
             ->where('violations.status !=', 'Cancelled');
 
         if ($statusFilter !== '') {
-            // Select people who have at least one citation with this status,
-            // but keep all of their non-cancelled citations in the aggregate
-            // so mixed paid/pending history remains visible on either filter.
-            $matchingViolators = \Config\Database::connect()
-                ->table('violations')
-                ->select('violator_id')
-                ->where('officer_id', $officerId)
-                ->where('status', ucfirst($statusFilter))
-                ->where('violator_id IS NOT NULL', null, false)
-                ->distinct();
-
-            $violationsQuery->whereIn('violations.violator_id', $matchingViolators);
+            // The tab is a section, not a spotlight: choosing Pending lists only
+            // the pending part of a violator's record, so the row's amounts, its
+            // citation count and its offense list all describe pending citations
+            // alone. A person who has both a paid and an unpaid ticket appears
+            // under each tab with just that side of the record.
+            $violationsQuery->where('violations.status', ucfirst($statusFilter));
         }
 
         $violations = $violationsQuery
@@ -913,13 +937,47 @@ class OfficerController extends BaseController
             }
         }
 
+        // Offenses this person was cited for before, so the checklist can shade
+        // them while the officer fills in a new ticket. Voided citations do not
+        // count, and the list is by name because the catalog is matched on the
+        // name (types can be deactivated without losing old citations).
+        $prefillOffenses = [];
+        if ($prefillViolator) {
+            $historyRows = \Config\Database::connect()
+                ->table('violations')
+                ->select('violation_type')
+                ->where('violator_id', $prefillId)
+                ->where('status !=', 'Cancelled')
+                ->groupBy('violation_type')
+                ->get()->getResultArray();
+
+            foreach ($historyRows as $historyRow) {
+                $historyName = trim((string) ($historyRow['violation_type'] ?? ''));
+                if ($historyName !== '') {
+                    $prefillOffenses[] = $historyName;
+                }
+            }
+        }
+
         // Editing a citation opened from a violator's history keeps that
         // context, so saving returns to the record instead of the whole ledger.
         $returnFrom     = $this->request->getGet('from') === 'violator-profile' ? 'violator-profile' : '';
         $returnViolator = (int) ($this->request->getGet('violator') ?? 0);
 
+        // The ticket preview prints the officer's name above the signature box,
+        // so the same name the citation will carry is visible while it is being
+        // filled in.
+        $officerAccount = $this->userModel->find($officerId) ?? [];
+        $middleInitial  = trim((string) ($officerAccount['middle_initial'] ?? ''));
+        $officerPrintName = trim(implode(' ', array_filter([
+            trim((string) ($officerAccount['firstname'] ?? '')),
+            $middleInitial !== '' ? $middleInitial . '.' : '',
+            trim((string) ($officerAccount['lastname'] ?? '')),
+        ]))) ?: (string) session()->get('username');
+
         $data = [
             'title'          => 'Violation',
+            'officerPrintName' => $officerPrintName,
             'nextTctNumber'  => $this->violationRecord->peekNextTctNumber((int) date('Y')),
             'violationTypes' => $this->violationTypeModel->where('status', 'active')->findAll(),
             'violations'     => $violations,
@@ -934,16 +992,23 @@ class OfficerController extends BaseController
             'statusFilter'     => $statusFilter,
             'submissionToken' => $submissionToken,
             'prefillViolator' => $prefillViolator,
+            'prefillOffenses' => $prefillOffenses,
         ];
         return view('officer/index', $data);
     }
 
     public function view($id)
     {
+        // Administrators read citations from the Violators registry; sending
+        // them to the enforcer ledger would strand them outside their own nav.
+        $homeUrl = session()->get('role') === 'admin'
+            ? base_url('violators')
+            : base_url('officer/violations');
+
         $primaryViolation = $this->violationRecord->getDetailedViolation($id);
 
         if (!$primaryViolation) {
-            return redirect()->to(base_url('officer/violations'))->with('error', 'Violation not found.');
+            return redirect()->to($homeUrl)->with('error', 'Violation not found.');
         }
 
         // A ticket belongs to the officer who issued it, and administrators
@@ -963,12 +1028,12 @@ class OfficerController extends BaseController
                 ->countAllResults() > 0;
 
             if (! $sharesViolator) {
-                return redirect()->to(base_url('officer/violations'))->with('error', 'Violation record not found.');
+                return redirect()->to($homeUrl)->with('error', 'Violation record not found.');
             }
         }
 
         // Fetch all violations sharing the same ticket ID
-        $allViolations = $this->violationRecord->select('violations.*, users.username as officer_name')
+        $allViolations = $this->violationRecord->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name')
             ->join('users', 'users.id = violations.officer_id', 'left')
             ->where('violations.ticket_id', $primaryViolation['ticket_id'])
             ->findAll();
@@ -1072,20 +1137,27 @@ class OfficerController extends BaseController
 
         $firstName = trim((string) $this->request->getPost('first_name'));
         $middleName = trim((string) $this->request->getPost('middle_name'));
-        $lastName = trim((string) $this->request->getPost('last_name'));
+        $lastName = tct_join_name_suffix($this->request->getPost('last_name'), $this->request->getPost('name_suffix'));
 
+        // Same rule as issuance: blank plate / license / MTOP is recorded as N/A
+        // rather than blocking the save.
         $licenseNumber = trim((string) $this->request->getPost('license_number'));
         $vehicleType = trim((string) $this->request->getPost('vehicle_type'));
         $mtopNumber = trim((string) $this->request->getPost('mtop_number'));
         $ownerName = trim((string) $this->request->getPost('owner_name'));
         $acknowledgment = trim((string) $this->request->getPost('acknowledgment'));
+        $licensePlate  = strtoupper(trim((string) $this->request->getPost('license_plate')));
+        $licensePlate  = $licensePlate !== '' ? $licensePlate : 'N/A';
+        $licenseNumber = $licenseNumber !== '' ? $licenseNumber : 'N/A';
+        $mtopNumber    = $mtopNumber !== '' ? $mtopNumber : 'N/A';
 
         $rules = [
             'first_name'    => 'required|max_length[100]',
             'last_name'     => 'required|max_length[100]',
+            'name_suffix'   => 'permit_empty|max_length[20]',
             'age'           => 'required|integer|greater_than_equal_to[16]|less_than_equal_to[120]',
             'address'       => 'required|max_length[255]',
-            'license_plate' => 'required|max_length[20]',
+            'license_plate' => 'permit_empty|max_length[20]',
             'vehicle_type'  => 'permit_empty|max_length[100]',
             'location'      => 'permit_empty|max_length[255]',
             'notes'         => 'permit_empty|max_length[500]',
@@ -1126,7 +1198,7 @@ class OfficerController extends BaseController
             'address'          => trim((string) $this->request->getPost('address')),
             'driver_name'      => trim($firstName . ' ' . $middleName . ' ' . $lastName),
             'license_number'   => $licenseNumber,
-            'license_plate'    => strtoupper(trim((string) $this->request->getPost('license_plate'))),
+            'license_plate'    => $licensePlate,
             'vehicle_type'     => $vehicleType,
             'mtop_number'      => $mtopNumber,
             'owner_name'       => $ownerName,
@@ -1363,11 +1435,12 @@ class OfficerController extends BaseController
         $violatorId = (int) $id;
         $profile    = $this->violatorModel->getProfile($violatorId);
 
-        if (! $profile) {
-            return redirect()->to(base_url('officer/violations'))->with('error', 'Violator record not found.');
-        }
-
         $role = (string) session()->get('role');
+
+        if (! $profile) {
+            return redirect()->to($role === 'admin' ? base_url('violators') : base_url('officer/violations'))
+                ->with('error', 'Violator record not found.');
+        }
 
         if ($role === 'enforcer') {
             $hasTicket = \Config\Database::connect()
@@ -1382,7 +1455,8 @@ class OfficerController extends BaseController
 
             // One person, one history. Officers get the citation ledger for
             // this violator (every citation, settled ones marked Paid) instead
-            // of the administrator's full profile.
+            // of the administrator's full profile. Administrators keep the
+            // Violators registry as their way back.
             $history = $this->getViolatorHistoryData(null, $violatorId);
 
             // "Edit Citation" stays on this page: the modal opens here and
@@ -1413,8 +1487,8 @@ class OfficerController extends BaseController
             'summary'        => $profile['summary'],
             'tickets'        => $profile['tickets'],
             'vehicles'       => $profile['vehicles'],
-            'backUrl'        => base_url('officer/violations' . ($role === 'admin' ? '?violator_id=' . $violatorId : '')),
-            'backLabel'      => 'Back to Violations',
+            'backUrl'        => $role === 'admin' ? base_url('violators') : base_url('officer/violations'),
+            'backLabel'      => $role === 'admin' ? 'Back to Violators' : 'Back to My Recorded Violations',
             'ticketViewBase' => base_url('officer/view/'),
             'recordUrl'      => base_url('officer/violations?violator_id=' . $violatorId),
             'isAdmin'        => false,
@@ -1701,7 +1775,7 @@ class OfficerController extends BaseController
         }
 
         $builder = $this->violationRecord
-            ->select('violations.*, users.username as officer_name, users.firstname as officer_fname, users.lastname as officer_lname')
+            ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name, users.firstname as officer_fname, users.lastname as officer_lname')
             ->join('users', 'users.id = violations.officer_id', 'left');
 
         if ($violatorId > 0) {

@@ -170,6 +170,179 @@ if (! function_exists('sanction_label')) {
     }
 }
 
+if (! function_exists('tct_standard_violations')) {
+    /**
+     * The offences printed on the official CTRAMO citation ticket (TCT).
+     *
+     * This is the single source of truth for the printed checklist: the
+     * enforcer view, the print/roll layouts, the admin copy and the driver
+     * copy all render this list, so they can never drift apart. It mirrors
+     * the pre-printed C.O. # 2023-006 form, tricycle offences only.
+     *
+     * @return list<string>
+     */
+    function tct_standard_violations(): array
+    {
+        return [
+            'Unlicensed driver',
+            'Unregistered MV',
+            'Colorum/Unfranchised Operation',
+            'Invalid or Suspended/revoked/expired CR',
+            'Out of Route',
+            'Discourteous driver/conduct',
+            'CR/OR not carried',
+            'Unauthorized improvised plates',
+            'No required MV parts/acc.',
+            'No body (plate) number, for hire MV',
+            'Allowing passenger on top of MV',
+            'Reckless driving',
+            'Obstruction',
+            'Other Violations',
+        ];
+    }
+}
+
+if (! function_exists('tct_offence_matches')) {
+    /**
+     * Does a recorded offence name refer to the same offence as a printed
+     * checklist line? Names are compared case-insensitively, and either side
+     * may be the shorter form ("CR/OR Not Carried" vs "CR/OR not carried").
+     */
+    function tct_offence_matches(string $offence, string $standard): bool
+    {
+        $offence  = strtolower(trim($offence));
+        $standard = strtolower(trim($standard));
+
+        if ($offence === '' || $standard === '') {
+            return false;
+        }
+
+        return $offence === $standard
+            || strpos($offence, $standard) !== false
+            || strpos($standard, $offence) !== false;
+    }
+}
+
+if (! function_exists('tct_has_unlisted_violation')) {
+    /**
+     * True when a ticket carries an offence that has no line of its own on the
+     * printed form, so it has to be reported under "Other Violations".
+     *
+     * @param list<string> $activeNames Offence names recorded on the ticket.
+     */
+    function tct_has_unlisted_violation(array $activeNames): bool
+    {
+        foreach ($activeNames as $offence) {
+            $matchesAStandardLine = false;
+
+            foreach (tct_standard_violations() as $standard) {
+                if ($standard === 'Other Violations') {
+                    continue;
+                }
+
+                if (tct_offence_matches((string) $offence, $standard)) {
+                    $matchesAStandardLine = true;
+                    break;
+                }
+            }
+
+            if (! $matchesAStandardLine) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+if (! function_exists('tct_is_checked')) {
+    /**
+     * Whether one printed checklist line is ticked for this ticket.
+     *
+     * An offence outside the form is reported as "Other Violations", so that
+     * line is ticked whenever the ticket carries anything unlisted — otherwise
+     * a citation for an unlisted offence would print with no box ticked at all.
+     *
+     * @param list<string> $activeNames Offence names recorded on the ticket.
+     */
+    function tct_is_checked(string $standard, array $activeNames): bool
+    {
+        foreach ($activeNames as $offence) {
+            if (tct_offence_matches((string) $offence, $standard)) {
+                return true;
+            }
+        }
+
+        return $standard === 'Other Violations' && tct_has_unlisted_violation($activeNames);
+    }
+}
+
+if (! function_exists('tct_known_suffixes')) {
+    /**
+     * The name suffixes the ticket recognises after a last name.
+     */
+    function tct_known_suffixes(): array
+    {
+        return ['Jr.', 'Sr.', 'II', 'III', 'IV', 'V'];
+    }
+}
+
+if (! function_exists('tct_split_name_suffix')) {
+    /**
+     * Pull a trailing suffix off a last name.
+     *
+     * "Dimagiba Jr." becomes ['last' => 'Dimagiba', 'suffix' => 'Jr.'], and
+     * "Dimagiba" stays as it is with an empty suffix. The ticket form shows
+     * the two parts in separate boxes, so the stored full name has to be
+     * split again whenever it is loaded back into the form.
+     *
+     * @return array{last: string, suffix: string}
+     */
+    function tct_split_name_suffix(?string $lastName): array
+    {
+        $lastName = trim(preg_replace('/\s+/', ' ', (string) $lastName));
+
+        foreach (tct_known_suffixes() as $suffix) {
+            $bare    = rtrim($suffix, '.');
+            $pattern = '/^(.*?)[\s,]+' . preg_quote($bare, '/') . '\.?$/i';
+
+            if (preg_match($pattern, $lastName, $matches) === 1 && trim($matches[1]) !== '') {
+                return ['last' => trim($matches[1]), 'suffix' => $suffix];
+            }
+        }
+
+        return ['last' => $lastName, 'suffix' => ''];
+    }
+}
+
+if (! function_exists('tct_join_name_suffix')) {
+    /**
+     * Join a last name and its suffix without ever writing the suffix twice.
+     *
+     * "Dimagiba" + "Jr" -> "Dimagiba Jr." while "Dimagiba Jr." + "" keeps the
+     * suffix it already carries, so saving an older ticket does not drop it.
+     */
+    function tct_join_name_suffix(?string $lastName, ?string $suffix): string
+    {
+        $parts = tct_split_name_suffix($lastName);
+        $suffix = trim((string) $suffix);
+
+        if ($suffix === '') {
+            $suffix = $parts['suffix'];
+        } else {
+            $bare = strtoupper(trim(rtrim($suffix, '.')));
+            foreach (tct_known_suffixes() as $known) {
+                if (strtoupper(rtrim($known, '.')) === $bare) {
+                    $suffix = $known;
+                    break;
+                }
+            }
+        }
+
+        return trim($parts['last'] . ' ' . $suffix);
+    }
+}
+
 if (! function_exists('tricycle_icon')) {
     /**
      * Inline tricycle icon for plate pills, plate badges and hero plates.

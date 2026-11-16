@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Citation & Violator Inquiry - Traffic System</title>
+    <meta name="description" content="Public verification portal: search active traffic citations and violations, check offense history, and verify payment status instantly.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="<?= base_url('lookup') ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Public Citation & Violation Inquiry">
+    <meta property="og:description" content="Search active traffic violations, check offense attempt history, and verify payment status instantly.">
+    <meta property="og:url" content="<?= base_url('lookup') ?>">
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
@@ -668,7 +675,16 @@
                 border-radius: 16px;
             }
             .search-card {
-                padding: 1.1rem;
+                padding: 0.95rem;
+                border-radius: 16px;
+            }
+            .search-card .form-label {
+                font-size: 0.84rem !important;
+                line-height: 1.35;
+                margin-bottom: 0.45rem !important;
+            }
+            .btn-search {
+                min-height: 48px;
             }
             .results-container {
                 margin-top: 1.25rem;
@@ -688,18 +704,6 @@
             }
             .stat-card .fs-3 {
                 font-size: 1.35rem !important;
-            }
-
-            /* The example chips are the fastest way in on a phone, so they
-               become a real tap target instead of 20px of link text. */
-            .search-card a.badge {
-                display: inline-flex;
-                align-items: center;
-                min-height: 40px;
-                padding: 0 0.9rem;
-                border-radius: 10px;
-                font-size: 0.86rem;
-                touch-action: manipulation;
             }
 
             .btn-clear-input {
@@ -743,7 +747,6 @@
             outline: none;
         }
 
-        .search-card a.badge,
         .btn-clear-input,
         .btn-search {
             touch-action: manipulation;
@@ -860,12 +863,6 @@
                     </button>
                 </div>
             </form>
-            <div class="d-flex flex-wrap gap-2 mt-3 text-white-50 small">
-                <span class="fw-bold text-light me-1">Quick Search Examples:</span>
-                <a href="<?= base_url('lookup?query=MYOP09') ?>" class="badge bg-secondary bg-opacity-25 text-light text-decoration-none px-2 py-1">MYOP09</a>
-                <a href="<?= base_url('lookup?query=Janrey') ?>" class="badge bg-secondary bg-opacity-25 text-light text-decoration-none px-2 py-1">Janrey</a>
-                <a href="<?= base_url('lookup?query=7890') ?>" class="badge bg-secondary bg-opacity-25 text-light text-decoration-none px-2 py-1">7890</a>
-            </div>
         </div>
 
         <!-- Search Results Section -->

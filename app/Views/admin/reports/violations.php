@@ -84,11 +84,21 @@
                         <?php if (! empty($awaiting_filter)): ?>
                         <option value="" selected disabled>— Choose report type —</option>
                         <?php endif; ?>
+                        <option value="daily"   <?= ($period_type === 'daily')   ? 'selected' : '' ?>>🗓️ Daily Report</option>
                         <option value="weekly"  <?= ($period_type === 'weekly')  ? 'selected' : '' ?>>📅 Weekly Report</option>
                         <option value="monthly" <?= ($period_type === 'monthly') ? 'selected' : '' ?>>📆 Monthly Report</option>
                         <option value="yearly"  <?= ($period_type === 'yearly')  ? 'selected' : '' ?>>📊 Full Year Report</option>
                         <option value="custom"  <?= ($period_type === 'custom')  ? 'selected' : '' ?>>🎯 Custom Range</option>
                     </select>
+                </div>
+
+                <!-- Daily Selector -->
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 col-12 period-box" id="dailyBox" style="<?= ($period_type === 'daily') ? '' : 'display:none;' ?>">
+                    <label for="report_date" class="form-label filter-label">Report Date</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white text-danger border-end-0"><i class="bi bi-calendar-day"></i></span>
+                        <input type="date" name="report_date" id="report_date" class="form-control form-control-sm border-start-0" value="<?= esc($period_type === 'daily' ? $start_date : date('Y-m-d')) ?>" <?= ($period_type === 'daily') ? '' : 'disabled' ?>>
+                    </div>
                 </div>
 
                 <!-- Weekly Selector -->
@@ -197,8 +207,9 @@
                 <i class="bi bi-funnel"></i>
             </div>
             <h5 class="fw-bold mb-1" style="color: var(--text-strong);">Choose a report period</h5>
-            <p class="text-muted small mb-4">The summary is built only from the period you ask for — weekly, monthly or full year.</p>
+            <p class="text-muted small mb-4">The summary is built only from the period you ask for — daily, weekly, monthly or full year.</p>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a href="<?= base_url('reports/violations?period_type=daily') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-day me-1"></i>Daily</a>
                 <a href="<?= base_url('reports/violations?period_type=weekly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-week me-1"></i>Weekly</a>
                 <a href="<?= base_url('reports/violations?period_type=monthly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar-month me-1"></i>Monthly</a>
                 <a href="<?= base_url('reports/violations?period_type=yearly') ?>" class="btn btn-outline-danger btn-sm fw-semibold px-3"><i class="bi bi-calendar3 me-1"></i>Full Year</a>
@@ -262,7 +273,7 @@
         $sumPeakTitle = match ($period_type) {
             'yearly'  => 'Peak Month',
             'monthly' => 'Peak Week',
-            'weekly'  => 'Peak Day',
+            'weekly', 'daily' => 'Peak Day',
             default   => 'Peak Period',
         };
 
@@ -389,12 +400,12 @@
             </div>
         </div>
 
-        <!-- ═══ II. Daily Traffic Apprehension Record ═══
+        <!-- ═══ II. Yearly Traffic Apprehension Record ═══
              The office tally sheet: the roster down the rows, one column per
              day (or month, depending on the period), one mark per apprehension
              recorded. -->
         <div class="report-section mb-4" id="apprehensionSection">
-            <h5 class="report-sec-title"><i class="bi bi-table me-2"></i>II. Daily Traffic Apprehension Record</h5>
+            <h5 class="report-sec-title"><i class="bi bi-table me-2"></i>II. Yearly Traffic Apprehension Record</h5>
             <p class="vsum-sec-note">
                 <?= esc($personnel_matrix['period_label']) ?> &middot;
                 one mark per apprehension (ticket) recorded by each personnel &mdash;
@@ -467,7 +478,8 @@
                 Offenses recorded per
                 <?= $period_type === 'weekly' ? 'day of the week'
                     : ($period_type === 'monthly' ? 'week of the month'
-                    : ($period_type === 'yearly' ? 'month of the year' : 'date in the range')) ?>.
+                    : ($period_type === 'yearly' ? 'month of the year'
+                    : ($period_type === 'daily' ? 'day of the report' : 'date in the range'))) ?>.
             </p>
             <div class="vsum-chart-box">
                 <canvas id="trendChart" aria-label="Offenses per period" role="img"></canvas>
@@ -1412,7 +1424,13 @@
         const curY = now.getFullYear();
         const curM = String(now.getMonth() + 1).padStart(2, '0');
 
-        if (val === 'weekly') {
+        if (val === 'daily') {
+            const box = document.getElementById('dailyBox');
+            if (box) {
+                box.style.display = '';
+                box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+            }
+        } else if (val === 'weekly') {
             const box = document.getElementById('weeklyBox');
             if (box) {
                 box.style.display = '';

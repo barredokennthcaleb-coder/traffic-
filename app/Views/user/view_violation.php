@@ -17,34 +17,10 @@
         }
     }
 
-    $standardViolations = [
-        'Unlicensed driver',
-        'Unregistered MV',
-        'Colorum/Unfranchised Operation',
-        'Invalid or Suspended/revoked/expired CR',
-        'Out of Route',
-        'Discourteous driver/conduct',
-        'CR/OR not carried',
-        'Unauthorized improvised plates',
-        'No required MV parts/acc.',
-        'No body (plate) number, for hire MV',
-        'Allowing passenger on top of MV',
-        'Reckless driving',
-        'Obstruction',
-        'Other Violations'
-    ];
-
-    if (!function_exists('isTctCheckedUser')) {
-        function isTctCheckedUser($stdName, $activeNames) {
-            $cleanStd = strtolower(trim($stdName));
-            foreach ($activeNames as $act) {
-                if ($act === $cleanStd || strpos($act, $cleanStd) !== false || strpos($cleanStd, $act) !== false) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+    // The printed checklist, its name matching and the "Other Violations"
+    // fallback all live in tct_helper.php, so the enforcer, print, admin and
+    // driver layouts can never drift apart.
+    $standardViolations = tct_standard_violations();
 ?>
 
 <!-- Screen toolbar (hidden on print) -->
@@ -152,7 +128,7 @@
 
             <div class="tct-checklist-container">
                 <?php foreach ($standardViolations as $std): 
-                    $checked = isTctCheckedUser($std, $activeViolationNames);
+                    $checked = tct_is_checked($std, $activeViolationNames);
                 ?>
                     <div class="tct-check-item">
                         <div class="tct-box <?= $checked ? 'is-checked' : '' ?>">
@@ -169,7 +145,7 @@
             <div class="tct-row align-items-end mb-3">
                 <div class="d-flex flex-1 align-items-end me-4">
                     <span class="tct-bold-label me-1">Place:</span>
-                    <span class="tct-field-underline flex-1"><?= esc($violation['location'] ?? '—') ?></span>
+                    <span class="tct-field-underline flex-1"><?= esc(trim((string) ($violation['location'] ?? '')) !== '' ? $violation['location'] : 'Kabankalan City') ?></span>
                 </div>
                 <div class="d-flex flex-1 align-items-end">
                     <span class="tct-bold-label me-1">Date &amp; Time</span>
@@ -494,33 +470,33 @@
             transform: none !important;
         }
 
-        /* Letterhead: the seal sits in the top-left corner with the three
-           letterhead lines centred beside it — the way the official ticket
-           stock is printed. */
+        /* Letterhead, centred on the paper: the seal sits above the text
+           instead of beside it, so every line is centred on the full width
+           and nothing is pushed to one side on the roll. */
         .tct-header-area {
             display: block !important;
-            position: relative;
+            position: static !important;
             min-height: 0 !important;
             margin-bottom: 4px !important;
             text-align: center;
         }
         .tct-seal-box {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
+            position: static !important;
             width: 34px !important;
             height: 34px !important;
-            margin: 0 !important;
+            margin: 0 auto 3px !important;
         }
         .tct-seal-img {
             width: 34px !important;
             height: 34px !important;
             max-width: 34px !important;
             max-height: 34px !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
+            display: block !important;
         }
-        /* The lines sharing the seal's row keep clear of it. */
-        .tct-rep, .tct-office, .tct-city { margin-left: 9mm; }
+        /* The seal no longer shares their row; the lines centre on the full
+           width like every other heading. */
+        .tct-rep, .tct-office, .tct-city { margin-left: 0 !important; }
         .tct-doc-title { font-size: 9.2px; margin: 3px 0 1px; }
         .tct-office { font-size: 9.5px; }
 

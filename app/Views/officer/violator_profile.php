@@ -79,8 +79,12 @@
         $lastTicket   = $tickets[0] ?? null;
         $lastDate     = !empty($lastTicket['violation_date']) ? date('M d, Y', strtotime((string) $lastTicket['violation_date'])) : '—';
         $lastLocation = trim((string) ($lastTicket['location'] ?? ''));
+
+        // Read the sanction count before the hero so the bar itself can carry
+        // the escalated state (3rd sanction or later) for the hover colour.
+        $heroSanctionCount = (int) ($violator['attempts'] ?? $violator['total_tickets'] ?? 0);
     ?>
-    <div class="vp-hero premium-reveal" style="--reveal-delay:0s;">
+    <div class="vp-hero premium-reveal<?= $heroSanctionCount >= 3 ? ' is-third-sanction' : '' ?>" style="--reveal-delay:0s;">
         <div class="vp-hero-orb vp-hero-orb-1"></div>
         <div class="vp-hero-orb vp-hero-orb-2"></div>
         <div class="vp-hero-orb vp-hero-orb-3"></div>
@@ -124,7 +128,13 @@
                 </div>
                 <div class="vp-hero-meta">
                     <?php $sanctionAttempts = (int) ($violator['attempts'] ?? $violator['total_tickets'] ?? 0); ?>
-                    <span class="badge sanction-level <?= $sanctionAttempts >= 3 ? 'sanction-level--third' : ($sanctionAttempts === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record"><i class="bi bi-patch-check me-1"></i><?= esc($violator['sanction_record'] ?? 'No Sanction Record') ?></span>
+                    <span class="badge sanction-level <?= $sanctionAttempts >= 3 ? 'sanction-level--third' : ($sanctionAttempts === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record">                                        <?php if ($sanctionAttempts >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc($violator['sanction_record'] ?? 'No Sanction Record') ?></span>
+                    <?php if ($sanctionAttempts === 2): ?>
+                        <?php /* Three strikes: the second sanction is the last warning before the license is taken. */ ?>
+                        <span class="sanction-warning" title="Second sanction on record - one more apprehension revokes the driver's license">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>License at risk<span class="sanction-exclaim" aria-hidden="true">!</span>
+                        </span>
+                    <?php endif; ?>
                     <?php if (!empty($violator['license_number']) && !in_array(strtolower(trim($violator['license_number'])), ['no', 'none', 'n/a', '-'])): ?>
                         <span><i class="bi bi-person-badge me-1"></i>DL: <?= esc($violator['license_number']) ?></span>
                     <?php endif; ?>
@@ -136,9 +146,6 @@
                     <?php endif; ?>
                     <?php if (!empty($violator['address']) && $violator['address'] !== 'Kabankalan City'): ?>
                         <span><i class="bi bi-geo-alt me-1"></i><?= esc($violator['address']) ?></span>
-                    <?php endif; ?>
-                    <?php if (!empty($violator['age']) && $violator['age'] !== 'N/A'): ?>
-                        <span><i class="bi bi-calendar3 me-1"></i><?= (int) $violator['age'] ?> years old</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -186,7 +193,7 @@
        The same banner language as the admin violator profile: blue gradient,
        floating orbs, a circular portrait with an outcome dot, the identity
        block, an outcome HUD and the photo actions. */
-    .vp-hero { position:relative; overflow:hidden; border-radius:20px; padding:1.9rem 2rem; margin-bottom:1rem; background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 50%,#2563eb 100%); box-shadow:0 12px 32px rgba(30,58,138,.25); border:1px solid rgba(255,255,255,.15); isolation:isolate; }
+    .vp-hero { position:relative; overflow:hidden; border-radius:20px; padding:1.9rem 2rem; margin-bottom:1rem; background:linear-gradient(135deg,#4c1d95 0%,#8b5cf6 50%,#7c3aed 100%); box-shadow:0 12px 32px rgba(76, 29, 149,.25); border:1px solid rgba(255,255,255,.15); isolation:isolate; }
     .vp-hero-content { position:relative; z-index:2; display:flex; flex-wrap:wrap; align-items:center; gap:1.35rem; }
 
     .vp-hero-avatar-wrap { position:relative; width:104px; height:104px; flex-shrink:0; border-radius:50%; }
@@ -203,7 +210,7 @@
 
     .vp-hero-info { min-width:0; flex:1 1 320px; }
     .vp-hero-name { font-size:1.7rem; font-weight:800; color:#fff; letter-spacing:-.03em; }
-    .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#1d4ed8; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#6d28d9; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
     .vp-hero-outcome { display:inline-flex; align-items:center; font-size:.73rem; font-weight:700; padding:.3rem .75rem; border-radius:20px; letter-spacing:.03em; text-transform:uppercase; }
     .vp-hero-outcome--paid { background:rgba(4,47,34,.55); border:1px solid rgba(167,243,208,.45); color:#a7f3d0; }
     .vp-hero-outcome--pending { background:rgba(69,26,3,.5); border:1px solid rgba(253,230,138,.5); color:#fde68a; }
@@ -235,9 +242,9 @@
     .vp-hero-hint { display:block; text-align:left; margin-top:.35rem; color:rgba(255,255,255,.55); font-size:.72rem; }
 
     .vp-hero-orb { position:absolute; border-radius:50%; pointer-events:none; z-index:1; filter:blur(55px); opacity:.38; }
-    .vp-hero-orb-1 { width:240px; height:240px; background:#818cf8; top:-70px; right:8%; animation:vpOrbFloat 14s ease-in-out infinite alternate; }
+    .vp-hero-orb-1 { width:240px; height:240px; background:#a78bfa; top:-70px; right:8%; animation:vpOrbFloat 14s ease-in-out infinite alternate; }
     .vp-hero-orb-2 { width:160px; height:160px; background:#c084fc; bottom:-55px; right:28%; animation:vpOrbFloat 18s ease-in-out infinite alternate-reverse; }
-    .vp-hero-orb-3 { width:120px; height:120px; background:#38bdf8; top:20%; right:4%; animation:vpOrbFloat 11s ease-in-out infinite alternate; }
+    .vp-hero-orb-3 { width:120px; height:120px; background:#c4b5fd; top:20%; right:4%; animation:vpOrbFloat 11s ease-in-out infinite alternate; }
     @keyframes vpOrbFloat { from { transform:translate(0,0); } to { transform:translate(18px,14px); } }
 
     /* ── OUTCOME STRIP — the three numbers behind the banner ──────────────── */
@@ -246,7 +253,7 @@
     .vp-outcome-icon--pending { background:#fef9c3; color:#a16207; }
     .vp-outcome-icon--paid { background:#dcfce7; color:#15803d; }
     .vp-outcome-icon--cancelled { background:#f1f5f9; color:#475569; }
-    .vp-outcome-icon--info { background:#dbeafe; color:#1d4ed8; }
+    .vp-outcome-icon--info { background:#ede9fe; color:#6d28d9; }
     .vp-outcome-label { display:block; font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
     .vp-outcome-value { display:block; font-size:1.05rem; font-weight:800; color:#0b1730; line-height:1.3; }
     .vp-outcome-value--pending { color:#a16207; }
@@ -326,12 +333,39 @@
             <h5 class="mb-0 fw-bold d-flex align-items-center gap-2" style="color: #0f172a;">
                 <i class="bi bi-clock-history text-primary"></i> Complete Citation Records
             </h5>
-            <?php $citationCount = count($tickets ?? []); ?>
-            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 fw-semibold"
-                  style="font-size: 0.78rem;"
-                  title="Tickets listed below; the sanction record beside the name counts every apprehension">
-                <?= number_format($citationCount) ?> citation<?= $citationCount === 1 ? '' : 's' ?>
-            </span>
+            <?php
+                // Pending and paid are counted here so the chips below can section
+                // the record the same way the ledger and the admin directory do.
+                $citationCount = count($tickets ?? []);
+                $citationPendingCount = 0;
+                $citationPaidCount    = 0;
+                foreach (($tickets ?? []) as $ticketStatusRow) {
+                    $ticketStatus = strtolower((string) ($ticketStatusRow['status'] ?? ''));
+                    if ($ticketStatus === 'paid') {
+                        $citationPaidCount++;
+                    } elseif ($ticketStatus === 'pending') {
+                        $citationPendingCount++;
+                    }
+                }
+            ?>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="vp-section-chips" role="group" aria-label="Filter citations by status">
+                    <button type="button" class="vp-section-chip active" data-citation-filter="all" aria-pressed="true">
+                        All <span class="vp-section-count"><?= number_format($citationCount) ?></span>
+                    </button>
+                    <button type="button" class="vp-section-chip vp-section-chip--pending" data-citation-filter="pending" aria-pressed="false">
+                        Pending <span class="vp-section-count"><?= number_format($citationPendingCount) ?></span>
+                    </button>
+                    <button type="button" class="vp-section-chip vp-section-chip--paid" data-citation-filter="paid" aria-pressed="false">
+                        Paid <span class="vp-section-count"><?= number_format($citationPaidCount) ?></span>
+                    </button>
+                </div>
+                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-1.5 fw-semibold"
+                      style="font-size: 0.78rem;"
+                      title="Tickets listed below; the sanction record beside the name counts every apprehension">
+                    <?= number_format($citationCount) ?> citation<?= $citationCount === 1 ? '' : 's' ?>
+                </span>
+            </div>
         </div>
         <div class="card-body p-0">
             <?php if (empty($tickets)): ?>
@@ -364,7 +398,8 @@
                                     // stay available for every citation on record.
                                     $isOwnTicket = (int) ($t['officer_id'] ?? 0) === (int) session('id');
                                 ?>
-                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <tr style="border-bottom: 1px solid #f1f5f9;"
+                                    data-citation-status="<?= $isPaid ? 'paid' : ($isCancelled ? 'cancelled' : 'pending') ?>">
                                     <td class="ps-4">
                                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-monospace px-2.5 py-1.5 rounded-2 fw-bold" style="font-size: 0.82rem;">
                                             <i class="bi bi-ticket-perforated me-1"></i><?= esc($t['ticket_id']) ?>
@@ -407,7 +442,13 @@
                                                 <i class="bi bi-check-circle-fill me-1"></i>PAID
                                             </span>
                                             <?php if (!empty($t['receipt_number'])): ?>
-                                                <div class="small text-muted font-monospace mt-1" style="font-size: 0.72rem;" title="Official Receipt (OR) number">OR (Official Receipt) #<?= esc($t['receipt_number']) ?></div>
+                                                <div class="or-number-wrap">
+                                                    <div class="or-number-pill">
+                                                        <i class="bi bi-receipt"></i>
+                                                        <span class="or-number-label">OR No.</span>
+                                                        <span class="or-number-value"><?= esc($t['receipt_number']) ?></span>
+                                                    </div>
+                                                </div>
                                             <?php endif; ?>
                                         <?php elseif ($isCancelled): ?>
                                             <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
@@ -472,6 +513,12 @@
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
+                            <!-- Shown when the chosen section has nothing in it. -->
+                            <tr id="citationFilterEmpty" class="d-none">
+                                <td colspan="8" class="text-center text-muted py-4" style="font-size: 0.85rem;">
+                                    <i class="bi bi-funnel me-1"></i>No citations in this section.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -807,7 +854,7 @@
 }
 :root[data-bs-theme="dark"] #citationRecordsTable tbody tr:hover,
 :root[data-bs-theme="dark"] #citationRecordsTable tbody tr:hover td {
-    background: #172554;
+    background: #2e1065;
 }
 .ticket-status-pill {
     border: 1px solid transparent;
@@ -823,6 +870,86 @@
     border-color: #fcd979;
     color: #9a6700;
 }
+/* Pending / Paid section chips over the citation record */
+.vp-section-chips {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+.vp-section-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: background-color .16s ease, color .16s ease, box-shadow .16s ease;
+}
+.vp-section-chip:hover { background: #e2e8f0; color: #1e293b; }
+.vp-section-chip.active {
+    background: #fff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .12);
+}
+.vp-section-count {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, .08);
+}
+.vp-section-chip--pending .vp-section-count { background: #fef3c7; color: #92400e; }
+.vp-section-chip--paid .vp-section-count { background: #d1fae5; color: #047857; }
+:root[data-bs-theme="dark"] .vp-section-chips { background: #0f172a; border-color: #1e293b; }
+:root[data-bs-theme="dark"] .vp-section-chip { color: #94a3b8; }
+:root[data-bs-theme="dark"] .vp-section-chip:hover { background: #1e293b; color: #e2e8f0; }
+:root[data-bs-theme="dark"] .vp-section-chip.active { background: #1e293b; border-color: #334155; color: #f1f5f9; }
+:root[data-bs-theme="dark"] .vp-section-count { background: rgba(255, 255, 255, .12); }
+/* Official Receipt number under the PAID pill: an explicit label plus the
+   number itself, sized to read at a glance instead of a faint caption. */
+/* Block wrapper so the pill drops onto its own line under the PAID pill
+   without stretching the status column. */
+.or-number-wrap { margin-top: 6px; }
+.or-number-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #5b21b6;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.or-number-pill i { font-size: 0.78rem; color: #7c3aed; }
+.or-number-label {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #7c3aed;
+}
+.or-number-value { font-weight: 700; letter-spacing: 0.02em; }
+:root[data-bs-theme="dark"] .or-number-pill {
+    background: rgba(139, 92, 246, .15);
+    border-color: rgba(129, 140, 248, .4);
+    color: #ddd6fe;
+}
+:root[data-bs-theme="dark"] .or-number-label { color: #c4b5fd; }
 :root[data-bs-theme="dark"] .ticket-status-pill--paid {
     background: rgba(52, 211, 153, .15);
     border-color: rgba(110, 231, 183, .35);
@@ -848,9 +975,104 @@
     color: #a16207;
 }
 .sanction-level--third {
-    background: #fee2e2;
+    background: #fef2f2;
     border-color: #fecaca;
-    color: #b91c1c;
+    color: #991b1b;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, .10);
+}
+/* The 3rd-sanction badge leads with a solid red exclamation mark, so the
+   escalation is read before the words are. */
+.sanction-badge-icon { display: none; }
+.sanction-level--third .sanction-badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: .4rem;
+    border-radius: 50%;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: .78rem;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .16);
+    transform-origin: center;
+    animation: sanctionBadgeBeat 1.35s ease-in-out infinite;
+}
+/* Heartbeat on the mark itself: two soft beats per cycle, so the 3rd-sanction
+   badge reads as alive without the whole card moving. */
+@keyframes sanctionBadgeBeat {
+    0%, 26%, 58%, 100% { scale: 1;    box-shadow: 0 0 0 3px rgba(220, 38, 38, .16); }
+    12%                 { scale: 1.18; box-shadow: 0 0 0 6px rgba(220, 38, 38, .10); }
+    40%                 { scale: 1.12; box-shadow: 0 0 0 5px rgba(220, 38, 38, .12); }
+}
+.sanction-level--third .bi-patch-check { display: none; }
+/* 3rd sanction or worse: the record is red on screen at rest, so the
+   escalation is visible without hovering. Hover adds a heartbeat pulse. */
+.vp-hero.is-third-sanction {
+    background: linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #b91c1c 100%);
+    border-color: rgba(254, 202, 202, .5);
+    box-shadow: 0 12px 32px rgba(185, 28, 28, .32);
+    transition: border-color .28s ease, box-shadow .28s ease;
+}
+.vp-hero.is-third-sanction .sanction-level--third {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, .12), 0 4px 14px rgba(69, 10, 10, .28);
+}
+/* The detail line carries the license, plate and address: on the red hero it
+   goes full white and a step heavier so the labels stay readable. */
+.vp-hero.is-third-sanction .vp-hero-meta {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: .9rem;
+}
+.vp-hero.is-third-sanction .vp-hero-meta i { opacity: 1; }
+.vp-hero.is-third-sanction .vp-hero-plate { color: #b91c1c; }
+.vp-hero.is-third-sanction .vp-hero-outcome {
+    background: rgba(69, 10, 10, .55);
+    border-color: rgba(254, 202, 202, .6);
+    color: #fecaca;
+}
+.vp-hero.is-third-sanction .vp-hero-orb-2 { background: rgba(248, 113, 113, .45); }
+
+/* The heartbeat belongs to the warning sign only: the license-at-risk chip
+   beats gently, and nothing else on the hero moves. */
+.sanction-warning {
+    transform-origin: center;
+    animation: sanctionChipBeat 1.35s ease-in-out infinite;
+}
+@keyframes sanctionChipBeat {
+    0%, 26%, 58%, 100% { scale: 1; }
+    12%                { scale: 1.07; }
+    40%                { scale: 1.04; }
+}
+
+/* Exclamation closes the wording, so it reads as part of the label. */
+.sanction-exclaim {
+    display: none;
+    margin-left: .22rem;
+    font-weight: 900;
+    font-size: 1.15em;
+    line-height: 1;
+}
+.sanction-warning .sanction-exclaim {
+    display: inline-block;
+    color: #ffffff;
+}
+
+/* No hover state for the escalated hero. The card is already red and its
+   glow already beats, so pointing at it or dragging across it must not
+   change anything (an earlier hover animation collided with .premium-reveal
+   and collapsed the card). */
+/* Reduced motion: keep the red state, drop the beats and the easing. */
+@media (prefers-reduced-motion: reduce) {
+    .vp-hero.is-third-sanction { transition: none; }
+    .vp-hero.is-third-sanction .sanction-level { transition: none; }
+    .sanction-warning { animation: none; }
+    .sanction-level--third .sanction-badge-icon { animation: none; }
 }
 :root[data-bs-theme="dark"] .sanction-level--first {
     background: rgba(52, 211, 153, .14);
@@ -866,6 +1088,59 @@
     background: rgba(248, 113, 113, .13);
     border-color: rgba(248, 113, 113, .3);
     color: #fca5a5;
+}
+/* Three sanctions take the license, so the second one carries a warning sign:
+   the record says out loud that the next apprehension is the last. */
+.sanction-warning {
+    display: inline-flex;
+    align-items: center;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: .28rem .65rem;
+    border-radius: 999px;
+    background: #dc2626;
+    border: 1px solid #991b1b;
+    color: #ffffff;
+    white-space: nowrap;
+    cursor: help;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, .45);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.sanction-warning:hover,
+.sanction-warning:focus-visible {
+    background: #b91c1c;
+    border-color: #7f1d1d;
+    color: #ffffff;
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(220, 38, 38, .65);
+    outline: 2px solid rgba(255, 255, 255, .65);
+    outline-offset: 1px;
+}
+.sanction-warning i {
+    transition: transform .16s ease;
+}
+.sanction-warning:hover i,
+.sanction-warning:focus-visible i {
+    animation: sanctionWarnNudge .5s ease;
+}
+@keyframes sanctionWarnNudge {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-14deg); }
+    60% { transform: rotate(12deg); }
+}
+/* The hero banner is blue in both themes, so the warning keeps a solid red
+   fill with white letters instead of a tint that would sink into it. */
+:root[data-bs-theme="dark"] .sanction-warning {
+    background: #dc2626;
+    border-color: #991b1b;
+    color: #ffffff;
+}
+:root[data-bs-theme="dark"] .sanction-warning:hover,
+:root[data-bs-theme="dark"] .sanction-warning:focus-visible {
+    background: #b91c1c;
+    border-color: #7f1d1d;
+    color: #ffffff;
 }
 
     /* The citation ticket in the edit modal, styled exactly as it is on the
@@ -1011,7 +1286,7 @@
 
     function showError(title, text) {
         if (window.Swal) {
-            Swal.fire({ icon: 'error', title: title, text: text, confirmButtonColor: '#2563eb' });
+            Swal.fire({ icon: 'error', title: title, text: text, confirmButtonColor: '#7c3aed' });
         } else {
             window.alert(text);
         }
@@ -1127,6 +1402,38 @@
             });
         });
     }
+})();
+
+// Section the citation record by status, the same All / Pending / Paid split
+// the ledger and the admin directory use.
+(function () {
+    const chips = Array.from(document.querySelectorAll('.vp-section-chip'));
+    const table = document.getElementById('citationRecordsTable');
+    if (!chips.length || !table) return;
+
+    const rows  = Array.from(table.querySelectorAll('tbody tr[data-citation-status]'));
+    const empty = document.getElementById('citationFilterEmpty');
+
+    const apply = function (filter) {
+        let shown = 0;
+        rows.forEach(function (row) {
+            const match = filter === 'all' || row.dataset.citationStatus === filter;
+            row.classList.toggle('d-none', !match);
+            if (match) shown++;
+        });
+        if (empty) empty.classList.toggle('d-none', shown > 0);
+    };
+
+    chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            chips.forEach(function (other) {
+                const isActive = other === chip;
+                other.classList.toggle('active', isActive);
+                other.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+            apply(chip.dataset.citationFilter || 'all');
+        });
+    });
 })();
 </script>
 <?= $this->endSection() ?>

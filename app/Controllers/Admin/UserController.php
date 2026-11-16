@@ -75,7 +75,7 @@ class UserController extends BaseController
         // Same officer attribution as the reports: officer_id first, then the
         // account that created the citation for legacy rows.
         $records = $this->violationModel
-            ->select('violations.*, users.username as officer_name')
+            ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name')
             ->join('users', 'users.id = COALESCE(violations.officer_id, violations.created_by)', 'left')
             ->where('COALESCE(violations.officer_id, violations.created_by)', (int) $id)
             ->orderBy('violations.violation_date', 'DESC')
@@ -90,14 +90,56 @@ class UserController extends BaseController
             }
         }
 
+        // Group individual infractions by citation / ticket_id so that multiple
+        // violations under the same citation are organized together in one ticket row.
+        $tickets = [];
+        foreach ($records as $record) {
+            $tId = trim((string) ($record['ticket_id'] ?? ''));
+            $groupKey = $tId !== '' ? $tId : ('single_' . $record['id']);
+
+            if (! isset($tickets[$groupKey])) {
+                $tickets[$groupKey] = [
+                    'id'             => $record['id'],
+                    'ticket_id'      => $record['ticket_id'] ?? 'N/A',
+                    'violator_id'    => $record['violator_id'] ?? 0,
+                    'first_name'     => $record['first_name'] ?? '',
+                    'last_name'      => $record['last_name'] ?? '',
+                    'driver_name'    => $record['driver_name'] ?? '',
+                    'license_plate'  => $record['license_plate'] ?? '',
+                    'status'         => $record['status'] ?? 'Pending',
+                    'violation_date' => $record['violation_date'] ?? null,
+                    'created_at'     => $record['created_at'] ?? null,
+                    'total_amount'   => 0.0,
+                    'infractions'    => [],
+                ];
+            }
+
+            $tickets[$groupKey]['total_amount'] += (float) ($record['penalty_amount'] ?? 0);
+            $tickets[$groupKey]['infractions'][] = [
+                'id'             => $record['id'],
+                'violation_type' => $record['violation_type'] ?? '-',
+                'penalty_amount' => (float) ($record['penalty_amount'] ?? 0),
+                'status'         => $record['status'] ?? 'Pending',
+            ];
+
+            // If any infraction is Pending, the citation status is Pending
+            if (($record['status'] ?? '') === 'Pending') {
+                $tickets[$groupKey]['status'] = 'Pending';
+            }
+        }
+        $tickets = array_values($tickets);
+
         $data = [
-            'title'              => 'Traffic Enforcer Profile: ' . $user['username'],
-            'user'               => $user,
-            'records'            => $records,
-            'pendingCount'       => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Pending')),
-            'paidCount'          => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Paid')),
-            'cancelledCount'     => count(array_filter($records, static fn($r) => ($r['status'] ?? '') === 'Cancelled')),
-            'totalAssessedAmount'=> $totalAssessedAmount,
+            'title'               => 'Traffic Enforcer Profile: ' . $user['username'],
+            'user'                => $user,
+            'records'             => $records,
+            'tickets'             => $tickets,
+            'totalTickets'        => count($tickets),
+            'totalInfractions'    => count($records),
+            'pendingCount'        => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Pending')),
+            'paidCount'           => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Paid')),
+            'cancelledCount'      => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Cancelled')),
+            'totalAssessedAmount' => $totalAssessedAmount,
         ];
 
         return view('admin/users/view_enforcer', $data);
@@ -270,6 +312,72 @@ class UserController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Failed to reset password.');
         }
+    }
+
+    /**
+     * Issue a one-time recovery code for an account. The plaintext code is
+     * flashed to the next page exactly once (for the admin to write down or
+     * hand over); only its bcrypt hash is stored, and it is burned after a
+     * successful reset on the Forgot Password page.
+     */
+    public function generateRecoveryCode($id = null)
+    {
+        $user = $this->userModel->find($id);
+
+        if (! $user) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'User not found.']);
+            }
+            return redirect()->to(base_url('users'))->with('error', 'User not found.');
+        }
+
+        // 12 hex characters in three readable groups = 48 bits of entropy.
+        // The Forgot Password page is rate-limited on top of that, so blind
+        // guessing is hopeless.
+        $code       = strtoupper(implode('-', str_split(bin2hex(random_bytes(6)), 4)));
+        $normalized = $this->normalizeRecoveryCode($code);
+
+        if (! $this->userModel->update($id, [
+            'recovery_code_hash'   => password_hash($normalized, PASSWORD_DEFAULT),
+            'recovery_code_set_at' => date('Y-m-d H:i:s'),
+        ])) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Failed to generate a recovery code.']);
+            }
+            return redirect()->to(base_url('users'))->with('error', 'Failed to generate a recovery code.');
+        }
+
+        log_message('info', 'Recovery code generated for user {id} by admin {admin}.', [
+            'id'    => $user['id'],
+            'admin' => session()->get('id'),
+        ]);
+
+        // AJAX: return the code directly in the response (shown in-modal).
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success'  => true,
+                'username' => $user['username'],
+                'code'     => $code,
+            ]);
+        }
+
+        // Fallback: flash-based redirect for non-JS browsers.
+        session()->setFlashdata('recovery_code_once', [
+            'username' => $user['username'],
+            'code'     => $code,
+        ]);
+
+        return redirect()->to(base_url('users') . ($user['role'] ? '?role=' . $user['role'] : ''))
+            ->with('success', 'A new recovery code was generated for ' . $user['username'] . '. It is shown once on this page.');
+    }
+
+    /**
+     * Upper-case, dashless form used for hashing and comparisons, so a code
+     * is accepted whether it is typed with or without the dashes.
+     */
+    private function normalizeRecoveryCode(string $code): string
+    {
+        return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $code));
     }
 
     private function accountFieldsFromPost(): array

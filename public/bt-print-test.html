@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Bluetooth Print — Test Bench</title>
+<link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="vendor/inter/inter.css">
+<style>
+    body { font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif; background: #f1f5f9; padding: 18px; }
+    .bench-card { max-width: 860px; margin: 0 auto 18px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; }
+    .preview-host { max-width: 100%; overflow: auto; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px; background: #fff; }
+    #rasterPreview { max-width: 100%; border: 1px solid #e2e8f0; image-rendering: pixelated; }
+    .status-line { font-size: 13px; color: #475569; }
+</style>
+</head>
+<body>
+<div class="bench-card">
+    <h1 class="h5 fw-bold mb-1">Bluetooth Print — Test Bench</h1>
+    <p class="status-line mb-2">
+        Developer tool (not part of the app). Loads a real ticket page, renders the exact bitmap the printer
+        would receive, and can send it straight to a Bluetooth printer. Open this in the same browser
+        where you are signed in so the ticket page loads.
+    </p>
+    <p class="status-line mb-2">
+        Environment:
+        <span id="envInfo" class="fw-semibold"></span>
+    </p>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <input type="text" id="sourceUrl" class="form-control form-control-sm" style="max-width: 420px;"
+               placeholder="Ticket URL, e.g. officer/view/123?print=1">
+        <button class="btn btn-sm btn-primary" id="loadBtn">Load ticket page</button>
+        <button class="btn btn-sm btn-outline-primary" id="renderBtn" disabled>Render 384-dot bitmap</button>
+        <button class="btn btn-sm btn-outline-success" id="sendBtn" disabled>Send to Bluetooth printer</button>
+        <button class="btn btn-sm btn-outline-secondary" id="binBtn" disabled>Download ESC/POS (.bin)</button>
+    </div>
+    <div class="status-line mt-2" id="status">Waiting for a ticket page…</div>
+</div>
+
+<div class="bench-card">
+    <div class="fw-semibold mb-2">Loaded ticket</div>
+    <div class="preview-host" id="host"></div>
+</div>
+
+<div class="bench-card">
+    <div class="fw-semibold mb-2">Raster preview <span class="status-line" id="rasterMeta"></span></div>
+    <canvas id="rasterPreview"></canvas>
+</div>
+
+<!-- html2canvas is fetched lazily by bluetooth-print.js on first render. -->
+<script src="js/bluetooth-print.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var statusEl = document.getElementById('status');
+    var envEl = document.getElementById('envInfo');
+    var host = document.getElementById('host');
+    var sourceUrl = document.getElementById('sourceUrl');
+    var loadBtn = document.getElementById('loadBtn');
+    var renderBtn = document.getElementById('renderBtn');
+    var sendBtn = document.getElementById('sendBtn');
+    var binBtn = document.getElementById('binBtn');
+    var preview = document.getElementById('rasterPreview');
+    var rasterMeta = document.getElementById('rasterMeta');
+
+    var card = null;
+    var lastRaster = null;
+
+    function setStatus(text) { statusEl.textContent = text; }
+
+    function describeEnvironment() {
+        var bits = [];
+        bits.push(window.isSecureContext ? 'secure context ✓' : 'NOT a secure context ✗ (Web Bluetooth needs https)');
+        bits.push(window.TrafficBlePrint && window.TrafficBlePrint.supported()
+            ? 'navigator.bluetooth ✓'
+            : 'navigator.bluetooth ✗');
+        var saved = window.TrafficBlePrint && window.TrafficBlePrint.savedPrinterName();
+        bits.push(saved ? 'saved printer: ' + saved : 'no saved printer yet');
+        envEl.textContent = bits.join(' · ');
+    }
+
+    // ?url=officer/view/123 lets a bookmark jump straight to a ticket.
+    var preset = new URLSearchParams(window.location.search).get('url');
+    if (preset) sourceUrl.value = preset;
+
+    loadBtn.addEventListener('click', function () {
+        var url = sourceUrl.value.trim();
+        if (!url) return;
+        setStatus('Loading ' + url + '…');
+
+        fetch(url, { credentials: 'same-origin' })
+            .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(function (html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                var styles = doc.querySelectorAll('style');
+                var css = '';
+                styles.forEach(function (style) { css += style.textContent + '\n'; });
+
+                var ticket = doc.getElementById('tctCard') ||
+                    doc.querySelector('.tct-official-card') ||
+                    doc.querySelector('.receipt-container') ||
+                    doc.querySelector('.paper');
+                if (!ticket) throw new Error('No ticket card found on that page.');
+
+                host.innerHTML = '<style>' + css + '</style>' + ticket.outerHTML;
+                // Keep the preview compact: the card keeps its own classes.
+                card = host.querySelector('[data-bt-print], .tct-official-card, .receipt-container, .paper');
+
+                renderBtn.disabled = !card;
+                setStatus('Ticket loaded. Render it to see the printer bitmap.');
+            })
+            .catch(function (error) {
+                host.innerHTML = '';
+                card = null;
+                renderBtn.disabled = true;
+                setStatus('Could not load: ' + error.message +
+                    ' — sign in first, and use a ticket page URL (officer/view/123?print=1).');
+            });
+    });
+
+    renderBtn.addEventListener('click', function () {
+        if (!card) return;
+        setStatus('Rendering…');
+        window.TrafficBlePrint.renderTicketCanvas(card, {}).then(function (canvas) {
+            var raster = window.TrafficBlePrint.__internals.canvasToRaster(canvas, 168);
+            lastRaster = window.TrafficBlePrint.__internals.cropRaster(raster, 6);
+
+            preview.width = canvas.width;
+            preview.height = canvas.height;
+            var ctx = preview.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, preview.width, preview.height);
+            ctx.drawImage(canvas, 0, 0);
+
+            var bytes = window.TrafficBlePrint.__internals.escposCommands(lastRaster, { feedLines: 4 });
+            rasterMeta.textContent = canvas.width + '×' + canvas.height + ' px · ' +
+                Math.round(bytes.length / 1024) + ' KB to send';
+            rasterMeta.textContent += canvas.width === 384 ? ' · width ✓' : ' · WIDTH NOT 384 ✗';
+            sendBtn.disabled = false;
+            binBtn.disabled = false;
+            setStatus('Rendered. Check the width and legibility against the design.');
+        }, function (error) {
+            setStatus('Render failed: ' + (error && error.message));
+        });
+    });
+
+    sendBtn.addEventListener('click', function () {
+        if (!card) return;
+        window.TrafficBlePrint.uiPrint(card);
+    });
+
+    binBtn.addEventListener('click', function () {
+        if (!lastRaster) return;
+        var bytes = window.TrafficBlePrint.__internals.escposCommands(lastRaster, { feedLines: 4 });
+        var blob = new Blob([bytes], { type: 'application/octet-stream' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'ticket-escpos.bin';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setStatus('Saved ticket-escpos.bin — a printer-service app on the phone can open it.');
+    });
+
+    describeEnvironment();
+})();
+</script>
+</body>
+</html>

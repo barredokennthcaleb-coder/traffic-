@@ -34,7 +34,7 @@
             --sidebar-width: 280px;
             --sidebar-collapsed-width: 80px;
             --transition-speed: 0.3s;
-            /* Electric Blue & Emerald Green Color System */
+            /* Admin blue defaults; role-specific brand tokens follow below. */
             --brand-primary: #0066ff;
             --brand-secondary: #0052cc;
             --brand-accent: #0080ff;
@@ -196,27 +196,27 @@
 
         /* Role identity. The body carries the signed-in role as a class, so each
            role recolors the brand tokens it renders with: admins read electric
-           blue (the :root defaults), enforcers read emerald green. The themed
+           blue (the :root defaults), enforcers read violet. The themed
            selectors are repeated per color scheme so they outrank the
            :root[data-theme] focus-ring declarations above. */
         body.role-enforcer,
         :root[data-theme="dark"] body.role-enforcer,
         :root[data-theme="light"] body.role-enforcer {
-            --brand-primary: #047857;
-            --brand-secondary: #065f46;
-            --brand-accent: #10b981;
-            --brand-highlight: #34d399;
-            --brand-500: #10b981;
-            --brand-600: #059669;
-            --brand-800: #065f46;
-            --brand-900: #064e3b;
-            --brand-tint-50: #ecfdf5;
-            --brand-tint-100: #d1fae5;
-            --brand-tint-300: #6ee7b7;
-            --brand-tint-400: #34d399;
-            --brand-rgb: 4, 120, 87;
-            --brand-500-rgb: 16, 185, 129;
-            --focus-ring: #10b981;
+            --brand-primary: #7c3aed;
+            --brand-secondary: #6d28d9;
+            --brand-accent: #8b5cf6;
+            --brand-highlight: #a78bfa;
+            --brand-500: #8b5cf6;
+            --brand-600: #7c3aed;
+            --brand-800: #5b21b6;
+            --brand-900: #4c1d95;
+            --brand-tint-50: #f5f3ff;
+            --brand-tint-100: #ede9fe;
+            --brand-tint-300: #c4b5fd;
+            --brand-tint-400: #a78bfa;
+            --brand-rgb: 124, 58, 237;
+            --brand-500-rgb: 139, 92, 246;
+            --focus-ring: #8b5cf6;
         }
 
         * {
@@ -2859,7 +2859,7 @@
         // the signed-in role's accent is handed to JS here and read back through
         // window.__brand. Keep these in step with the body.role-* block above.
         $brandJs = $layoutRole === 'enforcer'
-            ? ['primary' => '#047857', 'accent' => '#10b981']
+            ? ['primary' => '#7c3aed', 'accent' => '#8b5cf6']
             : ['primary' => '#0066ff', 'accent' => '#0080ff'];
     ?>
     <script>window.__brand = <?= json_encode($brandJs) ?>;</script>
@@ -2954,7 +2954,9 @@
 <!-- Core Vendor Scripts -->
 <script src="<?= base_url('vendor/sweetalert2/sweetalert2.all.min.js') ?>"></script>
 <script src="<?= base_url('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
-<script src="<?= base_url('js/mobile-print.js?v=2') ?>"></script>
+<!-- Versioned by file timestamp: the URL changes whenever the helper does,
+     so a phone's cached copy can never outlive a fix again. -->
+<script src="<?= base_url('js/mobile-print.js') ?>?v=<?= filemtime(FCPATH . 'js/mobile-print.js') ?>"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Every dialog opens without the page jumping underneath it: SweetAlert

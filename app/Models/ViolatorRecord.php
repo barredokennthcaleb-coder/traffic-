@@ -289,12 +289,30 @@ class ViolatorRecord extends Model
     public function getDetailedViolation($id = null)
     {
         if ($id !== null) {
-            return $this->select('violations.*, users.username as officer_name')
+            return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name')
                         ->join('users', 'users.id = COALESCE(violations.officer_id, violations.created_by)', 'left')
                         ->where('violations.id', $id)
                         ->first();
         }
         return null;
+    }
+
+    /**
+     * SQL that resolves the name an apprehending officer is printed under.
+     *
+     * A citation carries the officer's real name (first name, middle initial
+     * and last name) so the printed ticket shows "Janrey L. Calamba" instead
+     * of the bare login handle. If the account has no name on file the
+     * username is used as the fallback, so the ticket never prints blank.
+     */
+    public static function officerNameSql(string $table = 'users'): string
+    {
+        return "COALESCE(NULLIF(TRIM(CONCAT_WS("
+            . "' ', "
+            . "NULLIF(TRIM({$table}.firstname), ''), "
+            . "NULLIF(CONCAT(NULLIF(TRIM({$table}.middle_initial), ''), '.'), '.'), "
+            . "NULLIF(TRIM({$table}.lastname), '')"
+            . ")), ''), {$table}.username)";
     }
 
     /**
@@ -318,7 +336,7 @@ class ViolatorRecord extends Model
 
     public function getAllDetailed($status = null, $limit = null, $offset = 0)
     {
-        $builder = $this->select('violations.*, users.username as officer_name')
+        $builder = $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name')
                         ->join('users', 'users.id = COALESCE(violations.officer_id, violations.created_by)', 'left');
 
         if ($status !== null) {
@@ -415,7 +433,7 @@ class ViolatorRecord extends Model
 
     public function getRecentViolations($limit = 10)
     {
-        return $this->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
+        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
                     ->join('users', 'users.id = violations.officer_id', 'left')
                     ->where('violations.status !=', 'Cancelled')
                     ->groupBy('violations.ticket_id')
@@ -600,7 +618,7 @@ class ViolatorRecord extends Model
 
     public function searchViolations($keyword)
     {
-        return $this->select('violations.*, users.username as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
+        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
                     ->join('users', 'users.id = violations.officer_id', 'left')
                     ->where('violations.status !=', 'Cancelled')
                     ->groupStart()
@@ -938,6 +956,79 @@ class ViolatorRecord extends Model
     }
 
     /**
+     * Get the day-by-day apprehension trend for the last N days, ending on the
+     * anchor date (today when none is supplied, a past year's Dec 31 when a
+     * past year is being read).
+     *
+     * Every calendar day in the window is returned, including days with no
+     * citations, so the chart reads as a continuous daily series. Each day
+     * carries the process status split (Pending / Paid / Cancelled) as well as
+     * the money figures used by the Revenue Report: revenue is the assessed
+     * value and ignores cancelled (void) citations, paid_revenue is the money
+     * actually collected. Pending + Paid + Cancelled always adds up to count.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getDailyTrend($days = 14, $officerId = null, $endDate = null)
+    {
+        $days = max(1, (int) $days);
+
+        $anchor    = ($endDate !== null && $endDate !== '') ? strtotime($endDate) : time();
+        $anchor    = strtotime(date('Y-m-d', $anchor));
+        $startDate = date('Y-m-d', strtotime('-' . ($days - 1) . ' days', $anchor));
+        $endDateYmd = date('Y-m-d', $anchor);
+
+        $builder = $this->builder();
+        $builder->select("DATE(violation_date) as day,
+            COUNT(*) as count,
+            COUNT(DISTINCT ticket_id) as ticket_count,
+            IFNULL(SUM(CASE WHEN status <> 'Cancelled' THEN penalty_amount ELSE 0 END), 0) as revenue,
+            IFNULL(SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END), 0) as paid_revenue,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN status = 'Paid' THEN 1 ELSE 0 END) as paid_count,
+            SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled_count,
+            IFNULL(SUM(CASE WHEN status = 'Pending' THEN penalty_amount ELSE 0 END), 0) as pending_amount");
+        $builder->where('DATE(violation_date) >=', $startDate);
+        $builder->where('DATE(violation_date) <=', $endDateYmd);
+
+        if ($officerId !== null) {
+            $builder->where('officer_id', $officerId);
+        }
+
+        $builder->groupBy('DATE(violation_date)');
+        $rows = $builder->get()->getResultArray();
+
+        $byDate = [];
+        foreach ($rows as $row) {
+            $byDate[(string) $row['day']] = $row;
+        }
+
+        $result = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = date('Y-m-d', strtotime('+' . $i . ' days', strtotime($startDate)));
+            $row  = $byDate[$date] ?? [];
+
+            $result[] = [
+                'date'            => $date,
+                'label'           => date('D, M d', strtotime($date)),
+                'short_label'     => date('M d', strtotime($date)),
+                'count'           => (int) ($row['count'] ?? 0),
+                // One apprehension per ticket: the Daily Report's sheet counts
+                // tickets, so the dashboard bar reads the same figure.
+                'ticket_count'    => (int) ($row['ticket_count'] ?? 0),
+                'revenue'         => (float) ($row['revenue'] ?? 0),
+                'paid_revenue'    => (float) ($row['paid_revenue'] ?? 0),
+                'pending_count'   => (int) ($row['pending_count'] ?? 0),
+                'paid_count'      => (int) ($row['paid_count'] ?? 0),
+                'cancelled_count' => (int) ($row['cancelled_count'] ?? 0),
+                'pending_amount'  => (float) ($row['pending_amount'] ?? 0),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * Get monthly breakdown with status counts for a given year.
      */
     public function getMonthlyBreakdown($year = null, $officerId = null)
@@ -1055,7 +1146,7 @@ class ViolatorRecord extends Model
         $db = db_connect();
 
         // Base builder for records
-        $builder = $this->select('violations.*, users.username as officer_name, vt.violation_name')
+        $builder = $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, vt.violation_name')
                         ->join('users', 'users.id = COALESCE(violations.officer_id, violations.created_by)', 'left')
                         ->join('violation_types vt', 'vt.id = violations.violation_type_id', 'left')
                         ->where('DATE(violations.violation_date) >=', $startDate)

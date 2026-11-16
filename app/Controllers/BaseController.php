@@ -41,5 +41,14 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         // $this->session = service('session');
+
+        // App pages are never served from the browser's cache. A stale copy
+        // on a phone (Safari caches HTML/JS aggressively) once kept an old
+        // auto-print bug alive on iOS long after it was fixed on the server,
+        // and cached ticket pages can also show outdated citation data.
+        // Static assets under public/ are served by Apache and still cache
+        // normally — this only covers the pages rendered by the app.
+        $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $this->response->setHeader('Pragma', 'no-cache');
     }
 }

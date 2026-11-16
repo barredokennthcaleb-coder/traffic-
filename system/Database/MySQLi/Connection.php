@@ -117,7 +117,9 @@ class Connection extends BaseConnection
 
         mysqli_report(MYSQLI_REPORT_ALL & ~MYSQLI_REPORT_INDEX);
 
-        $this->mysqli->options(MYSQLI_OPT_CONNECT_TIMEOUT, 10);
+        // Local tweak: fail fast so pages never hang during short DB outages
+        // (default was 10). See DATABASE-RECOVERY-NOTES.md.
+        $this->mysqli->options(MYSQLI_OPT_CONNECT_TIMEOUT, 4);
 
         if ($this->numberNative === true) {
             $this->mysqli->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);

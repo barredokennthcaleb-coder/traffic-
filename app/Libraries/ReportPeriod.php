@@ -19,7 +19,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 class ReportPeriod
 {
     /** The only period types the reports understand. */
-    public const TYPES = ['weekly', 'monthly', 'yearly', 'custom'];
+    public const TYPES = ['daily', 'weekly', 'monthly', 'yearly', 'custom'];
 
     public static function isValid(string $periodType): bool
     {
@@ -37,7 +37,13 @@ class ReportPeriod
         $year  = (int) date('Y');
         $month = (int) date('n');
 
-        if ($periodType === 'yearly') {
+        if ($periodType === 'daily') {
+            $day       = self::cleanDate($request->getGet('report_date')) ?? date('Y-m-d');
+            $startDate = $endDate = $day;
+            $year      = (int) date('Y', strtotime($day));
+            $month     = (int) date('n', strtotime($day));
+
+        } elseif ($periodType === 'yearly') {
             $year      = self::cleanYear($request->getGet('year'));
             $startDate = sprintf('%04d-01-01', $year);
             $endDate   = sprintf('%04d-12-31', $year);

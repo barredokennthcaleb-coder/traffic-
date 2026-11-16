@@ -99,10 +99,21 @@
             </span>
         </div>
 
-        <!-- ═══ I. The tally grid ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-table me-2"></i>I. Daily Traffic Apprehension Record
+        <!-- ═══ PART I — VIOLATIONS ═══ -->
+        <div class="vpr-part-head">
+            <span class="vpr-part-title">Part I &mdash; Violations</span>
+            <span class="vpr-part-sub">What was recorded, day by day and month by month.</span>
+        </div>
+
+        <!-- ═══ I. Yearly apprehension tally grid ═══ -->
+        <div class="report-section" id="yearApprehensionSection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-table me-2"></i>I. Yearly Traffic Apprehension Record</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
             <p class="vsum-sec-note">
                 Calendar Year <?= (int) $year ?> &middot; one mark per apprehension recorded on each day across all violators &mdash;
@@ -157,12 +168,17 @@
         </div>
 
         <!-- ═══ II. Month by month ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-calendar3 me-2"></i>II. Monthly Summary
+        <div class="report-section" id="yearMonthlySummarySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-calendar3 me-2"></i>II. Monthly Violation &amp; Collection Summary</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
             <p class="vsum-sec-note">
-                Every month of <?= (int) $year ?>, with what was apprehended, who was involved and what the year collected.
+                Every month of <?= (int) $year ?>: what was recorded, who was involved, and what was billed, collected and still due.
             </p>
 
             <table class="table table-bordered table-sm report-table vpr-yearsum-table">
@@ -173,8 +189,8 @@
                         <th class="text-center">VIOLATORS</th>
                         <th class="text-center">OFFENSE ENTRIES</th>
                         <th class="text-end">ASSESSED</th>
+                        <th class="text-end">COLLECTED</th>
                         <th class="text-end">OUTSTANDING</th>
-                        <th class="text-center">STATUS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -185,12 +201,8 @@
                             <td class="text-center"><?= (int) $month['violators'] ?: '&mdash;' ?></td>
                             <td class="text-center"><?= (int) $month['entries'] ?: '&mdash;' ?></td>
                             <td class="text-end"><?= (int) $month['apprehensions'] ? '&#8369;' . number_format((float) $month['assessed'], 2) : '&mdash;' ?></td>
+                            <td class="text-end"><?= (int) $month['apprehensions'] ? '&#8369;' . number_format((float) $month['paid'], 2) : '&mdash;' ?></td>
                             <td class="text-end"><?= (int) $month['apprehensions'] ? '&#8369;' . number_format((float) $month['pending'], 2) : '&mdash;' ?></td>
-                            <td class="text-center">
-                                <?php if ((int) $month['apprehensions'] > 0): ?>
-                                    <span class="vpr-pill vpr-pill--paid">On record</span>
-                                <?php endif; ?>
-                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -201,17 +213,22 @@
                         <td class="text-center"><?= number_format((int) $totals['violators']) ?></td>
                         <td class="text-center"><?= number_format((int) $totals['entries']) ?></td>
                         <td class="text-end">&#8369;<?= number_format((float) $totals['assessed'], 2) ?></td>
+                        <td class="text-end">&#8369;<?= number_format((float) $totals['paid'], 2) ?></td>
                         <td class="text-end">&#8369;<?= number_format((float) $totals['pending'], 2) ?></td>
-                        <td class="text-center">&nbsp;</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
 
         <!-- ═══ III. Apprehensions month by month ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-clock-history me-2"></i>III. Apprehensions by Month
+        <div class="report-section" id="yearApprehensionsByMonthSection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-clock-history me-2"></i>III. Apprehensions by Month</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
 
             <?php if (empty($month_detail)): ?>
@@ -280,13 +297,24 @@
             <?php endif; ?>
         </div>
 
+        <!-- ═══ PART II — VIOLATORS ═══ -->
+        <div class="vpr-part-head">
+            <span class="vpr-part-title">Part II &mdash; Violators</span>
+            <span class="vpr-part-sub">Each person's whole year on one line.</span>
+        </div>
+
         <!-- ═══ IV. Annual totals per violator ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-people me-2"></i>IV. Violator Summary for <?= (int) $year ?>
+        <div class="report-section" id="yearViolatorSummarySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-people me-2"></i>IV. Violator Summary for <?= (int) $year ?></span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
             <p class="vsum-sec-note">
-                Each person's whole year on one line. Open a single violator's full sheet from Reports &rarr; Violator Reports.
+                Each person's whole year on one line &mdash; apprehensions, offense entries, fines assessed, collected and still due.
             </p>
 
             <?php if (empty($per_violator)): ?>
@@ -335,6 +363,80 @@
             <?php endif; ?>
         </div>
 
+        <!-- ═══ PART III — REVENUE & COLLECTIONS ═══ -->
+        <?php
+        $revAssessed    = (float) $totals['assessed'];
+        $revCollected   = (float) $totals['status_amounts']['Paid'];
+        $revOutstanding = (float) $totals['status_amounts']['Pending'];
+        $revCancelled   = (float) $totals['status_amounts']['Cancelled'];
+        $revRate        = $revAssessed > 0 ? $revCollected / $revAssessed * 100 : 0.0;
+        $revEntries     = $totals['status_entries'];
+        ?>
+        <div class="vpr-part-head">
+            <span class="vpr-part-title">Part III &mdash; Revenue &amp; Collections</span>
+            <span class="vpr-part-sub">What the year billed, collected and still owes.</span>
+        </div>
+
+        <div class="report-section" id="yearRevenueSummarySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-cash-coin me-2"></i>V. Revenue &amp; Collections Summary</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
+            </h5>
+            <p class="vsum-sec-note">
+                Fines assessed in <?= (int) $year ?>, what the cashier actually collected, and what remains due.
+                Voided citations carry no fine and are excluded from revenue.
+            </p>
+
+            <table class="table table-bordered table-sm report-table vpr-revenue-table">
+                <thead>
+                    <tr>
+                        <th>STATUS</th>
+                        <th class="text-center">ENTRIES</th>
+                        <th class="text-end">AMOUNT</th>
+                        <th>MEANING</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="vpr-pill vpr-pill--paid">Paid</span></td>
+                        <td class="text-center"><?= number_format((int) ($revEntries['Paid'] ?? 0)) ?></td>
+                        <td class="text-end">&#8369;<?= number_format($revCollected, 2) ?></td>
+                        <td>Collected at the cashier &mdash; settled citations.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="vpr-pill vpr-pill--pending">Pending</span></td>
+                        <td class="text-center"><?= number_format((int) ($revEntries['Pending'] ?? 0)) ?></td>
+                        <td class="text-end">&#8369;<?= number_format($revOutstanding, 2) ?></td>
+                        <td>Still due from violators &mdash; unpaid citations.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="vpr-pill vpr-pill--cancelled">Cancelled</span></td>
+                        <td class="text-center"><?= number_format((int) ($revEntries['Cancelled'] ?? 0)) ?></td>
+                        <td class="text-end">&#8369;<?= number_format($revCancelled, 2) ?></td>
+                        <td>Voided citations &mdash; no fine and no demerit points.</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="report-total-row">
+                        <td>TOTAL</td>
+                        <td class="text-center"><?= number_format((int) $totals['entries']) ?></td>
+                        <td class="text-end">&#8369;<?= number_format($revAssessed, 2) ?></td>
+                        <td>Assessed total. Collection rate: <?= number_format($revRate, 2) ?>% (&#8369;<?= number_format($revCollected, 2) ?> of &#8369;<?= number_format($revAssessed, 2) ?>).</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <p class="vsum-sec-note">
+                <strong>Outstanding sanction:</strong> &#8369;<?= number_format($revOutstanding, 2) ?>
+                across <?= number_format((int) ($revEntries['Pending'] ?? 0)) ?> pending entr<?= (int) ($revEntries['Pending'] ?? 0) === 1 ? 'y' : 'ies' ?>.
+                <strong>Collected:</strong> &#8369;<?= number_format($revCollected, 2) ?>.
+            </p>
+        </div>
+
         <!-- ═══ Sign-off ═══ -->
         <div class="report-sign-block">
             <div class="row">
@@ -373,6 +475,27 @@
     text-transform: uppercase; color: #0f172a;
 }
 .vpr-year-month-meta { font-size: .74rem; color: #475569; }
+
+/* Part bands: the sheet reads in three blocks — violations, violators,
+   revenue — so each opens on its own rule instead of running together. */
+.vpr-part-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+    border-top: 2.5px solid #0f172a; border-bottom: 1px solid #0f172a;
+    padding: 6px 0 5px; margin: 26px 0 14px;
+}
+.vpr-part-title {
+    font-size: .9rem; font-weight: 900; letter-spacing: .07em;
+    text-transform: uppercase; color: #0f172a;
+}
+.vpr-part-sub { font-size: .72rem; color: #475569; }
+
+/* Revenue section: status, volume and money on one fixed grid. */
+.vpr-revenue-table { table-layout: fixed; width: 100%; }
+.vpr-revenue-table th:nth-child(1), .vpr-revenue-table td:nth-child(1) { width: 15%; }
+.vpr-revenue-table th:nth-child(2), .vpr-revenue-table td:nth-child(2) { width: 11%; }
+.vpr-revenue-table th:nth-child(3), .vpr-revenue-table td:nth-child(3) { width: 18%; }
+.vpr-revenue-table th:nth-child(4), .vpr-revenue-table td:nth-child(4) { width: 56%; }
 
 /* Section III: one predictable grid for every month, so dates, times, money
    and status line up down the page instead of re-flowing per table. */
@@ -415,6 +538,15 @@
 .vpr-record-table .vpr-pill { font-size: .56rem !important; padding: 1px 6px !important; }
 
 @media print {
+    .vpr-part-head {
+        border-top: 2px solid #000 !important; border-bottom: 1px solid #000 !important;
+        padding: 4px 0 3px !important; margin: 16px 0 9px !important;
+        page-break-after: avoid !important; break-after: avoid !important;
+        page-break-inside: avoid !important; break-inside: avoid !important;
+    }
+    .vpr-part-title { color: #000 !important; font-size: .82rem !important; }
+    .vpr-part-sub { color: #000 !important; font-size: .66rem !important; }
+
     .vpr-year-month-head { color: #000 !important; border-bottom: 1px solid #000 !important; }
     .vpr-year-month-name { font-size: .78rem !important; color: #000 !important; }
     .vpr-year-month-meta { font-size: .68rem !important; color: #000 !important; }
@@ -425,13 +557,21 @@
     .vpr-yearsum-table { table-layout: fixed !important; }
     .vpr-yearsum-table th { font-size: .6rem !important; padding: 3px 4px !important; }
     .vpr-yearsum-table th, .vpr-yearsum-table td { white-space: nowrap !important; }
-    .vpr-yearsum-table th:nth-child(1), .vpr-yearsum-table td:nth-child(1) { width: 13% !important; }
-    .vpr-yearsum-table th:nth-child(2), .vpr-yearsum-table td:nth-child(2) { width: 14% !important; }
-    .vpr-yearsum-table th:nth-child(3), .vpr-yearsum-table td:nth-child(3) { width: 12% !important; }
-    .vpr-yearsum-table th:nth-child(4), .vpr-yearsum-table td:nth-child(4) { width: 16% !important; }
+    .vpr-yearsum-table th:nth-child(1), .vpr-yearsum-table td:nth-child(1) { width: 12% !important; }
+    .vpr-yearsum-table th:nth-child(2), .vpr-yearsum-table td:nth-child(2) { width: 13% !important; }
+    .vpr-yearsum-table th:nth-child(3), .vpr-yearsum-table td:nth-child(3) { width: 11% !important; }
+    .vpr-yearsum-table th:nth-child(4), .vpr-yearsum-table td:nth-child(4) { width: 14% !important; }
     .vpr-yearsum-table th:nth-child(5), .vpr-yearsum-table td:nth-child(5) { width: 17% !important; }
-    .vpr-yearsum-table th:nth-child(6), .vpr-yearsum-table td:nth-child(6) { width: 17% !important; }
-    .vpr-yearsum-table th:nth-child(7), .vpr-yearsum-table td:nth-child(7) { width: 11% !important; }
+    .vpr-yearsum-table th:nth-child(6), .vpr-yearsum-table td:nth-child(6) { width: 16% !important; }
+    .vpr-yearsum-table th:nth-child(7), .vpr-yearsum-table td:nth-child(7) { width: 17% !important; }
+
+    /* Revenue table shares the same fixed grid on paper. */
+    .vpr-revenue-table { table-layout: fixed !important; }
+    .vpr-revenue-table th:nth-child(1), .vpr-revenue-table td:nth-child(1) { width: 15% !important; }
+    .vpr-revenue-table th:nth-child(2), .vpr-revenue-table td:nth-child(2) { width: 11% !important; }
+    .vpr-revenue-table th:nth-child(3), .vpr-revenue-table td:nth-child(3) { width: 18% !important; }
+    .vpr-revenue-table th:nth-child(4), .vpr-revenue-table td:nth-child(4) { width: 56% !important; }
+    .vpr-revenue-table td:nth-child(3) { white-space: nowrap !important; }
 
     /* Section III keeps the on-screen grid: fixed columns, black rules. */
     .vpr-record-table th { background: #e2e8f0 !important; }
@@ -458,5 +598,26 @@
     .vpr-yearv-table th:nth-child(7), .vpr-yearv-table td:nth-child(7) { width: 12% !important; }
 }
 </style>
+
+<script>
+function printViolatorReportSection(button) {
+    const section = button.closest('.report-section');
+    if (!section) {
+        throw new Error('Cannot print report section: section container not found.');
+    }
+
+    section.classList.add('vpr-print-target');
+    document.body.classList.add('vpr-print-section');
+
+    const restore = function () {
+        section.classList.remove('vpr-print-target');
+        document.body.classList.remove('vpr-print-section');
+    };
+
+    window.addEventListener('afterprint', restore, { once: true });
+    window.print();
+    window.setTimeout(restore, 800);
+}
+</script>
 
 <?= $this->endSection() ?>

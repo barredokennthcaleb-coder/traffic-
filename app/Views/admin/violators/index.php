@@ -64,6 +64,13 @@
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <!-- Starts the citation here, in a popup, instead of sending the
+                 admin to the officer ledger: the directory can still issue a
+                 ticket even when the enforcer side is unavailable. -->
+            <button type="button" class="vd-btn-new" data-bs-toggle="modal" data-bs-target="#adminRecordViolationModal" title="Record a new violation">
+                <i class="bi bi-plus-lg"></i> New Violation
+            </button>
         </div>
     </div>
 
@@ -76,11 +83,15 @@
                 <a href="<?= esc($chipUrl('')) ?>" class="vd-chip <?= $status === '' ? 'active' : '' ?>">
                     All <span class="vd-chip-count"><?= (int) ($counts['all'] ?? 0) ?></span>
                 </a>
-                <a href="<?= esc($chipUrl('Pending')) ?>" class="vd-chip vd-chip-pending <?= $status === 'Pending' ? 'active' : '' ?>">
+                <a href="<?= esc($chipUrl('Pending')) ?>"
+                   class="vd-chip vd-chip-pending <?= $status === 'Pending' ? 'active' : '' ?>"
+                   title="Everyone with at least one unpaid ticket — even when they have already paid other tickets">
                     Pending <span class="vd-chip-count"><?= (int) ($counts['pending'] ?? 0) ?></span>
                 </a>
-                <a href="<?= esc($chipUrl('Paid')) ?>" class="vd-chip vd-chip-paid <?= $status === 'Paid' ? 'active' : '' ?>">
-                    Settled <span class="vd-chip-count"><?= (int) ($counts['paid'] ?? 0) ?></span>
+                <a href="<?= esc($chipUrl('Paid')) ?>"
+                   class="vd-chip vd-chip-paid <?= $status === 'Paid' ? 'active' : '' ?>"
+                   title="Everyone with at least one settled ticket — even when an unpaid ticket remains">
+                    Paid <span class="vd-chip-count"><?= (int) ($counts['paid'] ?? 0) ?></span>
                 </a>
                 <?php
                     // Cancelled violators are listed under "All" too, so without
@@ -101,7 +112,9 @@
             <span>
                 One row per person. Tickets, fines and balances are summed from their linked
                 citations, so a settled apprehension stays in the record instead of disappearing
-                from it.
+                from it. Pending and Paid are sections, not a single standing: Pending lists
+                everyone with at least one unpaid ticket even when they have already paid others,
+                and Paid does the same for everyone with at least one settled ticket.
             </span>
             <button type="button" class="vd-banner-close" id="vdBannerClose"
                     aria-label="Hide this note" title="Hide this note">
@@ -175,6 +188,14 @@
                                 $hasPending    = $pendingAmount > 0;
                                 $hasPaid       = $paidAmount > 0;
 
+                                // One sanction per apprehension on the whole record — not
+                                // on the slice a section shows — because the three-strike
+                                // mark is a fact about the driver. The third sanction puts
+                                // a warning sign on the row and turns its action buttons
+                                // red, visible at rest instead of behind a hover state.
+                                $sanctionCount   = (int) ($v['sanction_ticket_count'] ?? $v['attempt_count'] ?? 0);
+                                $isThirdSanction = $sanctionCount >= 3;
+
                                 // Newest offense first, then a count of the others on
                                 // the record, so the row reads "Overloading +2 more".
                                 $typeList = array_values(array_unique(array_filter(array_map(
@@ -196,7 +217,7 @@
                                     );
                                 }
                             ?>
-                            <tr class="vd-row"
+                            <tr class="vd-row <?= $isThirdSanction ? 'vd-row--alert' : '' ?>"
                                 onclick="window.location='<?= $profileUrl ?>'"
                                 tabindex="0"
                                 role="link"
@@ -211,11 +232,20 @@
                                         <div class="vd-identity">
                                             <span class="vd-avatar" aria-hidden="true"><?= esc($initials) ?></span>
                                             <div class="vd-id-text">
-                                                <div class="vd-name"><?= esc($name) ?></div>
+                                                <div class="vd-name">
+                                                    <span class="vd-name-text"><?= esc($name) ?></span>
+                                                    <?php if ($isThirdSanction): ?>
+                                                        <?php /* Three strikes: the third sanction can take the license, so the warning sign sits in the row itself instead of behind a hover. */ ?>
+                                                        <span class="vd-sanction-warn" tabindex="0"
+                                                              title="<?= esc(sanction_label($sanctionCount), 'attr') ?> on record — one sanction per apprehension; the three-strike rule can revoke the driver's license.">
+                                                            <span class="vd-sanction-icon" aria-hidden="true">!</span><?= esc(sanction_label($sanctionCount)) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
                                                 <?php if (! $isBlank($license)): ?>
                                                     <div class="vd-license">License <?= esc($license) ?></div>
                                                 <?php else: ?>
-                                                    <div class="vd-license">No licence on file</div>
+                                                    <div class="vd-license">No license on file</div>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -315,14 +345,26 @@
                                 </td>
 
                                 <td data-label="Actions" class="text-end vd-actions-cell" onclick="event.stopPropagation();">
-                                    <a href="<?= $profileUrl ?>" class="vd-btn-view" title="View the record of <?= esc($name) ?>">
+                                    <a href="<?= $profileUrl ?>"
+                                       class="vd-btn-view <?= $isThirdSanction ? 'vd-btn-view--danger' : '' ?>"
+                                       title="<?= $isThirdSanction
+                                           ? 'View the record of ' . esc($name, 'attr') . ' — ' . esc(sanction_label($sanctionCount), 'attr') . ' on file'
+                                           : 'View the record of ' . esc($name, 'attr') ?>">
                                         <i class="bi bi-eye"></i> View
+                                        <?php if ($isThirdSanction): ?>
+                                            <i class="bi bi-exclamation-triangle-fill vd-btn-warn-sign" aria-hidden="true"></i>
+                                        <?php endif; ?>
                                     </a>
                                     <a href="<?= base_url('officer/violations?violator_id=' . (int) $v['id']) ?>"
-                                       class="vd-btn-add"
-                                       title="Record another violation for <?= esc($name) ?>"
+                                       class="vd-btn-add <?= $isThirdSanction ? 'vd-btn-add--danger' : '' ?>"
+                                       title="<?= $isThirdSanction
+                                           ? esc($name, 'attr') . ' carries ' . esc(sanction_label($sanctionCount), 'attr') . ' — record the next apprehension carefully'
+                                           : 'Record another violation for ' . esc($name, 'attr') ?>"
                                        aria-label="Record another violation for <?= esc($name) ?>">
                                         <i class="bi bi-plus-lg"></i>
+                                        <?php if ($isThirdSanction): ?>
+                                            <span class="vd-add-warn" aria-hidden="true"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                        <?php endif; ?>
                                     </a>
                                 </td>
                             </tr>
@@ -436,6 +478,31 @@
 }
 .vd-select:focus { outline: none; }
 .vd-filter-select-wrap:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, .16); }
+/* Header action: opens the blank citation form, matching the officer ledger. */
+.vd-btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: #2563eb;
+    border: 1px solid #1d4ed8;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.vd-btn-new:hover {
+    background: #1d4ed8;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, .28);
+    transform: translateY(-1px);
+}
+.vd-btn-new:active { transform: translateY(0); }
+.vd-btn-new i { font-size: 0.9rem; }
 [data-bs-theme="dark"] .vd-select option { background: #132f4c; color: #e3f2fd; }
 
 /* Card */
@@ -481,12 +548,14 @@
     background: #e2e8f0; color: #475569;
     transition: background .2s ease, color .2s ease;
 }
-/* Each badge wears the colour of the status it counts. */
-.vd-chip-pending .vd-chip-count   { background: #fef9c3; color: #854d0e; border: 1px solid #facc15; }
+/* Each badge wears the colour of the status it counts. Pending is red: the
+   money is still owed, so the section reads as the alarm it is rather than
+   as a warm "in progress" tint. */
+.vd-chip-pending .vd-chip-count   { background: #fee2e2; color: #b91c1c; border: 1px solid #ef4444; }
 .vd-chip-paid .vd-chip-count      { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
 .vd-chip-cancelled .vd-chip-count { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-.vd-chip-pending:hover   { border-color: #facc15; color: #854d0e; background: #fefce8; }
+.vd-chip-pending:hover   { border-color: #ef4444; color: #b91c1c; background: #fee2e2; }
 .vd-chip-paid:hover      { border-color: #a7f3d0; color: #065f46; background: #f0fdf4; }
 .vd-chip-cancelled:hover { border-color: #cbd5e1; color: #334155; background: #f8fafc; }
 
@@ -501,8 +570,8 @@
     box-shadow: 0 2px 10px rgba(5, 150, 105, .32);
 }
 .vd-chip-pending.active {
-    background: linear-gradient(135deg, #eab308, #ca8a04);
-    box-shadow: 0 2px 10px rgba(202, 138, 4, .35);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 2px 10px rgba(220, 38, 38, .35);
 }
 .vd-chip-paid.active {
     background: #10b981;
@@ -580,7 +649,49 @@
 }
 [data-bs-theme="dark"] .vd-avatar { background: #1e3a8a; color: #dbeafe; }
 .vd-id-text { min-width: 0; }
-.vd-name { font-weight: 700; color: var(--text-strong); line-height: 1.25; }
+.vd-name {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    font-weight: 700; color: var(--text-strong); line-height: 1.25;
+}
+.vd-name-text { min-width: 0; overflow-wrap: anywhere; }
+
+/* ── Third sanction: the visible warning sign ────────────────────────
+   Three sanctions on record (one per apprehension) is the three-strike
+   mark, so the sign stays visible beside the name instead of hiding until
+   hover. Hovering or focusing it nudges the triangle and lifts the pill,
+   so the warning answers the pointer on the way to the row's buttons. */
+.vd-sanction-warn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: .16rem .55rem .16rem .2rem;
+    border-radius: 999px;
+    background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    font-size: 0.68rem; font-weight: 800; letter-spacing: .03em;
+    line-height: 1.3; white-space: nowrap; cursor: help;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .08);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+.vd-sanction-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #dc2626; color: #ffffff;
+    font-size: .68rem; font-weight: 900; line-height: 1;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, .16);
+}
+.vd-sanction-warn:hover,
+.vd-sanction-warn:focus-visible {
+    background: #fee2e2; border-color: #fca5a5; color: #7f1d1d;
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, .12), 0 4px 12px rgba(220, 38, 38, .22);
+    outline: 2px solid rgba(220, 38, 38, .35); outline-offset: 1px;
+}
+@keyframes vdWarnNudge {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-14deg); }
+    60% { transform: rotate(12deg); }
+}
+/* The row itself carries a red spine, so a repeat offender reads as one at
+   a glance even before the warning sign is parsed. */
+.vd-row--alert .vd-cell-violator { box-shadow: inset 3px 0 0 #dc2626; }
 .vd-license {
     margin-top: 2px;
     font-size: 0.74rem; color: var(--text-subtle);
@@ -656,11 +767,36 @@ a.vd-state-chip:focus-visible {
 @media (hover: none) {
     a.vd-state-chip:hover { transform: none; box-shadow: none; }
 }
-.vd-state-chip--pending   { background: #fef9c3; color: #854d0e; border-color: #eab308; }
+.vd-state-chip--pending   { background: #fee2e2; color: #b91c1c; border-color: #ef4444; }
 .vd-state-chip--paid      { background: #ecfdf5; color: #065f46; border-color: #10b981; }
 .vd-state-chip--cancelled { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
-[data-bs-theme="dark"] .vd-state-chip--pending { background: #422006; color: #fcd34d; border-color: #a16207; }
+[data-bs-theme="dark"] .vd-state-chip--pending { background: rgba(220, 38, 38, .16); color: #fca5a5; border-color: rgba(248, 113, 113, .45); }
 [data-bs-theme="dark"] .vd-state-chip--paid    { background: #052e2b; color: #6ee7b7; border-color: #047857; }
+/* Dark theme: the pending chip and the third-sanction warning keep their red
+   fills (white letters on solid red), so they never sink into the dark card. */
+[data-bs-theme="dark"] .vd-chip-pending .vd-chip-count {
+    background: rgba(220, 38, 38, .2); color: #fca5a5; border-color: rgba(248, 113, 113, .45);
+}
+[data-bs-theme="dark"] .vd-chip-pending:hover {
+    background: rgba(220, 38, 38, .14); border-color: rgba(248, 113, 113, .45); color: #fca5a5;
+}
+[data-bs-theme="dark"] .vd-chip-pending.active {
+    background: linear-gradient(135deg, #ef4444, #b91c1c); color: #ffffff;
+}
+[data-bs-theme="dark"] .vd-sanction-warn {
+    background: rgba(220, 38, 38, .16); border-color: rgba(248, 113, 113, .45); color: #fecaca;
+}
+[data-bs-theme="dark"] .vd-sanction-warn:hover,
+[data-bs-theme="dark"] .vd-sanction-warn:focus-visible {
+    background: rgba(220, 38, 38, .24); border-color: rgba(248, 113, 113, .6); color: #fee2e2;
+}
+[data-bs-theme="dark"] .vd-btn-view--danger {
+    background: rgba(220, 38, 38, .14); border-color: rgba(248, 113, 113, .45); color: #fca5a5;
+}
+[data-bs-theme="dark"] .vd-btn-view--danger:hover {
+    background: rgba(220, 38, 38, .24); border-color: #ef4444; color: #fecaca;
+}
+[data-bs-theme="dark"] .vd-add-warn { background: #0f172a; border-color: #7f1d1d; }
 .vd-offense {
     display: inline-flex; align-items: center; gap: 5px;
     font-size: 0.78rem; color: var(--text-body);
@@ -713,6 +849,7 @@ a.vd-state-chip:focus-visible {
 }
 .vd-btn-view:hover { border-color: #93c5fd; color: #1d4ed8; transform: translateY(-1px); }
 .vd-btn-add {
+    position: relative;
     display: inline-flex; align-items: center; justify-content: center;
     width: 30px; height: 30px;
     margin-left: 6px;
@@ -724,6 +861,47 @@ a.vd-state-chip:focus-visible {
     transition: all .2s ease;
 }
 .vd-btn-add:hover { transform: translateY(-1px); color: #fff; box-shadow: 0 5px 14px rgba(37, 99, 235, .36); }
+
+/* Third-sanction rows swap the action colours for the red the warning sign
+   wears: the button is red at rest (visible without hovering) and the sign
+   on it answers the pointer. */
+.vd-btn-view--danger {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+.vd-btn-view--danger:hover {
+    border-color: #ef4444; background: #fee2e2; color: #991b1b;
+    box-shadow: 0 3px 10px rgba(220, 38, 38, .22);
+}
+.vd-btn-warn-sign { font-size: 0.68rem; margin-left: 2px; }
+.vd-btn-view--danger:hover .vd-btn-warn-sign { animation: vdWarnNudge .5s ease; }
+.vd-btn-add--danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, .32);
+}
+.vd-btn-add--danger:hover {
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(220, 38, 38, .45);
+}
+/* The sign rides the + button's shoulder at rest, nudging on hover so the
+   "record the next one carefully" warning is seen before the click. */
+.vd-add-warn {
+    position: absolute; top: -5px; right: -5px;
+    width: 15px; height: 15px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #ffffff; color: #dc2626; font-size: 0.58rem; line-height: 1;
+    border: 1px solid #fca5a5;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, .18);
+    transition: transform .16s ease, color .16s ease, border-color .16s ease;
+}
+.vd-btn-add--danger:hover .vd-add-warn,
+.vd-btn-add--danger:focus-visible .vd-add-warn {
+    color: #991b1b; border-color: #ef4444;
+    transform: scale(1.18) rotate(-8deg);
+}
+.vd-btn-add--danger:focus-visible { outline: 2px solid rgba(220, 38, 38, .5); outline-offset: 2px; }
+.vd-btn-view--danger:focus-visible { outline: 2px solid rgba(220, 38, 38, .5); outline-offset: 2px; }
 
 .vd-empty { padding: 46px 18px; text-align: center; }
 .vd-empty-icon {
@@ -849,7 +1027,10 @@ a.vd-state-chip:focus-visible {
 @media (hover: none) {
     .vd-chip:hover,
     .vd-btn-view:hover,
-    .vd-btn-add:hover { transform: none; }
+    .vd-btn-add:hover,
+    .vd-sanction-warn:hover { transform: none; }
+    .vd-btn-add--danger:hover .vd-add-warn,
+    .vd-btn-add--danger:focus-visible .vd-add-warn { transform: none; }
 }
 
 /* ── Phone refinements ────────────────────────────────────────────── */
@@ -884,13 +1065,163 @@ a.vd-state-chip:focus-visible {
     .vd-row,
     .vd-btn-view,
     .vd-btn-add,
+    .vd-sanction-warn,
+    .vd-add-warn,
     .vd-table-wrap { transition: none !important; }
     .vd-chip:hover,
     .vd-btn-view:hover,
-    .vd-btn-add:hover { transform: none !important; }
+    .vd-btn-add:hover,
+    .vd-sanction-warn:hover { transform: none !important; }
+    .vd-sanction-warn:hover i,
+    .vd-sanction-warn:focus-visible i,
+    .vd-btn-view--danger:hover .vd-btn-warn-sign,
+    .vd-btn-add--danger:hover .vd-add-warn,
+    .vd-btn-add--danger:focus-visible .vd-add-warn { animation: none !important; }
     .vd-table-wrap.is-fresh { animation: none; }
 }
+
+/* Citation popup launched from the directory header. */
+.aiv-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.15rem 0.9rem;
+}
+.aiv-grid .form-check {
+    margin: 0;
+    padding: 0.32rem 0.5rem 0.32rem 2rem;
+    border-radius: 8px;
+    line-height: 1.3;
+}
+.aiv-grid .form-check:hover { background: #f1f5f9; }
+[data-bs-theme="dark"] .aiv-grid .form-check:hover { background: #1e293b; }
+.aiv-grid .aiv-fine { color: var(--text-subtle, #64748b); font-size: 0.76rem; white-space: nowrap; }
+@media (max-width: 575.98px) {
+    .aiv-grid { grid-template-columns: 1fr; }
+}
 </style>
+
+<?= $this->include('officer/partials/tct_field_options') ?>
+
+<!-- Record a citation without leaving the directory. Posts to the same
+     officer/store endpoint the enforcer form uses (an admin session is
+     redirected straight back here on success), so nothing is duplicated and
+     no data path differs from a normal ticket. -->
+<div class="modal fade" id="adminRecordViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="adminRecordViolationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white py-3">
+                <h5 class="modal-title fw-bold" id="adminRecordViolationModalLabel">
+                    <i class="bi bi-file-earmark-text me-2"></i>Record New Violation
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('officer/store') ?>" method="POST" id="adminCitationForm">
+                <?= csrf_field() ?>
+                <input type="hidden" name="submission_token" value="<?= esc($submissionToken) ?>">
+                <input type="hidden" name="age" value="<?= esc(old('age', '25')) ?>">
+
+                <div class="modal-body p-3">
+                    <div class="row g-2 mb-2">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_first_name">First name</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_first_name" name="first_name" required value="<?= esc(old('first_name')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_middle_name">Middle</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_middle_name" name="middle_name" value="<?= esc(old('middle_name')) ?>">
+                        </div>
+                        <div class="col-8 col-md-4">
+                            <label class="form-label small fw-bold mb-1" for="aiv_last_name">Last name</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_last_name" name="last_name" required value="<?= esc(old('last_name')) ?>">
+                        </div>
+                        <div class="col-4 col-md-2">
+                            <label class="form-label small fw-bold mb-1" for="aiv_name_suffix">Suffix</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_name_suffix" name="name_suffix" maxlength="20" placeholder="Jr." value="<?= esc(old('name_suffix')) ?>">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold mb-1" for="aiv_address">Address</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_address" name="address" required value="<?= esc(old('address')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_license_number">DL/Permit No.</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_license_number" name="license_number" value="<?= esc(old('license_number')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_license_plate">Plate#</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_license_plate" name="license_plate" value="<?= esc(old('license_plate')) ?>">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_mtop_number">MTOP#</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_mtop_number" name="mtop_number" value="<?= esc(old('mtop_number')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_vehicle_type">Vehicle</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_vehicle_type" name="vehicle_type" list="vehicleTypeOptions" value="<?= esc(old('vehicle_type')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_owner_name">Owner</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_owner_name" name="owner_name" value="<?= esc(old('owner_name')) ?>">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label small fw-bold mb-1" for="aiv_owner_address">Owner address</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_owner_address" name="owner_address" value="<?= esc(old('owner_address')) ?>">
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between border-top pt-3 mb-2">
+                        <span class="fw-bold small text-uppercase" style="letter-spacing: .04em;">Violations</span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold">
+                            Fine: &#8369;<span id="aivFineTotal">0.00</span>
+                        </span>
+                    </div>
+
+                    <div class="aiv-grid">
+                        <?php foreach ($violationTypes as $type): ?>
+                            <label class="form-check">
+                                <input class="form-check-input aiv-violation-check" type="checkbox"
+                                       name="violation_type_id[]" value="<?= (int) $type['id'] ?>"
+                                       data-amount="<?= esc((string) $type['fine_amount'], 'attr') ?>"
+                                       <?= in_array((string) $type['id'], (array) old('violation_type_id', []), true) ? 'checked' : '' ?>>
+                                <span>
+                                    <?= esc($type['violation_name']) ?>
+                                    <span class="aiv-fine">&#8369;<?= number_format((float) $type['fine_amount'], 2) ?></span>
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="row g-2 mt-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold mb-1" for="aiv_location">Place</label>
+                            <input type="text" class="form-control form-control-sm" id="aiv_location" name="location" list="locationOptions" placeholder="e.g. Ceres Terminal, Kabankalan City" value="<?= esc(old('location')) ?>">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold mb-1" for="aiv_violation_datetime">Date &amp; time</label>
+                            <input type="datetime-local" class="form-control form-control-sm" id="aiv_violation_datetime" name="violation_datetime" value="<?= esc(old('violation_datetime', date('Y-m-d\TH:i'))) ?>">
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger py-2 px-3 mt-3 mb-0 d-none" id="aivError">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Select at least one violation before recording the citation.
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i>Record Citation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?= $this->endSection() ?>
 
@@ -1065,6 +1396,28 @@ a.vd-state-chip:focus-visible {
         });
     }
 
+    // Status chips (All / Pending / Paid / Cancelled) reuse the search's in-place
+    // swap: the chip only moves the status parameter, so the rows, counts and
+    // pager update without a page reload and the search text is kept.
+    document.addEventListener('click', function (event) {
+        const chip = event.target.closest && event.target.closest('.vd-chips a.vd-chip');
+        if (!chip) return;
+
+        const target = new URL(chip.getAttribute('href'), window.location.href);
+        const status = target.searchParams.get('status') || '';
+        const hidden = form && form.querySelector('input[name="status"]');
+        const isPlainClick = event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey;
+
+        // Middle-click, modifier clicks and a page without the live machinery
+        // keep the normal browser behaviour.
+        if (!isPlainClick || !runSearch || !hidden) return;
+
+        event.preventDefault();
+        hidden.value = status;
+        clearTimeout(timer);
+        runSearch();
+    });
+
     // The enforcer filter is part of the same query string the chips keep.
     // Picking an officer runs the same in-place swap as the search, so the
     // rows, KPIs and chips update on the spot instead of flashing a reload.
@@ -1093,6 +1446,50 @@ a.vd-state-chip:focus-visible {
             window.location.href = url.toString();
         });
     }
+})();
+</script>
+
+<script>
+// Citation popup: live fine total and an in-place check that at least one
+// offense is ticked, so a rejected submission never looks like a dead button.
+(function () {
+    const modalEl = document.getElementById('adminRecordViolationModal');
+    if (!modalEl) return;
+
+    const form   = document.getElementById('adminCitationForm');
+    const checks = Array.from(modalEl.querySelectorAll('.aiv-violation-check'));
+    const total  = document.getElementById('aivFineTotal');
+    const error  = document.getElementById('aivError');
+
+    const recalc = function () {
+        let sum = 0;
+        checks.forEach(function (check) {
+            if (check.checked) sum += parseFloat(check.dataset.amount || '0') || 0;
+        });
+        if (total) total.textContent = sum.toFixed(2);
+        if (error && checks.some(function (c) { return c.checked; })) error.classList.add('d-none');
+    };
+
+    checks.forEach(function (check) { check.addEventListener('change', recalc); });
+    recalc();
+
+    if (form) {
+        form.addEventListener('submit', function (event) {
+            if (!checks.some(function (c) { return c.checked; })) {
+                event.preventDefault();
+                if (error) error.classList.remove('d-none');
+                modalEl.querySelector('.modal-body').scrollTop = 0;
+            }
+        });
+    }
+
+    <?php if (session()->getFlashdata('errors') || session()->getFlashdata('error')): ?>
+    // The server bounced the submission back: reopen the form with the values
+    // the browser kept so the admin can fix the field that was rejected.
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+    <?php endif; ?>
 })();
 </script>
 <?= $this->endSection() ?>

@@ -156,6 +156,18 @@
     font-size: .96rem; font-weight: 800; color: #0f172a;
     border-bottom: 1.5px solid #0f172a; padding-bottom: 4px; margin-bottom: 6px;
 }
+.report-sec-title--split {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+}
+.report-sec-title--split > span { display: inline-flex; align-items: center; min-width: 0; }
+.report-sec-print {
+    display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+    padding: 4px 11px; border: 1px solid #e2e8f0; border-radius: 999px;
+    background: #fff; color: #475569; font-family: system-ui, sans-serif;
+    font-size: .72rem; font-weight: 700; line-height: 1; cursor: pointer;
+}
+.report-sec-print:hover { background: #fef2f2; border-color: #fca5a5; color: #b91c1c; }
 .vsum-sec-note { font-size: .78rem; color: #475569; margin-bottom: 8px; }
 
 /* Tables */
@@ -224,6 +236,10 @@
     .no-print, .sidebar, .sidebar-toggle, .mobile-topbar,
     .desktop-header, .breadcrumb, .btn, .btn-group,
     .alert, nav, header, footer {
+        display: none !important;
+    }
+    body.vpr-print-section .report-document-card > :not(.report-header):not(.report-meta-bar):not(.vsum-kpi-grid):not(.vsum-recon):not(.report-section),
+    body.vpr-print-section .report-section:not(.vpr-print-target) {
         display: none !important;
     }
     .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }

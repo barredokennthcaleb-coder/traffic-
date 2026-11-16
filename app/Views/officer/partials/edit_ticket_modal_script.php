@@ -117,7 +117,16 @@
             if(document.getElementById('edit_middle_name')) {
                 document.getElementById('edit_middle_name').value = data.middleName || data.middle_name || '';
             }
-            document.getElementById('edit_last_name').value = data.lastName || data.last_name || '';
+            // The last name is stored with its suffix ("Dimagiba Jr."), but the
+            // ticket form has a separate suffix box, so split it back apart.
+            const rawLastName = (data.lastName || data.last_name || '').trim();
+            const suffixMatch = rawLastName.match(/^(.*?)[\s,]+(Jr|Sr|II|III|IV|V)\.?$/i);
+            document.getElementById('edit_last_name').value = suffixMatch ? suffixMatch[1].trim() : rawLastName;
+            const suffixBox = document.getElementById('edit_name_suffix');
+            if (suffixBox) {
+                const bare = suffixMatch ? suffixMatch[2].toUpperCase() : '';
+                suffixBox.value = bare === 'JR' ? 'Jr.' : bare === 'SR' ? 'Sr.' : (suffixMatch ? suffixMatch[2] : '');
+            }
             if(document.getElementById('edit_license_number')) {
                 document.getElementById('edit_license_number').value = data.licenseNumber || data.license_number || '';
             }

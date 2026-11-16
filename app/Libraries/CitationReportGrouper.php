@@ -58,7 +58,7 @@ final class CitationReportGrouper
      * the same order the records arrive in (most recent violation first).
      *
      * Records linked to a violator row group on that id; legacy rows fall back
-     * to the shared identity key (licence, then name + plate, then ticket).
+     * to the shared identity key (license, then name + plate, then ticket).
      */
     public static function groupByViolator(array $records): array
     {

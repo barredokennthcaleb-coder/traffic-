@@ -76,6 +76,7 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('users/update/(:num)', 'Admin\UserController::update/$1');
     $routes->post('users/delete/(:num)', 'Admin\UserController::delete/$1');
     $routes->post('users/reset-password/(:num)', 'Admin\UserController::resetPassword/$1');
+    $routes->post('users/recovery-code/(:num)', 'Admin\UserController::generateRecoveryCode/$1');
 
     // Penalty & Payment Routes
     $routes->get('penalties', 'Admin\PenaltyController::index');
@@ -115,6 +116,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
 
     // Real-time API Routes (JSON)
     $routes->get('api/nature-summary', 'Admin\AdminController::natureSummaryJson');
+    // Trend card data for the dashboard's in-place month switching
+    $routes->get('api/dashboard-trend', 'Admin\AdminController::dashboardTrendJson');
 });
 
 // Inspection Routes (Accessible by Admin and Officer)

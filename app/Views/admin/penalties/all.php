@@ -22,7 +22,7 @@
         <!-- Card header: title, status chips, search and the record action -->
         <div class="card-header py-3 px-4 av-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
 
-            <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="d-flex align-items-center gap-2 flex-wrap av-chips">
                 <span class="fw-bold text-dark me-2" style="font-size: 0.95rem;">
                     <i class="bi bi-person-vcard me-1 text-primary"></i>All Violators
                 </span>
@@ -68,6 +68,9 @@
             </span>
         </div>
 
+        <!-- Everything the chips change lives in here, so it can be swapped in
+             place instead of reloading the page. -->
+        <div id="avResults">
         <!-- Table content -->
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -151,10 +154,12 @@
                 <?= $pagerHtml ?>
             </div>
         <?php endif; ?>
+        </div><!-- /#avResults -->
     </div>
 </div>
 
 <style>
+#avResults.is-updating { opacity: .55; transition: opacity .15s ease; }
 .av-card {
     border-radius: 18px;
     border: 1px solid #e2e8f0 !important;
@@ -288,16 +293,66 @@
     const input = document.getElementById('vlSearchInput');
     let timer   = null;
 
-    if (!form || !input) return;
-
     // Debounced submit keeps the live-search feel without breaking pagination.
-    input.addEventListener('input', function () {
-        clearTimeout(timer);
-        timer = setTimeout(function () { form.requestSubmit(); }, 550);
-    });
+    if (form && input) {
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            timer = setTimeout(function () { form.requestSubmit(); }, 550);
+        });
 
-    input.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') clearTimeout(timer);
+        input.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') clearTimeout(timer);
+        });
+    }
+
+    // Status chips (All / Pending) swap the table, pager and counts in place.
+    // No reload, so the search box keeps its text and the card does not flash.
+    // Anything unexpected falls back to a normal navigation.
+    let chipInFlight = null;
+
+    const swapChips = function (url) {
+        const results = document.getElementById('avResults');
+        if (!results) { window.location.assign(url.toString()); return; }
+
+        if (chipInFlight) chipInFlight.abort();
+
+        const controller = new AbortController();
+        chipInFlight         = controller;
+        results.classList.add('is-updating');
+
+        fetch(url.toString(), { signal: controller.signal })
+            .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(function (html) {
+                const doc         = new DOMParser().parseFromString(html, 'text/html');
+                const nextChips   = doc.querySelector('.av-chips');
+                const nextResults = doc.querySelector('#avResults');
+                const nowChips    = document.querySelector('.av-chips');
+
+                if (!nextChips || !nextResults) throw new Error('no swap target');
+
+                if (nowChips) nowChips.replaceWith(nextChips);
+                results.replaceWith(nextResults);
+                window.history.pushState({ avChip: true }, '', url.toString());
+            })
+            .catch(function (error) {
+                if (error && error.name === 'AbortError') return;
+                window.location.assign(url.toString());
+            })
+            .finally(function () {
+                if (chipInFlight === controller) chipInFlight = null;
+            });
+    };
+
+    document.addEventListener('click', function (event) {
+        const chip = event.target.closest && event.target.closest('.av-chips a');
+        if (!chip) return;
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+
+        event.preventDefault();
+        swapChips(new URL(chip.getAttribute('href'), window.location.href));
     });
 })();
 </script>

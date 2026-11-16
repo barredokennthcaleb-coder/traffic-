@@ -60,6 +60,14 @@ final class LookupViewTest extends CIUnitTestCase
         ])->render('lookup/index');
     }
 
+    public function testQuickSearchExamplesAreNotRendered(): void
+    {
+        $html = $this->render([]);
+
+        $this->assertStringNotContainsString('Quick Search Examples:', $html);
+        $this->assertStringNotContainsString('lookup?query=MYOP09', $html);
+    }
+
     public function testThirdSanctionAndAboveRenderARedBadgeOnly(): void
     {
         // Three sanctions on the register, plus a single-citation driver.

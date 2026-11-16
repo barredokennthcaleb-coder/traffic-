@@ -1,2 +1,22 @@
+# Public Citation & Violation Inquiry portal - crawler rules
+# Replace nothing here when deploying: the paths are the same on the host.
+
 User-agent: *
-Disallow: 
+
+# Open to search engines:
+Allow: /$
+Allow: /lookup
+
+# Private / staff-only areas - never index these:
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /admin
+Disallow: /officer
+Disallow: /user
+Disallow: /receipt
+Disallow: /pay
+Disallow: /lookup?query=
+
+# Generated assets and uploads are fine to skip:
+Disallow: /uploads/

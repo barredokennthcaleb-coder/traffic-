@@ -129,18 +129,14 @@
                         </ul>
                     </div>
                 </li>
-                <li class="nav-item mb-1">
-                    <a class="nav-link <?= (uri_string() == 'inspections' || strpos(uri_string(), 'inspections/') === 0) ? 'active' : '' ?>" href="<?= base_url('inspections') ?>" aria-label="Inspection">
-                        <i class="bi bi-file-earmark-check nav-icon"></i>
-                        <span class="nav-text ms-2">Inspection</span>
-                    </a>
-                </li>
                 <?php
-                    // Violation Types and Users are configuration screens, so they
-                    // live inside one Settings group instead of taking two slots.
+                    // Violation Types, Users and Inspection are supporting screens,
+                    // so they live inside one Settings group instead of each
+                    // taking a permanent slot in the main navigation.
                     $onViolationTypes = uri_string() === 'violation-types' || strpos(uri_string(), 'violation-types/') === 0;
                     $onUsers          = uri_string() === 'users' || strpos(uri_string(), 'users/') === 0;
-                    $onSettings       = $onViolationTypes || $onUsers;
+                    $onInspections    = uri_string() === 'inspections' || strpos(uri_string(), 'inspections/') === 0;
+                    $onSettings       = $onViolationTypes || $onUsers || $onInspections;
                 ?>
                 <li class="sidebar-nav-divider" aria-hidden="true"></li>
                 <li class="nav-item mb-1">
@@ -157,6 +153,12 @@
                     </a>
                     <div class="collapse <?= $onSettings ? 'show' : '' ?>" id="settingsSubmenu">
                         <ul class="nav flex-column sidebar-subnav">
+                            <li class="nav-item">
+                                <a class="nav-link <?= $onInspections ? 'active' : '' ?>" href="<?= base_url('inspections') ?>" aria-label="Inspection">
+                                    <i class="bi bi-file-earmark-check nav-icon"></i>
+                                    <span class="nav-text ms-2">Inspection</span>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link <?= $onViolationTypes ? 'active' : '' ?>" href="<?= base_url('violation-types') ?>" aria-label="Violation types">
                                     <i class="bi bi-card-list nav-icon"></i>
@@ -364,6 +366,46 @@
     display: none;
 }
 .sidebar.collapsed .sidebar-nav-divider { display: none; }
+
+/* Collapsed rail (80px): there is no room for the wordmark or the account
+   name, and leaving them in was wrapping "Traffic System" onto two lines and
+   clipping the role text at the edge. On the rail only the logo, the avatar
+   and the icons remain, each on the sidebar's centre line. */
+.sidebar.collapsed .sidebar-brand-wrap {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-bottom: 0.75rem !important;
+}
+.sidebar.collapsed .brand-title,
+.sidebar.collapsed .brand-subtitle {
+    display: none;
+}
+.sidebar.collapsed .brand-logo-container {
+    margin-left: auto;
+    margin-right: auto;
+}
+.sidebar.collapsed .sidebar-user-card {
+    margin-left: 0.9rem !important;
+    margin-right: 0.9rem !important;
+    padding: 0.35rem !important;
+}
+.sidebar.collapsed .sidebar-user-card > .d-flex {
+    justify-content: center;
+    gap: 0 !important;
+}
+.sidebar.collapsed .sidebar-user-info {
+    display: none;
+}
+.sidebar.collapsed .sidebar-nav {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+.sidebar.collapsed .nav-caret {
+    display: none;
+}
+.sidebar.collapsed .sidebar-nav .nav-link:hover {
+    transform: none;
+}
 
 .nav-link-logout {
     color: #f87171 !important;

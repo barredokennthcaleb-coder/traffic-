@@ -86,7 +86,7 @@ class Filters extends BaseFilters
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders', // X-Frame-Options, X-Content-Type-Options, Referrer-Policy
             'compress', // Gzip text responses (php -S has no mod_deflate)
         ],
     ];

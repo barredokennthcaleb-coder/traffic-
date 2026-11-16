@@ -18,34 +18,10 @@
         }
     }
 
-    $standardViolations = [
-        'Unlicensed driver',
-        'Unregistered MV',
-        'Colorum/Unfranchised Operation',
-        'Invalid or Suspended/revoked/expired CR',
-        'Out of Route',
-        'Discourteous driver/conduct',
-        'CR/OR not carried',
-        'Unauthorized improvised plates',
-        'No required MV parts/acc.',
-        'No body (plate) number, for hire MV',
-        'Allowing passenger on top of MV',
-        'Reckless driving',
-        'Obstruction',
-        'Other Violations'
-    ];
-
-    if (!function_exists('isTctChecked')) {
-        function isTctChecked($stdName, $activeNames) {
-            $cleanStd = strtolower(trim($stdName));
-            foreach ($activeNames as $act) {
-                if ($act === $cleanStd || strpos($act, $cleanStd) !== false || strpos($cleanStd, $act) !== false) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+    // The printed checklist, its name matching and the "Other Violations"
+    // fallback all live in tct_helper.php, so the enforcer, print, admin and
+    // driver layouts can never drift apart.
+    $standardViolations = tct_standard_violations();
 ?>
 
 <!-- Screen toolbar (hidden on print) -->
@@ -151,7 +127,7 @@
 
             <div class="tct-checklist-container">
                 <?php foreach ($standardViolations as $std): 
-                    $checked = isTctChecked($std, $activeViolationNames);
+                    $checked = tct_is_checked($std, $activeViolationNames);
                 ?>
                     <div class="tct-check-item">
                         <div class="tct-box <?= $checked ? 'is-checked' : '' ?>">
@@ -168,7 +144,7 @@
             <div class="tct-row align-items-end mb-3">
                 <div class="d-flex flex-1 align-items-end me-4">
                     <span class="tct-bold-label me-1">Place:</span>
-                    <span class="tct-field-underline flex-1"><?= esc($violation['location'] ?? '—') ?></span>
+                    <span class="tct-field-underline flex-1"><?= esc(trim((string) ($violation['location'] ?? '')) !== '' ? $violation['location'] : 'Kabankalan City') ?></span>
                 </div>
                 <div class="d-flex flex-1 align-items-end">
                     <span class="tct-bold-label me-1">Date &amp; Time</span>

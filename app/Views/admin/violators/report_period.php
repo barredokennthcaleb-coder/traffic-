@@ -26,11 +26,19 @@
 
                 <select name="period_type" id="period_type" class="form-select form-select-sm vpr-select" required
                         aria-label="Report type" onchange="vprTogglePeriod(this.value)">
+                    <option value="daily"   <?= $period_type === 'daily'   ? 'selected' : '' ?>>Daily</option>
                     <option value="weekly"  <?= $period_type === 'weekly'  ? 'selected' : '' ?>>Weekly</option>
                     <option value="monthly" <?= $period_type === 'monthly' ? 'selected' : '' ?>>Monthly</option>
                     <option value="yearly">Full Year</option>
                     <option value="custom"  <?= $period_type === 'custom'  ? 'selected' : '' ?>>Custom Range</option>
                 </select>
+
+                <span class="vpr-period-box" data-period="daily" style="<?= $period_type === 'daily' ? '' : 'display:none;' ?>">
+                    <input type="date" name="report_date" class="form-control form-control-sm vpr-date"
+                           value="<?= $period_type === 'daily' ? esc($start_date) : date('Y-m-d') ?>"
+                           aria-label="Report date" title="Report date"
+                           <?= $period_type === 'daily' ? '' : 'disabled' ?>>
+                </span>
 
                 <span class="vpr-period-box" data-period="weekly" style="<?= $period_type === 'weekly' ? '' : 'display:none;' ?>">
                     <input type="date" name="start_date" class="form-control form-control-sm vpr-date"
@@ -143,9 +151,14 @@
         </div>
 
         <!-- ═══ I. Day by day ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-calendar3 me-2"></i>I. Daily Summary
+        <div class="report-section" id="periodDailySummarySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-calendar3 me-2"></i>I. Daily Summary</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
             <p class="vsum-sec-note">
                 Every day of the period — one line per date, with what was apprehended and what it assessed.
@@ -191,9 +204,14 @@
         </div>
 
         <!-- ═══ II. Apprehensions day by day ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-clock-history me-2"></i>II. Apprehensions by Day
+        <div class="report-section" id="periodApprehensionsByDaySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-clock-history me-2"></i>II. Apprehensions by Day</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
 
             <?php if (empty($day_detail)): ?>
@@ -263,9 +281,14 @@
         </div>
 
         <!-- ═══ III. Totals per violator ═══ -->
-        <div class="report-section">
-            <h5 class="report-sec-title">
-                <i class="bi bi-people me-2"></i>III. Violator Summary for the Period
+        <div class="report-section" id="periodViolatorSummarySection">
+            <h5 class="report-sec-title report-sec-title--split">
+                <span><i class="bi bi-people me-2"></i>III. Violator Summary for the Period</span>
+                <button type="button" class="report-sec-print no-print"
+                        onclick="printViolatorReportSection(this)"
+                        title="Print only this section with the report header and summary figures">
+                    <i class="bi bi-printer-fill"></i><span>Print this section</span>
+                </button>
             </h5>
             <p class="vsum-sec-note">
                 Each person's whole period on one line. Open a single violator's full sheet from Reports &rarr; Violator Reports.
@@ -458,6 +481,25 @@ function vprTogglePeriod(type) {
             field.disabled = !active;
         });
     });
+}
+
+function printViolatorReportSection(button) {
+    const section = button.closest('.report-section');
+    if (!section) {
+        throw new Error('Cannot print report section: section container not found.');
+    }
+
+    section.classList.add('vpr-print-target');
+    document.body.classList.add('vpr-print-section');
+
+    const restore = function () {
+        section.classList.remove('vpr-print-target');
+        document.body.classList.remove('vpr-print-section');
+    };
+
+    window.addEventListener('afterprint', restore, { once: true });
+    window.print();
+    window.setTimeout(restore, 800);
 }
 </script>
 

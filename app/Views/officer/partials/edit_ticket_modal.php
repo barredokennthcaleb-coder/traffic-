@@ -61,9 +61,13 @@
                                         <input type="text" name="middle_name" id="edit_middle_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Middle">
                                         <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Middle)</span>
                                     </div>
-                                    <div class="flex-1 d-flex flex-column text-center">
+                                    <div class="d-flex flex-column text-center" style="flex: 1.6; min-width: 0;">
                                         <input type="text" name="last_name" id="edit_last_name" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Last" required>
                                         <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Last)</span>
+                                    </div>
+                                    <div class="d-flex flex-column text-center" style="width: 56px; flex-shrink: 0;">
+                                        <input type="text" name="name_suffix" id="edit_name_suffix" class="form-control form-control-sm tct-input w-100 fw-bold" style="text-align: center;" placeholder="Suffix" maxlength="20" aria-label="Name suffix, e.g. Jr. or III">
+                                        <span style="font-size: 0.72rem; font-style: italic; font-family: Arial, sans-serif; color: #64748b; margin-top: 2px;">(Suffix)</span>
                                     </div>
                                 </div>
                             </div>
@@ -74,36 +78,36 @@
                                 <input type="hidden" name="age" id="edit_age" value="25">
                             </div>
 
-                            <div class="tct-row mb-2 align-items-end">
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">DL/Permit No.</span>
+                            <div class="tct-form-grid tct-form-grid-3 mb-3">
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">DL/Permit No.</span>
                                     <input type="text" name="license_number" id="edit_license_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
                                 </div>
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">Plate#</span>
-                                    <input type="text" name="license_plate" id="edit_license_plate" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="890" required>
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">Plate#</span>
+                                    <input type="text" name="license_plate" id="edit_license_plate" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="890">
                                 </div>
-                                <div class="d-flex flex-1 align-items-end">
-                                    <span class="tct-bold-label me-1">MTOP#</span>
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">MTOP#</span>
                                     <input type="text" name="mtop_number" id="edit_mtop_number" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="m789">
                                 </div>
                             </div>
 
-                            <div class="tct-row align-items-end">
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">Vehicle</span>
+                            <div class="tct-form-grid tct-form-grid-3">
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">Vehicle</span>
                                     <div class="combo-wrap flex-1">
                                         <input type="text" name="vehicle_type" id="edit_vehicle_type" class="form-control form-control-sm tct-input fw-bold" data-combo-source="vehicleTypeOptions" autocomplete="off" placeholder="e.g. Tricycle">
                                         <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show vehicle suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
                                         <div class="combo-list" hidden></div>
                                     </div>
                                 </div>
-                                <div class="d-flex flex-1 align-items-end me-3">
-                                    <span class="tct-bold-label me-1">Owner:</span>
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">Owner:</span>
                                     <input type="text" name="owner_name" id="edit_owner_name" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="no">
                                 </div>
-                                <div class="d-flex flex-1 align-items-end">
-                                    <span class="tct-bold-label me-1">Address</span>
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">Address</span>
                                     <input type="text" name="owner_address" id="edit_owner_address" class="form-control form-control-sm tct-input flex-1 fw-bold" placeholder="bocana ilog">
                                 </div>
                             </div>
@@ -111,7 +115,7 @@
 
                         <!-- Section 2: Violations Checklist (same format as the record form) -->
                         <div class="tct-doc-section">
-                            <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+                            <div class="tct-violations-head d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
                                 <div class="tct-sec-heading text-center flex-1">VIOLATIONS</div>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="badge bg-light text-dark border fw-bold" style="font-size: 0.82rem;">Fine: ₱<span id="edit_penalty_amount_display">0.00</span></span>
@@ -139,16 +143,14 @@
 
                         <!-- Section 3: Place & Legal Notice -->
                         <div class="tct-doc-section">
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-12">
-                                    <div class="d-flex align-items-center">
-                                        <span class="tct-bold-label me-2">Place <span class="text-danger">*</span>:</span>
-                                        <div class="combo-wrap flex-1">
-                                            <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input"
-                                                   required data-combo-source="locationOptions" autocomplete="off" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
-                                            <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show place suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
-                                            <div class="combo-list" hidden></div>
-                                        </div>
+                            <div class="tct-form-grid mb-3">
+                                <div class="tct-form-cell">
+                                    <span class="tct-bold-label">Place <span class="text-danger">*</span>:</span>
+                                    <div class="combo-wrap flex-1">
+                                        <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input"
+                                               required data-combo-source="locationOptions" autocomplete="off" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
+                                        <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show place suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
+                                        <div class="combo-list" hidden></div>
                                     </div>
                                 </div>
                             </div>

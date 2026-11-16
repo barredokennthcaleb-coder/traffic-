@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
 use App\Libraries\ReportPeriod;
 use App\Models\UserModel;
+use App\Models\ViolationTypeModel;
 use App\Models\ViolatorModel;
 use App\Models\ViolatorRecord;
 
@@ -20,12 +21,14 @@ class ViolatorController extends BaseController
     protected ViolatorModel $violators;
     protected UserModel $users;
     protected ViolatorRecord $violationRecord;
+    protected ViolationTypeModel $violationTypes;
 
     public function __construct()
     {
         $this->violators       = new ViolatorModel();
         $this->users           = new UserModel();
         $this->violationRecord = new ViolatorRecord();
+        $this->violationTypes  = new ViolationTypeModel();
     }
 
     public function index()
@@ -112,8 +115,24 @@ class ViolatorController extends BaseController
             'balance'   => (float) ($yearSummary['total_pending'] ?? 0),
         ];
 
+        // Citation issuance straight from this directory: the same active
+        // offense catalog and the same one-time token the officer form uses,
+        // so the popup can post to officer/store without leaving the page.
+        $session          = session();
+        $submissionToken  = bin2hex(random_bytes(16));
+        $tokens           = $session->get('violation_submission_tokens');
+        $tokens           = is_array($tokens) ? $tokens : [];
+        $tokens[]         = $submissionToken;
+        $tokens           = array_slice(array_values(array_unique($tokens)), -20);
+        $session->set('violation_submission_tokens', $tokens);
+
         $data = [
-            'title'      => 'Violators - Admin',
+            'title'           => 'Violators - Admin',
+            'violationTypes'  => $this->violationTypes
+                ->where('status', 'active')
+                ->orderBy('violation_name', 'ASC')
+                ->findAll(),
+            'submissionToken' => $submissionToken,
             'violators'  => $result['rows'],
             'total'      => $result['total'],
             'stats'      => $result['stats'],
@@ -240,6 +259,10 @@ class ViolatorController extends BaseController
         $calendar    = [];   // month => day => citations
         $years       = [(int) date('Y') => true];
 
+        // Status counts for the revenue section: entries and amounts per status.
+        $statusEntries   = ['Paid' => 0, 'Pending' => 0, 'Cancelled' => 0];
+        $statusAmounts   = ['Paid' => 0.0, 'Pending' => 0.0, 'Cancelled' => 0.0];
+
         foreach ($list['rows'] as $row) {
             if (! empty($row['last_violation_at'])) {
                 $years[(int) date('Y', strtotime((string) $row['last_violation_at']))] = true;
@@ -279,6 +302,14 @@ class ViolatorController extends BaseController
                 } elseif ($infraction['status'] === 'Pending') {
                     $pending += $infraction['amount'];
                 }
+
+                $status = (string) $infraction['status'];
+                if (! isset($statusEntries[$status])) {
+                    $statusEntries[$status] = 0;
+                    $statusAmounts[$status] = 0.0;
+                }
+                $statusEntries[$status]++;
+                $statusAmounts[$status] += $infraction['amount'];
 
                 $tickets[$infraction['ticket_id']] = true;
 
@@ -338,6 +369,7 @@ class ViolatorController extends BaseController
             $tickets    = [];
             $violators  = [];
             $assessed   = 0.0;
+            $paid       = 0.0;
             $pending    = 0.0;
             $ticketRows = [];
             $grouped    = [];
@@ -350,7 +382,9 @@ class ViolatorController extends BaseController
                     $assessed += $offense['amount'];
                 }
 
-                if ($offense['status'] === 'Pending') {
+                if ($offense['status'] === 'Paid') {
+                    $paid += $offense['amount'];
+                } elseif ($offense['status'] === 'Pending') {
                     $pending += $offense['amount'];
                 }
 
@@ -400,6 +434,7 @@ class ViolatorController extends BaseController
                 'violators'     => count($violators),
                 'entries'       => count($monthRows),
                 'assessed'      => $assessed,
+                'paid'          => $paid,
                 'pending'       => $pending,
             ];
 
@@ -424,6 +459,9 @@ class ViolatorController extends BaseController
             'assessed'      => array_sum(array_column($perViolator, 'assessed')),
             'paid'          => array_sum(array_column($perViolator, 'paid')),
             'pending'       => array_sum(array_column($perViolator, 'pending')),
+            'cancelled'     => (float) $statusAmounts['Cancelled'],
+            'status_entries'=> $statusEntries,
+            'status_amounts'=> $statusAmounts,
             'violators'     => count($perViolator),
         ];
 
@@ -692,14 +730,17 @@ class ViolatorController extends BaseController
         }
 
         $periodName = match ($periodType) {
+            'daily'   => 'Daily',
             'weekly'  => 'Weekly',
             'monthly' => 'Monthly',
             default   => 'Custom Range',
         };
 
-        $rangeLabel = $periodType === 'monthly'
-            ? date('F Y', $startStamp)
-            : date('M d, Y', $startStamp) . ' – ' . date('M d, Y', $endStamp);
+        $rangeLabel = match ($periodType) {
+            'daily'   => date('M d, Y', $startStamp),
+            'monthly' => date('F Y', $startStamp),
+            default   => date('M d, Y', $startStamp) . ' – ' . date('M d, Y', $endStamp),
+        };
 
         $monthNames = [
             1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',

@@ -53,16 +53,15 @@
                             <th>Age</th>
                             <th>Address</th>
                             <th>License Plate</th>
-                            <th>Violation Type</th>
-                            <th>Amount</th>
                             <th>Status</th>
-                            <th class="pe-4">Date</th>
+                            <th>Date</th>
+                            <th class="text-end pe-4 no-print">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($violations)): ?>
                             <tr id="noDataRow">
-                                <td colspan="9" class="text-center py-5 text-muted">
+                                <td colspan="8" class="text-center py-5 text-muted">
                                     <i class="bi bi-inbox fs-1 d-block mb-2"></i>
                                     No violations recorded yet.
                                 </td>
@@ -99,14 +98,6 @@
                                         -
                                     <?php endif; ?>
                                 </td>
-                                <td data-label="Violation Type">
-                                    <div class="violation-chip"><span class="violation-dot">&bull;</span><?= esc($violation['violation_type']) ?></div>
-                                </td>
-                                <td data-label="Amount">
-                                    <span class="total-fine-badge <?= $isPaid ? 'total-fine-paid' : 'total-fine-pending' ?>">
-                                        ₱<?= number_format((float) ($violation['penalty_amount'] ?? 0), 2) ?>
-                                    </span>
-                                </td>
                                 <td data-label="Status">
                                     <?php if ($vStatus === 'pending'): ?>
                                         <span class="status-glow-badge status-pending"><span class="status-dot"></span>Pending</span>
@@ -116,11 +107,16 @@
                                         <span class="status-glow-badge status-cancelled"><i class="bi bi-x-circle-fill me-1"></i>Cancelled</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="pe-4 small text-muted" data-label="Date" style="white-space: nowrap;">
+                                <td class="small text-muted" data-label="Date" style="white-space: nowrap;">
                                     <div class="d-flex align-items-center gap-1.5">
                                         <i class="bi bi-calendar3 text-primary" style="font-size: 0.8rem; flex-shrink: 0;"></i>
                                         <span><?= date('M d, Y', strtotime($violation['violation_date'])) ?></span>
                                     </div>
+                                </td>
+                                <td class="text-end pe-4 no-print" data-label="Action">
+                                    <a href="<?= base_url('officer/view/' . (int) $violation['id']) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-2xs">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -167,9 +163,9 @@
         letter-spacing: -0.01em;
     }
     .ticket-id-pill {
-        background: #f0f7ff;
-        border: 1px solid #bfdbfe;
-        color: #1d4ed8;
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
+        color: #6d28d9;
         padding: 0.25rem 0.65rem;
         border-radius: 8px;
         font-size: 0.82rem;
@@ -182,11 +178,11 @@
         user-select: none;
     }
     .ticket-id-pill:hover {
-        background: #dbeafe;
-        border-color: #93c5fd;
-        color: #1e40af;
+        background: #ede9fe;
+        border-color: #c4b5fd;
+        color: #5b21b6;
         transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.15);
+        box-shadow: 0 3px 8px rgba(124, 58, 237, 0.15);
     }
     .ticket-id-pill.copied {
         background: #dcfce7 !important;
@@ -209,7 +205,7 @@
     }
     .plate-pill i,
     .plate-pill .tricycle-icon {
-        color: #2563eb !important;
+        color: #7c3aed !important;
     }
     .violation-chip {
         font-size: 0.81rem;
@@ -292,7 +288,7 @@
     }
 
     #searchInput {
-        border-color: #dbe1ff;
+        border-color: #e9d5ff;
     }
 
     /* Mobile Responsive Card Transformation */
@@ -452,7 +448,7 @@
                 const tbody = document.querySelector('#violationTable tbody');
                 const row = tbody.insertRow();
                 row.id = 'noDataRow';
-                row.innerHTML = `<td colspan="9" class="text-center py-5 text-muted">No matching results found.</td>`;
+                row.innerHTML = `<td colspan="8" class="text-center py-5 text-muted">No matching results found.</td>`;
             }
         } else if (noDataRow) {
             noDataRow.remove();

@@ -77,11 +77,35 @@
                         <?php if (! empty($awaiting_filter)): ?>
                         <option value="" selected disabled>— Choose report type —</option>
                         <?php endif; ?>
+                        <option value="daily"   <?= ($period_type === 'daily')   ? 'selected' : '' ?>>🗓️ Daily Report</option>
                         <option value="weekly"  <?= ($period_type === 'weekly')  ? 'selected' : '' ?>>📅 Weekly Report</option>
                         <option value="monthly" <?= ($period_type === 'monthly') ? 'selected' : '' ?>>📆 Monthly Report</option>
                         <option value="yearly"  <?= ($period_type === 'yearly')  ? 'selected' : '' ?>>📊 Full Year Report</option>
                         <option value="custom"  <?= ($period_type === 'custom')  ? 'selected' : '' ?>>🎯 Custom Range</option>
                     </select>
+                </div>
+
+                <!-- Daily Selector: the day supplies the detail, the month
+                     supplies the day-by-day sheet printed above it. -->
+                <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-12 period-box" id="dailyBox" style="<?= ($period_type === 'daily') ? '' : 'display:none;' ?>">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label for="report_date" class="form-label filter-label">Report Date</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-calendar-day"></i></span>
+                                <input type="date" name="report_date" id="report_date" class="form-control form-control-sm border-start-0" value="<?= esc($period_type === 'daily' ? $start_date : date('Y-m-d')) ?>" <?= ($period_type === 'daily') ? '' : 'disabled' ?>>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label for="report_month" class="form-label filter-label">Month Sheet</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white text-primary border-end-0"><i class="bi bi-calendar3"></i></span>
+                                <input type="month" name="report_month" id="report_month" class="form-control form-control-sm border-start-0"
+                                       value="<?= esc(! empty($daily_sheets['month_value']) ? $daily_sheets['month_value'] : ($period_type === 'daily' ? date('Y-m', strtotime($start_date)) : date('Y-m'))) ?>"
+                                       <?= ($period_type === 'daily') ? '' : 'disabled' ?> title="Month shown on the day-by-day sheets">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Weekly Selector -->
@@ -201,8 +225,9 @@
                 <i class="bi bi-funnel"></i>
             </div>
             <h5 class="fw-bold mb-1" style="color: var(--text-strong);">Choose a report period</h5>
-            <p class="text-muted small mb-4">The report is built only from the period you ask for — weekly, monthly or full year.</p>
+            <p class="text-muted small mb-4">The report is built only from the period you ask for — daily, weekly, monthly or full year.</p>
             <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button type="button" onclick="pickPeriod('daily')" class="btn btn-outline-primary btn-sm fw-semibold px-3"><i class="bi bi-calendar-day me-1"></i>Daily</button>
                 <button type="button" onclick="pickPeriod('weekly')" class="btn btn-outline-primary btn-sm fw-semibold px-3"><i class="bi bi-calendar-week me-1"></i>Weekly</button>
                 <button type="button" onclick="pickPeriod('monthly')" class="btn btn-outline-primary btn-sm fw-semibold px-3"><i class="bi bi-calendar-month me-1"></i>Monthly</button>
                 <button type="button" onclick="pickPeriod('yearly')" class="btn btn-outline-primary btn-sm fw-semibold px-3"><i class="bi bi-calendar3 me-1"></i>Full Year</button>
@@ -246,6 +271,9 @@
                 <div class="rep-period">
                     Covered Period: <strong><?= date('M d, Y', strtotime($start_date)) ?> &ndash; <?= date('M d, Y', strtotime($end_date)) ?></strong>
                     (<?= ucfirst($period_type) ?> Report)
+                    <?php if (! empty($daily_sheets)): ?>
+                        &middot; Month Sheet: <strong><?= esc($daily_sheets['label']) ?></strong>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -331,6 +359,117 @@
                     <span class="status-mix-item"><span class="status-mix-dot dot-cancelled"></span>Cancelled <strong><?= number_format($statusCancelled) ?></strong> <span class="status-mix-pct">(<?= number_format($statusCancelledPct, 2) ?>%)</span></span>
                 <?php endif; ?>
             </div>
+        </div>
+        <?php endif; ?>
+
+        <?php if (! empty($daily_sheets)): ?>
+        <?php
+            // The Daily Report's month sheet: three single-page tallies, all
+            // read from one month record set so the grid footers, the day's
+            // detail and the dashboard quote the same figures.
+            $sheetDefs = [
+                [
+                    'no'    => 1,
+                    'title' => 'Daily Traffic Apprehension Record',
+                    'note'  => 'One mark per apprehension (ticket) recorded on each day. Cancelled (void) citations are excluded, and a ticket with several offenses counts once.',
+                    'key'   => 'tickets',
+                    'total' => (int) $daily_sheets['tickets_total'],
+                    'foot'  => 'Column total = apprehensions recorded in ' . $daily_sheets['label'] . '.',
+                    'money' => false,
+                ],
+                [
+                    'no'    => 2,
+                    'title' => 'Daily Revenue Collected',
+                    'note'  => 'Money actually collected each day (Paid citations only), counted on the citation date the same way the dashboard revenue line counts it.',
+                    'key'   => 'revenue',
+                    'total' => (float) $daily_sheets['revenue_total'],
+                    'foot'  => 'Pending fines stay in the period summary; this sheet counts money received.',
+                    'money' => true,
+                ],
+                [
+                    'no'    => 3,
+                    'title' => 'Daily Violators Apprehended',
+                    'note'  => 'Distinct people apprehended each day. A driver caught twice in the month appears on both days but counts once in the month total.',
+                    'key'   => 'people',
+                    'total' => (int) $daily_sheets['people_total'],
+                    'foot'  => 'Month total counts unique people, not day marks.',
+                    'money' => false,
+                ],
+            ];
+        ?>
+        <div class="dly-sheet-summary">
+            <span class="dly-sheet-summary-title"><?= esc($daily_sheets['label']) ?> &mdash; month totals</span>
+            <span><strong><?= number_format($daily_sheets['tickets_total']) ?></strong> citations</span>
+            <span><strong>₱<?= number_format($daily_sheets['revenue_total'], 2) ?></strong> collected</span>
+            <span><strong><?= number_format($daily_sheets['people_total']) ?></strong> violators</span>
+            <span class="dly-sheet-summary-note">The KPI cards above describe the selected day; these sheets describe the month.</span>
+        </div>
+
+        <div class="dly-sheet-stack" id="secDailySheets">
+            <?php foreach ($sheetDefs as $sheet): ?>
+                <?php $values = $daily_sheets[$sheet['key']]; ?>
+                <section class="dly-sheet" data-print-sheet="<?= (int) $sheet['no'] ?>">
+                    <div class="dly-sheet-head">
+                        <div class="dly-sheet-head-text">
+                            <div class="dly-sheet-kicker">Sheet <?= (int) $sheet['no'] ?> of 3</div>
+                            <h6 class="dly-sheet-title">
+                                <?= (int) $sheet['no'] ?>. <?= esc($sheet['title']) ?> &mdash; <?= esc($daily_sheets['label']) ?>
+                            </h6>
+                            <div class="dly-sheet-office">CTRAMO &middot; Kabankalan City &middot; Traffic Citation Report</div>
+                            <p class="dly-sheet-note"><?= esc($sheet['note']) ?></p>
+                        </div>
+                        <button type="button" class="report-sec-print no-print dly-sheet-print"
+                                onclick="printDailySheet(<?= (int) $sheet['no'] ?>)"
+                                title="Prints only sheet <?= (int) $sheet['no'] ?>, on its own page">
+                            <i class="bi bi-printer-fill"></i><span>Print sheet <?= (int) $sheet['no'] ?></span>
+                        </button>
+                    </div>
+
+                    <table class="dly-table">
+                        <thead>
+                            <tr>
+                                <th class="dly-lbl">MONTH</th>
+                                <?php for ($day = 1; $day <= 31; $day++): ?>
+                                    <th class="<?= $day > $daily_sheets['days'] ? 'dly-off' : '' ?>"><?= $day ?></th>
+                                <?php endfor; ?>
+                                <th class="dly-total">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dly-lbl"><?= esc($daily_sheets['short_label']) ?></td>
+                                <?php for ($day = 1; $day <= 31; $day++): ?>
+                                    <?php
+                                        $value   = $day <= $daily_sheets['days'] ? (float) ($values[$day] ?? 0) : 0.0;
+                                        $hasMark = $value > 0;
+                                        $shown   = ! $hasMark ? '' : ($sheet['money']
+                                            ? number_format($value, 0)
+                                            : (string) (int) $value);
+                                    ?>
+                                    <td class="<?= $day > $daily_sheets['days'] ? 'dly-off' : '' ?><?= $hasMark ? ' dly-hit' : '' ?><?= $sheet['money'] ? ' dly-money' : '' ?>"><?= $shown ?></td>
+                                <?php endfor; ?>
+                                <td class="dly-total"><?= $sheet['money'] ? '₱' . number_format($sheet['total'], 2) : number_format($sheet['total']) ?></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="dly-lbl">TOTAL</td>
+                                <?php for ($day = 1; $day <= 31; $day++): ?>
+                                    <?php
+                                        $value = $day <= $daily_sheets['days'] ? (float) ($values[$day] ?? 0) : 0.0;
+                                    ?>
+                                    <td class="<?= $day > $daily_sheets['days'] ? 'dly-off' : '' ?>"><?= $value > 0
+                                        ? ($sheet['money'] ? number_format($value, 0) : (string) (int) $value)
+                                        : '' ?></td>
+                                <?php endfor; ?>
+                                <td class="dly-total"><?= $sheet['money'] ? '₱' . number_format($sheet['total'], 2) : number_format($sheet['total']) ?></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <p class="dly-sheet-foot"><i class="bi bi-info-circle me-1"></i><?= esc($sheet['foot']) ?></p>
+                </section>
+            <?php endforeach; ?>
         </div>
         <?php endif; ?>
 
@@ -1392,6 +1531,15 @@
     <?php endif; ?>
 
     @media print {
+        /* The sheet's type is measured in rem, so it inherits whatever default
+           font size the browser is set to. Pinning the root here makes the
+           printed scale exact: the same margins, the same point sizes and the
+           same fit to the paper at 100% in every browser profile, with no
+           "fit to page" adjustment in the print dialog. */
+        :root {
+            font-size: 16px !important;
+        }
+
         /* Hide all UI elements */
         .no-print,
         .sidebar, .sidebar-toggle, .mobile-topbar,
@@ -1797,10 +1945,10 @@
            gradient, same white letters. Only the drop shadow is dropped,
            because a shadow prints as a grey smear rather than depth. */
         .badge {
-            border: none !important;
+            border: 1px solid #000 !important;
             box-shadow: none !important;
             border-radius: 999px !important;
-            padding: 0.28em 0.75em !important;
+            padding: 0.24em 0.6em !important;
             font-size: 0.7rem !important;
             font-weight: 700 !important;
             letter-spacing: 0.02em !important;
@@ -1809,17 +1957,27 @@
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
+        /* Status keeps its colour on paper, but as a pale tint with dark
+           letters and a coloured rule instead of white letters on a saturated
+           fill: at printer resolution the saturated fill screens down and the
+           white word disappears (white on the amber chip reads at under 2:1).
+           The tint still tells Paid from Pending at a glance, the dark letters
+           carry the word at any printer setting, and the border keeps the pill
+           visible even on a printer that drops background graphics. */
         .badge.bg-success {
-            background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
-            color: #ffffff !important;
+            background: #e7f6ee !important;
+            border-color: #0f7a52 !important;
+            color: #065f46 !important;
         }
         .badge.bg-warning {
-            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%) !important;
-            color: #ffffff !important;
+            background: #fdf3d7 !important;
+            border-color: #b0730c !important;
+            color: #7a4a06 !important;
         }
         .badge.bg-secondary {
-            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
-            color: #ffffff !important;
+            background: #eef1f5 !important;
+            border-color: #4b5563 !important;
+            color: #374151 !important;
         }
         .citation-status-badge {
             display: inline-block !important;
@@ -1841,6 +1999,138 @@
         .print-only-note .pon-office { font-size: 0.8rem; font-weight: bold; letter-spacing: 0.02em; }
         .print-only-note .pon-title  { font-size: 1.1rem; font-weight: 900; margin: 8px 0 12px; }
         .print-only-note p           { font-size: 0.86rem; line-height: 1.5; margin: 0 auto; max-width: 130mm; }
+    }
+
+    /* ── Daily Report month sheets ───────────────────────────────────────
+       Three single-page tallies (apprehensions, money collected, violators),
+       one column per calendar day. Each sheet is its own printed page, so the
+       office can hand out or file sheet 1, 2 and 3 separately. */
+    .dly-sheet-summary {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
+        margin: 0 0 14px; padding: 10px 14px;
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+        font-size: 12px; color: #475569;
+    }
+    .dly-sheet-summary-title { font-weight: 800; color: #0f172a; letter-spacing: .02em; }
+    .dly-sheet-summary strong { color: #0f172a; }
+    .dly-sheet-summary-note { margin-left: auto; color: #94a3b8; font-size: 11px; }
+
+    .dly-sheet-stack { display: grid; gap: 16px; margin: 0 0 22px; }
+
+    .dly-sheet {
+        border: 1px solid #d8e2ef;
+        border-radius: 10px;
+        background: #fff;
+        padding: 14px 16px 12px;
+        page-break-after: always;
+        break-after: page;
+    }
+    .dly-sheet:last-child { page-break-after: auto; break-after: auto; }
+
+    .dly-sheet-head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 12px; border-bottom: 1px solid #e6ecf5; padding-bottom: 8px; margin-bottom: 10px;
+    }
+    .dly-sheet-head-text { min-width: 0; }
+    .dly-sheet-print { flex: 0 0 auto; white-space: nowrap; }
+    .dly-sheet-kicker {
+        font-size: 10px; font-weight: 800; letter-spacing: .12em;
+        text-transform: uppercase; color: #64748b;
+    }
+    .dly-sheet-title { margin: 2px 0 1px; font-size: 15px; font-weight: 800; color: #0f172a; }
+    .dly-sheet-office {
+        font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: #94a3b8;
+    }
+    .dly-sheet-note { margin: 6px 0 0; font-size: 11.5px; line-height: 1.5; color: #64748b; }
+
+    .dly-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .dly-table th, .dly-table td {
+        border: 1px solid #dfe7f1; text-align: center; font-size: 10.5px;
+        padding: 4px 0; color: #0f172a;
+    }
+    .dly-table thead th { background: #f4f7fb; font-weight: 700; color: #334155; }
+    .dly-table th.dly-lbl, .dly-table td.dly-lbl {
+        width: 74px; text-align: left; padding-left: 8px;
+        font-weight: 700; letter-spacing: .04em;
+    }
+    .dly-table th.dly-total, .dly-table td.dly-total { width: 88px; font-weight: 800; }
+    .dly-table td.dly-hit { font-weight: 800; color: #b91c1c; }
+    .dly-table td.dly-hit.dly-money { color: #047857; }
+    .dly-table td.dly-off { background: #f8fafc; color: #cbd5e1; }
+    .dly-table tfoot td { background: #eef3fa; font-weight: 800; color: #1e293b; font-size: 10px; }
+    .dly-sheet-foot { margin: 8px 0 0; font-size: 11px; color: #64748b; }
+
+    @media print {
+        /* One sheet per page, in order: 1 apprehensions, 2 revenue, 3 violators. */
+        .dly-sheet-stack { display: block !important; margin: 0 0 5mm !important; }
+        .dly-sheet {
+            border: 1.6px solid #000 !important;
+            border-radius: 0 !important;
+            padding: 5mm 5mm 4mm !important;
+            margin: 0 !important;
+            background: #fff !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .dly-sheet:last-child { page-break-after: auto !important; break-after: auto !important; }
+
+        /* The heading is the part that must stay readable on paper: kicker,
+           title, office line and note all print at explicit point sizes rather
+           than the screen's rem scale. */
+        .dly-sheet-summary {
+            background: #fff !important; border: 1px solid #000 !important;
+            font-size: 8pt !important; margin-bottom: 3mm !important;
+        }
+        .dly-sheet-summary-note { font-size: 7.5pt !important; color: #333 !important; }
+        .dly-sheet-head {
+            border-bottom: 1.2px solid #000 !important;
+            padding-bottom: 2mm !important;
+            margin-bottom: 3mm !important;
+        }
+        .dly-sheet-kicker { font-size: 8pt !important; color: #000 !important; }
+        .dly-sheet-title  { font-size: 11.5pt !important; color: #000 !important; margin: 1mm 0 0.5mm !important; }
+        .dly-sheet-office { font-size: 7.5pt !important; color: #333 !important; }
+        .dly-sheet-note   { font-size: 8pt !important; color: #222 !important; margin-top: 2mm !important; }
+
+        /* 31 day columns + month label + total on one A4 portrait line: fixed
+           layout with explicit widths, and a type size that keeps two digits
+           comfortably inside a cell. */
+        .dly-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+        .dly-table th, .dly-table td {
+            border: 0.6px solid #000 !important;
+            font-size: 6.4pt !important;
+            line-height: 1.15 !important;
+            padding: 1.1mm 0 !important;
+            color: #000 !important;
+            background: #fff !important;
+        }
+        .dly-table thead th { background: #eef2f7 !important; font-weight: 700 !important; }
+        .dly-table th.dly-lbl, .dly-table td.dly-lbl {
+            width: 15mm !important; font-size: 6.6pt !important; padding-left: 1.2mm !important;
+        }
+        .dly-table th.dly-total, .dly-table td.dly-total {
+            width: 14mm !important; font-size: 6.6pt !important; font-weight: 800 !important;
+        }
+        .dly-table td.dly-hit { font-weight: 800 !important; color: #000 !important; }
+        .dly-table tfoot td { background: #eef2f7 !important; font-weight: 800 !important; }
+        .dly-table td.dly-off { background: #fff !important; }
+        .dly-sheet-foot { font-size: 7.5pt !important; color: #222 !important; margin-top: 2mm !important; }
+
+        /* Part-only prints keep the sheets out of the way. */
+        body.print-scope-summary .dly-sheet-stack,
+        body.print-scope-citations .dly-sheet-stack { display: none !important; }
+
+        /* "Print sheet N": only that sheet reaches the printer. */
+        body.print-sheet-1 .dly-sheet:not([data-print-sheet="1"]),
+        body.print-sheet-2 .dly-sheet:not([data-print-sheet="2"]),
+        body.print-sheet-3 .dly-sheet:not([data-print-sheet="3"]) { display: none !important; }
+        body.print-sheet-1 .dly-sheet-stack,
+        body.print-sheet-2 .dly-sheet-stack,
+        body.print-sheet-3 .dly-sheet-stack { margin-bottom: 0 !important; }
     }
 </style>
 
@@ -1925,6 +2215,25 @@
         }
     }
 
+    /* One printing station at a time: sheet 1 = apprehensions, 2 = money
+       collected, 3 = violators. The body class narrows the print rules to the
+       chosen sheet, then is removed once the print dialog closes. */
+    function printDailySheet(index) {
+        const cls = 'print-sheet-' + index;
+        document.body.classList.add(cls);
+
+        const cleanup = function () {
+            document.body.classList.remove(cls);
+            window.removeEventListener('afterprint', cleanup);
+        };
+
+        window.addEventListener('afterprint', cleanup);
+        window.print();
+
+        // Browsers that never fire afterprint still get the state cleared.
+        setTimeout(cleanup, 1500);
+    }
+
     function togglePeriodInputs(val, fromSwitcher = false) {
         document.querySelectorAll('.period-box').forEach(el => {
             el.style.display = 'none';
@@ -1935,7 +2244,13 @@
         const curY = now.getFullYear();
         const curM = String(now.getMonth() + 1).padStart(2, '0');
 
-        if (val === 'weekly') {
+        if (val === 'daily') {
+            const box = document.getElementById('dailyBox');
+            if (box) {
+                box.style.display = '';
+                box.querySelectorAll('input, select').forEach(input => input.disabled = false);
+            }
+        } else if (val === 'weekly') {
             const box = document.getElementById('weeklyBox');
             if (box) {
                 box.style.display = '';

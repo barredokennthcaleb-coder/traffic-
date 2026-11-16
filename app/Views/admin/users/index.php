@@ -561,6 +561,46 @@
         </div>
     <?php endif; ?>
 
+    <?php $recoveryCodeOnce = session()->getFlashdata('recovery_code_once'); ?>
+    <?php if (is_array($recoveryCodeOnce) && !empty($recoveryCodeOnce['code'])): ?>
+        <div class="alert alert-warning border-0 shadow-sm anim-fade-up mb-4 position-relative" style="border-radius: 16px;">
+            <div class="d-flex align-items-start gap-3 pe-4">
+                <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 42px; height: 42px;">
+                    <i class="bi bi-shield-lock-fill fs-5"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Recovery code for <?= esc($recoveryCodeOnce['username'] ?? 'this account') ?> — shown only once</h6>
+                    <p class="small mb-2 text-dark">
+                        Write it down or hand it to the account owner now. It works <strong>one time</strong> on the
+                        Forgot Password page and can never be viewed again.
+                    </p>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <code id="recoveryCodeValue" class="fs-5 fw-bold px-3 py-2 bg-dark text-warning rounded-3" style="letter-spacing: 2px;"><?= esc($recoveryCodeOnce['code']) ?></code>
+                        <button type="button" class="btn btn-sm btn-dark" id="copyRecoveryCode">
+                            <i class="bi bi-clipboard me-1"></i>Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <script>
+        (function () {
+            const copyBtn = document.getElementById('copyRecoveryCode');
+            const codeEl = document.getElementById('recoveryCodeValue');
+            if (copyBtn && codeEl) {
+                copyBtn.addEventListener('click', function () {
+                    const code = codeEl.textContent.trim();
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(code);
+                    }
+                    copyBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Copied';
+                });
+            }
+        })();
+        </script>
+    <?php endif; ?>
+
     <!-- Users Table Card -->
     <div class="users-table-card anim-fade-up anim-delay-3">
         <!-- Desktop Table View -->
@@ -659,6 +699,13 @@
                                             <i class="bi bi-key"></i>
                                         </button>
 
+                                        <button type="button" class="action-btn btn-reset btn-recovery-code" 
+                                                title="Generate Recovery Code" 
+                                                data-id="<?= $user['id'] ?>" 
+                                                data-username="<?= esc($user['username']) ?>">
+                                            <i class="bi bi-shield-plus"></i>
+                                        </button>
+
                                         <button type="button" class="action-btn btn-delete btn-delete-user" 
                                                 title="Delete User" 
                                                 data-id="<?= $user['id'] ?>"
@@ -731,6 +778,9 @@
                                     <button type="button" class="btn btn-sm btn-outline-warning btn-reset-password" data-id="<?= $user['id'] ?>" data-username="<?= esc($user['username']) ?>" title="Reset Password">
                                         <i class="bi bi-key"></i>
                                     </button>
+                                    <button type="button" class="btn btn-sm btn-outline-info btn-recovery-code" data-id="<?= $user['id'] ?>" data-username="<?= esc($user['username']) ?>" title="Generate Recovery Code">
+                                        <i class="bi bi-shield-plus"></i>
+                                    </button>
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-delete-user" data-id="<?= $user['id'] ?>" data-username="<?= esc($user['username']) ?>" title="Delete User">
                                         <i class="bi bi-trash3"></i>
                                     </button>
@@ -796,6 +846,78 @@
                     <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm">
                         <i class="bi bi-check2-circle me-1"></i> Update Password
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Recovery Code Modal -->
+<div class="modal fade" id="recoveryCodeModal" tabindex="-1" aria-labelledby="recoveryCodeModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+            <div class="modal-header bg-info bg-opacity-10 border-bottom border-info border-opacity-25 py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-shield-plus"></i>
+                    </div>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="recoveryCodeModalTitle">Generate Recovery Code</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="recoveryCodeForm" method="POST">
+                <?= csrf_field() ?>
+
+                <!-- Step 1: Confirmation -->
+                <div id="recoveryStep1">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold text-uppercase mb-1">Target Account</label>
+                            <div class="p-2.5 bg-light rounded-3 d-flex align-items-center gap-2">
+                                <i class="bi bi-person-circle fs-5 text-info"></i>
+                                <span id="recoveryUsername" class="fw-bold text-dark fs-6"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning border-0 bg-warning bg-opacity-10 text-dark small mb-0 d-flex align-items-start gap-2" role="alert">
+                            <i class="bi bi-shield-exclamation text-warning fs-6 mt-0.5"></i>
+                            <div>
+                                Only continue if you have <strong>verified the person's identity</strong> (in person or by a
+                                known contact). The code is shown <strong>once</strong>, works a <strong>single time</strong>
+                                on the Forgot Password page, and replaces any previous code for this account.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3">
+                        <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow text-white" id="recoveryGenerateBtn" style="background:#0d6efd; border-color:#0d6efd;">
+                            <i class="bi bi-shield-plus me-1"></i> Generate Code
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Code Revealed -->
+                <div id="recoveryStep2" class="d-none">
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3">
+                            <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 56px; height: 56px;">
+                                <i class="bi bi-shield-check fs-2"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1">Recovery code for <span id="recoveryUsernameResult" class="text-info"></span></h6>
+                            <p class="small text-muted mb-0">Write it down or hand it to the account owner now. It works <strong>one time</strong> on the Forgot Password page and can never be viewed again.</p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap mb-3">
+                            <code id="recoveryCodeResult" class="fs-3 fw-bold px-4 py-2 bg-dark text-warning rounded-3 d-inline-block" style="letter-spacing: 3px;"></code>
+                        </div>
+                        <button type="button" class="btn btn-dark btn-sm px-3" id="copyRecoveryCodeModal">
+                            <i class="bi bi-clipboard me-1"></i> Copy Code
+                        </button>
+                    </div>
+                    <div class="modal-footer bg-light border-0 py-3 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-check-lg me-1"></i> Done
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -904,6 +1026,97 @@
                 if (resetModal) resetModal.show();
             });
         });
+
+        // Generate Recovery Code Modal (AJAX in-modal reveal)
+        const recoveryCodeButtons = document.querySelectorAll('.btn-recovery-code');
+        const recoveryUsernameSpan = document.getElementById('recoveryUsername');
+        const recoveryCodeForm = document.getElementById('recoveryCodeForm');
+        const recoveryModalEl = document.getElementById('recoveryCodeModal');
+        const recoveryModal = recoveryModalEl ? new bootstrap.Modal(recoveryModalEl) : null;
+
+        const recoveryStep1 = document.getElementById('recoveryStep1');
+        const recoveryStep2 = document.getElementById('recoveryStep2');
+        const recoveryGenerateBtn = document.getElementById('recoveryGenerateBtn');
+        const recoveryUsernameResult = document.getElementById('recoveryUsernameResult');
+        const recoveryCodeResult = document.getElementById('recoveryCodeResult');
+        const copyRecoveryCodeModal = document.getElementById('copyRecoveryCodeModal');
+
+        recoveryCodeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                const username = this.getAttribute('data-username');
+
+                if (recoveryUsernameSpan) recoveryUsernameSpan.textContent = username;
+                if (recoveryCodeForm) recoveryCodeForm.action = `<?= base_url('users/recovery-code') ?>/${userId}`;
+
+                // Reset to step 1
+                if (recoveryStep1) recoveryStep1.classList.remove('d-none');
+                if (recoveryStep2) recoveryStep2.classList.add('d-none');
+                if (recoveryGenerateBtn) {
+                    recoveryGenerateBtn.disabled = false;
+                    recoveryGenerateBtn.innerHTML = '<i class="bi bi-shield-plus me-1"></i> Generate Code';
+                }
+                if (copyRecoveryCodeModal) {
+                    copyRecoveryCodeModal.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy Code';
+                }
+
+                if (recoveryModal) recoveryModal.show();
+            });
+        });
+
+        // AJAX form submit — reveal code inside the modal
+        if (recoveryCodeForm) {
+            recoveryCodeForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (recoveryGenerateBtn) {
+                    recoveryGenerateBtn.disabled = true;
+                    recoveryGenerateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating…';
+                }
+
+                try {
+                    const formData = new FormData(this);
+                    const res = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        // Show step 2 with the code
+                        if (recoveryUsernameResult) recoveryUsernameResult.textContent = data.username;
+                        if (recoveryCodeResult) recoveryCodeResult.textContent = data.code;
+                        if (recoveryStep1) recoveryStep1.classList.add('d-none');
+                        if (recoveryStep2) recoveryStep2.classList.remove('d-none');
+                    } else {
+                        alert(data.message || 'Failed to generate recovery code.');
+                        if (recoveryGenerateBtn) {
+                            recoveryGenerateBtn.disabled = false;
+                            recoveryGenerateBtn.innerHTML = '<i class="bi bi-shield-plus me-1"></i> Generate Code';
+                        }
+                    }
+                } catch (err) {
+                    alert('Network error. Please try again.');
+                    if (recoveryGenerateBtn) {
+                        recoveryGenerateBtn.disabled = false;
+                        recoveryGenerateBtn.innerHTML = '<i class="bi bi-shield-plus me-1"></i> Generate Code';
+                    }
+                }
+            });
+        }
+
+        // Copy button inside the modal
+        if (copyRecoveryCodeModal) {
+            copyRecoveryCodeModal.addEventListener('click', function() {
+                const code = recoveryCodeResult ? recoveryCodeResult.textContent.trim() : '';
+                if (code && navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(code);
+                }
+                this.innerHTML = '<i class="bi bi-check2 me-1"></i> Copied!';
+                setTimeout(() => { this.innerHTML = '<i class="bi bi-clipboard me-1"></i> Copy Code'; }, 2000);
+            });
+        }
 
         // Toggle Password Visibility
         const togglePassword = document.getElementById('togglePassword');

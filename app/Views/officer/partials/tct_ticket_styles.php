@@ -6,6 +6,10 @@
         font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
         color: #000;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        /* Always centred inside the modal with even side margins. */
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 100%;
     }
     .tct-modal-header {
         position: relative;
@@ -78,6 +82,26 @@
         letter-spacing: 0.05em;
         font-family: Arial, sans-serif;
     }
+    /* PC layout only: "VIOLATIONS" sits dead-centre in the card while the
+       fine badge and the Add Violation button keep their place at the right
+       edge. (The narrow-screen media queries below stack them centred.) */
+    @media screen and (min-width: 992px) {
+        .tct-violations-head {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 0.5rem 0.85rem;
+        }
+        .tct-violations-head .tct-sec-heading {
+            grid-column: 2;
+            flex: none !important;
+        }
+        .tct-violations-head > .d-flex {
+            grid-column: 3;
+            justify-self: end;
+            justify-content: flex-end !important;
+        }
+    }
     .tct-sec-notice {
         font-size: 0.88rem;
         font-style: italic;
@@ -141,6 +165,112 @@
         display: flex;
         width: 100%;
     }
+
+    /* ── TCT form field grid (entry forms only, screen only) ─────────────
+       The data-entry rows of the new/edit violation form. A grid keeps every
+       field's underline on the same baseline and gives the label its own
+       column, so a long label ("DL/Permit No.") can no longer push its input
+       sideways or run into the label of the next field.
+
+       This stylesheet is shared with pages that also print a ticket, so the
+       layout rules below are scoped twice: to the two entry modals (the only
+       place the markup exists) and to the screen media type. A narrow window
+       therefore restacks the on-screen form only - a printed ticket always
+       keeps the wide paper layout, with its seal overlapped as designed. */
+    @media screen {
+        :where(#recordViolationModal, #editViolationModal) .tct-form-grid {
+            display: grid;
+            align-items: end;
+            gap: 8px 18px;
+            width: 100%;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-grid-2 {
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: end;
+            gap: 6px;
+            min-width: 0;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell > .tct-bold-label {
+            line-height: 1.15;
+            padding-bottom: 4px;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell .tct-input,
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell .combo-wrap {
+            width: 100%;
+            min-width: 0;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell .tct-input[type="datetime-local"] {
+            padding-right: 2px;
+        }
+    }
+    /* A three-up row needs roughly 900px of paper. Below that — every phone
+       and tablet — the fields stack one per line at full width, so a label
+       never squeezes its underline into a stub or clips its placeholder. */
+    @media screen and (max-width: 991.98px) {
+        :where(#recordViolationModal, #editViolationModal) .tct-form-grid-3,
+        :where(#recordViolationModal, #editViolationModal) .tct-form-grid-2 {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 10px;
+        }
+        /* Once the paper is narrow, put the label above its underline so the
+           input keeps the full column width instead of a 12px stub. */
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 2px;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-form-cell > .tct-bold-label {
+            padding-bottom: 0;
+        }
+        /* The seal is absolutely positioned on wide paper; once the paper is
+           narrower the centred header text ran underneath it. Stack instead. */
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-header {
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-seal {
+            position: static;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-header .tct-office {
+            font-size: 1rem;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-header .tct-doc-title {
+            font-size: 1.15rem;
+        }
+        /* Violations header, centred: the heading takes its own line, then
+           the fine badge and the Add Violation button sit centred beneath
+           it instead of being pushed into the screen edge. */
+        .tct-violations-head {
+            flex-direction: column;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center;
+            gap: 0.5rem !important;
+        }
+        .tct-violations-head .tct-sec-heading {
+            flex: none !important;
+            width: 100%;
+        }
+        .tct-violations-head > .d-flex {
+            justify-content: center !important;
+        }
+    }
+    /* A touch more usable width inside the paper card on phones. */
+    @media screen and (max-width: 767.98px) {
+        #recordViolationModal .modal-body,
+        #editViolationModal .modal-body {
+            padding-left: 0.65rem !important;
+            padding-right: 0.65rem !important;
+        }
+    }
+
     .flex-1 {
         flex: 1;
     }
@@ -155,6 +285,51 @@
         cursor: pointer;
         margin-bottom: 2px;
         user-select: none;
+    }
+
+    /* ── Offenses this driver was cited for before ──────────────────────
+       A screen-only memory aid: the shaded rows are the ones already on the
+       person's record, so the officer sees the pattern while filling a new
+       ticket. Nothing here reaches paper - the print block below clears the
+       shade, and the legend is hidden there too. */
+    @media screen {
+        #recordViolationModal .tct-check-label.is-previous {
+            background: #fef9c3;
+            border-radius: 6px;
+            box-shadow: inset 3px 0 0 #eab308;
+            padding-left: 6px;
+            padding-right: 6px;
+        }
+        #recordViolationModal .tct-check-label.is-previous .tct-item-text {
+            font-weight: 700;
+        }
+        #recordViolationModal .tct-check-label.is-previous:hover {
+            background: #fef08a;
+        }
+        .tct-prev-legend {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #92400e;
+            background: #fef9c3;
+            border: 1px solid #facc15;
+            border-radius: 999px;
+            padding: 3px 10px;
+            margin-bottom: 8px;
+        }
+    }
+    @media print {
+        .tct-check-label.is-previous {
+            background: transparent !important;
+            box-shadow: none !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .tct-check-label.is-previous .tct-item-text { font-weight: inherit !important; }
+        .tct-prev-legend { display: none !important; }
     }
     .tct-box {
         width: 18px;
@@ -240,15 +415,16 @@
         opacity: 0.65 !important;
     }
     .tct-input:focus {
-        background: #f0f7ff;
+        background: #f5f3ff;
         border-bottom-color: #0d6efd;
         box-shadow: none;
     }
 
-    /* ── MOBILE: stack TCT form rows so nothing runs off-screen ── */
-    @media (max-width: 767px) {
+    /* ── MOBILE: stack TCT form rows so nothing runs off-screen ──
+       Screen only: these rows must never be restacked on a printed ticket. */
+    @media screen and (max-width: 767px) {
         .tct-modal-card {
-            padding: 14px 12px;
+            padding: 14px 10px;
         }
         .tct-row,
         .tct-row > * {
@@ -293,6 +469,30 @@
         .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn {
             width: 100%;
         }
+
+        /* Checkbox list: roomier tap targets, tighter rows, tidier text. */
+        :where(#recordViolationModal, #editViolationModal) .tct-checklist-container {
+            gap: 2px;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-check-label {
+            align-items: flex-start;
+            padding: 7px 6px;
+            border-radius: 8px;
+            margin-bottom: 0;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-check-label:active {
+            background: #eef2f7;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-box {
+            margin-top: 1px;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-item-text {
+            line-height: 1.32;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-input[type="datetime-local"] {
+            width: 100%;
+            min-width: 0;
+        }
     }
 
     /* ── Combo pickers (Vehicle / Place) ──────────────────────────────
@@ -324,8 +524,8 @@
         font-size: 0.85rem;
     }
     .combo-toggle:hover {
-        background: #eff6ff;
-        color: #0052cc;
+        background: #f5f3ff;
+        color: #6d28d9;
     }
     .combo-toggle i {
         pointer-events: none;
@@ -365,8 +565,8 @@
     .combo-option:hover,
     .combo-option:focus,
     .combo-option:active {
-        background: #eff6ff;
-        color: #0052cc;
+        background: #f5f3ff;
+        color: #6d28d9;
     }
     .combo-empty {
         padding: 0.6rem 0.7rem;

@@ -185,9 +185,11 @@ try {
 </style>
 
 <div class="container-fluid py-4 no-print">
-    <div class="d-flex justify-content-between mb-3" style="max-width: 750px; margin: 0 auto;">
+    <div class="d-flex justify-content-between mb-3 flex-wrap gap-2" style="max-width: 750px; margin: 0 auto;">
         <a href="<?= !empty($is_admin_receipt) ? base_url('penalties/history') : base_url('user/dashboard') ?>" class="btn btn-secondary btn-back-electric"><?= !empty($is_admin_receipt) ? 'Back to Payment History' : 'Back to Dashboard' ?></a>
-        <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Print Official Receipt</button>
+        <div class="d-flex flex-wrap gap-2">
+            <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Print Official Receipt</button>
+        </div>
     </div>
 </div>
 

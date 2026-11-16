@@ -11,7 +11,7 @@ use CodeIgniter\Database\Migration;
  *
  * Historical rows are grouped by ticket first: all infractions printed on one
  * ticket belong to one attempt. Tickets are then matched to a violator using,
- * in order, the driver's licence number, the normalized name plus a real plate
+ * in order, the driver's license number, the normalized name plus a real plate
  * number, or a ticket-only fallback for legacy anonymous records.
  */
 class CreateViolatorsAndLinkViolations extends Migration

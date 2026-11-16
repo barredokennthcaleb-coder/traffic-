@@ -68,6 +68,32 @@ Format is `YYYY-XXXXXXX` (7-digit serial). `app/Helpers/tct_helper.php` (autoloa
 - `app/Controllers/Admin/PenaltyController.php` handles viewing/paying/cancelling/reversing penalties.
 - Views are grouped by role under `app/Views/{admin,officer,user,inspection,lookup,auth}`. Shared chrome is `app/Views/layouts/admin.php` and `app/Views/theme/sidebar.php`; pagination uses `app/Views/pagers/bootstrap_pagination.php`.
 
+### Printing (TCT / receipts)
+
+Print-mode views (`?print=1`) call `TrafficPrint.autoOrPrompt()` from
+`public/js/mobile-print.js`, and each view's `@media print` block is tuned for
+the A4-squeeze and `paper=58mm` roll modes. Desktop prints immediately and
+returns via its own `afterprint` listener. Every touch screen (phones/tablets
+— detected by touch capability, so iPad desktop mode cannot slip through and
+auto-print) never auto-prints, because mobile browsers block scripted dialogs;
+they get a "Tap to Print" sheet instead, and after the tap **nothing navigates
+on its own**: the sheet becomes "✓ Done — Back to Violations" (uses the
+`{ backUrl }` the view passed) and "🖨️ Print again" buttons. iOS reports the
+print sheet lifecycle unreliably — it can fire `afterprint` while the officer
+is still adjusting paper size, and navigating during that window cancelled the
+print — so the return is always an explicit tap on touch devices. On touch
+devices the helper also injects a print stylesheet that builds the ticket
+document at exactly the 58mm roll width (`@page` 58mm + true-size card), so
+whatever size/format is chosen in the print sheet scales the whole ticket
+uniformly instead of cropping letters; desktop keeps its A4-squeeze page.
+App pages
+send `Cache-Control: no-store` (BaseController) and the helper is loaded with
+a `filemtime` version query, because a stale cached copy on a phone once kept
+an old auto-print bug alive after it was fixed. A dormant Web-Bluetooth
+ESC/POS engine (`public/js/bluetooth-print.js`, removed from the UI
+2026-11-15) and its notes `BLUETOOTH-PRINTING.md` remain in the tree but are
+not loaded by any page.
+
 ### Migrations
 
 Schema is built by migrations in `app/Database/Migrations/` (the legacy `database.sql` dump is for existing installs only). Migrations are defensive — they check `tableExists`/`fieldExists` before altering, and the violator-linking migration backfills historical rows. New schema changes should follow that idempotent style.

@@ -176,13 +176,13 @@ final class ViolationsReportViewTest extends CIUnitTestCase
         $this->assertStringNotContainsString('Situation at a Glance', $html);
         $this->assertStringNotContainsString('Offense Category Ranking', $html);
 
-        // The four-part document: enforcer activity, the personnel Daily
+        // The four-part document: enforcer activity, the personnel Yearly
         // Traffic Apprehension Record, the violation trend and the ranked
         // most-committed offenses.
         $this->assertStringContainsString('TRAFFIC VIOLATIONS SUMMARY REPORT', $html);
         $this->assertStringContainsString('I. Enforcer / Officer Activity Summary', $html);
         $this->assertStringContainsString('Enforcer / Officer Activity Summary', $html);
-        $this->assertStringContainsString('II. Daily Traffic Apprehension Record', $html);
+        $this->assertStringContainsString('II. Yearly Traffic Apprehension Record', $html);
         $this->assertStringContainsString('vsum-matrix', $html);
         $this->assertStringContainsString('Rio', $html);
         $this->assertStringContainsString('III. Violation Trend', $html);
