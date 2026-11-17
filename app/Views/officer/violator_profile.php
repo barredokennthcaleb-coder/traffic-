@@ -193,7 +193,7 @@
        The same banner language as the admin violator profile: blue gradient,
        floating orbs, a circular portrait with an outcome dot, the identity
        block, an outcome HUD and the photo actions. */
-    .vp-hero { position:relative; overflow:hidden; border-radius:20px; padding:1.9rem 2rem; margin-bottom:1rem; background:linear-gradient(135deg,#4c1d95 0%,#8b5cf6 50%,#7c3aed 100%); box-shadow:0 12px 32px rgba(76, 29, 149,.25); border:1px solid rgba(255,255,255,.15); isolation:isolate; }
+    .vp-hero { position:relative; overflow:hidden; border-radius:20px; padding:1.9rem 2rem; margin-bottom:1rem; background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 50%,#0066ff 100%); box-shadow:0 12px 32px rgba(30, 58, 138,.25); border:1px solid rgba(255,255,255,.15); isolation:isolate; }
     .vp-hero-content { position:relative; z-index:2; display:flex; flex-wrap:wrap; align-items:center; gap:1.35rem; }
 
     .vp-hero-avatar-wrap { position:relative; width:104px; height:104px; flex-shrink:0; border-radius:50%; }
@@ -210,7 +210,7 @@
 
     .vp-hero-info { min-width:0; flex:1 1 320px; }
     .vp-hero-name { font-size:1.7rem; font-weight:800; color:#fff; letter-spacing:-.03em; }
-    .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#6d28d9; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#0052cc; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
     .vp-hero-outcome { display:inline-flex; align-items:center; font-size:.73rem; font-weight:700; padding:.3rem .75rem; border-radius:20px; letter-spacing:.03em; text-transform:uppercase; }
     .vp-hero-outcome--paid { background:rgba(4,47,34,.55); border:1px solid rgba(167,243,208,.45); color:#a7f3d0; }
     .vp-hero-outcome--pending { background:rgba(69,26,3,.5); border:1px solid rgba(253,230,138,.5); color:#fde68a; }
@@ -242,9 +242,9 @@
     .vp-hero-hint { display:block; text-align:left; margin-top:.35rem; color:rgba(255,255,255,.55); font-size:.72rem; }
 
     .vp-hero-orb { position:absolute; border-radius:50%; pointer-events:none; z-index:1; filter:blur(55px); opacity:.38; }
-    .vp-hero-orb-1 { width:240px; height:240px; background:#a78bfa; top:-70px; right:8%; animation:vpOrbFloat 14s ease-in-out infinite alternate; }
+    .vp-hero-orb-1 { width:240px; height:240px; background:#60a5fa; top:-70px; right:8%; animation:vpOrbFloat 14s ease-in-out infinite alternate; }
     .vp-hero-orb-2 { width:160px; height:160px; background:#c084fc; bottom:-55px; right:28%; animation:vpOrbFloat 18s ease-in-out infinite alternate-reverse; }
-    .vp-hero-orb-3 { width:120px; height:120px; background:#c4b5fd; top:20%; right:4%; animation:vpOrbFloat 11s ease-in-out infinite alternate; }
+    .vp-hero-orb-3 { width:120px; height:120px; background:#93c5fd; top:20%; right:4%; animation:vpOrbFloat 11s ease-in-out infinite alternate; }
     @keyframes vpOrbFloat { from { transform:translate(0,0); } to { transform:translate(18px,14px); } }
 
     /* ── OUTCOME STRIP — the three numbers behind the banner ──────────────── */
@@ -253,7 +253,7 @@
     .vp-outcome-icon--pending { background:#fef9c3; color:#a16207; }
     .vp-outcome-icon--paid { background:#dcfce7; color:#15803d; }
     .vp-outcome-icon--cancelled { background:#f1f5f9; color:#475569; }
-    .vp-outcome-icon--info { background:#ede9fe; color:#6d28d9; }
+    .vp-outcome-icon--info { background:#dbeafe; color:#0052cc; }
     .vp-outcome-label { display:block; font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
     .vp-outcome-value { display:block; font-size:1.05rem; font-weight:800; color:#0b1730; line-height:1.3; }
     .vp-outcome-value--pending { color:#a16207; }
@@ -854,7 +854,7 @@
 }
 :root[data-bs-theme="dark"] #citationRecordsTable tbody tr:hover,
 :root[data-bs-theme="dark"] #citationRecordsTable tbody tr:hover td {
-    background: #2e1065;
+    background: #172554;
 }
 .ticket-status-pill {
     border: 1px solid transparent;
@@ -926,30 +926,30 @@
     gap: 5px;
     padding: 3px 9px;
     border-radius: 999px;
-    background: #f5f3ff;
-    border: 1px solid #ddd6fe;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
     color: #5b21b6;
     font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
     font-size: 0.8rem;
     line-height: 1.2;
     white-space: nowrap;
 }
-.or-number-pill i { font-size: 0.78rem; color: #7c3aed; }
+.or-number-pill i { font-size: 0.78rem; color: #0066ff; }
 .or-number-label {
     font-family: 'Inter', system-ui, sans-serif;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.03em;
     text-transform: uppercase;
-    color: #7c3aed;
+    color: #0066ff;
 }
 .or-number-value { font-weight: 700; letter-spacing: 0.02em; }
 :root[data-bs-theme="dark"] .or-number-pill {
     background: rgba(139, 92, 246, .15);
     border-color: rgba(129, 140, 248, .4);
-    color: #ddd6fe;
+    color: #bfdbfe;
 }
-:root[data-bs-theme="dark"] .or-number-label { color: #c4b5fd; }
+:root[data-bs-theme="dark"] .or-number-label { color: #93c5fd; }
 :root[data-bs-theme="dark"] .ticket-status-pill--paid {
     background: rgba(52, 211, 153, .15);
     border-color: rgba(110, 231, 183, .35);
@@ -1286,7 +1286,7 @@
 
     function showError(title, text) {
         if (window.Swal) {
-            Swal.fire({ icon: 'error', title: title, text: text, confirmButtonColor: '#7c3aed' });
+            Swal.fire({ icon: 'error', title: title, text: text, confirmButtonColor: '#0066ff' });
         } else {
             window.alert(text);
         }

@@ -61,3 +61,7 @@ preview_report.html
 vibe_images/
 writable/*.png
 writable/*.pdf
+
+# Local database dumps / backups (contain real citation data)
+writable/db_backup_*/
+writable/backups/

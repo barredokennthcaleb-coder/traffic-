@@ -708,7 +708,7 @@
     /* ── DASHBOARD HERO BANNER ─────────────────────────────────── */
     .officer-hero-banner {
         position: relative;
-        background: linear-gradient(135deg, #4c1d95 0%, #8b5cf6 50%, #7c3aed 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #0066ff 100%);
         border-radius: 20px;
         padding: 1.75rem 2rem;
         overflow: hidden;
@@ -722,8 +722,8 @@
         pointer-events: none;
         opacity: 0.35;
     }
-    .orb-1 { width: 200px; height: 200px; background: #a78bfa; top: -60px; right: 10%; }
-    .orb-2 { width: 150px; height: 150px; background: #c4b5fd; bottom: -50px; right: 25%; }
+    .orb-1 { width: 200px; height: 200px; background: #60a5fa; top: -60px; right: 10%; }
+    .orb-2 { width: 150px; height: 150px; background: #93c5fd; bottom: -50px; right: 25%; }
     .hero-icon-badge {
         width: 52px;
         height: 52px;
@@ -753,7 +753,7 @@
     }
     .btn-record-hero {
         background: #fff;
-        color: #4c1d95;
+        color: #1e3a8a;
         font-weight: 700;
         font-size: 0.9rem;
         border-radius: 12px;
@@ -764,8 +764,8 @@
         align-items: center;
     }
     .btn-record-hero:hover {
-        background: #f5f3ff;
-        color: #7c3aed;
+        background: #eff6ff;
+        color: #0066ff;
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.25) !important;
     }
@@ -853,22 +853,22 @@
         gap: 0.35rem;
     }
     .btn-filter-chip:hover {
-        background: #f5f3ff;
-        border-color: #c4b5fd;
-        color: #6d28d9;
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #0052cc;
         transform: translateY(-1px);
     }
     .btn-filter-chip.active,
     .btn-filter-all.active {
-        background: #7c3aed;
-        border-color: #7c3aed;
+        background: #0066ff;
+        border-color: #0066ff;
         color: #ffffff;
         box-shadow: 0 2px 8px rgba(124, 58, 237, 0.32);
     }
     .btn-filter-chip.active:hover,
     .btn-filter-all.active:hover {
-        background: #6d28d9;
-        border-color: #6d28d9;
+        background: #0052cc;
+        border-color: #0052cc;
         color: #ffffff;
     }
     .btn-filter-all .badge {
@@ -1073,7 +1073,7 @@
 
     /* ── NEW VIOLATION BUTTON ── */
     .btn-new-violation {
-        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
         border: none;
         color: #ffffff;
         font-weight: 600;
@@ -1086,7 +1086,7 @@
         white-space: nowrap;
     }
     .btn-new-violation:hover {
-        background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
+        background: linear-gradient(135deg, #0052cc 0%, #1e3a8a 100%);
         color: #ffffff;
         transform: translateY(-1px);
         box-shadow: 0 5px 16px rgba(124, 58, 237, 0.45);
@@ -1097,56 +1097,56 @@
     }
 
     #addNewInfractionBtn {
-        background: #7c3aed;
-        border-color: #7c3aed;
+        background: #0066ff;
+        border-color: #0066ff;
         color: #ffffff;
     }
     #addNewInfractionBtn:hover,
     #addNewInfractionBtn:focus-visible {
-        background: #6d28d9;
-        border-color: #6d28d9;
+        background: #0052cc;
+        border-color: #0052cc;
         color: #ffffff;
     }
 
     #recordViolationModal #submitPrintBtn {
-        background: #7c3aed;
-        border-color: #7c3aed;
+        background: #0066ff;
+        border-color: #0066ff;
         color: #ffffff;
     }
     #recordViolationModal #submitPrintBtn:hover,
     #recordViolationModal #submitPrintBtn:focus-visible {
-        background: #6d28d9;
-        border-color: #6d28d9;
+        background: #0052cc;
+        border-color: #0052cc;
         color: #ffffff;
     }
     #recordViolationModal [data-open-signature] {
-        color: #7c3aed;
-        border-color: #7c3aed;
+        color: #0066ff;
+        border-color: #0066ff;
     }
     #recordViolationModal [data-open-signature]:hover,
     #recordViolationModal [data-open-signature]:focus-visible {
-        background: #f5f3ff;
-        color: #6d28d9;
-        border-color: #6d28d9;
+        background: #eff6ff;
+        color: #0052cc;
+        border-color: #0052cc;
     }
 
     .officer-violations-table .btn-white {
-        color: #6d28d9;
-        border-color: #ddd6fe;
+        color: #0052cc;
+        border-color: #bfdbfe;
     }
     .officer-violations-table .btn-white:hover {
-        background: #f5f3ff;
-        color: #4c1d95;
-        border-color: #a78bfa;
+        background: #eff6ff;
+        color: #1e3a8a;
+        border-color: #60a5fa;
     }
     .officer-violations-table .btn-ledger-add {
-        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        border-color: #7c3aed;
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+        border-color: #0066ff;
         color: #ffffff;
     }
     .officer-violations-table .btn-ledger-add:hover {
-        background: linear-gradient(135deg, #6d28d9 0%, #4c1d95 100%);
-        border-color: #6d28d9;
+        background: linear-gradient(135deg, #0052cc 0%, #1e3a8a 100%);
+        border-color: #0052cc;
         color: #ffffff;
     }
 
@@ -1242,7 +1242,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
         color: #ffffff;
         box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
         z-index: 1030;
@@ -1316,14 +1316,14 @@
         padding-left: 34px !important;
         padding-right: 30px !important;
         border-radius: 20px !important;
-        border: 2px solid #7c3aed !important;
+        border: 2px solid #0066ff !important;
         background: #fff !important;
         font-size: 0.85rem !important;
         height: 36px;
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .modern-search-input:focus {
-        border-color: #7c3aed !important;
+        border-color: #0066ff !important;
         box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16) !important;
     }
     .btn-clear-search {
@@ -1384,7 +1384,7 @@
         transition: all 0.15s ease;
     }
     .driver-name-link:hover .driver-name-text {
-        color: #7c3aed !important;
+        color: #0066ff !important;
         text-decoration: underline;
     }
     .driver-link-icon {
@@ -1428,7 +1428,7 @@
         background: #ffffff;
     }
     .officer-violations-table tbody tr:hover td {
-        background-color: #f5f3ff !important;
+        background-color: #eff6ff !important;
     }
     .officer-violations-table tbody tr:hover {
         z-index: 2;
@@ -1526,9 +1526,9 @@
 
     /* Ticket ID Glass Pill */
     .ticket-id-pill {
-        background: #f5f3ff;
-        border: 1px solid #ddd6fe;
-        color: #6d28d9;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #0052cc;
         padding: 0.25rem 0.65rem;
         border-radius: 8px;
         font-size: 0.82rem;
@@ -1541,8 +1541,8 @@
         user-select: none;
     }
     .ticket-id-pill:hover {
-        background: #ede9fe;
-        border-color: #c4b5fd;
+        background: #dbeafe;
+        border-color: #93c5fd;
         color: #5b21b6;
         transform: translateY(-1px);
         box-shadow: 0 3px 8px rgba(124, 58, 237, 0.15);
@@ -1570,7 +1570,7 @@
         transition: all 0.2s ease;
     }
     .plate-pill i {
-        color: #7c3aed !important;
+        color: #0066ff !important;
         margin-right: 0.25rem;
     }
     .plate-pill:hover {
@@ -1721,9 +1721,9 @@
         box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
     }
     .btn-action-view:hover {
-        background: #f5f3ff;
-        border-color: #c4b5fd;
-        color: #7c3aed;
+        background: #eff6ff;
+        border-color: #93c5fd;
+        color: #0066ff;
         box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
     }
     .btn-action-more:hover {
@@ -1792,8 +1792,8 @@
         transform: translateY(-1px);
     }
     .card-footer .page-item.active .page-link {
-        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        border-color: #6d28d9;
+        background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+        border-color: #0052cc;
         color: #fff;
         box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
     }
@@ -1829,9 +1829,9 @@
     [data-bs-theme="dark"] .main-table-header { background: #0f172a; border-color: #1e293b; }
     [data-bs-theme="dark"] .officer-violations-table thead th { background: #0f172a; border-color: #1e293b; color: #94a3b8; }
     [data-bs-theme="dark"] .officer-violations-table tbody td { border-color: #1e293b; }
-    [data-bs-theme="dark"] .officer-violations-table tbody tr:hover { background-color: #2e1065 !important; border-left-color: #a78bfa !important; }
-    [data-bs-theme="dark"] .ticket-id-pill { background: #1e293b; border-color: #8b5cf6; color: #c4b5fd; }
-    [data-bs-theme="dark"] .ticket-id-pill:hover { background: #4c1d95; border-color: #a78bfa; color: #ddd6fe; }
+    [data-bs-theme="dark"] .officer-violations-table tbody tr:hover { background-color: #172554 !important; border-left-color: #60a5fa !important; }
+    [data-bs-theme="dark"] .ticket-id-pill { background: #1e293b; border-color: #3b82f6; color: #93c5fd; }
+    [data-bs-theme="dark"] .ticket-id-pill:hover { background: #1e3a8a; border-color: #60a5fa; color: #bfdbfe; }
     [data-bs-theme="dark"] .dl-pill { background: #1e293b; color: #94a3b8; border-color: #334155; }
     [data-bs-theme="dark"] .violation-chip { background: #1e293b; border-color: #334155; color: #e2e8f0; }
     [data-bs-theme="dark"] .total-fine-pending { color: #f8fafc; background: #1e293b; border-color: #334155; }
@@ -1872,14 +1872,14 @@
         border-color: #1e293b !important;
     }
     [data-bs-theme="dark"] .officer-violations-table tbody tr:hover td {
-        background-color: #2e1065 !important;
+        background-color: #172554 !important;
     }
     /* Chips and amount badges repaint themselves white on row hover, which
        undid their dark colours at the moment the row was highlighted. */
     [data-bs-theme="dark"] .officer-violation-row:hover .violation-chip {
-        background: #4c1d95;
-        border-color: #8b5cf6;
-        color: #ede9fe;
+        background: #1e3a8a;
+        border-color: #3b82f6;
+        color: #dbeafe;
     }
     [data-bs-theme="dark"] .ledger-pager {
         background: #111b2f;
@@ -1906,8 +1906,8 @@
     [data-bs-theme="dark"] .btn-filter-chip:not(.active):hover,
     [data-bs-theme="dark"] .btn-filter-all:not(.active):hover {
         background: #334155;
-        border-color: #a78bfa;
-        color: #ddd6fe;
+        border-color: #60a5fa;
+        color: #bfdbfe;
     }
     [data-bs-theme="dark"] .btn-filter-all .badge {
         background: #334155;
@@ -1992,7 +1992,7 @@
         cursor: text;
     }
     .pill-select-wrapper:focus-within {
-        border-color: #8b5cf6;
+        border-color: #3b82f6;
         box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25);
     }
     .pill-selected-items {
@@ -2007,9 +2007,9 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
         font-weight: 500;
-        background: #f5f3ff;
-        color: #8b5cf6;
-        border: 1px solid #ddd6fe;
+        background: #eff6ff;
+        color: #3b82f6;
+        border: 1px solid #bfdbfe;
         border-radius: 6px;
     }
     .pill-badge .remove-pill {
@@ -2057,12 +2057,12 @@
         justify-content: space-between;
     }
     .pill-option:hover, .pill-option.focused {
-        background: #f5f3ff;
-        color: #8b5cf6;
+        background: #eff6ff;
+        color: #3b82f6;
     }
     .pill-option.selected {
-        background: #f5f3ff;
-        color: #8b5cf6;
+        background: #eff6ff;
+        color: #3b82f6;
         font-weight: 500;
     }
     .pill-option.selected::after {
@@ -2075,7 +2075,7 @@
         border-color: #2a3b60;
     }
     [data-bs-theme="dark"] .pill-search-input {
-        color: #ddd6fe;
+        color: #bfdbfe;
     }
     [data-bs-theme="dark"] .pill-dropdown {
         background: #111b2f;
@@ -2084,15 +2084,15 @@
     }
     [data-bs-theme="dark"] .pill-option:hover, [data-bs-theme="dark"] .pill-option.focused {
         background: #16233f;
-        color: #ddd6fe;
+        color: #bfdbfe;
     }
     [data-bs-theme="dark"] .pill-option.selected {
         background: #1e293b;
-        color: #ddd6fe;
+        color: #bfdbfe;
     }
     [data-bs-theme="dark"] .pill-badge {
         background: #1e293b;
-        color: #ddd6fe;
+        color: #bfdbfe;
         border-color: #2e3a59;
     }
     .enforcer-card {
@@ -2107,7 +2107,7 @@
         border-bottom: 1px solid #e9d5ff;
     }
     .enforcer-header h4 {
-        color: #4c1d95;
+        color: #1e3a8a;
         font-weight: 700;
     }
     .enforcer-card .form-label {
@@ -2122,21 +2122,21 @@
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: #6d28d9;
-        background: #f5f3ff;
-        border: 1px solid #ddd6fe;
+        color: #0052cc;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
         border-radius: 999px;
         padding: 0.35rem 0.75rem;
     }
     .enforcer-card .form-text {
         font-size: 0.76rem;
-        color: #8b5cf6;
+        color: #3b82f6;
         margin-top: 0.25rem;
     }
     .enforcer-card .input-group-text {
-        background: #f5f3ff;
+        background: #eff6ff;
         border-color: #e9d5ff;
-        color: #6d28d9;
+        color: #0052cc;
     }
     .enforcer-card .form-control,
     .enforcer-card .form-select {
@@ -2149,12 +2149,12 @@
         min-height: 42px;
     }
     .enforcer-card .form-control.bg-light {
-        background: #f5f3ff !important;
+        background: #eff6ff !important;
     }
     .info-box {
-        background: linear-gradient(120deg, #f3e8ff 0%, #f5f3ff 100%);
-        color: #4c1d95;
-        border: 1px solid #ddd6fe;
+        background: linear-gradient(120deg, #dbeafe 0%, #eff6ff 100%);
+        color: #1e3a8a;
+        border: 1px solid #bfdbfe;
     }
     .btn-white { background: #fff; }
     .btn-white:hover { background: #f8f9fa; }
@@ -2163,10 +2163,10 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         color: #5b21b6;
-        border-bottom: 1px solid #ede9fe;
+        border-bottom: 1px solid #dbeafe;
     }
     .enforcer-card .table tbody tr:hover {
-        background-color: #f5f3ff;
+        background-color: #eff6ff;
     }
     .enforcer-card .btn-group .btn {
         border-radius: 8px !important;
@@ -2223,7 +2223,7 @@
     .enforcer-card .card-header small {
         display: block;
         margin-top: 0.25rem;
-        color: #8b5cf6 !important;
+        color: #3b82f6 !important;
     }
     #violationForm .row.g-4 {
         --bs-gutter-y: 1rem;
@@ -2232,8 +2232,8 @@
         opacity: 0.12;
     }
     .form-footer {
-        background: #f5f3ff;
-        border: 1px solid #f3e8ff;
+        background: #eff6ff;
+        border: 1px solid #dbeafe;
         border-radius: 12px;
         padding: 0.75rem 0.9rem;
     }
@@ -2251,9 +2251,9 @@
     #tableSearchInput {
         border-radius: 0 10px 10px 0;
     }
-    /* Keep the ledger search aligned with the Enforcer violet accent. */
+    /* Keep the ledger search aligned with the Enforcer electric-blue accent. */
     #tableSearchInput.modern-search-input {
-        border: 2px solid #7c3aed !important;
+        border: 2px solid #0066ff !important;
         outline: none !important;
     }
     #tableSearchInput.modern-search-input:focus,
