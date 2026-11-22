@@ -19,9 +19,16 @@ COPY . .
 
 # Production PHP limits (larger uploads, no error display, sane memory).
 COPY docker/php-production.ini /usr/local/etc/php/conf.d/zz-app.ini
+
+# Load Render's /etc/secrets/.env into the project root at container start.
+COPY docker/entrypoint.sh /usr/local/bin/app-entrypoint
+RUN chmod +x /usr/local/bin/app-entrypoint
 RUN composer install --no-dev --optimize-autoloader \
  && mkdir -p writable/cache writable/logs writable/session writable/debugbar \
   && mkdir -p public/uploads/profile public/uploads/violators \
   && chown -R www-data:www-data writable public/uploads
 
 EXPOSE 80
+
+ENTRYPOINT ["app-entrypoint"]
+CMD ["apache2-foreground"]
