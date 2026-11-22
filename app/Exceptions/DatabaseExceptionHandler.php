@@ -57,6 +57,23 @@ class DatabaseExceptionHandler implements ExceptionHandlerInterface
         // the real connection error is visible in the platform log stream.
         error_log('Database connection failure: ' . $exception->getMessage());
 
+        // Temporary deployment diagnostic: show which connection values the
+        // app actually resolved. Contains no password.
+        try {
+            $db = config('Database');
+            error_log('DB resolved config: ' . json_encode([
+                'hostname'      => $db->default['hostname'] ?? null,
+                'port'          => $db->default['port'] ?? null,
+                'username'      => $db->default['username'] ?? null,
+                'database'      => $db->default['database'] ?? null,
+                'encrypt'       => $db->default['encrypt'] ?? null,
+                'env_hostname'  => getenv('database.default.hostname'),
+                'env_port'      => getenv('database.default.port'),
+                'env_encrypt'   => getenv('database.default.encrypt'),
+            ]));
+        } catch (Throwable) {
+        }
+
         $statusCode = 503;
 
         if ($request instanceof IncomingRequest && str_contains($request->getHeaderLine('accept'), 'text/html')) {
