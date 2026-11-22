@@ -83,11 +83,34 @@ if (-not (Test-MySql)) {
 Say 'MySQL is up.'
 Say ''
 
-# Login test for the app account. -OnlyIfBroken stops here when the account
-# already works, so the watchdog can call this repeatedly and only a real
-# "Access denied" failure rewrites grants.
-& $mysql -u $dbUser "-p$dbPass" -h $dbHost -P $dbPort --connect-timeout=4 -e "USE ``$dbName; SELECT 1" 2>$null | Out-Null
-$appLoginOk = ($LASTEXITCODE -eq 0)
+# Login test for the app account.
+#
+# The password goes through a temporary option file instead of "-p$dbPass":
+# a CLI argument lets cmd/PowerShell split or expand characters such as &, !
+# or % inside the password, which made a perfectly working login report as
+# "Access denied" and had the watchdog re-grant the account every minute.
+function Test-AppLogin {
+    $cnf = Join-Path $env:TEMP 'traffic_login_test.cnf'
+
+    @"
+[client]
+host=$dbHost
+port=$dbPort
+user=$dbUser
+password=$dbPass
+"@ | Set-Content -Path $cnf -Encoding ASCII
+
+    & $mysql "--defaults-extra-file=$cnf" --connect-timeout=4 -e "USE ``$dbName``; SELECT 1" 2>$null | Out-Null
+    $ok = ($LASTEXITCODE -eq 0)
+
+    Remove-Item $cnf -ErrorAction SilentlyContinue
+
+    return $ok
+}
+
+# -OnlyIfBroken stops here when the account already works, so the watchdog can
+# call this repeatedly and only a real failure rewrites grants.
+$appLoginOk = Test-AppLogin
 
 if ($appLoginOk) {
     Say 'App login OK.'
@@ -125,8 +148,7 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
 
     $verified = $false
     if (Test-MySql) {
-        & $mysql -u $dbUser "-p$dbPass" -h $dbHost -P $dbPort -e "USE $dbName; SELECT 1" 2>$null | Out-Null
-        $verified = ($LASTEXITCODE -eq 0)
+        $verified = Test-AppLogin
     }
     if ($verified) {
         $applied = $true

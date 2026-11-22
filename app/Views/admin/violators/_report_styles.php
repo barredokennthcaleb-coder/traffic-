@@ -255,7 +255,8 @@
         print-color-adjust: exact !important;
     }
 
-    /* Every letter prints solid black on paper. */
+    /* Every letter prints solid black on paper — status chips are restored
+       just below, then everything else stays monochrome. */
     .report-document-card * { color: #000 !important; }
     .report-document-card .vpr-id-avatar {
         background: #fff !important; color: #000 !important;
@@ -266,7 +267,36 @@
         border: 1px solid #000 !important;
     }
 
-    /* Colour is a screen effect: on paper every rule, tint and icon is black. */
+    /* Status stays colour-coded on paper: PAID green, PENDING amber.
+       These come after the black-and-white rules above and use the same
+       specificity, so they win for the two statuses that matter while
+       Cancelled remains black-and-white. The exact print-colour hint keeps
+       the tint; the coloured text survives even with background graphics
+       switched off in the print dialog. */
+    .report-document-card .vpr-pill--paid,
+    .report-document-card .vpr-pill--pending,
+    .report-document-card .vpr-standing--paid .vpr-standing-value,
+    .report-document-card .vpr-standing--pending .vpr-standing-value {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .report-document-card .vpr-pill--paid {
+        background: #dcfce7 !important; color: #166534 !important;
+        border-color: #86efac !important;
+    }
+    .report-document-card .vpr-pill--pending {
+        background: #fef3c7 !important; color: #92400e !important;
+        border-color: #fcd34d !important;
+    }
+    .report-document-card .vpr-standing--paid .vpr-standing-value {
+        color: #166534 !important;
+    }
+    .report-document-card .vpr-standing--pending .vpr-standing-value {
+        color: #b45309 !important;
+    }
+
+    /* Colour elsewhere is a screen effect: on paper every rule, tint and
+       icon is black. */
     .report-document-card .vsum-kpi,
     .report-document-card .vsum-kpi:nth-child(1),
     .report-document-card .vsum-kpi:nth-child(2),
@@ -435,4 +465,272 @@
     .report-sign-block .sig-line { width: 220px !important; margin-top: 24px !important; border-bottom: 1.5px solid #000 !important; }
     .report-sign-block .text-muted { color: #000 !important; font-size: .72rem !important; }
 }
+
+/* ═══ SECTION NAVIGATION (screen only) ══════════════════════════════
+   These helpers are position:fixed so they never take part in layout:
+   the document paints exactly where it did before, with no jump on load
+   and nothing that can be captured half-moved during navigation. Paper
+   output is completely unaffected. */
+.vpr-scroll-progress {
+    position: fixed; top: 0; left: 0; right: 0; height: 3px;
+    z-index: 1090; pointer-events: none; background: transparent;
+}
+.vpr-scroll-progress > span {
+    display: block; height: 100%; width: 0;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    transition: width .12s linear;
+}
+.vpr-jump {
+    position: fixed; right: 22px; bottom: 22px; z-index: 1091;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.vpr-jump-fab {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, .4);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff; font-size: 1.2rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 10px 24px -8px rgba(37, 99, 235, .7);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.vpr-jump-fab:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 14px 30px -8px rgba(37, 99, 235, .8);
+}
+.vpr-jump-fab:focus-visible { outline: 3px solid #93c5fd; outline-offset: 3px; }
+.vpr-jump-panel {
+    position: absolute; right: 0; bottom: 58px; width: 268px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    box-shadow: 0 20px 44px -18px rgba(15, 23, 42, .45);
+    padding: 10px; display: none;
+}
+.vpr-jump.is-open .vpr-jump-panel { display: block; }
+.vpr-jump-title {
+    font-size: .66rem; font-weight: 800; letter-spacing: .07em;
+    text-transform: uppercase; color: #64748b; padding: 4px 8px 8px;
+}
+.vpr-jump-link {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 9px; border-radius: 9px; text-decoration: none;
+    color: #334155; font-size: .8rem; font-weight: 600; line-height: 1.25;
+}
+.vpr-jump-link:hover { background: #eff6ff; color: #1d4ed8; }
+.vpr-jump-link.is-active { background: #eff6ff; color: #1d4ed8; font-weight: 800; }
+.vpr-jump-link > span:last-child { min-width: 0; }
+.vpr-jump-num {
+    flex: 0 0 22px; width: 22px; height: 22px; border-radius: 7px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #f1f5f9; color: #475569; font-size: .68rem; font-weight: 800;
+}
+.vpr-jump-link.is-active .vpr-jump-num { background: #2563eb; color: #fff; }
+.vpr-jump-top { border-top: 1px solid #f1f5f9; border-radius: 0 0 9px 9px; margin-top: 4px; }
+
+/* Small numbered chips give the five report sections a visible order. The
+   counter is CSS-only, so no markup changes and no print changes. */
+@media screen {
+    .vpr-page .report-document-card { counter-reset: vprReportSection; }
+    .vpr-page .report-section { counter-increment: vprReportSection; scroll-margin-top: 84px; }
+    .vpr-page .report-sec-title > span::before {
+        content: counter(vprReportSection);
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 20px; height: 20px; margin-right: .55rem;
+        border-radius: 6px; background: #2563eb; color: #fff;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: .66rem; font-weight: 800; letter-spacing: 0;
+        vertical-align: middle;
+    }
+    .vpr-page .report-sec-print:focus-visible {
+        outline: 2px solid #2563eb; outline-offset: 2px;
+    }
+}
+@media (max-width: 575.98px) {
+    .vpr-jump { right: 14px; bottom: 14px; }
+    .vpr-jump-fab { width: 42px; height: 42px; font-size: 1.05rem; }
+    .vpr-jump-panel { width: 236px; }
+}
+@media print {
+    .vpr-scroll-progress, .vpr-jump { display: none !important; }
+    .vpr-page .report-sec-title > span::before { display: none !important; }
+}
+
+/* ═══ PRINT TYPOGRAPHY — legible on paper ═══════════════════════════
+   Only fonts already installed on the machine are used (no web-font
+   request), so the print dialog stays instant. The letterhead keeps its
+   official serif; every figure, heading, table cell and status chip uses
+   a crisp sans-serif at a size that reads comfortably on A4. Values are
+   in pt so they do not depend on the browser's screen rem size. */
+@media print {
+    .report-document-card {
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 10pt !important;
+    }
+    .report-document-card .report-table,
+    .report-document-card .report-table th,
+    .report-document-card .report-table td,
+    .report-document-card .vpr-pill,
+    .report-document-card .vpr-pill-note,
+    .report-document-card .vsum-kpi,
+    .report-document-card .vsum-recon,
+    .report-document-card .report-meta-bar,
+    .report-document-card .vpr-part-head,
+    .report-document-card .vpr-year-month-head,
+    .report-document-card .vsum-sec-note,
+    .report-document-card .report-sign-block {
+        font-family: Arial, Helvetica, sans-serif !important;
+    }
+
+    /* Headline figures are the first thing read on the sheet. */
+    .rep-main-title { font-size: 15pt !important; }
+    .rep-office, .rep-dept { font-size: 11pt !important; }
+    .rep-sub, .rep-city, .rep-period { font-size: 9pt !important; }
+    .report-meta-bar { font-size: 9pt !important; }
+    .vsum-kpi-value { font-size: 14pt !important; font-weight: 800 !important; }
+    .vsum-kpi-label { font-size: 8pt !important; font-weight: 800 !important; }
+    .vsum-kpi-sub { font-size: 7.5pt !important; }
+
+    /* Section titles and explanatory notes. */
+    .report-sec-title { font-size: 11pt !important; font-weight: 800 !important; }
+    .vpr-part-title { font-size: 10.5pt !important; font-weight: 900 !important; }
+    .vpr-part-sub { font-size: 8pt !important; }
+    .vsum-recon, .vsum-sec-note { font-size: 8.5pt !important; line-height: 1.4 !important; }
+    .vpr-year-month-name { font-size: 10pt !important; font-weight: 800 !important; }
+    .vpr-year-month-meta { font-size: 8pt !important; }
+
+    /* Data tables: 9pt body, 8pt bold headers — still fixed-layout so the
+       carefully tuned column shares keep every sheet inside A4. */
+    .report-table { font-size: 9pt !important; }
+    .report-table th,
+    .report-table td { font-size: 8.5pt !important; line-height: 1.3 !important; }
+    .report-table th { font-size: 8pt !important; font-weight: 800 !important; }
+    /* The view stylesheets load after this file and mark a few dense-table
+       selectors !important. These higher-specificity rules make sure the
+       readable print sizes actually win on paper. */
+    .report-document-card .report-table thead th { font-size: 8pt !important; }
+    .report-document-card .report-table .vpr-pill {
+        font-size: 7.5pt !important; padding: 1px 5px !important;
+    }
+    .report-total-row td { font-size: 8.5pt !important; font-weight: 800 !important; }
+    .vpr-time { font-size: 8pt !important; }
+    .vpr-pill { font-size: 7.5pt !important; padding: 1px 5px !important; }
+    .vpr-pill-note { font-size: 7pt !important; }
+
+    /* The 31-day matrix is the densest sheet; 7pt keeps it on one page. */
+    .vpr-matrix th, .vpr-matrix td { font-size: 7pt !important; line-height: 1.2 !important; }
+    .vpr-mx-name, .vpr-mx-total, .vpr-matrix tfoot td { font-size: 7pt !important; }
+
+    /* Sign-off captions. */
+    .report-sign-block .fw-bold { font-size: 9.5pt !important; }
+    .report-sign-block .text-muted { font-size: 8pt !important; }
+}
 </style>
+<script>
+(function () {
+    var page = document.querySelector('.vpr-page');
+    if (!page) return;
+    var sections = Array.prototype.slice.call(page.querySelectorAll('.report-section'));
+    if (sections.length < 2) return; // single-section reports need no navigator
+
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (ch) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+        });
+    }
+
+    sections.forEach(function (section, index) {
+        if (!section.id) section.id = 'vprSection' + (index + 1);
+    });
+
+    // Progress line — fixed, so it cannot move the document by a pixel.
+    var progress = document.createElement('div');
+    progress.className = 'vpr-scroll-progress no-print';
+    progress.setAttribute('aria-hidden', 'true');
+    progress.innerHTML = '<span></span>';
+    document.body.appendChild(progress);
+    var bar = progress.firstElementChild;
+
+    // Jump control, built from the sections already on the page.
+    var jump = document.createElement('div');
+    jump.className = 'vpr-jump no-print';
+    var items = sections.map(function (section, index) {
+        var heading = section.querySelector('.report-sec-title > span');
+        var label = heading ? heading.textContent.trim() : ('Section ' + (index + 1));
+        // Strip the printed roman numeral the view already renders.
+        label = label.replace(/^[IVX]+\s*[.|-]\s*/i, '').trim();
+        return '<a class="vpr-jump-link" href="#' + section.id +
+               '" data-target="' + section.id + '">' +
+               '<span class="vpr-jump-num">' + (index + 1) + '</span>' +
+               '<span>' + escapeHtml(label) + '</span></a>';
+    }).join('');
+    jump.innerHTML =
+        '<button type="button" class="vpr-jump-fab" aria-label="Jump to a report section" aria-expanded="false" aria-controls="vprJumpPanel">' +
+            '<i class="bi bi-list" aria-hidden="true"></i>' +
+        '</button>' +
+        '<nav class="vpr-jump-panel" id="vprJumpPanel" aria-label="Report sections">' +
+            '<div class="vpr-jump-title">On this page</div>' + items +
+            '<a class="vpr-jump-link vpr-jump-top" href="#" data-target="top">' +
+                '<span class="vpr-jump-num"><i class="bi bi-arrow-up" aria-hidden="true"></i></span>' +
+                '<span>Back to top</span>' +
+            '</a>' +
+        '</nav>';
+    document.body.appendChild(jump);
+
+    var fab = jump.querySelector('.vpr-jump-fab');
+    var links = Array.prototype.slice.call(jump.querySelectorAll('.vpr-jump-link'));
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    fab.addEventListener('click', function (event) {
+        event.stopPropagation();
+        var open = jump.classList.toggle('is-open');
+        fab.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (event) {
+        if (!jump.contains(event.target)) {
+            jump.classList.remove('is-open');
+            fab.setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && jump.classList.contains('is-open')) {
+            jump.classList.remove('is-open');
+            fab.setAttribute('aria-expanded', 'false');
+            fab.focus();
+        }
+    });
+
+    links.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            var target = link.getAttribute('data-target');
+            var node = target === 'top' ? document.body : document.getElementById(target);
+            if (node) {
+                node.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            }
+            jump.classList.remove('is-open');
+            fab.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    var ticking = false;
+    function updatePosition() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(function () {
+            var doc = document.documentElement;
+            var scrollable = doc.scrollHeight - window.innerHeight;
+            var pct = scrollable > 0 ? Math.min(100, Math.max(0, window.scrollY / scrollable * 100)) : 0;
+            bar.style.width = pct + '%';
+            var active = '';
+            sections.forEach(function (section) {
+                if (section.getBoundingClientRect().top <= 160) active = section.id;
+            });
+            links.forEach(function (link) {
+                link.classList.toggle('is-active', link.getAttribute('data-target') === active);
+            });
+            ticking = false;
+        });
+    }
+    window.addEventListener('scroll', updatePosition, { passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
+    updatePosition();
+})();
+</script>

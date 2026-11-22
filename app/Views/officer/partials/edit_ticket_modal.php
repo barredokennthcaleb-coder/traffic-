@@ -148,7 +148,7 @@
                                     <span class="tct-bold-label">Place <span class="text-danger">*</span>:</span>
                                     <div class="combo-wrap flex-1">
                                         <input type="text" name="location" id="edit_location" class="form-control form-control-sm tct-input"
-                                               required data-combo-source="locationOptions" autocomplete="off" placeholder="e.g. Ceres Terminal, Biyarin, or specific address...">
+                                               required data-combo-source="locationOptions" autocomplete="off" placeholder="e.g. Ceres Terminal, Bread Box, or specific post...">
                                         <button type="button" class="combo-toggle" aria-expanded="false" aria-label="Show place suggestions" tabindex="-1"><i class="bi bi-chevron-down"></i></button>
                                         <div class="combo-list" hidden></div>
                                     </div>

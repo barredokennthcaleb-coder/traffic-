@@ -493,6 +493,65 @@
             width: 100%;
             min-width: 0;
         }
+
+        /* ── MOBILE: streamline the ticket header ──────────────────
+           On a phone the seal and five-line letterhead used to occupy a
+           quarter of the screen before the first field appeared. Keep the
+           TCT format intact, just tighten the type and spacing so the
+           officer reaches the name fields sooner. */
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-header {
+            gap: 0.35rem;
+            margin-bottom: 0.75rem;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-modal-seal,
+        :where(#recordViolationModal, #editViolationModal) .tct-seal-img {
+            width: 54px !important;
+            height: 54px !important;
+            max-width: 54px !important;
+            max-height: 54px !important;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-rep,
+        :where(#recordViolationModal, #editViolationModal) .tct-city { font-size: 0.82rem; }
+        :where(#recordViolationModal, #editViolationModal) .tct-office { font-size: 0.9rem; }
+        :where(#recordViolationModal, #editViolationModal) .tct-doc-title {
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+        :where(#recordViolationModal, #editViolationModal) .tct-ord-no { font-size: 0.85rem; }
+        :where(#recordViolationModal, #editViolationModal) .tct-doc-section {
+            padding-bottom: 0.7rem;
+            margin-bottom: 0.7rem;
+        }
+        /* First / Middle on one line, Last / Suffix on the next: four
+           full-width name lines used to push everything else below the fold. */
+        :where(#recordViolationModal, #editViolationModal) .tct-row > div.d-flex.flex-1 {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.35rem 0.5rem;
+        }
+
+        /* ── MOBILE: one action row, clear of the fields ───────────
+           The sticky bar stacked Cancel above a full-width Save button and
+           sat on top of the last field. Put both on one row (Cancel small,
+           Save wide), keep the 44px tap target, and reserve space after the
+           bar so every field can scroll into view above it. */
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top {
+            flex-direction: row !important;
+            flex-wrap: nowrap;
+            gap: 0.5rem !important;
+            padding-top: 0.5rem;
+        }
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn {
+            width: auto !important;
+            min-height: 44px;
+        }
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn-outline-secondary {
+            flex: 0 0 auto;
+        }
+        .tct-modal-card .d-flex.justify-content-end.gap-2.border-top .btn-primary {
+            flex: 1 1 auto;
+        }
+        #recordViolationModal .tct-modal-card { padding-bottom: 4.5rem; }
     }
 
     /* ── Combo pickers (Vehicle / Place) ──────────────────────────────

@@ -39,6 +39,27 @@ A CodeIgniter 4 application for traffic citation records, violator histories, pa
 
 The legacy `database.sql` dump is provided for existing installations. For a new installation, use migrations rather than importing the dump and then running migrations against the same database.
 
+## Accessing from a phone / another device on the same network
+
+Apache listens on all interfaces and the app builds its links from the request
+host, so no code changes are needed for LAN access. Two things can still block it:
+
+1. **Windows Firewall.** By default inbound port 80 is blocked. Run
+   `allow-lan-access.bat` (double-click it, or right-click → **Run as
+   administrator**) and approve the UAC prompt. This opens ports 80 (Apache)
+   and 8080 (`php spark serve`). It only needs to be done once.
+2. **Same network.** The phone and the PC must be on the same WiFi. If the WiFi
+   has "AP isolation / client isolation" enabled, devices cannot reach each
+   other — disable it on the router.
+
+Then find the PC's LAN address (`ipconfig`, the `IPv4 Address` of the active
+Wi‑Fi adapter) and open it on the phone, for example `http://199.1.14.19/`.
+Private ranges (`10.x`, `172.16-31.x`, `192.168.x`) and the PC's own IP are
+trusted automatically, so DHCP address changes keep working. Fixed hostnames
+can be added to `app.allowedHostnames` in `.env`.
+
+Do not use `localhost` on the phone — that points at the phone itself.
+
 ## Main workflows
 
 - **Officer/enforcer:** set duty status, issue multi-infraction citations with TCT numbers, review violator history, and manage pending citations.

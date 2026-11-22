@@ -250,7 +250,10 @@ class ViolatorModel extends Model
     }
 
     /**
-     * Paginated violator list with live totals and overall payment status.
+     * Paginated violator list. The Pending and Paid chips are slices of the
+     * same record: each sums and counts only the citations of that status, so
+     * a person holding both kinds appears in both sections with only the
+     * matching badge. "All" and "Cancelled" still read the whole standing.
      *
      * @return array{rows: list<array<string, mixed>>, total: int, page: int, per_page: int, stats: array<string, mixed>}
      */
@@ -290,23 +293,20 @@ class ViolatorModel extends Model
         $hideSettled    = false;
 
         if ($status === 'Pending' || $status === 'Paid') {
-            // A section narrows the row, not the invitation: calling Pending
-            // lists everyone who still owes something — including people who
-            // already paid other tickets — and then shows only what is still
-            // owed. The settled amounts, tickets and offenses belong to the
-            // Paid section, which shows the same in reverse, and "All" keeps
-            // both sides together.
-            //
-            // Scoping the joined citations is what keeps the row's balance,
-            // ticket count, offense list and recorded date on the side the
-            // reader asked for. It also states the section rule by itself: the
-            // people listed are exactly the ones with a citation on this side,
-            // so no extra HAVING is needed.
-            $where[] = 'vi.status = ?';
+            // Sections are slices of the same record, not mutually exclusive
+            // buckets. Scope the joined citations to the chosen status so the
+            // Pending view shows only unpaid tickets (and their amounts and
+            // offenses) while the Paid view shows only settled ones. A driver
+            // holding one of each therefore appears in BOTH sections, each time
+            // with only the matching badge. The inner join already drops anyone
+            // without a ticket of that status, so no HAVING clause is needed.
+            $where[]  = 'vi.status = ?';
             $params[] = $status;
         } elseif ($status === 'Cancelled') {
             // A cancelled record is one where no live ticket is left, which is
-            // exactly what the aggregate's overall_status already reports.
+            // exactly what the aggregate's overall_status already reports over
+            // every linked citation. Keep that rule here: the cancelled chip is
+            // about the person's whole standing, not a single void ticket.
             $having[] = "overall_status = ?";
             $params[] = 'Cancelled';
         } elseif (! $includeSettled) {
@@ -340,11 +340,11 @@ class ViolatorModel extends Model
             COALESCE(NULLIF(TRIM(v.mtop_number), ''), (SELECT NULLIF(TRIM(v2.mtop_number), '') FROM violations v2 WHERE v2.violator_id = v.id AND TRIM(COALESCE(v2.mtop_number, '')) <> '' ORDER BY v2.violation_date DESC LIMIT 1)) AS mtop_number,
             COUNT(DISTINCT vi.ticket_id) AS attempt_count,
             -- Sanctions on the whole record, not on the slice this query was
-            -- asked for. A section (or an enforcer filter) narrows what the row
-            -- shows, but the three-strike count is a fact about the driver and
-            -- must not shrink just because the reader picked a side; cancelled
-            -- (void) citations are left out the way the lookup page leaves them
-            -- out of its sanction badges.
+            -- asked for. An enforcer filter narrows what the row shows, but the
+            -- three-strike count is a fact about the driver and must not shrink
+            -- just because the reader picked an officer; cancelled (void)
+            -- citations are left out the way the lookup page leaves them out of
+            -- its sanction badges.
             (SELECT COUNT(DISTINCT svi.ticket_id) FROM violations svi WHERE svi.violator_id = v.id AND svi.status <> 'Cancelled') AS sanction_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status <> 'Cancelled' THEN vi.ticket_id END) AS active_ticket_count,
             COUNT(DISTINCT CASE WHEN vi.status = 'Cancelled' THEN vi.ticket_id END) AS cancelled_ticket_count,
@@ -366,9 +366,10 @@ class ViolatorModel extends Model
             END AS overall_status
         ";
 
-        // Group the citations per person; when an enforcer filter is selected,
-        // the WHERE clause above scopes every count and sum to that officer's
-        // own citations before the person-level totals are calculated.
+        // Group the citations per person; the WHERE clause above scopes every
+        // count and sum to the selected status (and enforcer) before the
+        // person-level totals are calculated. Only the Cancelled chip relies on
+        // the unscoped overall_status in a HAVING clause.
         $baseSql = 'FROM violators v'
             . ' INNER JOIN violations vi ON vi.violator_id = v.id'
             . ' LEFT JOIN users u ON u.id = COALESCE(vi.officer_id, vi.created_by)';
@@ -495,32 +496,35 @@ class ViolatorModel extends Model
     /**
      * Head-counts for the violator registry chips.
      *
-     * Counts the same population getViolatorList() filters to, so a chip can
-     * never disagree with the rows it opens: a person with one settled and one
-     * open citation counts under both Pending and Settled, because clicking
-     * either chip lists them. Cancelled still means nothing live is left.
+     * Counts follow the same slices the list shows: Pending is everyone with at
+     * least one unpaid ticket, Paid is everyone with at least one settled
+     * ticket, and a person holding both is counted in both. All counts each
+     * person once (linked violators with at least one citation) and Cancelled
+     * means no live ticket is left. Pending and Paid may therefore overlap and
+     * need not add up to All.
      *
      * @return array{all: int, pending: int, paid: int, cancelled: int}
      */
     public function directoryCounts(?int $officerId = null): array
     {
-        $officerFilter = $officerId !== null && $officerId > 0 ? ' AND COALESCE(officer_id, created_by) = ?' : '';
+        $officerFilter = $officerId !== null && $officerId > 0 ? ' AND COALESCE(vi.officer_id, vi.created_by) = ?' : '';
         $params        = $officerFilter !== '' ? [$officerId] : [];
 
         $row = $this->db->query(
             "SELECT
                 COUNT(*) AS all_count,
-                COALESCE(SUM(has_pending), 0) AS pending_count,
-                COALESCE(SUM(has_paid), 0) AS paid_count,
-                COALESCE(SUM(has_cancelled), 0) AS cancelled_count
+                COALESCE(SUM(CASE WHEN pending_lines > 0 THEN 1 ELSE 0 END), 0) AS pending_count,
+                COALESCE(SUM(CASE WHEN paid_lines > 0 THEN 1 ELSE 0 END), 0) AS paid_count,
+                COALESCE(SUM(CASE WHEN active_lines = 0 THEN 1 ELSE 0 END), 0) AS cancelled_count
              FROM (
                 SELECT
-                    CASE WHEN SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END AS has_pending,
-                    CASE WHEN SUM(CASE WHEN status = 'Paid' THEN 1 ELSE 0 END) > 0 THEN 1 ELSE 0 END AS has_paid,
-                    CASE WHEN SUM(CASE WHEN status <> 'Cancelled' THEN 1 ELSE 0 END) = 0 THEN 1 ELSE 0 END AS has_cancelled
-                FROM violations
-                WHERE violator_id IS NOT NULL{$officerFilter}
-                GROUP BY violator_id
+                    SUM(CASE WHEN vi.status = 'Pending' THEN 1 ELSE 0 END) AS pending_lines,
+                    SUM(CASE WHEN vi.status = 'Paid' THEN 1 ELSE 0 END) AS paid_lines,
+                    SUM(CASE WHEN vi.status <> 'Cancelled' THEN 1 ELSE 0 END) AS active_lines
+                FROM violations vi
+                INNER JOIN violators v ON v.id = vi.violator_id
+                WHERE vi.violator_id IS NOT NULL{$officerFilter}
+                GROUP BY vi.violator_id
              ) AS grouped",
             $params
         )->getRowArray();

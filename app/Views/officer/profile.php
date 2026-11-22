@@ -122,12 +122,14 @@
 
     <!-- ═══ HERO BANNER WITH REAL-TIME OPERATIONAL HUD ═════════ -->
     <div class="profile-hero mb-4 premium-reveal" style="--reveal-delay:0.05s">
-        <div class="hero-orb hero-orb-1"></div>
-        <div class="hero-orb hero-orb-2"></div>
-        <div class="hero-orb hero-orb-3"></div>
+        <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+        <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
+        <div class="hero-orb hero-orb-3" aria-hidden="true"></div>
         <div class="profile-hero-content">
-            <!-- Avatar with hover overlay & click to change -->
-            <div class="profile-hero-avatar-wrap" id="heroAvatarWrap" title="Click or tap to change photo">
+            <!-- Avatar with hover overlay & click to change. Focusable because
+                 the overlay label alone is not reachable by keyboard. -->
+            <div class="profile-hero-avatar-wrap" id="heroAvatarWrap" role="button" tabindex="0"
+                 aria-label="Change profile photo" title="Click or tap to change photo">
                 <div class="avatar-display-container" id="avatarDisplayContainer">
                     <?php if ($profileImage): ?>
                         <img src="<?= esc($profileImage) ?>" alt="" class="profile-hero-avatar-img" id="heroAvatarImg" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
@@ -138,7 +140,7 @@
                 </div>
 
                 <!-- Hover/Touch overlay -->
-                <label for="hero_photo_input" class="avatar-hover-overlay" title="Upload new photo">
+                <label for="hero_photo_input" class="avatar-hover-overlay" title="Upload new photo" aria-hidden="true">
                     <i class="bi bi-camera-fill fs-5 mb-1"></i>
                     <span>Change</span>
                 </label>
@@ -223,6 +225,7 @@
             <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card is-clickable <?= $dutyStatus === 'On Break' ? 'duty-on-break' : ($dutyStatus === 'Off Duty' ? 'duty-off-duty' : '') ?>" id="dutyStatusCard"
                  role="button" tabindex="0"
                  aria-haspopup="dialog"
+                 aria-label="Field status: <?= esc($dutyStatus) ?>. Activate to change your duty status."
                  title="Click to change your duty status">
                 <div class="card-body p-3 d-flex align-items-center gap-3">
                     <div class="op-icon-box <?= $dutyStatus === 'On Break' ? 'bg-warning-subtle text-warning-emphasis' : ($dutyStatus === 'Off Duty' ? 'bg-secondary-subtle text-secondary' : 'bg-success-subtle text-success') ?>" id="dutyStatusIconBox">
@@ -254,6 +257,8 @@
             <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card jurisdiction-card"
                  role="button" tabindex="0"
                  data-bs-toggle="modal" data-bs-target="#jurisdictionModal" aria-controls="jurisdictionModal"
+                 aria-haspopup="dialog"
+                 aria-label="Assigned jurisdiction: <?= esc($cardLocation) ?>. Activate to view station areas and map."
                  title="Click to view assigned station areas and map">
                 <div class="card-body p-3 d-flex align-items-center gap-3">
                     <div class="op-icon-box bg-danger-subtle text-danger">
@@ -284,6 +289,8 @@
             <div class="card border-0 shadow-sm rounded-4 h-100 op-status-card is-clickable" id="offenseBreakdownCard"
                  role="button" tabindex="0"
                  data-bs-toggle="modal" data-bs-target="#offenseBreakdownModal" aria-controls="offenseBreakdownModal"
+                 aria-haspopup="dialog"
+                 aria-label="Top offense handled: <?= esc($topOffense) ?>. Activate to see the offense breakdown."
                  title="Click to see every offense you have handled">
                 <div class="card-body p-3 d-flex align-items-center gap-3">
                     <div class="op-icon-box bg-warning-subtle text-warning-emphasis">
@@ -370,7 +377,7 @@
                     <div class="jurisdiction-map-frame rounded-3 border border-light shadow-sm overflow-hidden" style="height: 220px;">
                         <iframe id="jurisdictionMap" title="Assigned jurisdiction map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
                                 sandbox="allow-scripts allow-same-origin allow-forms"
-                                src="<?= esc($mapEmbed) ?>"></iframe>
+                                data-src="<?= esc($mapEmbed) ?>" src="about:blank"></iframe>
                         <button type="button" class="jurisdiction-map-expand" id="jurisdictionMapToggle"
                                 aria-expanded="false" aria-controls="jurisdictionMap" title="Expand the map in this window">
                             <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
@@ -674,24 +681,34 @@
                 </div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between">
                     <div>
-                        <!-- 4 Metric Tiles -->
+                        <!-- Live KPI tiles: figures count up in place on load and on
+                             every period switch — no page reload, no layout shift. -->
                         <div class="row g-3 mb-3">
                             <div class="col-12 col-sm-4">
                                 <div class="p-3 rounded-3 bg-light border border-light-subtle cfr-kpi-tile cfr-total-issued-tile">
-                                    <small class="text-muted text-uppercase d-block fw-semibold cfr-total-issued-label" style="font-size: 0.68rem;">Total Issued</small>
-                                    <span class="fs-4 fw-bold text-dark cfr-total-issued-value" id="cfrTotalIssued"><?= $totalTickets ?></span>
+                                    <div class="cfr-tile-top">
+                                        <small class="text-muted text-uppercase d-block fw-semibold cfr-total-issued-label" style="font-size: 0.68rem;">Total Issued</small>
+                                        <span class="cfr-tile-icon" aria-hidden="true"><i class="bi bi-receipt-cutoff"></i></span>
+                                    </div>
+                                    <span class="fs-4 fw-bold text-dark cfr-kpi-number cfr-total-issued-value" id="cfrTotalIssued" data-target="<?= (int) $totalTickets ?>" data-count="0"><?= $totalTickets ?></span>
                                 </div>
                             </div>
                             <div class="col-12 col-sm-4">
                                 <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle cfr-kpi-tile cfr-settled-tile">
-                                    <small class="text-success-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Settled / Paid</small>
-                                    <span class="fs-4 fw-bold text-success" id="cfrPaidCount"><?= $paidCount ?></span>
+                                    <div class="cfr-tile-top">
+                                        <small class="text-success-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Settled / Paid</small>
+                                        <span class="cfr-tile-icon" aria-hidden="true"><i class="bi bi-check2-circle"></i></span>
+                                    </div>
+                                    <span class="fs-4 fw-bold text-success cfr-kpi-number" id="cfrPaidCount" data-target="<?= (int) $paidCount ?>" data-count="0"><?= $paidCount ?></span>
                                 </div>
                             </div>
                             <div class="col-12 col-sm-4">
                                 <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle cfr-kpi-tile cfr-pending-tile">
-                                    <small class="text-warning-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Pending Fines</small>
-                                    <span class="fs-4 fw-bold text-warning-emphasis" id="cfrPendingCount"><?= $pendingCount ?></span>
+                                    <div class="cfr-tile-top">
+                                        <small class="text-warning-emphasis text-uppercase d-block fw-semibold" style="font-size: 0.68rem;">Pending Fines</small>
+                                        <span class="cfr-tile-icon" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
+                                    </div>
+                                    <span class="fs-4 fw-bold text-warning-emphasis cfr-kpi-number" id="cfrPendingCount" data-target="<?= (int) $pendingCount ?>" data-count="0"><?= $pendingCount ?></span>
                                 </div>
                             </div>
                         </div>
@@ -702,12 +719,10 @@
                                 <span class="fw-semibold text-dark" style="font-size:0.8rem;">
                                     <i class="bi bi-shield-check text-success me-2"></i>Settlement Clearance Rate
                                 </span>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold" style="font-size:0.75rem;" id="cfrPct">
-                                    <?= $collectionPct ?>%
-                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5 fw-bold cfr-pct-badge" style="font-size:0.75rem;" id="cfrPct" data-target="<?= (int) $collectionPct ?>" data-count="0"><?= $collectionPct ?>%</span>
                             </div>
                             <div class="progress" style="height: 8px; border-radius: 99px; background: rgba(226,232,240,0.8);">
-                                <div class="progress-bar bg-success" id="cfrPctBar" style="width: <?= $collectionPct ?>%; border-radius: 99px;"></div>
+                                <div class="progress-bar cfr-pct-bar" id="cfrPctBar" style="width: <?= $collectionPct ?>%; border-radius: 99px;"></div>
                             </div>
                         </div>
                     </div>
@@ -716,7 +731,7 @@
                     <div class="pt-3 border-top border-light-subtle d-flex justify-content-between align-items-center">
                         <div>
                             <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.68rem;">Total Fines</small>
-                            <span class="fs-5 fw-bold text-primary" id="cfrTotalAmount">₱<?= number_format((float) $totalAmount, 2) ?></span>
+                            <span class="fs-5 fw-bold text-primary cfr-kpi-number" id="cfrTotalAmount" data-target="<?= (float) $totalAmount ?>" data-count="0">₱<?= number_format((float) $totalAmount, 2) ?></span>
                         </div>
                         <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-primary btn-profile-registry btn-sm px-3.5 py-1.5 rounded-pill fw-semibold">
                             <i class="bi bi-card-checklist me-1"></i>Open Violations Registry
@@ -795,16 +810,16 @@
 <style>
     .btn-profile-edit,
     .btn-profile-registry {
-        color: #0066ff !important;
-        border-color: #0066ff !important;
+        color: var(--brand-primary) !important;
+        border-color: var(--brand-primary) !important;
     }
     .btn-profile-edit:hover,
     .btn-profile-edit:focus-visible,
     .btn-profile-registry:hover,
     .btn-profile-registry:focus-visible {
         color: #ffffff !important;
-        background: #0052cc !important;
-        border-color: #0052cc !important;
+        background: var(--brand-secondary) !important;
+        border-color: var(--brand-secondary) !important;
     }
 
     /* Citation enforcement period switch (Week / Month / Year / Custom Range) */
@@ -884,13 +899,26 @@
 /* ── HERO ─────────────────────────────────────────────────── */
 .profile-hero {
     position: relative;
-    border-radius: 20px;
+    border-radius: 22px;
     overflow: hidden;
     padding: 2.2rem 2rem;
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #2563eb 100%);
-    box-shadow: 0 12px 32px rgba(76, 29, 149, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* Layered light source + on-brand blue ramp: the flat gradient read as a
+       solid block, while the soft top-left highlight gives the panel depth
+       without adding a moving element. */
+    background:
+        radial-gradient(900px 340px at 8% -25%, rgba(147, 197, 253, 0.5), transparent 65%),
+        linear-gradient(120deg, #1e3a8a 0%, #2563eb 48%, #3b82f6 100%);
+    box-shadow: 0 18px 40px -14px rgba(30, 58, 138, 0.55), 0 4px 12px rgba(15, 23, 42, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     isolation: isolate;
+}
+.profile-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(112deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 38%);
 }
 .profile-hero-content {
     position: relative;
@@ -990,9 +1018,24 @@
     border-radius: 50%;
     border: 3px solid white;
     z-index: 5;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
 }
-.dot-active  { background: #4ade80; box-shadow: 0 0 10px rgba(74,222,128,0.85); }
+.dot-active  {
+    background: #34d399;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.25), 0 0 12px rgba(52, 211, 153, 0.9);
+}
 .dot-inactive { background: var(--text-subtle, #5c6b80); }
+
+/* Keyboard parity for the avatar and the two upload actions. These are
+   labels/divs rather than native buttons, so the layout's global
+   :focus-visible rule does not cover them on its own. */
+.profile-hero-avatar-wrap:focus-visible,
+.avatar-hover-overlay:focus-visible,
+.btn-hero-upload:focus-visible,
+.btn-hero-remove:focus-visible {
+    outline: 3px solid #ffffff !important;
+    outline-offset: 3px;
+}
 .hero-name {
     font-size: 1.7rem;
     font-weight: 800;
@@ -1000,17 +1043,19 @@
     letter-spacing: -0.03em;
 }
 .hero-badge-number {
-    background: #dbeafe;
-    border: 1px solid #93c5fd;
-    color: #1d4ed8;
+    /* Brand-tinted chip: the enforcer colour identity stays visible on the
+       banner instead of reading as another white frosted surface. */
+    background: var(--brand-tint-100);
+    border: 1px solid var(--brand-tint-300);
+    color: var(--brand-800);
 }
 .hero-role-badge {
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
-    background: rgba(4, 47, 34, 0.55);
-    border: 1px solid rgba(167, 243, 208, 0.45);
-    color: #a7f3d0;
+    background: rgba(6, 78, 59, 0.45);
+    border: 1px solid rgba(110, 231, 183, 0.55);
+    color: #d1fae5;
     font-size: 0.73rem;
     font-weight: 700;
     padding: 0.3rem 0.75rem;
@@ -1049,24 +1094,32 @@
 .btn-hero-remove {
     display: inline-flex;
     align-items: center;
-    background: rgba(239, 68, 68, 0.22);
+    /* Neutral glass with a red icon keeps the destructive meaning while
+       lifting label contrast over the blue banner. */
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(6px);
-    border: 1px solid rgba(239, 68, 68, 0.45);
-    color: #fee2e2;
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
     font-size: 0.85rem;
     font-weight: 600;
     border-radius: 12px;
     padding: 0.55rem 1rem;
     cursor: pointer;
-    transition: all 0.22s ease;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
+    transition: background 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
-.btn-hero-remove:hover {
-    background: rgba(239, 68, 68, 0.45);
-    color: #fff;
+.btn-hero-remove i { color: #fecaca; }
+.btn-hero-remove:hover,
+.btn-hero-remove:focus-visible {
+    background: rgba(225, 29, 72, 0.85);
+    border-color: rgba(254, 202, 202, 0.6);
+    color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.25);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35);
 }
+.btn-hero-remove:hover i,
+.btn-hero-remove:focus-visible i { color: #ffffff; }
 .hero-orb {
     position: absolute;
     border-radius: 50%;
@@ -1568,7 +1621,7 @@ button.duty-option {
     background: rgba(124, 58, 237, 0.16);
 }
 .jurisdiction-dialog {
-    max-width: 420px;
+    max-width: 600px;
 }
 .jurisdiction-panel {
     border: 1px solid #e2e8f0;
@@ -1783,7 +1836,7 @@ button.duty-option {
 
 /* ── ENFORCER CREDENTIAL CARD ────────────────────────────── */
 .enforcer-cred-card {
-    border-top: 3px solid #0066ff !important;
+    border-top: 3px solid var(--brand-primary) !important;
 }
 .tct-red-no {
     color: #dc2626 !important;
@@ -1792,7 +1845,39 @@ button.duty-option {
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
-/* ── RESPONSIVE ───────────────────────────────────────────── */
+/* Laptop widths with the rail still open: the name block, HUD and upload
+   actions used to squeeze into one line and clip the trailing button. Give
+   the actions their own row and let the HUD keep its breathing room. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .profile-hero-content { gap: 1.1rem 1.25rem; }
+    .hero-name { font-size: 1.45rem; }
+    .hero-meta { gap: 0.7rem; font-size: 0.8rem; }
+    .hero-duty-hud { margin-left: auto !important; margin-right: 0 !important; }
+    .hero-upload-wrap {
+        flex: 0 0 100%;
+        margin-top: 0.25rem;
+    }
+    .hero-upload-wrap .d-flex { justify-content: flex-start !important; }
+    .hero-upload-wrap small { text-align: left !important; }
+
+    /* A half-width credentials card cannot fit its title, subtitle, badge
+       and Edit button on one row without breaking the title into three
+       lines. Stack the actions underneath instead. */
+    .enforcer-cred-card > .card-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.75rem;
+    }
+    .enforcer-cred-card > .card-header > .d-flex:first-child,
+    .enforcer-cred-card > .card-header > .d-flex:last-child {
+        width: 100%;
+        min-width: 0;
+    }
+    .enforcer-cred-card > .card-header > .d-flex:last-child {
+        justify-content: space-between;
+    }
+}
+
 @media (max-width: 991px) {
     .profile-hero-content {
         align-items: stretch;
@@ -1944,11 +2029,11 @@ button.duty-option {
     color: #cbd5e1 !important;
 }
 :root[data-bs-theme="dark"] #cfrTotalIssued {
-    color: #60a5fa !important;
+    color: var(--brand-tint-300) !important;
 }
 .cfr-total-issued-tile {
-    border-color: rgba(0, 102, 255, .22) !important;
-    box-shadow: 0 2px 8px rgba(0, 102, 255, .06);
+    border-color: rgba(var(--brand-rgb), .22) !important;
+    box-shadow: 0 2px 8px rgba(var(--brand-rgb), .06);
 }
 .cfr-kpi-tile {
     transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
@@ -1961,13 +2046,13 @@ button.duty-option {
 }
 .cfr-total-issued-label,
 .cfr-total-issued-value {
-    color: #0066ff !important;
+    color: var(--brand-primary) !important;
     transition: color .2s ease;
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .cfr-total-issued-tile:hover {
-        border-color: rgba(0, 102, 255, .45) !important;
-        box-shadow: 0 5px 14px rgba(0, 102, 255, .12);
+        border-color: rgba(var(--brand-rgb), .45) !important;
+        box-shadow: 0 5px 14px rgba(var(--brand-rgb), .12);
         transform: translateY(-1px);
     }
     .cfr-settled-tile:hover {
@@ -1987,12 +2072,12 @@ button.duty-option {
     }
 }
 :root[data-bs-theme="dark"] .cfr-total-issued-tile {
-    border-color: rgba(96, 165, 250, .38) !important;
-    box-shadow: 0 2px 8px rgba(0, 102, 255, .1);
+    border-color: rgba(var(--brand-rgb), .38) !important;
+    box-shadow: 0 2px 8px rgba(var(--brand-rgb), .1);
 }
 :root[data-bs-theme="dark"] .cfr-total-issued-label,
 :root[data-bs-theme="dark"] #cfrTotalIssued {
-    color: #60a5fa !important;
+    color: var(--brand-tint-300) !important;
 }
 /* Long jurisdiction / offence names shrink and ellipsis inside the card
    instead of pushing past its edge. */
@@ -2080,6 +2165,179 @@ button.duty-option {
 :root[data-theme="dark"] .op-status-card {
     border-color: var(--border-soft) !important;
 }
+
+/* ── MOTION & TOUCH SAFETY NET ────────────────────────────────
+   The layout covers the shell, but this page adds its own orbs, radar
+   pulses and tile transitions. Collapse all of them when the user asks
+   for reduced motion, and keep the primary actions finger-sized. */
+@media (prefers-reduced-motion: reduce) {
+    .profile-hero *,
+    .op-status-card *,
+    .record-card *,
+    .enforcer-cred-card *,
+    .break-time-banner,
+    .break-time-banner * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+@media (pointer: coarse) {
+    .btn-hero-upload,
+    .btn-hero-remove {
+        min-height: 44px;
+    }
+    /* Keep this icon-only control square while enlarging its hit area. */
+    .jurisdiction-map-expand {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+/* ── LIVE KPI ENHANCEMENTS ────────────────────────────────────────
+   Small, GPU-friendly touches that make the record card feel alive:
+   icon chips, a sweeping hover sheen, a pulsing ring on the primary
+   metric and a progress bar that fills itself on load. None of these
+   change any layout dimension, so loading or switching periods never
+   shifts the page or delays interaction. */
+.cfr-kpi-tile {
+    position: relative;
+    overflow: hidden;
+}
+.cfr-tile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .35rem;
+}
+.cfr-tile-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+    transition: transform .28s cubic-bezier(.2, .8, .2, 1), box-shadow .28s ease;
+}
+.cfr-total-issued-tile .cfr-tile-icon {
+    position: relative;
+    background: rgba(var(--brand-rgb), .12);
+    color: var(--brand-primary);
+}
+.cfr-settled-tile .cfr-tile-icon { background: rgba(16, 185, 129, .14); color: #059669; }
+.cfr-pending-tile .cfr-tile-icon { background: rgba(217, 119, 6, .14); color: #b45309; }
+.cfr-total-issued-tile .cfr-tile-icon::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(var(--brand-rgb), .45);
+    animation: cfrLiveRing 2.4s ease-out infinite;
+    pointer-events: none;
+}
+@keyframes cfrLiveRing {
+    0%   { transform: scale(.86); opacity: .75; }
+    100% { transform: scale(1.2); opacity: 0; }
+}
+.cfr-kpi-number {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.15;
+}
+/* A single light sweep on hover — not a continuous repaint. */
+.cfr-kpi-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(115deg, transparent 32%, rgba(255, 255, 255, .5) 48%, transparent 64%);
+    transform: translateX(-120%);
+    opacity: 0;
+}
+@keyframes cfrSheen {
+    0%   { transform: translateX(-120%); opacity: 0; }
+    35%  { opacity: 1; }
+    100% { transform: translateX(120%); opacity: 0; }
+}
+@keyframes cfrBadgePop {
+    0%   { transform: scale(.82); }
+    60%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .cfr-kpi-tile:hover .cfr-tile-icon {
+        transform: translateY(-2px) rotate(-6deg) scale(1.06);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, .12);
+    }
+    .cfr-kpi-tile:hover::before { animation: cfrSheen .75s ease-out; }
+    .cfr-pct-badge { animation: cfrBadgePop .45s ease-out both; }
+    .op-status-card:hover .op-icon-box { transform: translateY(-2px) rotate(-4deg); }
+}
+.cfr-pct-bar {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, .35);
+    transition: width .7s cubic-bezier(.2, .8, .2, 1);
+    animation: cfrBarReveal .9s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes cfrBarReveal {
+    from { clip-path: inset(0 100% 0 0); }
+    to   { clip-path: inset(0 0 0 0); }
+}
+
+/* ── LIVE ACCENT ON THE STATUS STRIP ──────────────────────────────
+   A thin coloured line draws itself across the top of each status card.
+   It animates with transform only (no height/position change), so it
+   cannot shift text or interfere with the reload view transition. */
+.op-status-card {
+    overflow: hidden;
+}
+.op-status-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 22px 22px 0 0;
+    background: linear-gradient(90deg, var(--brand-primary), transparent 85%);
+    transform: scaleX(0);
+    transform-origin: left center;
+    animation: cfrAccentDraw .6s cubic-bezier(.2, .8, .2, 1) .1s forwards;
+    pointer-events: none;
+}
+.op-status-card.duty-on-break::after { background: linear-gradient(90deg, #ca8a04, transparent 85%); }
+.op-status-card.duty-off-duty::after { background: linear-gradient(90deg, #94a3b8, transparent 85%); }
+.op-status-card.jurisdiction-card::after { background: linear-gradient(90deg, #dc2626, transparent 85%); }
+@keyframes cfrAccentDraw {
+    to { transform: scaleX(1); }
+}
+.record-card {
+    overflow: hidden;
+}
+.record-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 22px 22px 0 0;
+    background: linear-gradient(90deg, #10b981, transparent 85%);
+    pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .cfr-pct-bar,
+    .cfr-total-issued-tile .cfr-tile-icon::after,
+    .op-status-card::after {
+        animation: none !important;
+    }
+    .op-status-card::after { transform: scaleX(1); }
+}
 </style>
 
 <?= $this->endSection() ?>
@@ -2088,8 +2346,36 @@ button.duty-option {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Every Bootstrap icon on this page sits beside visible text, so none of
+    // them should be announced as a standalone glyph. Hide the whole set from
+    // the accessibility tree in one pass; keep any icon that was explicitly
+    // given a label or a role.
+    document.querySelectorAll('i.bi, i[class*="bi-"]').forEach(function (icon) {
+        if (!icon.hasAttribute('aria-label') && !icon.hasAttribute('role')) {
+            icon.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // The avatar overlay is a <label>, which is not focusable on its own.
+    // Give the wrapping element keyboard parity with a mouse click.
+    const heroAvatarWrap = document.getElementById('heroAvatarWrap');
+    const heroPhotoInput = document.getElementById('hero_photo_input');
+    if (heroAvatarWrap && heroPhotoInput) {
+        heroAvatarWrap.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                heroPhotoInput.click();
+            }
+        });
+    }
+
     // ═══ JURISDICTION AREAS + GOOGLE MAP LOOKUP ══════════════
     const jurMap = document.getElementById('jurisdictionMap');
+    // Google Maps is heavy third-party content. Hold its URL in a data
+    // attribute and only request it when this panel is first opened, so a
+    // normal profile load/reload never pays for the iframe.
+    let jurMapLoaded = false;
+    const initialMapSrc = jurMap ? jurMap.dataset.src : '';
     const jurMapLink = document.getElementById('jurisdictionMapLink');
     const jurMapLabel = document.getElementById('jurisdictionMapLabel');
     const jurMapToggle = document.getElementById('jurisdictionMapToggle');
@@ -2194,9 +2480,21 @@ document.addEventListener('DOMContentLoaded', function () {
     if (jurisdictionModal && jurisdictionCard) {
         jurisdictionModal.addEventListener('show.bs.modal', function () {
             jurisdictionCard.classList.add('is-open');
+            if (jurMap && !jurMapLoaded && initialMapSrc) {
+                jurMap.src = initialMapSrc;
+                jurMapLoaded = true;
+            }
         });
         jurisdictionModal.addEventListener('hide.bs.modal', function () {
             jurisdictionCard.classList.remove('is-open');
+        });
+        // A div with data-bs-toggle only responds to pointers. Match the
+        // other two metric cards so Enter/Space opens the modal too.
+        jurisdictionCard.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                jurisdictionCard.click();
+            }
         });
     }
 
@@ -2933,16 +3231,57 @@ document.addEventListener('DOMContentLoaded', function () {
             if (el) el.textContent = value;
         }
 
+        /* Figures animate from their current value to the new one with a single
+           requestAnimationFrame loop per value. The server already rendered the
+           final number in the markup, so there is no empty flash, no layout
+           shift and nothing that delays the page becoming interactive. */
+        const reduceMotion = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function animateCount(id, target, format) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const to = Number(target) || 0;
+            const shown = parseFloat(el.dataset.count);
+            const from = Number.isFinite(shown) ? shown : 0;
+            el.dataset.count = String(to);
+            if (reduceMotion || from === to) {
+                el.textContent = format(to);
+                return;
+            }
+            // A new period switch supersedes any count still running so two
+            // loops can never fight over the same figure.
+            const token = (parseInt(el.dataset.anim, 10) || 0) + 1;
+            el.dataset.anim = String(token);
+            const started = performance.now();
+            const duration = 650;
+            function frame(now) {
+                if (parseInt(el.dataset.anim, 10) !== token) return;
+                const t = Math.min(1, (now - started) / duration);
+                const eased = 1 - Math.pow(1 - t, 3);
+                el.textContent = format(from + (to - from) * eased);
+                if (t < 1) requestAnimationFrame(frame);
+            }
+            requestAnimationFrame(frame);
+        }
+
+        const fmtInt   = (n) => String(Math.round(n));
+        const fmtPct   = (n) => Math.round(n) + '%';
+        const fmtMoney = (n) => '\u20B1' + n.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
         function paint(data) {
             const total = parseInt(data.total, 10) || 0;
             const pct   = parseInt(data.pct, 10) || 0;
 
             setText('cfrDateNote', data.dateNote || '');
-            setText('cfrTotalIssued', total);
-            setText('cfrPaidCount', parseInt(data.paid, 10) || 0);
-            setText('cfrPendingCount', parseInt(data.pending, 10) || 0);
-            setText('cfrPct', pct + '%');
-            setText('cfrTotalAmount', '\u20B1' + data.amount);
+            animateCount('cfrTotalIssued', total, fmtInt);
+            animateCount('cfrPaidCount', parseInt(data.paid, 10) || 0, fmtInt);
+            animateCount('cfrPendingCount', parseInt(data.pending, 10) || 0, fmtInt);
+            animateCount('cfrPct', pct, fmtPct);
+            animateCount('cfrTotalAmount', parseFloat(String(data.amount).replace(/,/g, '')) || 0, fmtMoney);
 
             const bar = document.getElementById('cfrPctBar');
             if (bar) bar.style.width = pct + '%';
@@ -3099,6 +3438,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             });
         }
+
+        // Decorative count-up on first paint. The final figures are already in
+        // the markup, so this never holds up rendering or interaction.
+        function targetOf(id) {
+            const el = document.getElementById(id);
+            return el ? el.dataset.target : 0;
+        }
+        animateCount('cfrTotalIssued', targetOf('cfrTotalIssued'), fmtInt);
+        animateCount('cfrPaidCount', targetOf('cfrPaidCount'), fmtInt);
+        animateCount('cfrPendingCount', targetOf('cfrPendingCount'), fmtInt);
+        animateCount('cfrPct', targetOf('cfrPct'), fmtPct);
+        animateCount('cfrTotalAmount', targetOf('cfrTotalAmount'), fmtMoney);
     })();
 </script>
 <?= $this->endSection() ?>

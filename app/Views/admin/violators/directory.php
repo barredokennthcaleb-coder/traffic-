@@ -23,9 +23,7 @@
                  daily, weekly, monthly, full year and a custom range — so any
                  of them can be asked for straight from the directory. -->
             <form method="get" action="<?= base_url('reports/violators/period') ?>" class="vdr-report" id="vdrReportForm">
-                <?php if ($search !== ''): ?>
-                    <input type="hidden" name="search" value="<?= esc($search) ?>">
-                <?php endif; ?>
+                <input type="hidden" name="search" id="vdrReportSearch" value="<?= esc($search) ?>">
 
                 <label for="period_type" class="vdr-report-label">Report Type</label>
 
@@ -80,10 +78,11 @@
                     <i class="bi bi-file-earmark-bar-graph"></i><span>Generate</span>
                 </button>
             </form>
-            <form method="get" action="<?= base_url('reports/violators') ?>" class="vdr-search">
+            <form method="get" action="<?= base_url('reports/violators') ?>" class="vdr-search" id="vdrSearchForm">
                 <i class="bi bi-search"></i>
-                <input type="search" name="search" value="<?= esc($search) ?>"
+                <input type="search" name="search" id="vdrSearchInput" value="<?= esc($search) ?>"
                        placeholder="Search name, plate or ticket…" aria-label="Search violators">
+                <span class="vdr-search-spin" aria-hidden="true"></span>
                 <button type="submit">Go</button>
             </form>
         </div>
@@ -230,6 +229,22 @@
     border: 0; border-radius: 7px; padding: .32rem .8rem;
     background: #1d4ed8; color: #fff; font-size: .78rem; font-weight: 700;
 }
+/* Live search: a small spinner while the debounced request is in flight, and
+   the rows dim then ease back in when the swapped markup arrives. */
+.vdr-search-spin {
+    display: none; width: 13px; height: 13px; flex-shrink: 0;
+    border: 2px solid rgba(59, 130, 246, .25); border-top-color: #3b82f6;
+    border-radius: 50%; animation: vdr-spin .7s linear infinite;
+}
+.vdr-search.is-searching .vdr-search-spin { display: inline-block; }
+@keyframes vdr-spin { to { transform: rotate(360deg); } }
+.vdr-table-wrap { transition: opacity .18s ease; }
+.vdr-table-wrap.is-updating { opacity: .45; }
+.vdr-table-wrap.is-fresh { animation: vdr-swap-in .24s ease both; }
+@keyframes vdr-swap-in {
+    from { opacity: .55; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+}
 
 .vdr-card {
     background: var(--surface-card, #fff);
@@ -358,6 +373,131 @@ function vdrTogglePeriod(type) {
         });
     });
 }
+
+(function () {
+    const form  = document.getElementById('vdrSearchForm');
+    const input = document.getElementById('vdrSearchInput');
+    if (!form || !input) return;
+
+    let timer    = null;
+    let inFlight = null;
+
+    // Swap just the changing pieces, so the caret and the page stay put while
+    // you type. Each is looked up fresh because the swap replaces the nodes.
+    const swapped = ['.vdr-card-head', '.vdr-table-wrap'];
+
+    const markBusy = function (busy) {
+        document.querySelectorAll('.vdr-table-wrap').forEach(function (el) {
+            el.classList.toggle('is-updating', busy);
+        });
+        form.classList.toggle('is-searching', busy);
+    };
+
+    const markFresh = function () {
+        document.querySelectorAll('.vdr-table-wrap').forEach(function (el) {
+            el.classList.remove('is-fresh');
+            void el.offsetWidth; // restart the animation on the replaced node
+            el.classList.add('is-fresh');
+        });
+    };
+
+    // The pager only renders when there is more than one page, so it has to be
+    // added, replaced or removed as the result set grows and shrinks.
+    const syncPager = function (doc) {
+        const next = doc.querySelector('.vdr-pager');
+        const now  = document.querySelector('.vdr-pager');
+        if (next && now) {
+            now.replaceWith(next);
+        } else if (next) {
+            const card = document.querySelector('.vdr-card');
+            if (card) card.appendChild(next);
+        } else if (now) {
+            now.remove();
+        }
+    };
+
+    // One request per pause, not per keystroke. An in-flight request is aborted
+    // so a slower older answer can never overwrite a newer one.
+    const runSearch = function () {
+        if (inFlight) inFlight.abort();
+
+        const term = input.value.trim();
+        const url  = new URL(form.action, window.location.href);
+        if (term !== '') url.searchParams.set('search', term);
+        else url.searchParams.delete('search');
+        url.searchParams.delete('page'); // start at page 1 for a new term
+
+        const controller = new AbortController();
+        inFlight = controller;
+        markBusy(true);
+
+        fetch(url.toString(), { signal: controller.signal })
+            .then(function (response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.text();
+            })
+            .then(function (html) {
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                let hits = 0;
+
+                swapped.forEach(function (selector) {
+                    const next = doc.querySelector(selector);
+                    const now  = document.querySelector(selector);
+                    if (next && now) { now.replaceWith(next); hits++; }
+                });
+                syncPager(doc);
+
+                // Keep the report chooser pointed at the same search term.
+                const reportSearch = document.getElementById('vdrReportSearch');
+                if (reportSearch) reportSearch.value = term;
+
+                if (hits === 0) {
+                    // Login page or an unexpected body: fall back to navigation.
+                    window.location.assign(url.toString());
+                    return;
+                }
+
+                markFresh();
+                history.pushState({ vdrSearch: true }, '', url.toString());
+            })
+            .catch(function (error) {
+                if (error && error.name === 'AbortError') return;
+                form.requestSubmit();
+            })
+            .finally(function () {
+                if (inFlight === controller) {
+                    inFlight = null;
+                    markBusy(false);
+                }
+            });
+    };
+
+    const schedule = function () {
+        clearTimeout(timer);
+        timer = setTimeout(runSearch, 400);
+    };
+
+    input.addEventListener('input', schedule);
+    // Safari's native clear (×) only fires `search`, not `input`.
+    input.addEventListener('search', schedule);
+
+    input.addEventListener('keydown', function (event) {
+        // Enter searches now instead of waiting out the debounce.
+        if (event.key === 'Enter') {
+            clearTimeout(timer);
+            if (inFlight) inFlight.abort();
+        }
+    });
+
+    form.addEventListener('submit', function () {
+        clearTimeout(timer);
+        if (inFlight) inFlight.abort();
+    });
+
+    window.addEventListener('popstate', function () {
+        window.location.reload();
+    });
+})();
 </script>
 
 <?= $this->endSection() ?>

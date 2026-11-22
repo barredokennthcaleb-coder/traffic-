@@ -77,6 +77,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('users/delete/(:num)', 'Admin\UserController::delete/$1');
     $routes->post('users/reset-password/(:num)', 'Admin\UserController::resetPassword/$1');
     $routes->post('users/recovery-code/(:num)', 'Admin\UserController::generateRecoveryCode/$1');
+    // Read-only: duty status is owned by the enforcer, the admin list only reads it.
+    $routes->get('users/duty-status', 'Admin\UserController::dutyStatusApi');
 
     // Penalty & Payment Routes
     $routes->get('penalties', 'Admin\PenaltyController::index');
@@ -118,6 +120,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('api/nature-summary', 'Admin\AdminController::natureSummaryJson');
     // Trend card data for the dashboard's in-place month switching
     $routes->get('api/dashboard-trend', 'Admin\AdminController::dashboardTrendJson');
+    // Monthly chart data, polled so the current month updates in place
+    $routes->get('api/monthly-breakdown', 'Admin\AdminController::monthlyBreakdownJson');
 });
 
 // Inspection Routes (Accessible by Admin and Officer)

@@ -47,11 +47,26 @@ class AuthController extends BaseController
 
         $user = $model->where('email', $email)->first();
 
+        // The main password is the normal path. A stored backup password is a
+        // reusable alternative for a user who has forgotten the main one; it
+        // is checked only when the main password did not match.
+        $primaryOk = $user && password_verify($password, (string) ($user['password'] ?? ''));
+        $backupOk  = $user && ! $primaryOk
+            && ! empty($user['backup_password_hash'])
+            && password_verify($password, (string) $user['backup_password_hash']);
+
         // A wrong email and a wrong password return the same message so the
         // form never reveals which accounts exist.
-        if (! $user || ! password_verify($password, (string) $user['password'])) {
+        if (! $user || (! $primaryOk && ! $backupOk)) {
             $session->setFlashdata('error', 'The password you entered is incorrect.');
             return redirect()->back()->withInput();
+        }
+
+        if ($backupOk) {
+            log_message('info', 'Backup password used to sign in as user {id} from IP {ip}.', [
+                'id' => $user['id'],
+                'ip' => $this->request->getIPAddress(),
+            ]);
         }
 
         // The credentials checked out: clear the attempt counter and start a
@@ -91,6 +106,12 @@ class AuthController extends BaseController
         ];
         $session->set($sessionData);
         $session->setFlashdata('success', 'Welcome back!');
+
+        // One-time "welcome" flag for the admin dashboard's KPI count-up.
+        // Flashdata lives for exactly one request, so the running numbers play
+        // only on the first dashboard load after sign-in. Every later visit
+        // (sidebar/filters/reload) renders the final figures straight away.
+        $session->setFlashdata('kpi_countup', '1');
 
         // Picked up by app/Views/theme/posthog.php on the next page, so the
         // session replay of this sign-in is filed under a journey event.

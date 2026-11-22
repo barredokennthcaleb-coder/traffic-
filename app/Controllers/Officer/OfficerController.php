@@ -812,6 +812,7 @@ class OfficerController extends BaseController
         if (! in_array($statusFilter, ['pending', 'paid'], true)) {
             $statusFilter = '';
         }
+        $searchTerm = trim((string) $this->request->getGet('search'));
 
         // "Record another violation" arrives as ?violator_id=<id>. That is a
         // single visit, not a mode of the ledger: the id is copied into the
@@ -890,6 +891,23 @@ class OfficerController extends BaseController
             // alone. A person who has both a paid and an unpaid ticket appears
             // under each tab with just that side of the record.
             $violationsQuery->where('violations.status', ucfirst($statusFilter));
+        }
+
+        // The search covers the identifiers shown on each ledger row, so an
+        // officer can look someone up by plate, license or MTOP as well as by
+        // name. These are extra OR terms on the query already being built —
+        // no second lookup and no extra work on a normal page load.
+        foreach (preg_split('/\s+/', $searchTerm, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $searchWord) {
+            $violationsQuery
+                ->groupStart()
+                    ->like('violators.first_name', $searchWord)
+                    ->orLike('violators.middle_name', $searchWord)
+                    ->orLike('violators.last_name', $searchWord)
+                    ->orLike('violators.driver_name', $searchWord)
+                    ->orLike('violators.license_plate', $searchWord)
+                    ->orLike('violators.license_number', $searchWord)
+                    ->orLike('violators.mtop_number', $searchWord)
+                ->groupEnd();
         }
 
         $violations = $violationsQuery
@@ -990,6 +1008,7 @@ class OfficerController extends BaseController
             'pendingViolators' => $pendingViolators,
             'paidViolators'    => $paidViolators,
             'statusFilter'     => $statusFilter,
+            'searchTerm'       => $searchTerm,
             'submissionToken' => $submissionToken,
             'prefillViolator' => $prefillViolator,
             'prefillOffenses' => $prefillOffenses,
@@ -1043,6 +1062,14 @@ class OfficerController extends BaseController
             'violation' => $primaryViolation,
             'all_violations' => $allViolations
         ];
+
+        // "View Citation" on the violator profile opens the official TCT
+        // document as a full page (same document the print view uses), while
+        // the normal ticket view keeps the citation summary and its popup.
+        if (service('request')->getGet('format') === 'tct') {
+            return view('officer/tct', $data);
+        }
+
         return view('officer/view', $data);
     }
 

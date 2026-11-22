@@ -1663,6 +1663,10 @@
         let autoTimer      = null;
 
         function checkForUpdates(auto) {
+            // A hidden tab does not need to poll. On the single-threaded dev
+            // server a background poll can delay navigation in another tab.
+            if (auto && document.hidden) return;
+
             if (refreshSpinner) refreshSpinner.classList.add('spin-animation');
             if (liveSyncStatus && !auto) liveSyncStatus.textContent = 'Checking CTRAMO server...';
 
@@ -1732,6 +1736,11 @@
             autoToggle.addEventListener('change', function () {
                 localStorage.setItem(AUTO_KEY, autoToggle.checked ? '1' : '0');
                 setAutoSync(autoToggle.checked);
+            });
+
+            // Catch up once when the reader returns to the tab.
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && autoToggle.checked) checkForUpdates(true);
             });
         }
     });

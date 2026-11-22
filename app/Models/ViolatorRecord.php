@@ -44,7 +44,9 @@ class ViolatorRecord extends Model
         'location',
         'notes',
         'driver_signature',
-        'officer_signature'
+        'officer_signature',
+        'collecting_officer_name',
+        'collecting_officer_signature'
     ];
 
     protected $useTimestamps = true;
@@ -442,7 +444,7 @@ class ViolatorRecord extends Model
                     ->findAll();
     }
 
-    public function recordPayment($id, $paymentMethod, $remarks = null, $requestedReceiptNumber = null)
+    public function recordPayment($id, $paymentMethod, $remarks = null, $requestedReceiptNumber = null, $collectingOfficerName = null, $collectingOfficerSignature = null)
     {
         $db = $this->db;
         $db->transBegin();
@@ -504,11 +506,13 @@ class ViolatorRecord extends Model
             ]);
 
             $payload = [
-                'status'         => 'Paid',
-                'paid_date'      => date('Y-m-d H:i:s'),
-                'payment_method' => $paymentMethod,
-                'receipt_number' => $receiptNumber,
-                'remarks'        => $remarks,
+                'status'                       => 'Paid',
+                'paid_date'                    => date('Y-m-d H:i:s'),
+                'payment_method'               => $paymentMethod,
+                'receipt_number'               => $receiptNumber,
+                'remarks'                      => $remarks,
+                'collecting_officer_name'      => $collectingOfficerName,
+                'collecting_officer_signature' => $collectingOfficerSignature,
             ];
 
             // A payment settles the whole ticket, but cancelled infractions must
@@ -1029,7 +1033,11 @@ class ViolatorRecord extends Model
     }
 
     /**
-     * Get monthly breakdown with status counts for a given year.
+     * Get monthly ticket counts and status split for a given year.
+     *
+     * Each month's count is the number of distinct citation tickets, matching
+     * the dashboard KPIs and the Weekly Trend. Revenue remains the sum of the
+     * paid offense amounts on those tickets.
      */
     public function getMonthlyBreakdown($year = null, $officerId = null)
     {
@@ -1047,12 +1055,17 @@ class ViolatorRecord extends Model
             ];
         }
 
+        // One citation is one ticket, however many offenses it lists. The
+        // dashboard's KPI cards and the Weekly Trend both count distinct
+        // tickets, so the monthly chart must use the same rule: COUNT(*) would
+        // count each offense line instead and overstate the month.
         $builder = $this->builder();
-        $builder->select("MONTH(violation_date) as month, COUNT(*) as count,
+        $builder->select("MONTH(violation_date) as month,
+            COUNT(DISTINCT ticket_id) as count,
             IFNULL(SUM(CASE WHEN status = 'Paid' THEN penalty_amount ELSE 0 END), 0) as revenue,
-            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN status = 'Paid' THEN 1 ELSE 0 END) as paid,
-            SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) as cancelled");
+            COUNT(DISTINCT CASE WHEN status = 'Pending' THEN ticket_id END) as pending,
+            COUNT(DISTINCT CASE WHEN status = 'Paid' THEN ticket_id END) as paid,
+            COUNT(DISTINCT CASE WHEN status = 'Cancelled' THEN ticket_id END) as cancelled");
         $builder->where('YEAR(violation_date)', $year);
 
         if ($officerId !== null) {

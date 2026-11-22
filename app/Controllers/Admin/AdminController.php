@@ -221,6 +221,29 @@ class AdminController extends BaseController
             ]);
     }
 
+    /**
+     * JSON API: the Monthly Breakdown chart's ticket counts for one year.
+     * Polled in place so the current month stays accurate as tickets are
+     * issued or paid, without reloading the dashboard.
+     */
+    public function monthlyBreakdownJson()
+    {
+        $year = (int) ($this->request->getGet('year') ?? date('Y'));
+
+        if ($year < 2000 || $year > (int) date('Y') + 1) {
+            $year = (int) date('Y');
+        }
+
+        return $this->response
+            ->setContentType('application/json')
+            ->setJSON([
+                'status'     => 'ok',
+                'year'       => $year,
+                'updated_at' => date('Y-m-d H:i:s'),
+                'data'       => array_values($this->violationRecord->getMonthlyBreakdown($year)),
+            ]);
+    }
+
     public function reports()
     {
         // A report is only built once a period has been asked for. Landing on

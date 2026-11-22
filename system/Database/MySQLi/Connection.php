@@ -199,38 +199,65 @@ class Connection extends BaseConnection
             $clientFlags += MYSQLI_CLIENT_FOUND_ROWS;
         }
 
-        try {
-            if ($this->mysqli->real_connect(
-                $hostname,
-                $this->username,
-                $this->password,
-                $this->database,
-                $port,
-                $socket,
-                $clientFlags,
-            )) {
-                if (! $this->mysqli->set_charset($this->charset)) {
-                    log_message('error', "Database: Unable to set the configured connection charset ('{$this->charset}').");
+        // Local tweak: retry a refused connection a few times before failing.
+        // Restarting MySQL takes a couple of seconds, and without this the
+        // first request in that window rendered the "Temporarily unavailable"
+        // page at login. Four attempts, 600 ms apart, cost at most ~2 seconds
+        // when the database really is down. See DATABASE-RECOVERY-NOTES.md.
+        $attempts  = 4;
+        $pauseUsec = 600000;
+        $connected = false;
+        $lastError = null;
 
-                    $this->mysqli->close();
+        for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+            try {
+                if ($this->mysqli->real_connect(
+                    $hostname,
+                    $this->username,
+                    $this->password,
+                    $this->database,
+                    $port,
+                    $socket,
+                    $clientFlags,
+                )) {
+                    $connected = true;
 
-                    if ($this->DBDebug) {
-                        throw new DatabaseException('Unable to set client connection character set: ' . $this->charset);
-                    }
+                    break;
+                }
+            } catch (Throwable $e) {
+                // Keep the last failure; it is reported if every attempt fails.
+                $lastError = $e;
+            }
 
-                    return false;
+            if ($attempt < $attempts) {
+                usleep($pauseUsec);
+            }
+        }
+
+        if ($connected) {
+            if (! $this->mysqli->set_charset($this->charset)) {
+                log_message('error', "Database: Unable to set the configured connection charset ('{$this->charset}').");
+
+                $this->mysqli->close();
+
+                if ($this->DBDebug) {
+                    throw new DatabaseException('Unable to set client connection character set: ' . $this->charset);
                 }
 
-                return $this->mysqli;
+                return false;
             }
-        } catch (Throwable $e) {
+
+            return $this->mysqli;
+        }
+
+        if ($lastError !== null) {
             // Clean sensitive information from errors.
-            $msg = $e->getMessage();
+            $msg = $lastError->getMessage();
 
             $msg = str_replace($this->username, '****', $msg);
             $msg = str_replace($this->password, '****', $msg);
 
-            throw new DatabaseException($msg, $e->getCode(), $e);
+            throw new DatabaseException($msg, $lastError->getCode(), $lastError);
         }
 
         return false;

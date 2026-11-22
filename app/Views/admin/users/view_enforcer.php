@@ -24,9 +24,16 @@
     };
 
     // Calculate collection rate
-    $tickets = $tickets ?? [];
-    $totalTickets = $totalTickets ?? count($tickets);
+    $violatorGroups = $violatorGroups ?? [];
+    $totalViolators = $totalViolators ?? count($violatorGroups);
+    $totalTickets = $totalTickets ?? 0;
     $totalInfractions = $totalInfractions ?? count($records);
+    $pendingViolators = $pendingViolators ?? 0;
+    $paidViolators = $paidViolators ?? 0;
+    $cancelledViolators = $cancelledViolators ?? 0;
+    $pendingTickets = $pendingTickets ?? 0;
+    $paidTickets = $paidTickets ?? 0;
+    $cancelledTickets = $cancelledTickets ?? 0;
 
     $paidAmount = 0.0;
     foreach ($records as $r) {
@@ -185,8 +192,9 @@
                         <i class="bi bi-speedometer2 text-primary"></i>
                         <span>Enforcement Activity & Performance</span>
                     </h6>
-                    <span class="badge bg-light text-muted border border-light-subtle px-2.5 py-1 small">
-                        Updated Live
+                    <span class="badge bg-light text-muted border border-light-subtle px-2.5 py-1 small"
+                          title="Snapshot taken when this profile was opened">
+                        Current standing
                     </span>
                 </div>
 
@@ -194,26 +202,26 @@
                     <!-- KPI Cards Grid -->
                     <div class="row g-3 mb-4">
                         <div class="col-6 col-md-4">
-                            <div class="kpi-card p-3 rounded-3 bg-light border border-light-subtle text-center h-100 cursor-pointer" onclick="filterCitations('all')" role="button" title="Click to view all citations">
-                                <div class="text-muted small text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Citations</div>
-                                <div class="fs-3 fw-bold text-dark mb-0"><?= number_format($totalTickets) ?></div>
-                                <div class="text-muted" style="font-size: 0.72rem;"><?= number_format($totalInfractions) ?> Violations</div>
+                            <div class="kpi-card p-3 rounded-3 bg-light border border-light-subtle text-center h-100 cursor-pointer" role="button" tabindex="0" data-kpi-filter="all" aria-label="Filter the list to all violators" title="View all violators">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Violators</div>
+                                <div class="fs-3 fw-bold text-dark mb-0"><?= number_format($totalViolators) ?></div>
+                                <div class="text-muted" style="font-size: 0.72rem;"><?= number_format($totalTickets) ?> citations · <?= number_format($totalInfractions) ?> violations</div>
                             </div>
                         </div>
 
                         <div class="col-6 col-md-4">
-                            <div class="kpi-card p-3 rounded-3 bg-danger-subtle border border-danger-subtle text-center h-100 cursor-pointer" onclick="filterCitations('pending')" role="button" title="Click to view pending citations only">
+                            <div class="kpi-card p-3 rounded-3 bg-danger-subtle border border-danger-subtle text-center h-100 cursor-pointer" role="button" tabindex="0" data-kpi-filter="pending" aria-label="Filter the list to violators with pending citations" title="View pending violators">
                                 <div class="text-danger small text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Pending</div>
-                                <div class="fs-3 fw-bold text-danger mb-0"><?= number_format($pendingCount) ?></div>
-                                <div class="text-muted" style="font-size: 0.72rem;">Awaiting Payment</div>
+                                <div class="fs-3 fw-bold text-danger mb-0"><?= number_format($pendingViolators) ?></div>
+                                <div class="text-muted" style="font-size: 0.72rem;"><?= number_format($pendingTickets) ?> pending <?= $pendingTickets === 1 ? 'ticket' : 'tickets' ?></div>
                             </div>
                         </div>
 
                         <div class="col-6 col-md-4">
-                            <div class="kpi-card p-3 rounded-3 bg-success-subtle border border-success-subtle text-center h-100 cursor-pointer" onclick="filterCitations('paid')" role="button" title="Click to view paid citations only">
+                            <div class="kpi-card p-3 rounded-3 bg-success-subtle border border-success-subtle text-center h-100 cursor-pointer" role="button" tabindex="0" data-kpi-filter="paid" aria-label="Filter the list to fully settled violators" title="View settled violators">
                                 <div class="text-success small text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em;">Settled</div>
-                                <div class="fs-3 fw-bold text-success mb-0"><?= number_format($paidCount) ?></div>
-                                <div class="text-muted" style="font-size: 0.72rem;">Fines Paid</div>
+                                <div class="fs-3 fw-bold text-success mb-0"><?= number_format($paidViolators) ?></div>
+                                <div class="text-muted" style="font-size: 0.72rem;"><?= number_format($paidTickets) ?> paid <?= $paidTickets === 1 ? 'ticket' : 'tickets' ?></div>
                             </div>
                         </div>
                     </div>
@@ -242,8 +250,8 @@
                                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: <?= min(100, max(0, $collectionRate)) ?>%;" aria-valuenow="<?= $collectionRate ?>" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-2 text-muted" style="font-size: 0.72rem;">
-                                    <span>Settled: <strong><?= number_format($paidCount) ?></strong></span>
-                                    <span>Pending: <strong><?= number_format($pendingCount) ?></strong></span>
+                                    <span>Settled tickets: <strong><?= number_format($paidTickets) ?></strong></span>
+                                    <span>Pending tickets: <strong><?= number_format($pendingTickets) ?></strong></span>
                                 </div>
                             </div>
                         </div>
@@ -264,40 +272,48 @@
                 <small class="text-muted">All citations authored or apprehended by <?= esc($user['username']) ?></small>
             </div>
 
-            <!-- Section Filter Buttons: All, Pending, Paid -->
+            <!-- Section Filter Buttons: one chip per violator standing -->
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <div class="btn-group citation-filter-group p-1 rounded-pill" role="group" aria-label="Filter Citations">
-                    <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn active" data-filter="all" onclick="filterCitations('all')">
-                        All <span class="badge bg-secondary-subtle text-dark rounded-pill ms-1"><?= number_format($totalTickets) ?></span>
-                    </button>
-                    <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn filter-pending-btn" data-filter="pending" onclick="filterCitations('pending')">
-                        <span class="filter-dot bg-danger me-1"></span>Pending <span class="badge bg-danger text-white rounded-pill ms-1"><?= number_format($pendingCount) ?></span>
-                    </button>
-                    <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn filter-paid-btn" data-filter="paid" onclick="filterCitations('paid')">
-                        <span class="filter-dot bg-success me-1"></span>Paid <span class="badge bg-success text-white rounded-pill ms-1"><?= number_format($paidCount) ?></span>
-                    </button>
-                    <?php if ($cancelledCount > 0): ?>
-                    <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn text-secondary" data-filter="cancelled" onclick="filterCitations('cancelled')">
-                        Cancelled <span class="badge bg-secondary text-white rounded-pill ms-1"><?= number_format($cancelledCount) ?></span>
-                    </button>
-                    <?php endif; ?>
+                <div class="d-flex align-items-center gap-2 flex-wrap" data-issued-citations-content>
+                    <div class="btn-group citation-filter-group p-1 rounded-pill" role="group" aria-label="Filter Violators">
+                        <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn active" data-filter="all" onclick="filterCitations('all')" title="All violators issued citations by this enforcer">
+                            All <span class="badge bg-secondary-subtle text-dark rounded-pill ms-1"><?= number_format($totalViolators) ?></span>
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn filter-pending-btn" data-filter="pending" onclick="filterCitations('pending')" title="Violators with at least one unpaid ticket">
+                            <span class="filter-dot bg-danger me-1"></span>Pending <span class="badge bg-danger text-white rounded-pill ms-1"><?= number_format($pendingViolators) ?></span>
+                        </button>
+                        <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn filter-paid-btn" data-filter="paid" onclick="filterCitations('paid')" title="Violators whose tickets are all settled">
+                            <span class="filter-dot bg-success me-1"></span>Paid <span class="badge bg-success text-white rounded-pill ms-1"><?= number_format($paidViolators) ?></span>
+                        </button>
+                        <?php if ($cancelledViolators > 0): ?>
+                        <button type="button" class="btn btn-sm rounded-pill px-3 filter-btn text-secondary" data-filter="cancelled" onclick="filterCitations('cancelled')" title="Violators with no live ticket left">
+                            Cancelled <span class="badge bg-secondary text-white rounded-pill ms-1"><?= number_format($cancelledViolators) ?></span>
+                        </button>
+                        <?php endif; ?>
+                    </div>
+
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-semibold" id="visibleRecordsBadge" aria-live="polite"
+                          data-default-text="<?= number_format($totalViolators) ?> <?= $totalViolators === 1 ? 'violator' : 'violators' ?> · <?= number_format($totalTickets) ?> <?= $totalTickets === 1 ? 'citation' : 'citations' ?>">
+                        <?= number_format($totalViolators) ?> <?= $totalViolators === 1 ? 'violator' : 'violators' ?> · <?= number_format($totalTickets) ?> <?= $totalTickets === 1 ? 'citation' : 'citations' ?>
+                    </span>
                 </div>
 
-                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-1.5 rounded-pill fw-semibold" id="visibleRecordsBadge">
-                    <?= number_format($totalTickets) ?> total citations
-                </span>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 shadow-2xs no-print"
+                        onclick="toggleIssuedCitations(this)" title="Hide issued violation citations">
+                    <i class="bi bi-eye-slash me-1"></i><span>Hide</span>
+                </button>
             </div>
         </div>
 
-        <div class="card-body p-0">
+        <div class="card-body p-0" data-issued-citations-content>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0 enforcer-violations-table">
                     <thead>
                         <tr>
-                            <th class="ps-4">Ticket ID</th>
-                            <th>Violator</th>
+                            <th class="ps-4">Violator</th>
+                            <th>Citations</th>
                             <th>Status</th>
-                            <th>Citation Date</th>
+                            <th>Latest Citation</th>
                             <th class="text-end pe-4 no-print">Action</th>
                         </tr>
                     </thead>
@@ -306,12 +322,12 @@
                             <td colspan="5" class="text-center py-5 text-muted">
                                 <div class="py-4">
                                     <i class="bi bi-funnel fs-1 d-block text-muted opacity-50 mb-2"></i>
-                                    <h6 class="fw-semibold text-dark mb-1">No Matching Citations</h6>
-                                    <p class="small text-muted mb-0" id="emptyFilterText">There are no citations matching the selected filter.</p>
+                                    <h6 class="fw-semibold text-dark mb-1">No Matching Violators</h6>
+                                    <p class="small text-muted mb-0" id="emptyFilterText">There are no violators matching the selected filter.</p>
                                 </div>
                             </td>
                         </tr>
-                        <?php if (empty($tickets)): ?>
+                        <?php if (empty($violatorGroups)): ?>
                             <tr>
                                 <td colspan="5" class="text-center py-5 text-muted">
                                     <div class="py-4">
@@ -322,40 +338,79 @@
                                 </td>
                             </tr>
                         <?php else: ?>
-                            <?php foreach ($tickets as $ticket): ?>
+                            <?php foreach ($violatorGroups as $groupIndex => $group): ?>
                                 <?php
-                                    $vStatus = strtolower($ticket['status'] ?? 'pending');
-                                    $isPaid  = $vStatus === 'paid';
-                                    $isCancelled = $vStatus === 'cancelled';
-                                    $driverDisplayName = trim(($ticket['first_name'] ?? '') . ' ' . ($ticket['last_name'] ?? '')) ?: ($ticket['driver_name'] ?? '-');
+                                    $groupStatus       = (string) ($group['status'] ?? 'Pending');
+                                    $groupStatusLower  = strtolower($groupStatus);
+                                    $groupIsPaid       = $groupStatus === 'Paid';
+                                    $groupIsCancelled  = $groupStatus === 'Cancelled';
+                                    $driverDisplayName = (string) ($group['display_name'] ?? 'Unknown Violator');
+                                    $plates            = $group['plates'] ?? [];
+                                    $ticketCount       = (int) ($group['ticket_count'] ?? 0);
+                                    $infractionCount   = (int) ($group['infraction_count'] ?? 0);
+                                    $groupTickets      = $group['tickets'] ?? [];
+                                    $latestTicket      = $groupTickets[0] ?? null;
+                                    $latestTicketId    = (string) ($latestTicket['ticket_id'] ?? '');
+                                    $latestDate        = $group['latest_date'] ?? null;
+                                    // View opens the violator/driver record, the same
+                                    // dossier reached from the Violators list. Legacy
+                                    // rows without a linked record fall back to the
+                                    // citation detail for their newest ticket.
+                                    $profileUrl        = ! empty($group['violator_id'])
+                                        ? base_url('penalties/violator/' . (int) $group['violator_id'])
+                                            . '?from=enforcer&enforcer_id=' . (int) ($user['id'] ?? 0)
+                                        : base_url('penalties/view/' . (int) ($latestTicket['id'] ?? 0));
+                                    $statusParts = [];
+                                    if (! empty($group['pending_tickets'])) {
+                                        $statusParts[] = (int) $group['pending_tickets'] . ' pending';
+                                    }
+                                    if (! empty($group['paid_tickets'])) {
+                                        $statusParts[] = (int) $group['paid_tickets'] . ' paid';
+                                    }
+                                    if (! empty($group['cancelled_tickets'])) {
+                                        $statusParts[] = (int) $group['cancelled_tickets'] . ' cancelled';
+                                    }
                                 ?>
-                                <tr class="enforcer-record-row" data-status="<?= esc($vStatus) ?>">
-                                    <td class="ps-4" data-label="Ticket ID">
-                                        <div class="d-inline-flex align-items-center gap-1">
-                                            <span class="ticket-id-pill font-monospace" title="Click to copy ticket number" onclick="copyTicketId('<?= esc($ticket['ticket_id'] ?? '') ?>', this)">
-                                                <i class="bi bi-ticket-perforated me-1"></i><?= esc($ticket['ticket_id'] ?? 'N/A') ?>
-                                                <i class="bi bi-clipboard ms-1 opacity-75 copy-icon" style="font-size: 0.72rem;"></i>
-                                            </span>
+                                <tr class="enforcer-record-row" data-status="<?= esc($groupStatusLower) ?>">
+                                    <td class="ps-4" data-label="Violator">
+                                        <div class="driver-name-text lh-sm"><?= esc($driverDisplayName) ?></div>
+                                        <div class="d-flex flex-wrap gap-1 mt-1">
+                                            <?php if ($plates === []): ?>
+                                                <span class="text-muted small">No plate on file</span>
+                                            <?php else: ?>
+                                                <?php foreach ($plates as $plate): ?>
+                                                    <span class="plate-pill font-monospace">
+                                                        <?= tricycle_icon('me-1') ?><?= esc($plate) ?>
+                                                    </span>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
-                                    <td data-label="Violator">
-                                        <div class="driver-name-text lh-sm">
-                                            <?= esc($driverDisplayName) ?>
+                                    <td data-label="Citations">
+                                        <div class="citation-summary">
+                                            <span class="citation-count"><i class="bi bi-receipt me-1"></i><?= number_format($ticketCount) ?> <?= $ticketCount === 1 ? 'ticket' : 'tickets' ?></span>
+                                            <span class="citation-separator">·</span>
+                                            <span class="text-muted"><?= number_format($infractionCount) ?> <?= $infractionCount === 1 ? 'violation' : 'violations' ?></span>
                                         </div>
-                                        <?php if (!empty($ticket['license_plate'])): ?>
+                                        <?php if ($latestTicketId !== '' && $latestTicketId !== 'N/A'): ?>
                                             <div class="mt-1">
-                                                <span class="plate-pill font-monospace">
-                                                    <?= tricycle_icon('me-1') ?><?= esc($ticket['license_plate']) ?>
-                                                </span>
+                                                <?php if ($ticketCount === 1): ?>
+                                                    <span class="ticket-id-pill font-monospace" title="Click to copy ticket number" onclick="copyTicketId('<?= esc($latestTicketId, 'js') ?>', this)">
+                                                        <i class="bi bi-ticket-perforated me-1"></i><?= esc($latestTicketId) ?>
+                                                        <i class="bi bi-clipboard ms-1 opacity-75 copy-icon" style="font-size: 0.72rem;"></i>
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="small text-muted">Latest <?= esc($latestTicketId) ?> +<?= number_format(max(0, $ticketCount - 1)) ?> more</span>
+                                                <?php endif; ?>
                                             </div>
                                         <?php endif; ?>
                                     </td>
                                     <td data-label="Status">
-                                        <?php if ($vStatus === 'pending'): ?>
+                                        <?php if ($groupStatus === 'Pending'): ?>
                                             <span class="status-glow-badge status-pending">
                                                 <span class="status-dot"></span>Pending
                                             </span>
-                                        <?php elseif ($isPaid): ?>
+                                        <?php elseif ($groupIsPaid): ?>
                                             <span class="status-glow-badge status-paid">
                                                 <i class="bi bi-check-circle-fill me-1"></i>Paid
                                             </span>
@@ -364,15 +419,19 @@
                                                 <i class="bi bi-x-circle-fill me-1"></i>Cancelled
                                             </span>
                                         <?php endif; ?>
+                                        <?php if ($ticketCount > 1): ?>
+                                            <div class="small text-muted mt-1"><?= esc(implode(' · ', $statusParts)) ?></div>
+                                        <?php endif; ?>
                                     </td>
-                                    <td data-label="Citation Date" class="small text-muted" style="white-space: nowrap;">
+                                    <td data-label="Latest Citation" class="small text-muted" style="white-space: nowrap;">
                                         <div class="d-flex align-items-center gap-1.5">
                                             <i class="bi bi-calendar3 text-primary" style="font-size: 0.8rem; flex-shrink: 0;"></i>
-                                            <span><?= isset($ticket['violation_date']) ? date('M d, Y h:i A', strtotime($ticket['violation_date'])) : '-' ?></span>
+                                            <span><?= $latestDate ? date('M d, Y h:i A', strtotime($latestDate)) : '-' ?></span>
                                         </div>
                                     </td>
                                     <td class="text-end pe-4 no-print col-actions" data-label="Action">
-                                        <a href="<?= base_url('officer/view/' . $ticket['id']) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-2xs">
+                                        <a href="<?= esc($profileUrl) ?>" class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-2xs"
+                                           title="Open violator/driver details record">
                                             <i class="bi bi-eye me-1"></i> View
                                         </a>
                                     </td>
@@ -426,6 +485,22 @@
         background: #f8fafc;
         transform: translateY(-1.5px);
         box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+    }
+
+    /* Grouped citations: compact per-violator summary */
+    .citation-summary {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        font-size: 0.83rem;
+    }
+    .citation-summary .citation-count {
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .citation-summary .citation-separator {
+        color: #cbd5e1;
     }
 
     /* Driver & Badges */
@@ -635,7 +710,11 @@
             padding: 0.4rem 0 !important;
             background: #ffffff !important;
         }
-        .enforcer-violations-table tbody td {
+        /* Must outrank the card display above so filtering hides rows on mobile. */
+        .enforcer-violations-table tbody tr.d-none {
+            display: none !important;
+        }
+        .enforcer-violations-table tbody tr > td {
             display: flex !important;
             justify-content: space-between !important;
             align-items: flex-start !important;
@@ -644,8 +723,8 @@
             font-size: 0.84rem !important;
             color: #1e293b !important;
         }
-        .enforcer-violations-table tbody td:last-child { border-bottom: none !important; }
-        .enforcer-violations-table tbody td::before {
+        .enforcer-violations-table tbody tr > td:last-child { border-bottom: none !important; }
+        .enforcer-violations-table tbody tr > td::before {
             content: attr(data-label);
             font-weight: 700;
             font-size: 0.72rem;
@@ -656,7 +735,7 @@
             margin-right: 0.75rem;
             margin-top: 2px;
         }
-        .enforcer-violations-table tbody td.col-actions {
+        .enforcer-violations-table tbody tr > td.col-actions {
             justify-content: flex-end !important;
         }
         .enforcer-violations-table,
@@ -666,33 +745,34 @@
             min-width: 0 !important;
         }
         .enforcer-violations-table tbody tr,
-        .enforcer-violations-table tbody td {
+        .enforcer-violations-table tbody tr > td {
             width: 100% !important;
             box-sizing: border-box !important;
         }
-        .enforcer-violations-table tbody td {
+        .enforcer-violations-table tbody tr > td {
             row-gap: 0.35rem;
             flex-wrap: wrap;
             justify-content: flex-end !important;
             text-align: right;
         }
-        .enforcer-violations-table tbody td::before {
+        .enforcer-violations-table tbody tr > td::before {
             max-width: 45%;
             text-align: left;
             margin-right: auto !important;
         }
-        .enforcer-violations-table tbody td > * {
+        .enforcer-violations-table tbody tr > td > * {
             min-width: 0;
             max-width: 100%;
         }
-        .enforcer-violations-table tbody td[data-label="Violator"] {
+        .enforcer-violations-table tbody tr > td[data-label="Violator"] {
             display: block !important;
             text-align: left;
         }
-        .enforcer-violations-table tbody td[data-label="Violator"]::before {
+        .enforcer-violations-table tbody tr > td[data-label="Violator"]::before {
             display: block;
             margin: 0 0 0.15rem;
         }
+
     }
 
     @media print {
@@ -706,6 +786,20 @@
         }
         .container-fluid {
             padding: 0 !important;
+        }
+    }
+
+    /* Keyboard focus on the clickable KPI cards and a reduced-motion path
+       for the infinite status/progress animations. */
+    .kpi-card:focus-visible {
+        outline: 3px solid rgba(124, 58, 237, 0.55);
+        outline-offset: 2px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
         }
     }
 </style>
@@ -727,57 +821,84 @@
         }).catch(() => {});
     };
 
+    window.toggleIssuedCitations = function(button) {
+        const sections = document.querySelectorAll('[data-issued-citations-content]');
+        if (!sections.length) return;
+
+        const willHide = !sections[0].classList.contains('d-none');
+        sections.forEach(section => section.classList.toggle('d-none', willHide));
+
+        if (button) {
+            button.setAttribute('title', willHide ? 'Show issued violation citations' : 'Hide issued violation citations');
+            const icon = button.querySelector('i');
+            const label = button.querySelector('span');
+            if (icon) icon.className = willHide ? 'bi bi-eye me-1' : 'bi bi-eye-slash me-1';
+            if (label) label.textContent = willHide ? 'Show' : 'Hide';
+        }
+    };
+
     window.filterCitations = function(statusFilter) {
         const filter = (statusFilter || 'all').toLowerCase().trim();
-        
-        // Update active class on filter buttons
+
+        // Keep both the visual active state and the screen-reader pressed
+        // state in sync — colour alone must never signal the selected filter.
         document.querySelectorAll('.filter-btn').forEach(btn => {
             const btnFilter = (btn.getAttribute('data-filter') || '').toLowerCase().trim();
-            if (btnFilter === filter) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
+            const isActive = btnFilter === filter;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
 
-        // Filter individual transaction rows
+        // One row per violator: filter by that person's overall standing.
         const rows = document.querySelectorAll('.enforcer-record-row');
         let visibleCount = 0;
 
         rows.forEach(row => {
             const rowStatus = (row.getAttribute('data-status') || '').toLowerCase().trim();
-            if (filter === 'all' || rowStatus === filter) {
-                row.style.display = '';
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
+            const visible = filter === 'all' || rowStatus === filter;
+            row.classList.toggle('d-none', !visible);
+            if (visible) visibleCount++;
         });
 
-        // Update records counter badge
+        // Update the record counter badge
         const badge = document.getElementById('visibleRecordsBadge');
         if (badge) {
             if (filter === 'all') {
-                badge.textContent = `${rows.length} total records`;
+                badge.textContent = badge.dataset.defaultText || `${rows.length} violators`;
             } else {
                 const label = filter.charAt(0).toUpperCase() + filter.slice(1);
-                badge.textContent = `${visibleCount} ${label} records`;
+                badge.textContent = `${visibleCount} ${label} violator${visibleCount === 1 ? '' : 's'}`;
             }
         }
 
-        // Empty state message when no rows match the filter
+        // Empty state message when no violator matches the filter
         const emptyRow = document.getElementById('emptyFilterRow');
         if (emptyRow) {
             if (visibleCount === 0 && rows.length > 0) {
                 emptyRow.classList.remove('d-none');
                 const text = document.getElementById('emptyFilterText');
                 if (text) {
-                    text.textContent = `No ${filter} citations found for this enforcer.`;
+                    text.textContent = `No ${filter} violators found for this enforcer.`;
                 }
             } else {
                 emptyRow.classList.add('d-none');
             }
         }
     };
+
+    // KPI cards are real keyboard controls: Enter and Space activate them,
+    // and the selected filter is exposed through aria-pressed on the chips.
+    document.querySelectorAll('[data-kpi-filter]').forEach(card => {
+        card.addEventListener('click', () => window.filterCitations(card.dataset.kpiFilter));
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                window.filterCitations(card.dataset.kpiFilter);
+            }
+        });
+    });
+
+    // Initialise ARIA state to match the server-rendered "All" filter.
+    window.filterCitations('all');
 </script>
 <?= $this->endSection() ?>

@@ -142,8 +142,11 @@
         display: flex;
         flex-direction: column;
         transition: transform 280ms var(--dash-ease), box-shadow 280ms var(--dash-ease), opacity 280ms var(--dash-ease), filter 280ms var(--dash-ease);
-        opacity: 0;
-        transform: translateY(16px);
+        /* Kept visible from the first painted frame. The old opacity:0 +
+           translateY entrance was captured mid-flight by navigation and left
+           headings/figures scattered before they jumped into place. */
+        opacity: 1;
+        transform: none;
         outline: none !important;
     }
 
@@ -261,6 +264,19 @@
         font-variant-numeric: tabular-nums;
     }
 
+    /* The running-number effect now plays on every dashboard load, not just
+       the first one after sign-in. It never shifts a pixel: tabular figures
+       keep the digit widths identical, PHP has already rendered the final
+       value into the markup (so there is no empty flash), and the JS only
+       swaps text after first paint. Reduced motion keeps everything static. */
+    .admin-dashboard .kpi-countup {
+        font-variant-numeric: tabular-nums;
+    }
+    .admin-dashboard.kpi-countup-static .kpi-countup {
+        animation: none !important;
+        transition: none !important;
+    }
+
     .admin-dashboard .dashboard-kpi-icon {
         flex: 0 0 auto;
         width: 46px;
@@ -324,15 +340,9 @@
         stroke-linejoin: round;
         transition: stroke-width 280ms var(--dash-ease);
         stroke-dasharray: 400;
-        stroke-dashoffset: 400;
-    }
-
-    .admin-dashboard .dashboard-kpi.is-revealed .dashboard-sparkline path {
-        animation: sparkline-draw 1s var(--dash-ease) forwards;
-    }
-
-    @keyframes sparkline-draw {
-        to { stroke-dashoffset: 0; }
+        /* Drawn immediately. The old 1s stroke animation kept the sparkline
+           moving after the rest of the dashboard had already settled. */
+        stroke-dashoffset: 0;
     }
 
     .admin-dashboard .dashboard-kpi:hover .dashboard-sparkline path {
@@ -343,11 +353,6 @@
         fill: currentColor;
         transform-box: fill-box;
         transform-origin: center;
-        opacity: 0;
-    }
-
-    .admin-dashboard .dashboard-kpi.is-revealed .sparkline-dot {
-        transition: opacity 300ms var(--dash-ease) 1s;
         opacity: 1;
     }
 
@@ -584,12 +589,455 @@
         .admin-dashboard .dashboard-kpi { opacity: 1 !important; transform: none !important; }
         .admin-dashboard .dashboard-kpi::before { opacity: 0 !important; }
     }
+
+    /* ════════════════════════════════════════════════════════════════════
+       VISUAL POLISH — presentation only.
+
+       Everything in this block is static CSS: no new scripts, no entrance
+       animations, no image requests and no layout work on load. It therefore
+       adds nothing to the time it takes the dashboard to paint after a
+       reload. All rules are scoped to .admin-dashboard so no other screen is
+       affected, and colour choices use the existing theme tokens (or translucent
+       white on the always-coloured KPI cards) so light and dark stay correct.
+       ════════════════════════════════════════════════════════════════════ */
+
+    /* ── Page heading ───────────────────────────────────────────────── */
+    .admin-dashboard .dashboard-title-block h4 {
+        font-size: clamp(1.5rem, 2.2vw, 1.85rem);
+        letter-spacing: -0.025em;
+        line-height: 1.2;
+    }
+
+    /* Turn the heading's speedometer glyph into a small gradient tile so it
+       reads as an icon badge rather than a piece of coloured punctuation. */
+    .admin-dashboard .dashboard-title-block h4 > i.bi-speedometer2 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.1rem;
+        height: 2.1rem;
+        margin-right: 0.35rem;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        box-shadow: 0 6px 14px -4px rgba(37, 99, 235, 0.6);
+        color: #fff !important;
+        font-size: 1.05rem;
+        vertical-align: middle;
+    }
+
+    .admin-dashboard .dashboard-title-block > p.text-muted {
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+
+    /* The clock is a live status, so give it a tabular figure set (no digit
+       jitter between ticks) and a soft green "live" dot. */
+    .admin-dashboard .dashboard-clock {
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+        color: var(--text-muted);
+        background: var(--surface-muted) !important;
+        border: 1px solid var(--border-soft);
+        padding: 0.4rem 0.9rem !important;
+    }
+
+    .admin-dashboard .dashboard-clock::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16);
+        flex: 0 0 auto;
+    }
+
+    [data-bs-theme="dark"] .admin-dashboard .dashboard-clock i.bi-clock-fill {
+        color: #93c5fd;
+    }
+
+    /* ── Header actions ─────────────────────────────────────────────── */
+    .admin-dashboard .dashboard-actions .btn-group > .btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        border-color: transparent;
+        box-shadow: 0 5px 14px -3px rgba(37, 99, 235, 0.55);
+    }
+
+    .admin-dashboard .dashboard-actions form {
+        border-radius: 12px !important;
+        padding: 0.35rem 0.5rem !important;
+    }
+
+    .admin-dashboard .dashboard-actions #year {
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Analytics section label ────────────────────────────────────── */
+    .admin-dashboard .admin-analytics-toggle-bar::before {
+        content: "";
+        width: 3px;
+        height: 1.05rem;
+        border-radius: 3px;
+        background: var(--brand-primary);
+        flex: 0 0 auto;
+    }
+
+    .admin-dashboard .admin-analytics-toggle-label > .fw-bold {
+        font-size: 1rem !important;
+        letter-spacing: -0.01em;
+    }
+
+    /* ── KPI cards ──────────────────────────────────────────────────── */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi {
+        border-radius: 18px !important;
+        box-shadow: 0 10px 24px -10px rgba(15, 23, 42, 0.28);
+    }
+
+    /* Give every card's label the same two-line footprint. The "Most
+       Violations Committed" caption wraps while the others do not; without a
+       shared height its value sat noticeably lower than the other three
+       figures. The numbers now start on one baseline across the row. */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi h6 {
+        font-size: 0.8rem !important;
+        line-height: 1.25;
+        min-height: 2.5em;
+    }
+
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi h3.kpi-countup {
+        font-size: clamp(1.95rem, 2.5vw, 2.3rem);
+        letter-spacing: -0.03em;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+    }
+
+    /* Icon medallion: a touch larger with a hairline ring and inset highlight,
+       which keeps it legible against every gradient in both themes. */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .rounded-circle {
+        width: 46px !important;
+        height: 46px !important;
+        background: rgba(255, 255, 255, 0.18) !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .border-top > div > span:first-child {
+        font-size: 0.78rem;
+        line-height: 1.35;
+    }
+
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .border-top i.bi-arrow-right-circle {
+        transition: transform 220ms var(--dash-ease);
+    }
+
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi:hover .border-top i.bi-arrow-right-circle {
+        transform: translateX(4px);
+    }
+
+    /* Collection-rate meter: slightly taller and softly lit. */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .progress {
+        height: 8px !important;
+        background-color: rgba(255, 255, 255, 0.22) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .progress-bar {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+
+    /* ── Chart card headers ─────────────────────────────────────────── */
+    /* Normalise the section icons into equal-sized tinted tiles so the four
+       chart headers share one visual language. */
+    .admin-dashboard .card-header h5 > i.bi-calendar-week,
+    .admin-dashboard .card-header h5 > i.bi-calendar-month,
+    .admin-dashboard .card-header h5 > i.bi-pie-chart,
+    .admin-dashboard .card-header i.bi-diagram-3 {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 10px;
+        background: rgba(37, 99, 235, 0.1);
+        /* !important only to neutralise Bootstrap's .fs-5 on the Nature icon. */
+        font-size: 1rem !important;
+        flex: 0 0 auto;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       "ALIVE" MOTION — decorative life that never touches the data.
+
+       Design rules borrowed from the rest of this file:
+       • Only transform / opacity / box-shadow on tiny elements → no reflow,
+         no digit jitter, no chart-canvas resize.
+       • Never animate the KPI card's own transform on a loop. Its stacking
+         context would cover the header dropdown again (see the note at the
+         top of this stylesheet). Only the icon glyph breathes.
+       • No opacity:0 entrance states: view transitions capture them mid-flight
+         and scatter the text (the reason .premium-reveal is neutralised).
+       • --float-delay and --reveal-delay are already set inline on the cards;
+         this finally uses them instead of adding new magic numbers.
+       • The OS reduced-motion / print guards live in layouts/admin.php.
+       ════════════════════════════════════════════════════════════════════ */
+
+    /* 1. Live clock — the status dot emits a soft signal ring, like a
+          traffic signal beating once every 2.4s. It is the same green dot
+          the clock already paints, so nothing new is added to the DOM. */
+    .admin-dashboard .dashboard-clock::before {
+        animation: dash-live-ring 2.4s var(--dash-ease) infinite;
+    }
+    @keyframes dash-live-ring {
+        0%, 100% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16); opacity: 0.9; }
+        50%      { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);    opacity: 1;   }
+    }
+
+    /* 2. KPI icon glyphs breathe very slowly, staggered by --float-delay
+          (0 / .4 / .8 / 1.2s). Scaled from the centre, so the medallion and
+          the figures around it never move a pixel. */
+    @media (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi .card-body > div:first-child > div:last-child > i.bi {
+            animation: dash-icon-breathe 6s var(--dash-ease) infinite;
+            animation-delay: var(--float-delay, 0s);
+        }
+    }
+    @keyframes dash-icon-breathe {
+        0%, 100% { transform: scale(1); }
+        50%      { transform: scale(1.06); }
+    }
+
+    /* 3. Collection meter fills once on arrival. A scaleX transform keeps
+          the track and the percentage text completely still while it runs. */
+    @media (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi .progress-bar {
+            transform-origin: left center;
+            animation: dash-meter-fill 1s var(--dash-ease) both;
+            animation-delay: calc(var(--reveal-delay, 0s) + 120ms);
+        }
+    }
+    @keyframes dash-meter-fill {
+        from { transform: scaleX(0); }
+        to   { transform: scaleX(1); }
+    }
+
+    /* 4. Tactile press feedback on the controls that actually do something:
+          Generate Reports, year selector, chart mode toggles, refresh. */
+    .admin-dashboard .dashboard-actions .btn:active,
+    .admin-dashboard .card-header .btn:active {
+        transform: scale(0.97);
+    }
+    .admin-dashboard .dashboard-actions .btn,
+    .admin-dashboard .card-header .btn {
+        transition: transform 120ms var(--dash-ease), box-shadow 200ms var(--dash-ease);
+    }
+
+    /* 5. Static blue accent on top of each KPI card. The old sweeping line
+          under the analytics bar is gone — this one never moves, so it reads
+          as a design accent rather than a "loading" indicator. */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi {
+        overflow: hidden;
+    }
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .card-body {
+        position: relative;
+    }
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi .card-body::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--dash-blue);
+        border-radius: 16px 16px 0 0;
+        pointer-events: none;
+    }
+
+    /* 6. Belts and braces: layouts/admin.php already nukes every animation
+          for reduced motion and print, but pseudo-elements need an explicit
+          local guard too. */
+    @media (prefers-reduced-motion: reduce) {
+        .admin-dashboard .dashboard-clock::before,
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi .card-body > div:first-child > div:last-child > i.bi,
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi .progress-bar {
+            animation: none !important;
+        }
+    }
+    @media print {
+        .admin-dashboard .dashboard-clock::before,
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi .progress-bar {
+            animation: none !important;
+        }
+    }
+
+    /* ── SCATTER-SAFE "ALIVE" LAYER ───────────────────────────────────
+       Everything here animates only tiny, layout-neutral details: a glow on
+       the section accent, a lift on whole cards (hover only), and a static
+       top rule. There is deliberately no opacity:0 entrance state and no
+       transform on any text container, so navigating between sidebar pages
+       can never capture a half-moved card or scatter a heading. No extra
+       requests, no layout work, so reload time is unchanged. */
+    @keyframes dash-accent-glow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, .28); }
+        50%      { box-shadow: 0 0 0 4px rgba(37, 99, 235, 0); }
+    }
+    .admin-dashboard .admin-analytics-toggle-bar::before {
+        animation: dash-accent-glow 2.4s var(--dash-ease) infinite;
+    }
+    .admin-dashboard .dashboard-live-card {
+        position: relative;
+        overflow: hidden;
+        transition: transform 220ms var(--dash-ease), box-shadow 220ms var(--dash-ease);
+    }
+    .admin-dashboard .dashboard-live-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--brand-primary), transparent 85%);
+        pointer-events: none;
+        z-index: 2;
+    }
+    .admin-dashboard .dashboard-live-card .card-header i {
+        transition: transform 220ms var(--dash-ease);
+    }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .dashboard-live-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -12px rgba(15, 23, 42, .28) !important;
+        }
+        .admin-dashboard .dashboard-live-card:hover .card-header i {
+            transform: scale(1.08) rotate(-4deg);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .admin-dashboard .admin-analytics-toggle-bar::before { animation: none !important; }
+        .admin-dashboard .dashboard-live-card { transition: none !important; }
+    }
+    @media print {
+        .admin-dashboard .admin-analytics-toggle-bar::before { animation: none !important; }
+    }
+
+    /* ════════════════════════════════════════════════════════════════════
+       KPI HOVER — "ALIVE", BUT ZERO COST TO NAVIGATION
+
+       Everything below is hover-only CSS scoped to this dashboard's KPI
+       grid. Nothing runs on page load: no entrance states, no observers, no
+       new requests, no JS listeners. A sidebar round-trip therefore paints
+       the exact same markup as before — there is no half-finished transform
+       for a view transition to capture, so text cannot scatter.
+
+       Only transform / box-shadow / opacity change, and only on the whole
+       card or a pseudo-element. The card's text moves as one solid unit, so
+       figures never jitter apart. The OS reduced-motion and print guards at
+       the end switch the decoration off completely.
+       ════════════════════════════════════════════════════════════════════ */
+
+    /* Accent triplet per card, taken from the gradient already painted in
+       the markup. --kpi-hover-delay makes the four sheens travel as a wave. */
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(1) .premium-kpi { --kpi-rgb: 99, 102, 241;  --kpi-hover-delay: 0ms; }
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(2) .premium-kpi { --kpi-rgb: 16, 185, 129;  --kpi-hover-delay: 55ms; }
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi { --kpi-rgb: 6, 182, 212;   --kpi-hover-delay: 110ms; }
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(4) .premium-kpi { --kpi-rgb: 234, 179, 8;   --kpi-hover-delay: 165ms; }
+
+    /* The light sweep. The layout's generic .premium-kpi::before is hidden;
+       we reuse that pseudo so the radial ::after glow stays untouched.
+       width/height/top/left are restated to fully override the generic rule. */
+    .admin-dashboard .dashboard-kpi-grid .premium-kpi::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 4;
+        background: linear-gradient(110deg,
+            transparent 32%,
+            rgba(255, 255, 255, 0.14) 45%,
+            rgba(255, 255, 255, 0.28) 50%,
+            rgba(255, 255, 255, 0.14) 55%,
+            transparent 68%);
+        transform: translateX(-130%);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    @keyframes dash-kpi-sheen {
+        from { transform: translateX(-130%); }
+        to   { transform: translateX(130%);  }
+    }
+
+    /* Lift + a glow in the card's own colour. Higher specificity than the
+       generic .admin-dashboard .premium-kpi:hover rule above. */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi:hover {
+            transform: translateY(-6px) scale(1.012) !important;
+            box-shadow:
+                0 22px 44px -14px rgba(var(--kpi-rgb, 99, 102, 241), 0.55),
+                0 0 0 1px rgba(var(--kpi-rgb, 99, 102, 241), 0.35),
+                0 8px 18px -8px rgba(15, 23, 42, 0.35) !important;
+        }
+
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi:hover::before {
+            opacity: 1;
+            animation: dash-kpi-sheen 720ms var(--dash-ease) var(--kpi-hover-delay, 0ms) 1 both;
+        }
+
+        /* The slow "breathe" idle animation owns transform on this glyph, so
+           it must be released before the hover pop can take effect. */
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi:hover .card-body > div:first-child > div:last-child > i.bi {
+            animation: none !important;
+            transform: scale(1.18) rotate(-8deg) !important;
+        }
+
+        /* Collection-rate meter: a single glint of light on hover only. */
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi:hover .progress::after {
+            animation: dash-meter-shimmer 1100ms var(--dash-ease) var(--kpi-hover-delay, 0ms) 1 both;
+        }
+    }
+
+    @keyframes dash-meter-shimmer {
+        from { transform: translateX(-100%); }
+        to   { transform: translateX(100%);  }
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi .progress {
+            position: relative;
+        }
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi .progress::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+            transform: translateX(-100%);
+            pointer-events: none;
+        }
+    }
+
+    /* Keep the press and keyboard-focus feedback after the hover rules. */
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3 > a:active .premium-kpi {
+        transform: translateY(-2px) scale(0.99) !important;
+    }
+    .admin-dashboard .dashboard-kpi-grid > .col-md-3 > a:focus-visible .premium-kpi {
+        box-shadow: 0 0 0 3px var(--dash-surface), 0 0 0 6px rgba(var(--kpi-rgb, 99, 102, 241), 0.9) !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi::before,
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi .progress::after { display: none !important; }
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi:hover { box-shadow: 0 14px 30px -12px rgba(15, 23, 42, 0.4) !important; }
+    }
+    @media print {
+        .admin-dashboard .dashboard-kpi-grid .premium-kpi::before,
+        .admin-dashboard .dashboard-kpi-grid > .col-md-3:nth-child(3) .premium-kpi .progress::after { display: none !important; }
+    }
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid py-4 admin-dashboard">
+<?php
+    // Kept for backwards compatibility with the login flash flag; the running
+    // numbers now animate on every load in JS (tabular figures, post-paint),
+    // so this class no longer gates the effect.
+    $runKpiCountUp = (bool) session()->getFlashdata('kpi_countup');
+?>
+<div class="container-fluid py-4 admin-dashboard <?= $runKpiCountUp ? 'kpi-countup-enabled' : 'kpi-countup-static' ?>">
     <?php
         // The report buttons carry the dashboard's own filters. Without this
         // the Revenue Report always opened on the current calendar year even
@@ -690,7 +1138,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Violators (<?= esc((string) $year) ?>)</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= (int) ($summary['total_violators'] ?? count($top_violators_list)) ?>" data-prefix="" data-suffix="">0</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= (int) ($summary['total_violators'] ?? count($top_violators_list)) ?>" data-prefix="" data-suffix=""><?= number_format((int) ($summary['total_violators'] ?? count($top_violators_list))) ?></h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                             <i class="bi bi-people-fill text-white fs-4 lh-1"></i>
@@ -698,7 +1146,7 @@
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
                         <div class="d-flex align-items-center justify-content-between">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= number_format((int) ($summary['total_violations'] ?? 0)) ?> cited tickets · Open violator directory</span>
+                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><span class="kpi-countup" data-target="<?= (int) ($summary['total_violations'] ?? 0) ?>" data-prefix="" data-suffix=""><?= number_format((int) ($summary['total_violations'] ?? 0)) ?></span> cited tickets · Open violator directory</span>
                             <i class="bi bi-arrow-right-circle opacity-75"></i>
                         </div>
                     </div>
@@ -715,7 +1163,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Total Revenue</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_collected'] ?>" data-prefix="₱" data-suffix="" data-decimals="2">₱0.00</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['total_collected'] ?>" data-prefix="₱" data-suffix="" data-decimals="2">₱<?= number_format((float) $summary['total_collected'], 2) ?></h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                             <i class="bi bi-cash-stack text-white fs-4 lh-1"></i>
@@ -740,7 +1188,7 @@
                             <div class="d-flex align-items-center mb-2">
                                 <h6 class="text-uppercase mb-0 fw-bold opacity-75 small" style="letter-spacing: 0.5px;">Collection Rate</h6>
                             </div>
-                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['collection_rate'] ?>" data-prefix="" data-suffix="%" data-decimals="1">0%</h3>
+                            <h3 class="mb-0 fw-bolder kpi-countup" data-target="<?= $summary['collection_rate'] ?>" data-prefix="" data-suffix="%" data-decimals="1"><?= number_format((float) $summary['collection_rate'], 1) ?>%</h3>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded-circle p-2.5 d-inline-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
                             <i class="bi bi-pie-chart text-white fs-4 lh-1"></i>
@@ -776,7 +1224,7 @@
                     </div>
                     <div class="mt-4 pt-2 border-top border-white border-opacity-25">
                         <div class="d-flex align-items-center justify-content-between gap-2">
-                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><?= number_format($topViolationCount) ?> cases recorded in <?= esc((string) $year) ?></span>
+                            <span class="small opacity-75 fw-semibold" style="font-size: 0.75rem;"><span class="kpi-countup" data-target="<?= $topViolationCount ?>" data-prefix="" data-suffix=""><?= number_format($topViolationCount) ?></span> cases recorded in <?= esc((string) $year) ?></span>
                             <i class="bi bi-arrow-right-circle opacity-75"></i>
                         </div>
                     </div>
@@ -790,7 +1238,7 @@
     <div class="row g-4 mb-4">
         <!-- Weekly Trend -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.15s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal dashboard-live-card" style="--reveal-delay: 0.15s;">
                 <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <h5 class="mb-0 fw-bold dashboard-chart-title">
                         <i class="bi bi-calendar-week me-2 text-primary"></i><span id="trendModeTitle">Weekly Trend</span>
@@ -812,7 +1260,7 @@
                         </div>
                         <form method="GET" class="m-0 d-flex align-items-center gap-1">
                             <input type="hidden" name="year" value="<?= esc($year) ?>">
-                            <select name="month" id="trendMonthSelect" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 132px; border-radius: 8px;" aria-label="Select month for weekly trend">
+                            <select name="month" id="trendMonthSelect" class="form-select form-select-sm border-0 bg-light fw-medium" style="width: 144px; border-radius: 8px;" aria-label="Select month for weekly trend">
                                 <option value="" <?= empty($selected_month) ? 'selected' : '' ?>>Last 12 Weeks</option>
                                 <optgroup label="<?= esc($year) ?> Breakdown">
                                     <?php 
@@ -868,10 +1316,13 @@
         
         <!-- Monthly Breakdown -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.17s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal dashboard-live-card" style="--reveal-delay: 0.17s;">
                 <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div class="d-flex align-items-center gap-2">
                         <h5 class="mb-0 fw-bold dashboard-chart-title"><i class="bi bi-calendar-month me-2 text-success"></i>Monthly Breakdown (<?= esc($year) ?>)</h5>
+                        <span class="nature-live-badge" id="monthlyLiveBadge" title="Auto-refreshes every 30 seconds">
+                            <span class="nature-live-dot"></span> LIVE
+                        </span>
                         <span class="badge bg-light text-muted border border-light-subtle rounded-pill px-2 py-0.5 d-none d-sm-inline chart-month-hint" style="font-size: 0.7rem;" title="Click any month to inspect its weekly trend">
                             <i class="bi bi-cursor me-1"></i>Click month
                             <button type="button" class="chart-hint-dismiss ms-1" aria-label="Dismiss month chart hint"><i class="bi bi-x" aria-hidden="true"></i></button>
@@ -893,7 +1344,7 @@
     <div class="row g-4 mb-4">
         <!-- Nature of Violation (Real-Time) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" id="natureViolationCard" style="--reveal-delay: 0.19s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal dashboard-live-card" id="natureViolationCard" style="--reveal-delay: 0.19s;">
 
                 <!-- ── Card Header ── -->
                 <div class="card-header bg-white py-3 border-bottom-0">
@@ -981,7 +1432,7 @@
 
         <!-- Status and Role Combined Column -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100 premium-reveal" style="--reveal-delay: 0.21s;">
+            <div class="card border-0 shadow-sm h-100 premium-reveal dashboard-live-card" style="--reveal-delay: 0.21s;">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 fw-bold" id="rightChartTitle">
                         <i class="bi bi-pie-chart me-2 text-success"></i>Violator Status (<?= esc((string) $year) ?>)
@@ -995,12 +1446,13 @@
                         </button>
                     </div>
                 </div>
-                <div class="card-body d-flex align-items-center justify-content-center">
-                    <div class="dashboard-chart-shell" data-dashboard-chart-shell="secondary" style="width:100%;max-width:300px;height:300px">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                    <div class="dashboard-chart-shell" data-dashboard-chart-shell="secondary" style="width:100%;max-width:250px;height:250px">
                         <canvas id="secondaryAnalyticsChart" role="img" aria-label="Violator status distribution"></canvas>
                         <div class="chart-skeleton" aria-hidden="true"><div class="chart-skeleton-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
                         <div class="chart-empty-state" role="status"><i class="bi bi-pie-chart"></i><strong>No chart data yet</strong></div>
                     </div>
+                    <div class="secondary-breakdown w-100 mt-3" id="secondaryBreakdown" aria-label="Breakdown totals"></div>
                 </div>
             </div>
         </div>
@@ -1278,55 +1730,65 @@
             if (el) el.textContent = now.toLocaleString('en-PH', opts);
         }
         updateClock();
-        setInterval(updateClock, 1000);
+        const clockTimer = setInterval(updateClock, 1000);
 
-        // === Count-Up Animation ===
-        function countUp(el) {
-            const target    = parseFloat(el.dataset.target) || 0;
-            const prefix    = el.dataset.prefix  || '';
-            const suffix    = el.dataset.suffix  || '';
-            const decimals  = parseInt(el.dataset.decimals || '0');
-            const duration = Number.parseInt(el.dataset.duration || '900', 10);
-            const format = value => prefix + (decimals > 0
-                ? value.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
-                : Math.round(value).toLocaleString('en-PH')) + suffix;
-            if (prefersReducedMotion) {
-                el.textContent = format(target);
-                return;
-            }
-            const startedAt = performance.now();
-            const tick = now => {
-                const progress = Math.min((now - startedAt) / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                el.textContent = format(target * eased);
-                if (progress < 1) window.requestAnimationFrame(tick);
-                else el.textContent = format(target);
+        // === KPI numbers: a quick run-up on every dashboard load ===
+        // PHP already renders the final figures into the markup, so the page
+        // never waits on this: the rAF loop only swaps text after first paint.
+        // Tabular figures keep digit widths identical, so nothing reflows or
+        // scatters when a sidebar link brings the admin back here.
+        const kpiEls = document.querySelectorAll('.kpi-countup');
+        const runKpiCountUp = !prefersReducedMotion;
+
+        if (!runKpiCountUp) {
+            // Use the identical formatter so the settled value matches exactly
+            // what the animation would have finished on.
+            kpiEls.forEach(el => {
+                const target   = parseFloat(el.dataset.target) || 0;
+                const prefix   = el.dataset.prefix  || '';
+                const suffix   = el.dataset.suffix  || '';
+                const decimals = parseInt(el.dataset.decimals || '0', 10);
+                el.textContent = prefix + (decimals > 0
+                    ? target.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+                    : Math.round(target).toLocaleString('en-PH')) + suffix;
+            });
+        } else {
+            const countUp = el => {
+                const target    = parseFloat(el.dataset.target) || 0;
+                const prefix    = el.dataset.prefix  || '';
+                const suffix    = el.dataset.suffix  || '';
+                const decimals  = parseInt(el.dataset.decimals || '0', 10);
+                const duration  = Number.parseInt(el.dataset.duration || '650', 10);
+                const format = value => prefix + (decimals > 0
+                    ? value.toLocaleString('en-PH', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+                    : Math.round(value).toLocaleString('en-PH')) + suffix;
+                const startedAt = performance.now();
+                const tick = now => {
+                    const progress = Math.min((now - startedAt) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = format(target * eased);
+                    if (progress < 1) window.requestAnimationFrame(tick);
+                    else el.textContent = format(target);
+                };
+                window.requestAnimationFrame(tick);
             };
-            window.requestAnimationFrame(tick);
+
+            // Trigger count-up when visible
+            const kpiObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        countUp(entry.target);
+                        kpiObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+
+            kpiEls.forEach(el => kpiObserver.observe(el));
         }
 
-        // Trigger count-up when visible
-        const kpiObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    countUp(entry.target);
-                    kpiObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.3 });
-
-        document.querySelectorAll('.kpi-countup').forEach(el => kpiObserver.observe(el));
-
-        // === KPI Card Reveal (staggered fade-up) ===
-        Array.from(document.querySelectorAll('.dashboard-kpi')).forEach((card, index) => {
-            if (prefersReducedMotion) {
-                card.classList.add('is-revealed');
-                return;
-            }
-            card.style.transitionDelay = (index * 90) + 'ms';
-            window.requestAnimationFrame(() => card.classList.add('is-revealed'));
-            window.setTimeout(() => { card.style.transitionDelay = ''; }, index * 90 + 420);
-        });
+        // No card entrance animation here on purpose. A staggered opacity/translate
+        // reveal used to be captured mid-flight by navigation and left the KPI
+        // figures scattered. The cards are painted final from the first frame.
 
         // Shared Chart Settings
         const getCssToken = token => getComputedStyle(document.documentElement).getPropertyValue(token).trim();
@@ -1339,6 +1801,106 @@
         Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.92)';
         Chart.defaults.plugins.tooltip.padding = 10;
         Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+        /* ── Local Chart.js plugins (no extra library) ─────────────────
+           Both are called during the render pass, use canvas text only, and
+           read their content from options.plugins — so switching Incidents /
+           Revenue or Status / Roles needs no extra redraw logic. */
+        const dashCenterLabelPlugin = {
+            id: 'dashCenterLabel',
+            afterDatasetsDraw(chart, _args, opts) {
+                if (!opts || !opts.enabled) return;
+                const slice = chart.getDatasetMeta(0)?.data?.[0];
+                if (!slice) return;
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = getCssToken('--dash-text');
+                // Currency totals (₱37,500.00) need a smaller size than a
+                // plain count so the label always fits inside the hole.
+                const value = opts.value || '';
+                ctx.font = `800 ${value.length > 8 ? 19 : 24}px Inter, sans-serif`;
+                ctx.fillText(value, slice.x, slice.y - 9);
+                ctx.fillStyle = opts.captionColor || chartTextColor;
+                ctx.font = '700 10px Inter, sans-serif';
+                ctx.fillText(opts.caption || '', slice.x, slice.y + 14);
+                ctx.restore();
+            }
+        };
+
+        const dashBarValuesPlugin = {
+            id: 'dashBarValues',
+            afterDatasetsDraw(chart) {
+                const meta = chart.getDatasetMeta(0);
+                if (!meta) return;
+                const ctx = chart.ctx;
+                const strong = getCssToken('--dash-text');
+                ctx.save();
+                ctx.textBaseline = 'middle';
+                ctx.font = '600 11px Inter, sans-serif';
+                meta.data.forEach((bar, i) => {
+                    const label = natureFmt(chart.data.datasets[0].data[i], natureMode);
+                    const width = ctx.measureText(label).width;
+                    // Draw outside the bar when there is room; otherwise place
+                    // it inside in white so it never runs off the chart area.
+                    if (bar.x + 7 + width <= chart.chartArea.right) {
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = strong;
+                        ctx.fillText(label, bar.x + 7, bar.y);
+                    } else {
+                        ctx.textAlign = 'right';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillText(label, bar.x - 7, bar.y);
+                    }
+                });
+                ctx.restore();
+            }
+        };
+
+        /* The trend data is mostly zeros with a few sharp spikes, so labelling
+           every point would be noise. This draws one small pill on the peak of
+           each configured dataset — the headline number at a glance. */
+        const dashPeakLabelPlugin = {
+            id: 'dashPeakLabel',
+            afterDatasetsDraw(chart, _args, opts) {
+                if (!opts || !opts.enabled) return;
+                const ctx = chart.ctx;
+                ctx.save();
+                ctx.font = '700 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                (opts.datasets || [0]).forEach(di => {
+                    const meta = chart.getDatasetMeta(di);
+                    const values = chart.data.datasets[di]?.data || [];
+                    if (!meta || !values.length) return;
+                    let maxIdx = -1, maxVal = 0;
+                    values.forEach((v, i) => {
+                        const n = Number(v) || 0;
+                        if (n > maxVal) { maxVal = n; maxIdx = i; }
+                    });
+                    if (maxIdx < 0 || !meta.data[maxIdx]) return;
+                    const point = meta.data[maxIdx];
+                    const text = opts.formatter
+                        ? opts.formatter(maxVal, maxIdx, di)
+                        : String(maxVal);
+                    const width = ctx.measureText(text).width + 14;
+                    const x = point.x, y = point.y - 10;
+                    const ds = chart.data.datasets[di];
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                    if (ctx.roundRect) {
+                        ctx.beginPath();
+                        ctx.roundRect(x - width / 2, y - 16, width, 17, 8);
+                        ctx.fill();
+                    } else {
+                        ctx.fillRect(x - width / 2, y - 16, width, 17);
+                    }
+                    ctx.fillStyle = ds.borderColor || ds.backgroundColor || getCssToken('--dash-text');
+                    ctx.fillText(text, x, y - 2);
+                });
+                ctx.restore();
+            }
+        };
 
         const gridOptions = {
             color: chartGridColor,
@@ -1431,10 +1993,15 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                animation: false,
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
+                    dashPeakLabel: {
+                        enabled: true,
+                        datasets: [0, 1],
+                        formatter: (v, i, di) => di === 1 ? '₱' + Number(v).toLocaleString() : Number(v).toLocaleString() + ' tickets'
+                    },
                     tooltip: {
                         callbacks: {
                             title: function(items) {
@@ -1463,27 +2030,33 @@
                         }
                     }
                 },
+                layout: { padding: { top: 26 } },
                 scales: {
-                    x: { grid: { display: false } },
-                    y: { 
-                        beginAtZero: true, 
+                    x: {
+                        grid: { display: false },
+                        // Twelve rotated labels were hard to scan; flatten
+                        // them and let Chart.js skip alternates as needed.
+                        ticks: { maxRotation: 0, minRotation: 0, autoSkip: true, maxTicksLimit: 8, font: { size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
                         grid: gridOptions,
-                        ticks: { font: { size: 13 } },
-                        title: { display: true, text: 'Count', font: { size: 13, weight: '600' } }
+                        ticks: { font: { size: 12, color: getCssToken('--dash-blue') } },
+                        title: { display: true, text: 'Count', font: { size: 12, weight: '600', color: getCssToken('--dash-blue') } }
                     },
                     y1: {
                         beginAtZero: true,
                         position: 'right',
                         grid: { drawOnChartArea: false },
                         ticks: {
-                            font: { size: 13 },
+                            font: { size: 12, color: getCssToken('--dash-green') },
                             callback: v => '₱' + Number(v).toLocaleString()
                         },
-                        title: { display: true, text: 'Revenue (₱)', font: { size: 13, weight: '600' } }
+                        title: { display: true, text: 'Revenue (₱)', font: { size: 12, weight: '600', color: getCssToken('--dash-green') } }
                     }
                 }
             },
-            plugins: [dashboardHighlightBand]
+            plugins: [dashboardHighlightBand, dashPeakLabelPlugin]
         });
 
         // Daily view: one point per day, same shape as the weekly chart —
@@ -1520,10 +2093,16 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                animation: false,
                 interaction: { mode: 'index', intersect: false },
+                layout: { padding: { top: 26 } },
                 plugins: {
                     legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
+                    dashPeakLabel: {
+                        enabled: true,
+                        datasets: [0, 1],
+                        formatter: (v, i, di) => di === 1 ? '₱' + Number(v).toLocaleString() : Number(v).toLocaleString() + ' tickets'
+                    },
                     tooltip: {
                         callbacks: {
                             title: function(items) {
@@ -1553,8 +2132,8 @@
                     y: {
                         beginAtZero: true,
                         grid: gridOptions,
-                        ticks: { font: { size: 13 }, precision: 0 },
-                        title: { display: true, text: 'Count', font: { size: 13, weight: '600' } }
+                        ticks: { font: { size: 12, color: getCssToken('--dash-blue') }, precision: 0 },
+                        title: { display: true, text: 'Count', font: { size: 12, weight: '600', color: getCssToken('--dash-blue') } }
                     },
                     y1: {
                         beginAtZero: true,
@@ -1562,14 +2141,14 @@
                         stacked: false,
                         grid: { drawOnChartArea: false },
                         ticks: {
-                            font: { size: 13 },
+                            font: { size: 12, color: getCssToken('--dash-green') },
                             callback: v => '₱' + Number(v).toLocaleString()
                         },
-                        title: { display: true, text: 'Revenue (₱)', font: { size: 13, weight: '600' } }
+                        title: { display: true, text: 'Revenue (₱)', font: { size: 12, weight: '600', color: getCssToken('--dash-green') } }
                     }
                 }
             },
-            plugins: [dashboardHighlightBand]
+            plugins: [dashboardHighlightBand, dashPeakLabelPlugin]
         });
 
         const trendCanvas = document.getElementById('weeklyChart');
@@ -1752,11 +2331,11 @@
         window.loadDashboardTrend = loadTrend;
 
         // --- Monthly Breakdown Chart (Line) ---
-        const monthlyData = <?= json_encode($monthly_breakdown) ?>;
+        const monthlyData = <?= json_encode(array_values($monthly_breakdown)) ?>;
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyCounts = Object.values(monthlyData).map(m => m.count);
-        const monthlyPaid = Object.values(monthlyData).map(m => m.paid);
-        const monthlyPending = Object.values(monthlyData).map(m => m.pending);
+        const monthlyCounts = monthlyData.map(m => Number(m.count) || 0);
+        const monthlyPaid = monthlyData.map(m => Number(m.paid) || 0);
+        const monthlyPending = monthlyData.map(m => Number(m.pending) || 0);
 
         const monthlyChart = new Chart(document.getElementById('monthlyChart'), {
             type: 'line',
@@ -1802,8 +2381,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                animation: false,
                 interaction: { mode: 'index', intersect: false },
+                layout: { padding: { top: 26 } },
                 onClick: (e, elements) => {
                     if (elements && elements.length > 0) {
                         const monthNum = elements[0].index + 1;
@@ -1829,11 +2409,22 @@
                 },
                 plugins: {
                     legend: { position: 'top', onClick: Chart.defaults.plugins.legend.onClick, labels: { font: { size: 13 }, padding: 18 } },
+                    dashPeakLabel: {
+                        enabled: true,
+                        datasets: [0],
+                        formatter: v => Number(v).toLocaleString() + ' tickets'
+                    },
                     tooltip: {
                         callbacks: {
                             title: function(items) {
                                 if (!items.length) return '';
                                 return items[0].label + ' (Click to view weekly breakdown)';
+                            },
+                            // Every point is one citation ticket, not one
+                            // offense line, so the tooltip states the unit.
+                            label: function(context) {
+                                const count = Number(context.parsed.y) || 0;
+                                return ' ' + context.dataset.label + ': ' + count + ' ticket' + (count === 1 ? '' : 's');
                             }
                         }
                     }
@@ -1843,9 +2434,102 @@
                     y: { beginAtZero: true, grid: gridOptions, ticks: { font: { size: 13 } }, title: { display: true, text: 'Count', font: { size: 13, weight: '600' } } }
                 }
             },
-            plugins: [dashboardHighlightBand]
+            plugins: [dashboardHighlightBand, dashPeakLabelPlugin]
         });
         markChartShell('monthly', monthlyCounts.some(Number) || monthlyPaid.some(Number) || monthlyPending.some(Number));
+
+        // ── Monthly Breakdown — live refresh ───────────────────────────
+        // A citation issued or paid on another tab must move this month's
+        // point without a full dashboard reload. Polling keeps the chart in
+        // step with the same ticket counts the KPI cards use.
+        const MONTHLY_API_URL    = '<?= base_url('api/monthly-breakdown') ?>?year=<?= (int) $year ?>';
+        const MONTHLY_REFRESH_MS = 30000;
+        let monthlyRefreshTimer  = null;
+        let monthlyInFlight      = false;
+        let monthlyRequest       = null;
+
+        function monthlySetRefreshing(on) {
+            const badge = document.getElementById('monthlyLiveBadge');
+            if (badge) badge.classList.toggle('nature-live-syncing', on);
+        }
+
+        async function refreshMonthlyBreakdown() {
+            if (monthlyInFlight || document.hidden) return;
+
+            monthlyInFlight = true;
+            monthlySetRefreshing(true);
+            // Keep a handle so a sidebar click can abort this request instead
+            // of letting it occupy the one-threaded dev server.
+            if (monthlyRequest) monthlyRequest.abort();
+            const controller = new AbortController();
+            monthlyRequest   = controller;
+
+            try {
+                const res  = await fetch(MONTHLY_API_URL, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    cache: 'no-store',
+                    signal: controller.signal
+                });
+                const json = await res.json();
+
+                if (json.status !== 'ok' || !Array.isArray(json.data)) return;
+
+                const counts  = json.data.map(m => Number(m.count) || 0);
+                const paid    = json.data.map(m => Number(m.paid) || 0);
+                const pending = json.data.map(m => Number(m.pending) || 0);
+
+                const changed = counts.some((v, i) => v !== monthlyCounts[i])
+                    || paid.some((v, i) => v !== monthlyPaid[i])
+                    || pending.some((v, i) => v !== monthlyPending[i]);
+
+                monthlyCounts.splice(0, monthlyCounts.length, ...counts);
+                monthlyPaid.splice(0, monthlyPaid.length, ...paid);
+                monthlyPending.splice(0, monthlyPending.length, ...pending);
+
+                monthlyChart.data.datasets[0].data = monthlyCounts;
+                monthlyChart.data.datasets[1].data = monthlyPaid;
+                monthlyChart.data.datasets[2].data = monthlyPending;
+                // A real change gets the normal transition; an unchanged poll
+                // redraws silently so the card does not twitch every 30s.
+                monthlyChart.update(changed ? undefined : 'none');
+
+                markChartShell('monthly', counts.some(Number) || paid.some(Number) || pending.some(Number));
+            } catch (e) {
+                // Keep the last good chart when the network or session hiccups.
+                console.warn('Monthly breakdown refresh failed:', e);
+            } finally {
+                monthlyInFlight = false;
+                // An aborted older request must not clear the newer handle.
+                if (monthlyRequest === controller) monthlyRequest = null;
+                monthlySetRefreshing(false);
+            }
+        }
+
+        function startMonthlyRefresh() {
+            if (monthlyRefreshTimer !== null) return;
+            monthlyRefreshTimer = window.setInterval(refreshMonthlyBreakdown, MONTHLY_REFRESH_MS);
+        }
+
+        function stopMonthlyRefresh() {
+            if (monthlyRefreshTimer !== null) {
+                window.clearInterval(monthlyRefreshTimer);
+                monthlyRefreshTimer = null;
+            }
+        }
+
+        startMonthlyRefresh();
+
+        // Background tabs do not need to poll; returning to the tab fetches
+        // once immediately and then resumes the 30-second cadence.
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                stopMonthlyRefresh();
+            } else {
+                refreshMonthlyBreakdown();
+                startMonthlyRefresh();
+            }
+        });
+
         document.querySelectorAll('.dashboard-collection-progress').forEach(bar => {
             const width = Math.max(0, Math.min(Number(bar.dataset.targetWidth) || 0, 100));
             if (reduceChartMotion) bar.style.width = width + '%';
@@ -1861,8 +2545,44 @@
         const NATURE_API_URL   = '<?= base_url('api/nature-summary') ?>?year=<?= (int) ($summary['report_year'] ?? $year) ?>';
         const NATURE_REFRESH_MS = 30000; // 30 seconds
 
-        // Full extended palette for all violation types
-        let naturePalette = getCssToken('--dash-nature-palette').split(',').map(color => color.trim());
+        // ── Coherent palette for the Nature charts ────────────────────
+        // One amber accent for the #1 violation (echoes the amber KPI card),
+        // then a single indigo → purple ramp. Reading the index against the
+        // FULL row count keeps the bar, doughnut and legend in sync even
+        // though the charts only plot the top 8.
+        const NATURE_TOP_N = 8;
+        const NATURE_OTHERS_COLOR = '#94a3b8';
+        const natureColorForIndex = (index, total) => {
+            if (index === 0) return '#d97706';
+            const from = [79, 70, 229];   // indigo-600
+            const to   = [168, 85, 247];  // purple-500
+            const t = (index - 1) / Math.max(1, total - 2);
+            // Return hex (not rgb()) because the legend appends an alpha
+            // suffix like "22" to tint its percentage pill.
+            return '#' + from.map((c, k) => {
+                const v = Math.round(c + (to[k] - c) * t);
+                return v.toString(16).padStart(2, '0');
+            }).join('');
+        };
+
+        // Chart.js accepts an array of strings as a multi-line tick label,
+        // so the bar chart can show full violation names instead of "...".
+        const wrapLabel = (label, perLine = 20) => {
+            const words = String(label || '').split(/\s+/);
+            const lines = [];
+            let current = '';
+            words.forEach(word => {
+                if (!current) { current = word; return; }
+                if ((current + ' ' + word).length <= perLine) current += ' ' + word;
+                else { lines.push(current); current = word; }
+            });
+            if (current) lines.push(current);
+            if (lines.length > 2) {
+                lines.length = 2;
+                lines[1] = lines[1].slice(0, perLine - 1) + '…';
+            }
+            return lines;
+        };
 
         let natureMode         = 'count';   // 'count' | 'revenue'
         let natureLiveData     = <?= json_encode($nature_summary ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
@@ -1871,6 +2591,7 @@
         let natureDoughnutInstance = null;
         let natureFilterText   = '';
         let natureRefreshTimer = null;
+        let natureRequest      = null;
 
         // ── Helpers ────────────────────────────────────────────────────
         function natureFmt(val, mode) {
@@ -2005,15 +2726,19 @@
 
             renderNatureKpi(data);
 
-            // ── 1. Horizontal Bar Chart ────────────────────────────────
-            const barLabels = sortedData.map(d => d.violation_type);
-            const barValues = sortedData.map(d => natureVal(d, natureMode));
-            const barColors = sortedData.map((_, i) => naturePalette[i % naturePalette.length]);
+            // ── 1. Horizontal Bar Chart (top 8) ───────────────────────
+            // Eight rows leave room for two-line labels; the full list stays
+            // in the scrollable legend below the doughnut.
+            const topRows = sortedData.slice(0, NATURE_TOP_N);
+            const barLabels = topRows.map(d => d.violation_type);
+            const barValues = topRows.map(d => natureVal(d, natureMode));
+            const barColors = topRows.map((_, i) => natureColorForIndex(i, sortedData.length));
 
             if (natureBarInstance) natureBarInstance.destroy();
             const barCtx = document.getElementById('natureBarChart').getContext('2d');
             natureBarInstance = new Chart(barCtx, {
                 type: 'bar',
+                plugins: [dashBarValuesPlugin],
                 data: {
                     labels: barLabels,
                     datasets: [{
@@ -2030,7 +2755,8 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
+                    animation: false,
+                    layout: { padding: { right: 48 } },
                     plugins: {
                         legend: {
                             display: true,
@@ -2041,12 +2767,12 @@
                         tooltip: {
                             callbacks: {
                                 label: ctx => {
-                                    const row = sortedData[ctx.dataIndex];
+                                    const row = topRows[ctx.dataIndex];
                                     const pct = row ? Math.round((natureVal(row, natureMode) / sortedData.reduce((s,r) => s+natureVal(r,natureMode),0)) * 100) : 0;
                                     return ` ${natureFmt(ctx.parsed.x, natureMode)} (${pct}%)`;
                                 },
                                 afterLabel: ctx => {
-                                    const row = sortedData[ctx.dataIndex];
+                                    const row = topRows[ctx.dataIndex];
                                     if (!row) return '';
                                     const parts = [];
                                     if (natureMode === 'count') {
@@ -2077,31 +2803,41 @@
                         y: {
                             grid: { display: false },
                             ticks: {
-                                font: { size: 13 },
-                                callback: function(val, idx) {
-                                    const lbl = barLabels[idx] || '';
-                                    return lbl.length > 24 ? lbl.substring(0, 22) + '…' : lbl;
-                                }
+                                font: { size: 11 },
+                                // Category ticks receive the index as the
+                                // first argument — look up the real label.
+                                callback: (value, index) => wrapLabel(barLabels[index] || '', 20)
                             }
                         }
                     }
                 }
             });
 
-            // ── 2. Full-Ring Doughnut (all violation types, unique colors) ──
-            const doughnutLabels = sortedData.map(d => d.violation_type);
-            const doughnutValues = sortedData.map(d => natureVal(d, natureMode));
+            // ── 2. Doughnut (top 8 + "Others") ────────────────────────────
+            // Eight tiny slices were unreadable; the remainder is now one
+            // neutral segment and the complete breakdown lives in the legend.
+            const doughnutLabels = topRows.map(d => d.violation_type);
+            const doughnutValues = topRows.map(d => natureVal(d, natureMode));
+            const otherRows = sortedData.slice(NATURE_TOP_N);
+            if (otherRows.length) {
+                doughnutLabels.push('Others');
+                doughnutValues.push(otherRows.reduce((s, r) => s + natureVal(r, natureMode), 0));
+            }
+            const doughnutColors = doughnutLabels.map((_, i) =>
+                i === NATURE_TOP_N ? NATURE_OTHERS_COLOR : natureColorForIndex(i, sortedData.length)
+            );
             const totalSum = doughnutValues.reduce((a, b) => a + b, 0);
 
             if (natureDoughnutInstance) natureDoughnutInstance.destroy();
             const dCtx = document.getElementById('natureDoughnutChart').getContext('2d');
             natureDoughnutInstance = new Chart(dCtx, {
                 type: 'doughnut',
+                plugins: [dashCenterLabelPlugin],
                 data: {
                     labels: doughnutLabels,
                     datasets: [{
                         data: doughnutValues,
-                        backgroundColor: doughnutLabels.map((_, i) => naturePalette[i % naturePalette.length]),
+                        backgroundColor: doughnutColors,
                         borderWidth: 2.5,
                         borderColor: '#ffffff',
                         hoverOffset: 8
@@ -2111,9 +2847,14 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '62%',
-                    animation: reduceChartMotion ? false : { animateRotate: true, duration: 800, easing: 'easeOutQuart' },
+                    animation: false,
                     plugins: {
                         legend: { display: false },
+                        dashCenterLabel: {
+                            enabled: true,
+                            value: natureFmt(totalSum, natureMode),
+                            caption: natureMode === 'count' ? 'INCIDENTS' : 'COLLECTED'
+                        },
                         tooltip: {
                             callbacks: {
                                 label: ctx => {
@@ -2129,15 +2870,15 @@
             markChartShell('nature-bar', hasNatureValues);
             markChartShell('nature-doughnut', hasNatureValues);
 
-            // ── 3. Scrollable Legend ───────────────────────────────────
+            // ── 3. Scrollable Legend (every type, full names) ──────────
             const legendBox = document.getElementById('natureLegendContainer');
             if (legendBox) {
                 let html = '';
-                doughnutLabels.forEach((lbl, idx) => {
-                    const val    = doughnutValues[idx];
+                sortedData.forEach((row, idx) => {
+                    const lbl    = row.violation_type;
+                    const val    = natureVal(row, natureMode);
                     const pct    = totalSum > 0 ? Math.round((val / totalSum) * 100) : 0;
-                    const col    = naturePalette[idx % naturePalette.length];
-                    const row    = sortedData[idx];
+                    const col    = natureColorForIndex(idx, sortedData.length);
                     const oldCnt = prevMap[lbl];
                     const trend  = (oldCnt !== undefined && natureMode === 'count') ? trendBadge(oldCnt, parseInt(row.count) || 0) : '';
                     const isTop  = idx === 0 ? 'fw-bold' : '';
@@ -2146,9 +2887,9 @@
                         : `<span class="text-muted" style="font-size:0.64rem;">Pend: ₱${Number(row.pending_amount||0).toLocaleString('en-PH')}</span>`;
                     html += `
                     <div class="nature-legend-row ${idx === 0 ? 'nature-legend-top' : ''}" title="${escapeHtml(lbl)}">
-                        <div class="d-flex align-items-center gap-1 text-truncate" style="max-width:160px;">
+                        <div class="d-flex align-items-center gap-1" style="max-width:210px;">
                             <span class="nature-legend-dot" style="background:${col}"></span>
-                            <span class="text-truncate ${isTop} text-dark" style="font-size:0.78rem;">${escapeHtml(lbl)}</span>
+                            <span class="${isTop} text-dark" style="font-size:0.78rem; line-height:1.2;">${escapeHtml(lbl)}</span>
                             ${trend}
                         </div>
                         <div class="text-end" style="flex-shrink:0;">
@@ -2158,7 +2899,10 @@
                         </div>
                     </div>`;
                 });
-                legendBox.innerHTML = html || '<p class="text-muted small text-center py-3">No violations match your search.</p>';
+                const caption = html
+                    ? `<div class="nature-legend-caption">Top ${topRows.length} shown in the charts &middot; full list below</div>`
+                    : '';
+                legendBox.innerHTML = caption + (html || '<p class="text-muted small text-center py-3">No violations match your search.</p>');
             }
         }
 
@@ -2171,9 +2915,22 @@
         }
 
         async function natureFetch() {
+            // Do not poll from a hidden tab: the dev server handles one
+            // request at a time, so a background poll can sit in front of a
+            // navigation request in another tab.
+            if (document.hidden) return;
+
             natureSetRefreshing(true);
+            // A stale poll must not hold the server when the admin clicks a
+            // sidebar link. Abort it here and again on pagehide below.
+            if (natureRequest) natureRequest.abort();
+            const controller = new AbortController();
+            natureRequest    = controller;
             try {
-                const res  = await fetch(NATURE_API_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const res  = await fetch(NATURE_API_URL, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    signal: controller.signal
+                });
                 const json = await res.json();
                 if (json.status === 'ok') {
                     const spike = detectSpike(natureLiveData, json.data);
@@ -2189,6 +2946,7 @@
             } catch(e) {
                 console.warn('Nature summary fetch error:', e);
             } finally {
+                if (natureRequest === controller) natureRequest = null;
                 natureSetRefreshing(false);
             }
         }
@@ -2200,6 +2958,11 @@
 
         // Start auto-refresh
         natureRefreshTimer = setInterval(natureFetch, NATURE_REFRESH_MS);
+
+        // Returning to the tab fetches once immediately; hidden tabs stay quiet.
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) natureFetch();
+        });
 
         // Manual refresh button
         const btnRefresh = document.getElementById('btnNatureRefresh');
@@ -2249,6 +3012,36 @@
         const secondaryCtx = document.getElementById('secondaryAnalyticsChart').getContext('2d');
         const rightChartTitle = document.getElementById('rightChartTitle');
 
+        /* The doughnut's hole is a natural place for the headline number, and
+           the space below it now carries a compact, readable breakdown. This
+           replaces Chart.js' bottom legend, which was drawn inside the canvas
+           and often sat below the fold. */
+        const renderSecondaryBreakdown = (items, total, emptyText, showPercent = true) => {
+            const box = document.getElementById('secondaryBreakdown');
+            if (!box) return;
+            box.classList.toggle('no-percent', !showPercent);
+            const rows = items.filter(item => Number(item.value) > 0);
+            if (!rows.length || !total) {
+                box.innerHTML = `<div class="secondary-breakdown-empty">${escapeHtml(emptyText)}</div>`;
+                return;
+            }
+            box.innerHTML = rows.map(item => {
+                const pct = Math.round((Number(item.value) / total) * 100);
+                return `<div class="secondary-breakdown-row">
+                    <span class="secondary-breakdown-dot" style="background:${item.color}"></span>
+                    <span class="secondary-breakdown-label">${escapeHtml(item.label)}</span>
+                    <span class="secondary-breakdown-value">${Number(item.value).toLocaleString()}</span>
+                    ${showPercent ? `<span class="secondary-breakdown-pct">${pct}%</span>` : ''}
+                </div>`;
+            }).join('');
+        };
+
+        const statusColorFor = (label) => {
+            if (label === 'Pending') return getCssToken('--dash-status-pending');
+            if (label === 'Paid')    return getCssToken('--dash-status-paid');
+            return getCssToken('--dash-status-neutral');
+        };
+
         function showStatusChart() {
             if (secondaryChart) secondaryChart.destroy();
 
@@ -2256,25 +3049,34 @@
             document.getElementById('btnStatus').classList.add('active');
             document.getElementById('btnRole').classList.remove('active');
 
+            const total = statusValues.reduce((a, b) => a + Number(b), 0);
             secondaryChart = new Chart(secondaryCtx, {
                 type: 'doughnut',
+                plugins: [dashCenterLabelPlugin],
                 data: {
                     labels: statusLabels,
                     datasets: [{
                         data: statusValues,
-                        backgroundColor: statusLabels.map(label => {
-                            if (label === 'Pending') return getCssToken('--dash-status-pending');
-                            if (label === 'Paid')    return getCssToken('--dash-status-paid');
-                            return getCssToken('--dash-status-neutral');
-                        })
+                        backgroundColor: statusLabels.map(statusColorFor),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 14 } } }
+                    animation: false,
+                    cutout: '62%',
+                    plugins: {
+                        legend: { display: false },
+                        dashCenterLabel: { enabled: true, value: total.toLocaleString(), caption: 'VIOLATORS' }
+                    }
                 }
             });
+            renderSecondaryBreakdown(
+                statusLabels.map((label, i) => ({ label, value: statusValues[i], color: statusColorFor(label) })),
+                total,
+                'No violator status data yet'
+            );
             markChartShell('secondary', statusValues.some(Number));
         }
 
@@ -2293,21 +3095,35 @@
             document.getElementById('btnRole').classList.add('active');
             document.getElementById('btnStatus').classList.remove('active');
 
+            const total = roleCounts.reduce((a, b) => a + Number(b), 0);
             secondaryChart = new Chart(secondaryCtx, {
                 type: 'doughnut',
+                plugins: [dashCenterLabelPlugin],
                 data: {
                     labels: roleLabels,
                     datasets: [{
                         data: roleCounts,
                         backgroundColor: roleLabels.map(roleColorFor),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    animation: reduceChartMotion ? false : { duration: 800, easing: 'easeOutQuart' },
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 14 } } }
+                    animation: false,
+                    cutout: '62%',
+                    plugins: {
+                        legend: { display: false },
+                        dashCenterLabel: { enabled: true, value: total.toLocaleString(), caption: 'USERS' }
+                    }
                 }
             });
+            renderSecondaryBreakdown(
+                roleLabels.map((label, i) => ({ label, value: roleCounts[i], color: roleColorFor(label) })),
+                total,
+                'No user role data yet',
+                false // role counts are small — percentages add noise, not insight
+            );
             markChartShell('secondary', roleCounts.some(Number));
         }
 
@@ -2337,10 +3153,27 @@
             monthlyChart.data.datasets[2].borderColor = getCssToken('--dash-chart-amber');
             monthlyChart.data.datasets[2].pointBackgroundColor = getCssToken('--dash-chart-amber');
             monthlyChart.update('none');
-            naturePalette = getCssToken('--dash-nature-palette').split(',').map(color => color.trim());
             renderNatureCharts(natureLiveData, naturePrevData);
             if (document.getElementById('btnRole').classList.contains('active')) showRoleChart();
             else showStatusChart();
+        });
+
+        // ── Instant navigation ──────────────────────────────────────────
+        // `spark serve` handles one request at a time. A dashboard poll that
+        // is still running when you click a sidebar link can sit in front of
+        // the next page's HTML and read as a slow reload. Stop every timer and
+        // abort every in-flight request the moment this page is left; nothing
+        // here delays the click itself.
+        window.addEventListener('pagehide', function () {
+            clearInterval(clockTimer);
+            stopMonthlyRefresh();
+            if (natureRefreshTimer !== null) {
+                window.clearInterval(natureRefreshTimer);
+                natureRefreshTimer = null;
+            }
+            if (trendRequest)   { trendRequest.abort();   trendRequest   = null; }
+            if (monthlyRequest) { monthlyRequest.abort(); monthlyRequest = null; }
+            if (natureRequest)  { natureRequest.abort();  natureRequest  = null; }
         });
     });
 </script>
@@ -2531,6 +3364,14 @@
 }
 
 /* Scrollable Legend */
+.nature-legend-caption {
+    padding: 0.15rem 0.4rem 0.45rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted, var(--dash-muted));
+}
 .nature-legend-scroll {
     max-height: 220px;
     overflow-y: auto;
@@ -2561,6 +3402,224 @@
     border-radius: 2px;
     flex-shrink: 0;
     margin-top: 3px;
+}
+
+/* ── Compact status / role breakdown ───────────────────────────────────
+   Sits under the doughnut in the space the tall card already had. Counts
+   are always visible; percentages only appear for status (roles omit them). */
+.secondary-breakdown {
+    max-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.secondary-breakdown.no-percent .secondary-breakdown-row {
+    grid-template-columns: 10px 1fr auto;
+}
+.secondary-breakdown-row {
+    display: grid;
+    grid-template-columns: 10px 1fr auto auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--surface-muted, var(--dash-panel));
+    border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.25));
+    border-radius: 9px;
+    font-size: 0.82rem;
+}
+.secondary-breakdown-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+}
+.secondary-breakdown-label {
+    color: var(--text-strong, var(--dash-text));
+    font-weight: 600;
+}
+.secondary-breakdown-value {
+    color: var(--text-strong, var(--dash-text));
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+.secondary-breakdown-pct {
+    min-width: 2.8em;
+    text-align: right;
+    color: var(--text-muted, var(--dash-muted));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+}
+.secondary-breakdown-empty {
+    width: 100%;
+    text-align: center;
+    color: var(--text-muted, var(--dash-muted));
+    font-size: 0.8rem;
+}
+
+/* ════════════════════════════════════════════════════════════
+   INTERACTIVE LAYER — the controls that were still static.
+
+   The KPI cards and the sidebar already have their own motion. This
+   block brings the four analytics cards and everything inside them
+   to life: a per-card accent, a one-shot light sweep on hover,
+   tactile toggles, a focus ring on search, and hover feedback on the
+   data rows. Nothing here animates on load — a page must appear as
+   one settled block the moment it paints, with no stagger for a view
+   transition to catch.
+
+   Rules follow the file's existing contract: scoped to .admin-dashboard,
+   only transform / box-shadow / opacity (no reflow, no digit jitter,
+   no canvas resize), no opacity:0 state on first paint, and every
+   animation is switched off for reduced motion and print.
+   ════════════════════════════════════════════════════════════ */
+
+/* Each card borrows the hue of the chart it hosts. */
+.admin-dashboard .dashboard-live-card { --card-accent: 37, 99, 235; }
+.admin-dashboard .dashboard-live-card:has(.bi-calendar-month) { --card-accent: 5, 150, 105; }
+.admin-dashboard #natureViolationCard { --card-accent: 99, 102, 241; }
+.admin-dashboard .dashboard-live-card:has(.bi-pie-chart) { --card-accent: 5, 150, 105; }
+
+/* A single soft light sweeps across a card once on hover — quieter
+   than the KPI sheen so the chart canvas stays perfectly legible. */
+.admin-dashboard .dashboard-live-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, .07) 50%, transparent 62%);
+    transform: translateX(-120%);
+}
+@keyframes dash-card-sweep { to { transform: translateX(120%); } }
+
+/* Header icon tiles react as one family, tinted by their own card. */
+.admin-dashboard .dashboard-live-card .card-header h5 > i.bi,
+.admin-dashboard .dashboard-live-card .card-header > div > i.bi {
+    transition: transform .24s var(--dash-ease), background .24s var(--dash-ease), box-shadow .24s var(--dash-ease);
+}
+.admin-dashboard .dashboard-live-card canvas { transition: filter .3s var(--dash-ease); }
+
+/* Mode toggles: hover tint + icon pop, active keeps a soft accent glow. */
+.admin-dashboard .card-header .btn-group .btn {
+    position: relative;
+    transition: transform .18s var(--dash-ease), box-shadow .22s var(--dash-ease),
+                background .22s var(--dash-ease), color .22s var(--dash-ease), border-color .22s var(--dash-ease);
+}
+.admin-dashboard .card-header .btn-group .btn i { display: inline-block; transition: transform .22s var(--dash-ease); }
+.admin-dashboard .card-header .btn-group .btn.active { box-shadow: 0 6px 14px -7px rgba(var(--card-accent), .7); }
+.admin-dashboard .card-header .btn-group .btn:focus-visible,
+.admin-dashboard #btnNatureRefresh:focus-visible { outline: 2px solid rgb(var(--card-accent)); outline-offset: 2px; }
+
+/* Manual refresh gets its own gentle nudge (the click spin is unchanged). */
+.admin-dashboard #btnNatureRefresh { transition: transform .2s var(--dash-ease), box-shadow .2s var(--dash-ease); }
+.admin-dashboard #btnNatureRefresh i { display: inline-block; transition: transform .25s var(--dash-ease); }
+
+/* LIVE badge: still in its resting state. The existing dot pulse already
+   says "live"; no new animation starts on page load. */
+.admin-dashboard .nature-live-badge {
+    transition: transform .2s var(--dash-ease), box-shadow .2s var(--dash-ease), opacity .3s;
+}
+
+/* Search focus: a coloured ring and a search glyph that leans in. */
+.admin-dashboard #natureSearchInput {
+    transition: box-shadow .25s var(--dash-ease), background .25s var(--dash-ease), transform .25s var(--dash-ease);
+}
+.admin-dashboard .position-relative:has(> #natureSearchInput) > i.bi-search {
+    transition: transform .25s var(--dash-ease), color .25s var(--dash-ease);
+}
+.admin-dashboard #natureSearchInput:focus {
+    outline: none;
+    background: var(--dash-surface) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .14), 0 6px 16px -8px rgba(37, 99, 235, .6);
+    transform: translateY(-1px);
+}
+.admin-dashboard .position-relative:has(> #natureSearchInput:focus) > i.bi-search {
+    color: var(--dash-blue) !important;
+    transform: translateY(-50%) translateX(3px) scale(1.15);
+}
+
+/* Chips, legend rows and breakdown rows land in their final position
+   immediately. Their only motion is on hover — no stagger, no delay, and
+   nothing caught mid-flight if you navigate away mid-refresh. */
+
+.admin-dashboard .nature-kpi-chip {
+    transition: transform .2s var(--dash-ease), box-shadow .2s var(--dash-ease), border-color .2s;
+}
+.admin-dashboard .nature-kpi-chip i,
+.admin-dashboard .nature-legend-dot,
+.admin-dashboard .secondary-breakdown-dot { display: inline-block; transition: transform .2s var(--dash-ease), box-shadow .2s; }
+.admin-dashboard .nature-legend-row {
+    transition: background .18s var(--dash-ease), transform .18s var(--dash-ease), box-shadow .18s var(--dash-ease);
+}
+.admin-dashboard .secondary-breakdown-row {
+    transition: transform .2s var(--dash-ease), box-shadow .2s var(--dash-ease), background .2s var(--dash-ease);
+}
+
+/* Doughnuts breathe outward a touch when you point at them. */
+.admin-dashboard [data-dashboard-chart-shell="nature-doughnut"],
+.admin-dashboard [data-dashboard-chart-shell="secondary"] {
+    transition: transform .3s var(--dash-ease), filter .3s var(--dash-ease);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .admin-dashboard .dashboard-live-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 38px -18px rgba(var(--card-accent), .55),
+                    0 0 0 1px rgba(var(--card-accent), .16) !important;
+    }
+    .admin-dashboard .dashboard-live-card:hover::after { animation: dash-card-sweep 900ms var(--dash-ease) 1 both; }
+    .admin-dashboard .dashboard-live-card:hover canvas { filter: saturate(1.08); }
+    .admin-dashboard .dashboard-live-card:hover .card-header h5 > i.bi,
+    .admin-dashboard .dashboard-live-card:hover .card-header > div > i.bi {
+        transform: scale(1.12) rotate(-6deg);
+        background: rgba(var(--card-accent), .16);
+        box-shadow: 0 6px 14px -6px rgba(var(--card-accent), .5);
+    }
+    .admin-dashboard .card-header .btn-group .btn:not(.active):hover {
+        transform: translateY(-2px);
+        background: rgba(var(--card-accent), .08);
+        border-color: rgba(var(--card-accent), .4);
+        color: rgb(var(--card-accent));
+    }
+    .admin-dashboard .card-header .btn-group .btn:hover i { transform: scale(1.14) rotate(-4deg); }
+    .admin-dashboard #btnNatureRefresh:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px -8px rgba(var(--card-accent), .6);
+    }
+    .admin-dashboard #btnNatureRefresh:hover i { transform: rotate(40deg) scale(1.12); }
+    .admin-dashboard .nature-live-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px -4px rgba(22, 163, 74, .5);
+    }
+    .admin-dashboard .nature-kpi-chip:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -10px rgba(37, 99, 235, .45);
+        border-color: rgba(37, 99, 235, .35);
+    }
+    .admin-dashboard .nature-kpi-chip:hover i { transform: scale(1.15) rotate(-6deg); }
+    .admin-dashboard .nature-legend-row:hover {
+        transform: translateX(4px);
+        box-shadow: inset 3px 0 0 var(--dash-blue);
+    }
+    .admin-dashboard .nature-legend-row:hover .nature-legend-dot {
+        transform: scale(1.35);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, .18);
+    }
+    .admin-dashboard .secondary-breakdown-row:hover {
+        transform: translateX(4px);
+        box-shadow: 0 8px 16px -10px rgba(15, 23, 42, .5), inset 3px 0 0 var(--dash-blue);
+    }
+    .admin-dashboard .secondary-breakdown-row:hover .secondary-breakdown-dot { transform: scale(1.4); }
+    .admin-dashboard [data-dashboard-chart-shell="nature-doughnut"]:hover,
+    .admin-dashboard [data-dashboard-chart-shell="secondary"]:hover {
+        transform: scale(1.03);
+        filter: drop-shadow(0 10px 16px rgba(var(--card-accent), .22));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-dashboard .dashboard-live-card::after { display: none !important; }
+}
+@media print {
+    .admin-dashboard .dashboard-live-card::after { display: none !important; }
 }
 </style>
 

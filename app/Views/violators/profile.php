@@ -140,15 +140,17 @@
                     </span>
                 </div>
                 <div class="vp-hero-meta">
-                                            <span class="badge sanction-level <?= $sanctionCount >= 3 ? 'sanction-level--third' : ($sanctionCount === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record"><?php if ($sanctionCount >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc(sanction_label($sanctionCount)) ?></span>
+                        <?php // The badge counts offenses (one per apprehension); the shared helper only supplies the ordinal. ?>
+                                <?php $offenseLabel = str_replace('Sanction', 'Offense', sanction_label($sanctionCount)); ?>
+                                <span class="badge sanction-level <?= $sanctionCount >= 3 ? 'sanction-level--third' : ($sanctionCount === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One offense per apprehension on record"><?php if ($sanctionCount >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc($offenseLabel) ?></span>
                     <?php if ($sanctionCount >= 2): ?>
                         <?php
-                            $warningText = $sanctionCount >= 3
-                                ? 'License at risk'
-                                : 'Last sanction';
+                            // Second offense is the last warning; reaching the
+                            // third is when the license is actually at risk.
+                            $warningText  = $sanctionCount >= 3 ? 'License at risk' : 'Last warning';
                             $warningTitle = $sanctionCount >= 3
-                                ? sprintf('%s on record — one sanction per apprehension; the three-strike rule can revoke the driver\'s license.', esc(sanction_label($sanctionCount)))
-                                : 'Second sanction on record — the next violation can put the driver\'s license in danger.';
+                                ? sprintf('%s on record — one offense per apprehension; the three-strike rule can revoke the driver\'s license.', esc($offenseLabel))
+                                : 'Second offense on record — the next violation can put the driver\'s license in danger.';
                         ?>
                         <span class="sanction-warning" tabindex="0"
                               title="<?= esc($warningTitle, 'attr') ?>">
@@ -221,6 +223,25 @@
                     </span>
                 </div>
 
+                <?php if (! empty($tickets)): ?>
+                    <?php // The hero shows the balance; this strip makes the
+                          // assessed and collected figures reconcilable too. ?>
+                    <div class="vp-settlement-strip">
+                        <div class="vp-settlement-item">
+                            <span>Assessed</span>
+                            <strong>₱<?= number_format($assessed, 2) ?></strong>
+                        </div>
+                        <div class="vp-settlement-item">
+                            <span>Collected</span>
+                            <strong class="is-paid">₱<?= number_format($paidTotal, 2) ?></strong>
+                        </div>
+                        <div class="vp-settlement-item">
+                            <span>Outstanding</span>
+                            <strong class="<?= $balance > 0 ? 'is-balance' : 'is-clear' ?>">₱<?= number_format($balance, 2) ?></strong>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <?php if (empty($tickets)): ?>
                     <div class="vp-empty">
                         <div class="vp-empty-icon"><i class="bi bi-inbox"></i></div>
@@ -273,7 +294,11 @@
                                         <?= esc($ticket['officer_name'] !== '' ? $ticket['officer_name'] : 'Not recorded') ?>
                                     </span>
                                     <?php if (! empty($ticket['receipt_number'])): ?>
-                                        <span title="Official Receipt (OR) number"><i class="bi bi-receipt me-1"></i>OR (Official Receipt): <?= esc($ticket['receipt_number']) ?></span>
+                                        <span class="vp-ticket-receipt" title="Official Receipt (OR) number">
+                                            <i class="bi bi-receipt"></i>
+                                            <span class="vp-ticket-receipt-label">OR No.</span>
+                                            <span class="vp-ticket-receipt-value"><?= esc($ticket['receipt_number']) ?></span>
+                                        </span>
                                     <?php endif; ?>
                                     <?php if (! empty($ticket['paid_date'])): ?>
                                         <span><i class="bi bi-check2 me-1"></i>Paid <?= date('M d, Y', strtotime((string) $ticket['paid_date'])) ?></span>
@@ -377,6 +402,7 @@
                     <div class="vp-side-empty">
                         <?= tricycle_icon() ?>
                         <span>No vehicle plate recorded.</span>
+                        <small class="vp-side-empty-hint">Plates are picked up automatically from each ticket.</small>
                     </div>
                 <?php else: ?>
                     <div class="vp-vehicle-list">
@@ -416,7 +442,11 @@
                     </div>
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">License no.</span>
-                        <span class="vp-detail-value"><?= esc($license !== '' && ! $isPlaceholder($license) ? $license : 'Not provided') ?></span>
+                        <?php if ($license !== '' && ! $isPlaceholder($license)): ?>
+                            <span class="vp-detail-value"><?= esc($license) ?></span>
+                        <?php else: ?>
+                            <span class="vp-detail-missing"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Not provided</span>
+                        <?php endif; ?>
                     </div>
                     <?php if ($vehicle !== '' && ! $isPlaceholder($vehicle)): ?>
                     <div class="vp-detail-row">
@@ -432,11 +462,19 @@
                     <?php endif; ?>
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">Address</span>
-                        <span class="vp-detail-value"><?= esc($address !== '' ? $address : 'Not provided') ?></span>
+                        <?php if ($address !== ''): ?>
+                            <span class="vp-detail-value"><?= esc($address) ?></span>
+                        <?php else: ?>
+                            <span class="vp-detail-missing"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Not provided</span>
+                        <?php endif; ?>
                     </div>
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">Owner</span>
-                        <span class="vp-detail-value"><?= esc(! empty($violator['owner_name']) ? $violator['owner_name'] : 'Not provided') ?></span>
+                        <?php if (! empty($violator['owner_name'])): ?>
+                            <span class="vp-detail-value"><?= esc($violator['owner_name']) ?></span>
+                        <?php else: ?>
+                            <span class="vp-detail-missing"><i class="bi bi-exclamation-circle" aria-hidden="true"></i>Not provided</span>
+                        <?php endif; ?>
                     </div>
                     <div class="vp-detail-row">
                         <span class="vp-detail-label">Record ID</span>
@@ -783,6 +821,12 @@
 .vp-ticket-enforcer { display:inline-flex; align-items:center; gap:.35rem; background:#f5f3ff; border:1px solid #c4b5fd; color:#6d28d9; border-radius:999px; padding:.2rem .62rem; font-weight:700; }
 .vp-ticket-meta .vp-ticket-enforcer i { color:#7c3aed; }
 .vp-ticket-enforcer-label { font-size:.68rem; font-weight:900; text-transform:uppercase; letter-spacing:.05em; opacity:.8; }
+/* The Official Receipt (OR) number uses the same blue/violet pill as the
+   officer violator-profile page so it reads consistently everywhere. */
+.vp-ticket-receipt { display:inline-flex; align-items:center; gap:5px; padding:.2rem .62rem; border-radius:999px; background:#eff6ff; border:1px solid #bfdbfe; color:#5b21b6; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.8rem; line-height:1.2; white-space:nowrap; }
+.vp-ticket-meta .vp-ticket-receipt i { font-size:.78rem; color:#0066ff; }
+.vp-ticket-receipt-label { font-family:'Inter',system-ui,sans-serif; font-size:.7rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:#0066ff; }
+.vp-ticket-receipt-value { font-weight:700; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
 
 .vp-infraction-table { margin-top:.6rem; border-top:1px dashed #e2e8f0; }
 .vp-infraction-row { display:flex; justify-content:space-between; align-items:center; gap:.75rem; padding:.48rem 0; border-bottom:1px dashed #e7edf5; font-size:.86rem; }
@@ -805,11 +849,32 @@
 .vp-total-value--paid { color:var(--vp-green-dark); }
 .vp-total-value--balance { color:#b91c1c; }
 .vp-total-value--clear { color:var(--text-subtle, #5c6b80); }
+
+/* Settlement strip: the same three numbers the hero and tickets use, placed
+   where the eye already is so the figures can be checked without scrolling. */
+.vp-settlement-strip {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:.5rem;
+    margin:0 1.1rem 1rem;
+    padding:.7rem .9rem;
+    background:var(--surface-muted, #f8fafc);
+    border:1px solid var(--border-soft, #e7edf5);
+    border-radius:12px;
+}
+.vp-settlement-item { display:flex; flex-direction:column; gap:.15rem; }
+.vp-settlement-item + .vp-settlement-item { padding-left:.9rem; border-left:1px solid var(--border-soft, #e2e8f0); }
+.vp-settlement-item span { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
+.vp-settlement-item strong { font-size:.98rem; font-weight:900; font-variant-numeric:tabular-nums; color:#1e293b; }
+.vp-settlement-item strong.is-paid { color:var(--vp-green-dark); }
+.vp-settlement-item strong.is-balance { color:#b91c1c; }
+.vp-settlement-item strong.is-clear { color:var(--text-subtle, #5c6b80); }
+
 .vp-ticket-actions { display:flex; flex-wrap:wrap; align-items:center; gap:.35rem; }
 /* The row's tools sit apart from its money, so the eye reaches the figures
    without buttons in the path. */
 .vp-ticket-foot .vp-ticket-actions { padding-left:.8rem; border-left:1px solid #eef2f7; }
-.vp-action { width:36px; height:36px; border-radius:9px; border:1.5px solid #d1dbe8; background:#fff; color:#334155; display:inline-flex; align-items:center; justify-content:center; font-size:.9rem; text-decoration:none; transition:all .18s ease; padding:0; }
+.vp-action { width:40px; height:40px; border-radius:9px; border:1.5px solid #d1dbe8; background:#fff; color:#334155; display:inline-flex; align-items:center; justify-content:center; font-size:.9rem; text-decoration:none; transition:all .18s ease; padding:0; }
 .vp-action:hover { transform:translateY(-1px); box-shadow:0 3px 8px rgba(15,23,42,.12); }
 .vp-action--pay { background:#ecfdf5; border-color:#86efac; color:#047857; }
 .vp-action--pay:hover,
@@ -841,6 +906,7 @@
 
 .vp-side-empty { padding:1.4rem 1rem; text-align:center; color:#52627a; font-size:.86rem; display:flex; flex-direction:column; gap:.4rem; align-items:center; }
 .vp-side-empty i { font-size:1.4rem; color:#cbd5e1; }
+.vp-side-empty-hint { max-width:24ch; font-size:.74rem; color:var(--text-subtle, #64748b); line-height:1.4; }
 .vp-vehicle-list { padding:.85rem; display:flex; flex-direction:column; gap:.5rem; }
 .vp-vehicle { display:flex; align-items:center; justify-content:space-between; gap:.6rem; padding:.55rem .65rem; border:1px solid #eef2f7; border-radius:9px; background:#f8fafc; }
 .vp-vehicle-id { display:flex; flex-direction:column; gap:.25rem; min-width:0; }
@@ -849,8 +915,15 @@
 .vp-vehicle-meta { display:flex; flex-direction:column; align-items:flex-end; font-size:.76rem; color:#52627a; }
 
 .vp-detail-list { padding:.65rem 1rem .9rem; }
-.vp-detail-row { display:flex; justify-content:space-between; gap:.75rem; padding:.58rem 0; border-bottom:1px dashed #e7edf5; font-size:.84rem; }
+.vp-detail-row { display:flex; justify-content:space-between; align-items:center; gap:.75rem; padding:.58rem 0; border-bottom:1px dashed #e7edf5; font-size:.84rem; }
 .vp-detail-row:last-child { border-bottom:none; }
+/* Missing identity fields read as a state, not as ordinary data. */
+.vp-detail-missing {
+    display:inline-flex; align-items:center; gap:.25rem;
+    padding:.15rem .5rem; border-radius:999px;
+    background:#fffbeb; border:1px solid #fde68a; color:#b45309;
+    font-size:.72rem; font-weight:700;
+}
 .vp-detail-label { color:#52627a; font-weight:700; font-size:.78rem; }
 .vp-detail-value { color:#1e293b; font-weight:650; text-align:right; word-break:break-word; font-variant-numeric:tabular-nums; }
 
@@ -891,8 +964,21 @@
 :root[data-bs-theme="dark"] .vp-empty-sub,
 :root[data-bs-theme="dark"] .vp-side-empty,
 :root[data-bs-theme="dark"] .vp-breadcrumb,
-:root[data-bs-theme="dark"] .vp-ticket-notes {
+:root[data-bs-theme="dark"] .vp-ticket-notes,
+:root[data-bs-theme="dark"] .vp-settlement-item span,
+:root[data-bs-theme="dark"] .vp-side-empty-hint {
     color: #94a3b8;
+}
+:root[data-bs-theme="dark"] .vp-settlement-strip {
+    background: #111b2f;
+    border-color: #334155;
+}
+:root[data-bs-theme="dark"] .vp-settlement-item + .vp-settlement-item { border-left-color: #334155; }
+:root[data-bs-theme="dark"] .vp-settlement-item strong { color: #f8fafc; }
+:root[data-bs-theme="dark"] .vp-detail-missing {
+    background: rgba(251, 146, 60, .12);
+    border-color: rgba(251, 146, 60, .35);
+    color: #fdba74;
 }
 :root[data-bs-theme="dark"] .vp-section-title,
 :root[data-bs-theme="dark"] .vp-empty-title {
@@ -912,6 +998,14 @@
 }
 :root[data-bs-theme="dark"] .vp-ticket-meta .vp-ticket-enforcer i {
     color: #a78bfa;
+}
+:root[data-bs-theme="dark"] .vp-ticket-receipt {
+    background: rgba(139, 92, 246, .15);
+    border-color: rgba(129, 140, 248, .4);
+    color: #bfdbfe;
+}
+:root[data-bs-theme="dark"] .vp-ticket-receipt-label {
+    color: #93c5fd;
 }
 :root[data-bs-theme="dark"] .vp-ticket-id,
 :root[data-bs-theme="dark"] .vp-count-badge {

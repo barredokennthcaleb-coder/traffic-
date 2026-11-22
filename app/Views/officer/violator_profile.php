@@ -127,12 +127,17 @@
                     </span>
                 </div>
                 <div class="vp-hero-meta">
-                    <?php $sanctionAttempts = (int) ($violator['attempts'] ?? $violator['total_tickets'] ?? 0); ?>
-                    <span class="badge sanction-level <?= $sanctionAttempts >= 3 ? 'sanction-level--third' : ($sanctionAttempts === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One sanction per apprehension on record">                                        <?php if ($sanctionAttempts >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc($violator['sanction_record'] ?? 'No Sanction Record') ?></span>
+                    <?php
+                        $sanctionAttempts = (int) ($violator['attempts'] ?? $violator['total_tickets'] ?? 0);
+                        // The badge is the person's offense history (one offense per
+                        // apprehension); the shared sanction helper only supplies the ordinal.
+                        $offenseRecord = str_replace('Sanction', 'Offense', $violator['sanction_record'] ?? 'No Sanction Record');
+                    ?>
+                    <span class="badge sanction-level <?= $sanctionAttempts >= 3 ? 'sanction-level--third' : ($sanctionAttempts === 2 ? 'sanction-level--second' : 'sanction-level--first') ?> rounded-pill px-3 py-1 fw-bold" style="font-size: 0.78rem;" title="One offense per apprehension on record">                                        <?php if ($sanctionAttempts >= 3): ?><span class="sanction-badge-icon" aria-hidden="true">!</span><?php endif; ?><i class="bi bi-patch-check me-1"></i><?= esc($offenseRecord) ?></span>
                     <?php if ($sanctionAttempts === 2): ?>
-                        <?php /* Three strikes: the second sanction is the last warning before the license is taken. */ ?>
-                        <span class="sanction-warning" title="Second sanction on record - one more apprehension revokes the driver's license">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i>License at risk<span class="sanction-exclaim" aria-hidden="true">!</span>
+                        <?php /* Three strikes: the second offense is the last warning before the license is taken. */ ?>
+                        <span class="sanction-warning" title="Second offense on record - one more apprehension revokes the driver's license">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Last warning<span class="sanction-exclaim" aria-hidden="true">!</span>
                         </span>
                     <?php endif; ?>
                     <?php if (!empty($violator['license_number']) && !in_array(strtolower(trim($violator['license_number'])), ['no', 'none', 'n/a', '-'])): ?>
@@ -205,7 +210,7 @@
     .vp-avatar-spinner { position:absolute; inset:0; border-radius:50%; background:rgba(15,23,42,.78); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:4; }
     .vp-outcome-dot { position:absolute; bottom:4px; right:4px; width:18px; height:18px; border-radius:50%; border:3px solid #fff; z-index:5; }
     .vp-outcome-dot--paid { background:#4ade80; box-shadow:0 0 10px rgba(74,222,128,.85); }
-    .vp-outcome-dot--pending { background:#fbbf24; box-shadow:0 0 10px rgba(251,191,36,.85); }
+    .vp-outcome-dot--pending { background:#ef4444; box-shadow:0 0 10px rgba(239,68,68,.85); }
     .vp-outcome-dot--cancelled { background:#94a3b8; }
 
     .vp-hero-info { min-width:0; flex:1 1 320px; }
@@ -213,7 +218,7 @@
     .vp-hero-plate { display:inline-flex; align-items:center; background:#fff; color:#0052cc; font-weight:800; font-size:.78rem; letter-spacing:.04em; padding:.32rem .7rem; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.18); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
     .vp-hero-outcome { display:inline-flex; align-items:center; font-size:.73rem; font-weight:700; padding:.3rem .75rem; border-radius:20px; letter-spacing:.03em; text-transform:uppercase; }
     .vp-hero-outcome--paid { background:rgba(4,47,34,.55); border:1px solid rgba(167,243,208,.45); color:#a7f3d0; }
-    .vp-hero-outcome--pending { background:rgba(69,26,3,.5); border:1px solid rgba(253,230,138,.5); color:#fde68a; }
+    .vp-hero-outcome--pending { background:rgba(127,29,29,.55); border:1px solid rgba(254,202,202,.55); color:#fecaca; }
     .vp-hero-outcome--cancelled { background:rgba(15,23,42,.5); border:1px solid rgba(203,213,225,.4); color:#e2e8f0; }
     .vp-hero-meta { display:flex; flex-wrap:wrap; gap:.35rem 1.05rem; color:rgba(255,255,255,.82); font-size:.85rem; margin-top:.4rem; }
     .vp-hero-meta span { display:inline-flex; align-items:center; min-width:0; }
@@ -222,14 +227,14 @@
     .vp-hero-hud { background:rgba(15,23,42,.45); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.18); border-radius:16px; padding:.75rem 1.25rem; display:flex; flex-direction:column; gap:.35rem; box-shadow:0 8px 24px rgba(0,0,0,.2); min-width:0; }
     .vp-hud-status { display:inline-flex; align-items:center; gap:.45rem; font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; }
     .vp-hud-status--paid { color:#4ade80; }
-    .vp-hud-status--pending { color:#fbbf24; }
+    .vp-hud-status--pending { color:#fca5a5; }
     .vp-hud-status--cancelled { color:#cbd5e1; }
     .vp-radar-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
     .vp-radar-dot--paid { background:#4ade80; box-shadow:0 0 0 0 rgba(74,222,128,.7); animation:vpRadar 1.8s infinite; }
-    .vp-radar-dot--pending { background:#fbbf24; box-shadow:0 0 0 0 rgba(251,191,36,.7); animation:vpRadarAmber 1.8s infinite; }
+    .vp-radar-dot--pending { background:#ef4444; box-shadow:0 0 0 0 rgba(239,68,68,.7); animation:vpRadarPending 1.8s infinite; }
     .vp-radar-dot--cancelled { background:#94a3b8; }
     @keyframes vpRadar { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(74,222,128,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(74,222,128,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(74,222,128,0)} }
-    @keyframes vpRadarAmber { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(251,191,36,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(251,191,36,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(251,191,36,0)} }
+    @keyframes vpRadarPending { 0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(239,68,68,.7)} 70%{transform:scale(1.1);box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(239,68,68,0)} }
     .vp-hud-money { color:#fff; font-size:.95rem; display:flex; align-items:baseline; }
     .vp-hud-money small { color:rgba(255,255,255,.75); font-size:.72rem; }
     .vp-hud-last { color:rgba(255,255,255,.78); font-size:.72rem; display:flex; align-items:center; flex-wrap:wrap; }
@@ -250,13 +255,13 @@
     /* ── OUTCOME STRIP — the three numbers behind the banner ──────────────── */
     .vp-outcome-card { background:#fff; border:1px solid #f1f5f9; border-radius:16px; box-shadow:0 3px 12px rgba(15,23,42,.05); padding:.9rem 1rem; display:flex; align-items:center; gap:.85rem; height:100%; }
     .vp-outcome-icon { width:46px; height:46px; border-radius:12px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
-    .vp-outcome-icon--pending { background:#fef9c3; color:#a16207; }
+    .vp-outcome-icon--pending { background:#fee2e2; color:#b91c1c; }
     .vp-outcome-icon--paid { background:#dcfce7; color:#15803d; }
     .vp-outcome-icon--cancelled { background:#f1f5f9; color:#475569; }
     .vp-outcome-icon--info { background:#dbeafe; color:#0052cc; }
     .vp-outcome-label { display:block; font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#52627a; }
     .vp-outcome-value { display:block; font-size:1.05rem; font-weight:800; color:#0b1730; line-height:1.3; }
-    .vp-outcome-value--pending { color:#a16207; }
+    .vp-outcome-value--pending { color:#b91c1c; }
     .vp-outcome-value--paid { color:#15803d; }
     .vp-outcome-value--cancelled { color:#475569; }
     .vp-outcome-sub { display:block; font-size:.72rem; color:#52627a; margin-top:.1rem; overflow-wrap:anywhere; }
@@ -477,7 +482,7 @@
                                         <ul class="dropdown-menu citation-menu-pop shadow border-0 rounded-3 py-1" id="citationMenu<?= (int) $t['id'] ?>">
                                             <li>
                                                 <?php $ticketHref = 'officer/view/' . $t['id'] . '?from=violator-profile&violator=' . (int) ($violatorId ?? 0); ?>
-                                                <a class="dropdown-item py-2 text-dark fw-semibold" href="<?= base_url($ticketHref) ?>">
+                                                <a class="dropdown-item py-2 text-dark fw-semibold" href="<?= base_url($ticketHref . '&format=tct') ?>">
                                                     <i class="bi bi-eye me-2 text-primary"></i> View Citation
                                                 </a>
                                             </li>
@@ -866,9 +871,9 @@
     color: #047857;
 }
 .ticket-status-pill--pending {
-    background: #fef3c7;
-    border-color: #fcd979;
-    color: #9a6700;
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
 }
 /* Pending / Paid section chips over the citation record */
 .vp-section-chips {
@@ -908,7 +913,7 @@
     border-radius: 999px;
     background: rgba(15, 23, 42, .08);
 }
-.vp-section-chip--pending .vp-section-count { background: #fef3c7; color: #92400e; }
+.vp-section-chip--pending .vp-section-count { background: #fee2e2; color: #991b1b; }
 .vp-section-chip--paid .vp-section-count { background: #d1fae5; color: #047857; }
 :root[data-bs-theme="dark"] .vp-section-chips { background: #0f172a; border-color: #1e293b; }
 :root[data-bs-theme="dark"] .vp-section-chip { color: #94a3b8; }
@@ -956,9 +961,9 @@
     color: #6ee7b7;
 }
 :root[data-bs-theme="dark"] .ticket-status-pill--pending {
-    background: rgba(245, 196, 66, .13);
-    border-color: rgba(252, 217, 121, .32);
-    color: #fcd979;
+    background: rgba(239, 68, 68, .15);
+    border-color: rgba(252, 165, 165, .35);
+    color: #fca5a5;
 }
 .sanction-level {
     border: 1px solid transparent;

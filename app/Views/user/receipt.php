@@ -16,6 +16,12 @@ $receiptTotal = array_sum(array_map(
 ));
 $blankRows = max(0, 8 - count($receiptLines));
 
+// Mark the payment method that was actually used on the official receipt.
+$paymentMethod = strtolower(trim((string) ($violation['payment_method'] ?? '')));
+$isCash        = $paymentMethod === 'cash';
+$isCheck       = in_array($paymentMethod, ['check', 'cheque'], true);
+$isMoneyOrder  = in_array($paymentMethod, ['money order', 'money_order', 'moneyorder'], true);
+
 // Try to format number to words, fallback if extension is not loaded
 $amountWords = '';
 try {
@@ -182,6 +188,72 @@ try {
             border: 2px solid #000 !important;
         }
     }
+
+    /* ── OFFICIAL RECEIPT: ALWAYS PAPER WHITE ───────────────────────
+       The OR is a printed government form. It stays clean white in
+       Light, Dark and Auto themes (and under browser forced-dark),
+       while the surrounding app shell keeps its own theme. */
+    .receipt-wrapper {
+        color-scheme: light !important;
+        background: #ffffff !important;
+    }
+    .receipt-wrapper,
+    .receipt-container,
+    .receipt-container > div,
+    .receipt-container table,
+    .receipt-container table tbody,
+    .receipt-container table tr,
+    .receipt-container table td,
+    .receipt-container table th {
+        background-color: #ffffff !important;
+        background-image: none !important;
+        box-shadow: none !important;
+        border-color: #000000 !important;
+    }
+    .receipt-wrapper,
+    .receipt-wrapper div,
+    .receipt-wrapper span,
+    .receipt-wrapper h2,
+    .receipt-wrapper h3,
+    .receipt-wrapper p,
+    .receipt-wrapper td,
+    .receipt-wrapper th {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        text-shadow: none !important;
+    }
+    /* The receipt number is the only red figure on the form. */
+    .receipt-wrapper .or-number {
+        color: #dc2626 !important;
+        -webkit-text-fill-color: #dc2626 !important;
+    }
+    /* Clean tick boxes for the selected mode of payment. */
+    .or-payment-box {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border: 1px solid #000000;
+        margin-right: 8px;
+        vertical-align: middle;
+        text-align: center;
+        line-height: 17px;
+        font-weight: bold;
+        background: #ffffff;
+    }
+    @media print {
+        .receipt-wrapper,
+        .receipt-wrapper * {
+            background: #ffffff !important;
+            background-image: none !important;
+            box-shadow: none !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .receipt-wrapper .or-number {
+            color: #dc2626 !important;
+        }
+    }
 </style>
 
 <div class="container-fluid py-4 no-print">
@@ -228,7 +300,7 @@ try {
             </div>
             <div class="col-flex" style="width: 50%; display: flex; align-items: center; justify-content: center;">
                 <span style="font-size: 20px; margin-right: 15px;">NO.</span>
-                <span style="color: red; font-size: 28px; font-weight: bold; letter-spacing: 2px; font-family: monospace;">
+                <span class="or-number" style="color: red; font-size: 28px; font-weight: bold; letter-spacing: 2px; font-family: monospace;">
                     <?= esc($violation['receipt_number']) ?>
                 </span>
             </div>
@@ -297,15 +369,13 @@ try {
         <div class="payment-type-bank">
             <div class="payment-checkboxes">
                 <div style="margin-bottom: 8px;">
-                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle; text-align:center; line-height:18px; font-weight:bold;">
-                        <?= strtolower($violation['payment_method'] ?? '') == 'cash' ? '✓' : '' ?>
-                    </span> Cash
+                    <span class="or-payment-box"><?= $isCash ? '✓' : '' ?></span> Cash
                 </div>
                 <div style="margin-bottom: 8px;">
-                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle;"></span> Check
+                    <span class="or-payment-box"><?= $isCheck ? '✓' : '' ?></span> Check
                 </div>
                 <div>
-                    <span style="display:inline-block; width:18px; height:18px; border:1px solid #000; margin-right:8px; vertical-align:middle;"></span> Money Order
+                    <span class="or-payment-box"><?= $isMoneyOrder ? '✓' : '' ?></span> Money Order
                 </div>
             </div>
             <div class="bank-details">
@@ -333,8 +403,15 @@ try {
             <div style="margin-top: 30px; padding-left: 50%;">
                 <div style="display:flex; align-items: flex-end;">
                     <div style="margin-right: 15px; font-size: 18px;">By:</div>
-                    <div style="flex:1;">
-                        <div style="border-bottom: 1px solid #000; height: 30px;"></div>
+                    <div style="flex:1; text-align: center;">
+                        <div style="border-bottom: 1px solid #000; min-height: 45px; display: flex; align-items: flex-end; justify-content: center;">
+                            <?php if (!empty($violation['collecting_officer_signature'])): ?>
+                                <img src="<?= esc($violation['collecting_officer_signature']) ?>" alt="Collecting Officer Signature" style="max-height: 52px; max-width: 100%; object-fit: contain;">
+                            <?php endif; ?>
+                        </div>
+                        <?php if (!empty($violation['collecting_officer_name'])): ?>
+                            <div style="font-size: 15px; margin-top: 4px;"><?= esc($violation['collecting_officer_name']) ?></div>
+                        <?php endif; ?>
                         <div style="text-align: center; font-size: 14px; margin-top: 5px;">COLLECTING OFFICER</div>
                     </div>
                 </div>

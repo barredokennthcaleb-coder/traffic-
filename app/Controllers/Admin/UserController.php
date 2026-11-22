@@ -8,6 +8,9 @@ use App\Models\ViolatorRecord;
 
 class UserController extends BaseController
 {
+    /** The same three field-status options the enforcer can pick in the officer portal. */
+    private const DUTY_STATUSES = ['Active Patrol', 'On Break', 'Off Duty'];
+
     protected $userModel;
     protected $violationModel;
 
@@ -26,28 +29,90 @@ class UserController extends BaseController
             $role = '';
         }
 
+        // Duty status belongs to enforcers only, so picking one narrows the
+        // list to enforcers even when no role filter was supplied.
+        $duty = (string) ($this->request->getGet('duty') ?? '');
+        if ($duty !== '' && ! in_array($duty, self::DUTY_STATUSES, true)) {
+            $duty = '';
+        }
+        if ($duty !== '') {
+            $role = 'enforcer';
+        }
+
+        // Server-side search covers every page, not just the rendered one. The
+        // list view sends this on a debounced keystroke and swaps only the
+        // results region, so typing never triggers a full page navigation.
+        $search = trim((string) ($this->request->getGet('search') ?? ''));
+
         // Counts first: countAllResults() resets the shared builder state, so
         // the role filter for the paginated list must be applied afterwards.
         $stats = [
             'total'    => $this->userModel->whereIn('role', $allowedRoles)->countAllResults(),
             'admin'    => $this->userModel->where('role', 'admin')->countAllResults(),
             'enforcer' => $this->userModel->where('role', 'enforcer')->countAllResults(),
+            'duty'     => [],
         ];
+        foreach (self::DUTY_STATUSES as $dutyStatus) {
+            $stats['duty'][$dutyStatus] = $this->userModel
+                ->where('role', 'enforcer')
+                ->where('duty_status', $dutyStatus)
+                ->countAllResults();
+        }
 
         if ($role !== '') {
             $this->userModel->where('role', $role);
         } else {
             $this->userModel->whereIn('role', $allowedRoles);
         }
+        if ($duty !== '') {
+            $this->userModel->where('duty_status', $duty);
+        }
+        if ($search !== '') {
+            $this->userModel->groupStart()
+                ->like('username', $search)
+                ->orLike('email', $search)
+                ->orLike('firstname', $search)
+                ->orLike('lastname', $search)
+                ->groupEnd();
+        }
 
         $data = [
-            'title'        => 'User Management',
-            'selectedRole' => $role,
-            'stats'        => $stats,
-            'users'        => $this->userModel->paginate(10, 'users'),
-            'pager'        => $this->userModel->pager,
+            'title'           => 'User Management',
+            'selectedRole'    => $role,
+            'selectedDuty'    => $duty,
+            'selectedSearch'  => $search,
+            'dutyStatuses'    => self::DUTY_STATUSES,
+            'stats'           => $stats,
+            'users'           => $this->userModel->paginate(10, 'users'),
+            'pager'           => $this->userModel->pager,
         ];
         return view('admin/users/index', $data);
+    }
+
+    /**
+     * Read-only duty status feed for User Management.
+     *
+     * Duty status belongs to the enforcer: it is set from the officer portal's
+     * Field Status dialog only. An admin never writes it — the list simply
+     * reads it and polls this endpoint so the badges always reflect whatever
+     * the enforcer last set.
+     */
+    public function dutyStatusApi()
+    {
+        $enforcers = $this->userModel
+            ->select('id, duty_status')
+            ->where('role', 'enforcer')
+            ->findAll();
+
+        $statuses = [];
+        foreach ($enforcers as $enforcer) {
+            $statuses[(int) $enforcer['id']] = (string) ($enforcer['duty_status'] ?? 'Off Duty');
+        }
+
+        return $this->response->setJSON([
+            'success'  => true,
+            'statuses' => $statuses,
+        ]);
     }
 
     public function viewDriver($id = null)
@@ -90,55 +155,200 @@ class UserController extends BaseController
             }
         }
 
-        // Group individual infractions by citation / ticket_id so that multiple
-        // violations under the same citation are organized together in one ticket row.
-        $tickets = [];
-        foreach ($records as $record) {
-            $tId = trim((string) ($record['ticket_id'] ?? ''));
-            $groupKey = $tId !== '' ? $tId : ('single_' . $record['id']);
+        // Group by violator first, then keep every ticket underneath that
+        // person. A driver caught on several dates appears once, with all of
+        // their issued citations available in the expanded row.
+        $violatorGroups = [];
 
-            if (! isset($tickets[$groupKey])) {
-                $tickets[$groupKey] = [
-                    'id'             => $record['id'],
-                    'ticket_id'      => $record['ticket_id'] ?? 'N/A',
-                    'violator_id'    => $record['violator_id'] ?? 0,
-                    'first_name'     => $record['first_name'] ?? '',
-                    'last_name'      => $record['last_name'] ?? '',
-                    'driver_name'    => $record['driver_name'] ?? '',
-                    'license_plate'  => $record['license_plate'] ?? '',
-                    'status'         => $record['status'] ?? 'Pending',
+        foreach ($records as $record) {
+            $violatorId  = (int) ($record['violator_id'] ?? 0);
+            $firstName   = trim((string) ($record['first_name'] ?? ''));
+            $lastName    = trim((string) ($record['last_name'] ?? ''));
+            $driverName  = trim((string) ($record['driver_name'] ?? ''));
+            $displayName = trim($firstName . ' ' . $lastName);
+
+            if ($displayName === '') {
+                $displayName = $driverName !== '' ? $driverName : 'Unknown Violator';
+            }
+
+            // The linked violator id is the registry identity. Legacy rows
+            // without one fall back to the normalised name + plate.
+            $normalName = preg_replace('/\s+/', ' ', $displayName) ?? $displayName;
+            $nameKey    = mb_strtolower($normalName);
+            $plateKey   = strtoupper(trim((string) ($record['license_plate'] ?? '')));
+            $groupKey   = $violatorId > 0 ? 'v' . $violatorId : 'n' . $nameKey . '|' . $plateKey;
+
+            if (! isset($violatorGroups[$groupKey])) {
+                $violatorGroups[$groupKey] = [
+                    'violator_id'      => $violatorId,
+                    'display_name'     => $displayName,
+                    'driver_name'      => $driverName,
+                    'plates'           => [],
+                    'tickets'          => [],
+                    'ticket_count'     => 0,
+                    'infraction_count' => 0,
+                    'total_amount'     => 0.0,
+                    'assessed_amount'  => 0.0,
+                    'latest_date'      => null,
+                ];
+            }
+
+            $group =& $violatorGroups[$groupKey];
+
+            $plate = trim((string) ($record['license_plate'] ?? ''));
+            if ($plate !== '') {
+                $group['plates'][$plate] = true;
+            }
+
+            $ticketId  = trim((string) ($record['ticket_id'] ?? ''));
+            $ticketKey = $ticketId !== '' ? $ticketId : 'single_' . $record['id'];
+
+            if (! isset($group['tickets'][$ticketKey])) {
+                $group['tickets'][$ticketKey] = [
+                    'id'             => (int) $record['id'],
+                    'ticket_id'      => $ticketId !== '' ? $ticketId : 'N/A',
+                    'status'         => (string) ($record['status'] ?? 'Pending'),
+                    'statuses'       => [],
                     'violation_date' => $record['violation_date'] ?? null,
-                    'created_at'     => $record['created_at'] ?? null,
+                    'latest_date'    => $record['violation_date'] ?? null,
                     'total_amount'   => 0.0,
                     'infractions'    => [],
                 ];
             }
 
-            $tickets[$groupKey]['total_amount'] += (float) ($record['penalty_amount'] ?? 0);
-            $tickets[$groupKey]['infractions'][] = [
-                'id'             => $record['id'],
+            $ticket =& $group['tickets'][$ticketKey];
+
+            $recordStatus = (string) ($record['status'] ?? 'Pending');
+            $ticket['statuses'][$recordStatus] = true;
+
+            // A ticket is only settled when every offense line is paid; one
+            // pending line keeps the whole citation open.
+            if ($recordStatus === 'Pending') {
+                $ticket['status'] = 'Pending';
+            }
+
+            $penalty = (float) ($record['penalty_amount'] ?? 0);
+            $ticket['total_amount'] += $penalty;
+            $ticket['infractions'][] = [
+                'id'             => (int) $record['id'],
                 'violation_type' => $record['violation_type'] ?? '-',
-                'penalty_amount' => (float) ($record['penalty_amount'] ?? 0),
-                'status'         => $record['status'] ?? 'Pending',
+                'penalty_amount' => $penalty,
+                'status'         => $recordStatus,
             ];
 
-            // If any infraction is Pending, the citation status is Pending
-            if (($record['status'] ?? '') === 'Pending') {
-                $tickets[$groupKey]['status'] = 'Pending';
+            if (! empty($record['violation_date'])) {
+                $date = (string) $record['violation_date'];
+                if ($ticket['latest_date'] === null || $date > $ticket['latest_date']) {
+                    $ticket['latest_date'] = $date;
+                }
+                if ($group['latest_date'] === null || $date > $group['latest_date']) {
+                    $group['latest_date'] = $date;
+                }
             }
+
+            $group['total_amount'] += $penalty;
+            if ($recordStatus !== 'Cancelled') {
+                $group['assessed_amount'] += $penalty;
+            }
+            $group['infraction_count']++;
+
+            unset($group, $ticket);
         }
-        $tickets = array_values($tickets);
+
+        // Resolve each ticket's final status from all of its offense lines,
+        // then roll the tickets up into the person's overall standing. The
+        // rule is exclusive: all cancelled -> Cancelled, any pending ->
+        // Pending, otherwise Paid.
+        $totalTickets     = 0;
+        $pendingTickets   = 0;
+        $paidTickets      = 0;
+        $cancelledTickets = 0;
+
+        foreach ($violatorGroups as &$group) {
+            $group['tickets'] = array_values($group['tickets']);
+            $group['ticket_count'] = count($group['tickets']);
+            $group['plates'] = array_keys($group['plates']);
+
+            $pendingInGroup   = 0;
+            $paidInGroup      = 0;
+            $cancelledInGroup = 0;
+
+            foreach ($group['tickets'] as &$ticket) {
+                $statuses = $ticket['statuses'] ?? [];
+
+                if (isset($statuses['Pending'])) {
+                    $ticket['status'] = 'Pending';
+                } elseif (isset($statuses['Paid'])) {
+                    $ticket['status'] = 'Paid';
+                } elseif (isset($statuses['Cancelled'])) {
+                    $ticket['status'] = 'Cancelled';
+                } else {
+                    $ticket['status'] = 'Pending';
+                }
+
+                unset($ticket['statuses']);
+
+                if ($ticket['status'] === 'Pending') {
+                    $pendingInGroup++;
+                    $pendingTickets++;
+                } elseif ($ticket['status'] === 'Paid') {
+                    $paidInGroup++;
+                    $paidTickets++;
+                } else {
+                    $cancelledInGroup++;
+                    $cancelledTickets++;
+                }
+
+                $totalTickets++;
+            }
+            unset($ticket);
+
+            $group['pending_tickets']   = $pendingInGroup;
+            $group['paid_tickets']      = $paidInGroup;
+            $group['cancelled_tickets'] = $cancelledInGroup;
+
+            if ($group['ticket_count'] > 0 && $cancelledInGroup === $group['ticket_count']) {
+                $group['status'] = 'Cancelled';
+            } elseif ($pendingInGroup > 0) {
+                $group['status'] = 'Pending';
+            } elseif ($paidInGroup > 0) {
+                $group['status'] = 'Paid';
+            } else {
+                $group['status'] = 'Pending';
+            }
+
+            // Newest ticket first inside the expanded citations list.
+            usort($group['tickets'], static fn ($a, $b) =>
+                strcmp((string) ($b['latest_date'] ?? ''), (string) ($a['latest_date'] ?? ''))
+            );
+        }
+        unset($group);
+
+        $violatorGroups = array_values($violatorGroups);
+
+        usort($violatorGroups, static fn ($a, $b) =>
+            strcmp((string) ($b['latest_date'] ?? ''), (string) ($a['latest_date'] ?? ''))
+        );
+
+        $totalViolators     = count($violatorGroups);
+        $pendingViolators   = count(array_filter($violatorGroups, static fn ($group) => ($group['status'] ?? '') === 'Pending'));
+        $paidViolators      = count(array_filter($violatorGroups, static fn ($group) => ($group['status'] ?? '') === 'Paid'));
+        $cancelledViolators = count(array_filter($violatorGroups, static fn ($group) => ($group['status'] ?? '') === 'Cancelled'));
 
         $data = [
             'title'               => 'Traffic Enforcer Profile: ' . $user['username'],
             'user'                => $user,
             'records'             => $records,
-            'tickets'             => $tickets,
-            'totalTickets'        => count($tickets),
+            'violatorGroups'      => $violatorGroups,
+            'totalViolators'      => $totalViolators,
+            'totalTickets'        => $totalTickets,
             'totalInfractions'    => count($records),
-            'pendingCount'        => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Pending')),
-            'paidCount'           => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Paid')),
-            'cancelledCount'      => count(array_filter($tickets, static fn($t) => ($t['status'] ?? '') === 'Cancelled')),
+            'pendingViolators'    => $pendingViolators,
+            'paidViolators'       => $paidViolators,
+            'cancelledViolators'  => $cancelledViolators,
+            'pendingTickets'      => $pendingTickets,
+            'paidTickets'         => $paidTickets,
+            'cancelledTickets'    => $cancelledTickets,
             'totalAssessedAmount' => $totalAssessedAmount,
         ];
 
@@ -182,6 +392,8 @@ class UserController extends BaseController
             // allow shorter password when default env password is used
             'password' => $defaultPassword !== '' ? 'permit_empty|min_length[5]' : 'required|min_length[8]',
             'confirm_password' => 'matches[password]',
+            'backup_password' => 'permit_empty|min_length[5]',
+            'confirm_backup_password' => 'permit_empty|matches[backup_password]',
             'role'     => 'permit_empty|in_list[admin,driver,enforcer]',
             'assigned_station' => 'permit_empty|max_length[255]',
         ];
@@ -201,6 +413,14 @@ class UserController extends BaseController
             'role'      => $role,
             'status'    => 'active',
         ]);
+
+        // Optional second sign-in credential, used if the main password is
+        // forgotten. Only its bcrypt hash is persisted.
+        $backupPassword = (string) $this->request->getPost('backup_password');
+        if ($backupPassword !== '') {
+            $data['backup_password_hash']   = password_hash($backupPassword, PASSWORD_DEFAULT);
+            $data['backup_password_set_at'] = date('Y-m-d H:i:s');
+        }
 
         if ($this->userModel->save($data)) {
             return redirect()->to(base_url('users') . ($data['role'] ? '?role=' . $data['role'] : ''))->with('success', 'User created successfully.');
@@ -252,6 +472,13 @@ class UserController extends BaseController
             $rules['confirm_password'] = 'matches[password]';
         }
 
+        // Optional backup password. Leaving it blank keeps the current one;
+        // supplying a new value replaces it.
+        if ($this->request->getPost('backup_password')) {
+            $rules['backup_password'] = 'min_length[5]';
+            $rules['confirm_backup_password'] = 'matches[backup_password]';
+        }
+
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
@@ -264,6 +491,11 @@ class UserController extends BaseController
 
         if ($this->request->getPost('password')) {
             $data['password'] = $this->request->getPost('password');
+        }
+
+        if ($this->request->getPost('backup_password')) {
+            $data['backup_password_hash']   = password_hash((string) $this->request->getPost('backup_password'), PASSWORD_DEFAULT);
+            $data['backup_password_set_at'] = date('Y-m-d H:i:s');
         }
 
         if ($this->userModel->save($data)) {

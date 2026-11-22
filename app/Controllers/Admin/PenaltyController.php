@@ -55,16 +55,29 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('violators'))->with('error', 'Violator record not found.');
         }
 
+        // A record opened from an enforcer profile returns to that profile;
+        // from anywhere else it returns to the Violators registry.
+        $from       = (string) $this->request->getGet('from');
+        $enforcerId = (int) $this->request->getGet('enforcer_id');
+
+        if ($from === 'enforcer' && $enforcerId > 0) {
+            $backUrl   = base_url('users/view-enforcer/' . $enforcerId);
+            $backLabel = 'Enforcer Profile';
+        } else {
+            // The payment working list hides people whose fines are settled,
+            // so the registry is the safe default back target.
+            $backUrl   = base_url('violators');
+            $backLabel = 'Violators';
+        }
+
         $data = [
             'title'         => 'Violator Profile - ' . ($profile['violator']['driver_name'] ?: 'Record'),
             'violator'      => $profile['violator'],
             'summary'       => $profile['summary'],
             'tickets'       => $profile['tickets'],
             'vehicles'      => $profile['vehicles'],
-            // Opening a record from the Violators registry returns there, since
-            // the payment working list hides people whose fines are settled.
-            'backUrl'       => base_url('violators'),
-            'backLabel'     => 'Violators',
+            'backUrl'       => $backUrl,
+            'backLabel'     => $backLabel,
             'ticketViewBase'=> base_url('penalties/view/'),
             'recordUrl'     => base_url('officer/violations?violator_id=' . (int) $profile['violator']['id']),
             'isAdmin'       => true,
@@ -109,10 +122,12 @@ class PenaltyController extends BaseController
     public function store()
     {
         $rules = [
-            'violation_id'  => 'required|integer',
-            'payment_method'=> 'required|in_list[Cash,Check,Money Order]',
-            'receipt_number'=> 'required|max_length[18]',
-            'remarks'       => 'permit_empty|max_length[500]',
+            'violation_id'                 => 'required|integer',
+            'payment_method'               => 'required|in_list[Cash,Check,Money Order]',
+            'receipt_number'               => 'required|max_length[18]',
+            'remarks'                      => 'permit_empty|max_length[500]',
+            'collecting_officer_name'      => 'required|max_length[255]',
+            'collecting_officer_signature' => 'required|max_length[5000000]',
         ];
 
         if (! $this->validate($rules)) {
@@ -124,8 +139,20 @@ class PenaltyController extends BaseController
         $remarks       = trim((string) ($this->request->getPost('remarks') ?? ''));
         $receiptNumber = trim((string) $this->request->getPost('receipt_number'));
 
+        $collectingOfficerName      = preg_replace('/\s+/', ' ', trim((string) $this->request->getPost('collecting_officer_name')));
+        $collectingOfficerSignature = trim((string) $this->request->getPost('collecting_officer_signature'));
+
         if (! ctype_digit($receiptNumber) || (int) $receiptNumber < 1) {
             return redirect()->back()->withInput()->with('error', 'Enter a valid numeric Official Receipt (OR) number greater than zero.');
+        }
+
+        // Only accept an image data URL produced by the signature pad/uploader,
+        // never arbitrary posted markup that could be echoed on the receipt.
+        if (
+            $collectingOfficerSignature === ''
+            || preg_match('/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+\/=\s]+$/', $collectingOfficerSignature) !== 1
+        ) {
+            return redirect()->back()->withInput()->with('error', 'Please apply the collecting officer e-signature before recording the payment.');
         }
 
         $violation = $this->violationRecord->find($violationId);
@@ -138,7 +165,7 @@ class PenaltyController extends BaseController
             return redirect()->to(base_url('penalties'))->with('error', 'This ticket is not pending payment.');
         }
 
-        if ($this->violationRecord->recordPayment($violationId, $paymentMethod, $remarks, $receiptNumber)) {
+        if ($this->violationRecord->recordPayment($violationId, $paymentMethod, $remarks, $receiptNumber, $collectingOfficerName, $collectingOfficerSignature)) {
             return redirect()->to(base_url('penalties'))->with('payment_settled', 'Payment has been settled successfully!');
         }
 
@@ -269,10 +296,12 @@ class PenaltyController extends BaseController
         }
 
         $updateData = [
-            'status' => 'Pending',
-            'paid_date' => null,
-            'payment_method' => null,
-            'receipt_number' => null
+            'status'                       => 'Pending',
+            'paid_date'                    => null,
+            'payment_method'               => null,
+            'receipt_number'               => null,
+            'collecting_officer_name'      => null,
+            'collecting_officer_signature' => null,
         ];
 
         if (!empty($violation['ticket_id'])) {

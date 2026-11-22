@@ -427,12 +427,12 @@
 
 @media print {
     .vpp-day-group-head { color: #000 !important; border-bottom: 1px solid #000 !important; }
-    .vpp-day-group-name { font-size: .78rem !important; color: #000 !important; }
-    .vpp-day-group-meta { font-size: .68rem !important; color: #000 !important; }
+    .vpp-day-group-name { font-size: 10pt !important; color: #000 !important; }
+    .vpp-day-group-meta { font-size: 8pt !important; color: #000 !important; }
 
     /* The daily summary: seven columns that must not squeeze their headings. */
     .vpp-day-table { table-layout: fixed !important; }
-    .vpp-day-table th { font-size: .6rem !important; padding: 3px 4px !important; }
+    .vpp-day-table th { font-size: 7.5pt !important; padding: 3px 4px !important; }
     .vpp-day-table th, .vpp-day-table td { white-space: nowrap !important; }
     .vpp-day-table th:nth-child(1), .vpp-day-table td:nth-child(1) { width: 14% !important; }
     .vpp-day-table th:nth-child(2), .vpp-day-table td:nth-child(2) { width: 8% !important; }
@@ -455,7 +455,7 @@
 
     .vpp-summary-table th {
         white-space: nowrap !important;
-        font-size: .56rem !important;
+        font-size: 7.5pt !important;
         padding: 3px 4px !important;
     }
     .vpp-summary-table th:nth-child(1), .vpp-summary-table td:nth-child(1) { width: 26% !important; }

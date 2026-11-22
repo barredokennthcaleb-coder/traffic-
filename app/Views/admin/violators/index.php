@@ -68,7 +68,7 @@
             <!-- Starts the citation here, in a popup, instead of sending the
                  admin to the officer ledger: the directory can still issue a
                  ticket even when the enforcer side is unavailable. -->
-            <button type="button" class="vd-btn-new" data-bs-toggle="modal" data-bs-target="#adminRecordViolationModal" title="Record a new violation">
+            <button type="button" class="vd-btn-new" data-bs-toggle="modal" data-bs-target="#recordViolationModal" title="Record a new violation">
                 <i class="bi bi-plus-lg"></i> New Violation
             </button>
         </div>
@@ -80,23 +80,23 @@
 
         <div class="vd-card-head">
             <div class="vd-chips">
-                <a href="<?= esc($chipUrl('')) ?>" class="vd-chip <?= $status === '' ? 'active' : '' ?>">
+                <a href="<?= esc($chipUrl('')) ?>" class="vd-chip <?= $status === '' ? 'active' : '' ?>"
+                   title="Every violator with at least one citation, counted once">
                     All <span class="vd-chip-count"><?= (int) ($counts['all'] ?? 0) ?></span>
                 </a>
                 <a href="<?= esc($chipUrl('Pending')) ?>"
                    class="vd-chip vd-chip-pending <?= $status === 'Pending' ? 'active' : '' ?>"
-                   title="Everyone with at least one unpaid ticket — even when they have already paid other tickets">
+                   title="Everyone with at least one unpaid ticket — only their unpaid tickets show here">
                     Pending <span class="vd-chip-count"><?= (int) ($counts['pending'] ?? 0) ?></span>
                 </a>
                 <a href="<?= esc($chipUrl('Paid')) ?>"
                    class="vd-chip vd-chip-paid <?= $status === 'Paid' ? 'active' : '' ?>"
-                   title="Everyone with at least one settled ticket — even when an unpaid ticket remains">
+                   title="Everyone with at least one settled ticket — only their settled tickets show here">
                     Paid <span class="vd-chip-count"><?= (int) ($counts['paid'] ?? 0) ?></span>
                 </a>
                 <?php
-                    // Cancelled violators are listed under "All" too, so without
-                    // their own chip the three counts never added up to the total.
-                    // The chip only appears when at least one exists.
+                    // Cancelled violators are listed under "All" too; the chip
+                    // only appears when at least one such record exists.
                 ?>
                 <?php if ((int) ($counts['cancelled'] ?? 0) > 0): ?>
                     <a href="<?= esc($chipUrl('Cancelled')) ?>" class="vd-chip vd-chip-cancelled <?= $status === 'Cancelled' ? 'active' : '' ?>">
@@ -110,11 +110,10 @@
         <div class="vd-banner" id="vdBanner">
             <i class="bi bi-info-circle"></i>
             <span>
-                One row per person. Tickets, fines and balances are summed from their linked
-                citations, so a settled apprehension stays in the record instead of disappearing
-                from it. Pending and Paid are sections, not a single standing: Pending lists
-                everyone with at least one unpaid ticket even when they have already paid others,
-                and Paid does the same for everyone with at least one settled ticket.
+                One row per person. Pending and Paid are sections of the same record: Pending
+                shows only unpaid tickets and amounts, Paid shows only settled ones. Someone
+                with both kinds appears in both sections, each time with only the matching
+                badge. All shows the whole record at once; Cancelled means no live ticket is left.
             </span>
             <button type="button" class="vd-banner-close" id="vdBannerClose"
                     aria-label="Hide this note" title="Hide this note">
@@ -182,7 +181,9 @@
 
                                 // Money on the row reads the same way the enforcer
                                 // ledger reads it: what is still owed, and what was
-                                // already settled, as two separate amounts.
+                                // already settled. A status section sums only its
+                                // own tickets, so the other amount is zero there and
+                                // its badge is simply not shown.
                                 $pendingAmount = (float) ($v['balance'] ?? 0);
                                 $paidAmount    = (float) ($v['total_paid'] ?? 0);
                                 $hasPending    = $pendingAmount > 0;
@@ -267,12 +268,11 @@
                                         </div>
 
                                         <div class="vd-state">
-                                            <!-- Each pill opens the directory filtered to
-                                                 that state, so "Pending" here shows
-                                                 everyone still owing, not just this
-                                                 person. The click is stopped at the
-                                                 pill: the row itself opens this
-                                                 violator's record. -->
+                                            <!-- Each pill opens the matching section;
+                                                 a person with both kinds carries both
+                                                 pills here, but each section shows only
+                                                 its own tickets. The click is stopped at
+                                                 the pill: the row opens the record. -->
                                             <div class="vd-state-chips">
                                                 <?php if ($statusValue === 'Cancelled'): ?>
                                                     <a href="<?= esc($chipUrl('Cancelled')) ?>"
@@ -294,7 +294,7 @@
                                                     <a href="<?= esc($chipUrl('Paid')) ?>"
                                                        class="vd-state-chip vd-state-chip--paid"
                                                        onclick="event.stopPropagation();"
-                                                       title="Show everyone settled at the cashier">
+                                                       title="Show everyone with at least one settled ticket">
                                                         <i class="bi bi-check-circle-fill"></i>Paid &#8369;<?= number_format($paidAmount, 2) ?>
                                                     </a>
                                                 <?php endif; ?>
@@ -310,10 +310,10 @@
                                                 </div>
                                             <?php endif; ?>
 
-                                            <!-- How many citations stand on this record. Who
-                                                 recorded them has its own column. -->
+                                            <!-- How many citations stand in this section.
+                                                 Who recorded them has its own column. -->
                                             <div class="vd-row-meta">
-                                                <span title="Tickets on record">
+                                                <span title="Tickets in this section">
                                                     <i class="bi bi-receipt"></i><?= (int) $v['attempt_count'] ?> <?= ((int) $v['attempt_count'] === 1) ? 'ticket' : 'tickets' ?>
                                                 </span>
                                             </div>
@@ -601,7 +601,9 @@
 .vd-table thead th {
     font-size: 0.68rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: .06em;
-    color: var(--text-subtle);
+    /* Muted (not subtle) so the labels stay readable on the muted surface
+       in both light and dark themes. */
+    color: var(--text-muted, #64748b);
     padding: 11px 14px;
     background: var(--surface-muted);
     white-space: nowrap;
@@ -636,7 +638,9 @@
 .vd-ledger-head > span {
     font-size: 0.68rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: .06em;
-    color: var(--text-subtle);
+    /* Same readable tone as the other header cells; --text-subtle was
+       nearly invisible against the muted header background. */
+    color: var(--text-muted, #64748b);
     white-space: normal;
 }
 .vd-identity { display: flex; align-items: center; gap: 11px; min-width: 0; }
@@ -1080,148 +1084,11 @@ a.vd-state-chip:focus-visible {
     .vd-table-wrap.is-fresh { animation: none; }
 }
 
-/* Citation popup launched from the directory header. */
-.aiv-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.15rem 0.9rem;
-}
-.aiv-grid .form-check {
-    margin: 0;
-    padding: 0.32rem 0.5rem 0.32rem 2rem;
-    border-radius: 8px;
-    line-height: 1.3;
-}
-.aiv-grid .form-check:hover { background: #f1f5f9; }
-[data-bs-theme="dark"] .aiv-grid .form-check:hover { background: #1e293b; }
-.aiv-grid .aiv-fine { color: var(--text-subtle, #64748b); font-size: 0.76rem; white-space: nowrap; }
-@media (max-width: 575.98px) {
-    .aiv-grid { grid-template-columns: 1fr; }
-}
+    /* TCT citation form — shared with the enforcer ticket */
+    <?= $this->include('officer/partials/tct_ticket_styles') ?>
 </style>
 
-<?= $this->include('officer/partials/tct_field_options') ?>
-
-<!-- Record a citation without leaving the directory. Posts to the same
-     officer/store endpoint the enforcer form uses (an admin session is
-     redirected straight back here on success), so nothing is duplicated and
-     no data path differs from a normal ticket. -->
-<div class="modal fade" id="adminRecordViolationModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="adminRecordViolationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white py-3">
-                <h5 class="modal-title fw-bold" id="adminRecordViolationModalLabel">
-                    <i class="bi bi-file-earmark-text me-2"></i>Record New Violation
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="<?= base_url('officer/store') ?>" method="POST" id="adminCitationForm">
-                <?= csrf_field() ?>
-                <input type="hidden" name="submission_token" value="<?= esc($submissionToken) ?>">
-                <input type="hidden" name="age" value="<?= esc(old('age', '25')) ?>">
-
-                <div class="modal-body p-3">
-                    <div class="row g-2 mb-2">
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_first_name">First name</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_first_name" name="first_name" required value="<?= esc(old('first_name')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_middle_name">Middle</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_middle_name" name="middle_name" value="<?= esc(old('middle_name')) ?>">
-                        </div>
-                        <div class="col-8 col-md-4">
-                            <label class="form-label small fw-bold mb-1" for="aiv_last_name">Last name</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_last_name" name="last_name" required value="<?= esc(old('last_name')) ?>">
-                        </div>
-                        <div class="col-4 col-md-2">
-                            <label class="form-label small fw-bold mb-1" for="aiv_name_suffix">Suffix</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_name_suffix" name="name_suffix" maxlength="20" placeholder="Jr." value="<?= esc(old('name_suffix')) ?>">
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mb-2">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label small fw-bold mb-1" for="aiv_address">Address</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_address" name="address" required value="<?= esc(old('address')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_license_number">DL/Permit No.</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_license_number" name="license_number" value="<?= esc(old('license_number')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_license_plate">Plate#</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_license_plate" name="license_plate" value="<?= esc(old('license_plate')) ?>">
-                        </div>
-                    </div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_mtop_number">MTOP#</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_mtop_number" name="mtop_number" value="<?= esc(old('mtop_number')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_vehicle_type">Vehicle</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_vehicle_type" name="vehicle_type" list="vehicleTypeOptions" value="<?= esc(old('vehicle_type')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_owner_name">Owner</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_owner_name" name="owner_name" value="<?= esc(old('owner_name')) ?>">
-                        </div>
-                        <div class="col-6 col-md-3">
-                            <label class="form-label small fw-bold mb-1" for="aiv_owner_address">Owner address</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_owner_address" name="owner_address" value="<?= esc(old('owner_address')) ?>">
-                        </div>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between border-top pt-3 mb-2">
-                        <span class="fw-bold small text-uppercase" style="letter-spacing: .04em;">Violations</span>
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-bold">
-                            Fine: &#8369;<span id="aivFineTotal">0.00</span>
-                        </span>
-                    </div>
-
-                    <div class="aiv-grid">
-                        <?php foreach ($violationTypes as $type): ?>
-                            <label class="form-check">
-                                <input class="form-check-input aiv-violation-check" type="checkbox"
-                                       name="violation_type_id[]" value="<?= (int) $type['id'] ?>"
-                                       data-amount="<?= esc((string) $type['fine_amount'], 'attr') ?>"
-                                       <?= in_array((string) $type['id'], (array) old('violation_type_id', []), true) ? 'checked' : '' ?>>
-                                <span>
-                                    <?= esc($type['violation_name']) ?>
-                                    <span class="aiv-fine">&#8369;<?= number_format((float) $type['fine_amount'], 2) ?></span>
-                                </span>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <div class="row g-2 mt-3">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label small fw-bold mb-1" for="aiv_location">Place</label>
-                            <input type="text" class="form-control form-control-sm" id="aiv_location" name="location" list="locationOptions" placeholder="e.g. Ceres Terminal, Kabankalan City" value="<?= esc(old('location')) ?>">
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label small fw-bold mb-1" for="aiv_violation_datetime">Date &amp; time</label>
-                            <input type="datetime-local" class="form-control form-control-sm" id="aiv_violation_datetime" name="violation_datetime" value="<?= esc(old('violation_datetime', date('Y-m-d\TH:i'))) ?>">
-                        </div>
-                    </div>
-
-                    <div class="alert alert-danger py-2 px-3 mt-3 mb-0 d-none" id="aivError">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>Select at least one violation before recording the citation.
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-bold">
-                        <i class="bi bi-check2-circle me-1"></i>Record Citation
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<?= $this->include('officer/partials/record_ticket_modal') ?>
 
 <?= $this->endSection() ?>
 
@@ -1450,46 +1317,6 @@ a.vd-state-chip:focus-visible {
 </script>
 
 <script>
-// Citation popup: live fine total and an in-place check that at least one
-// offense is ticked, so a rejected submission never looks like a dead button.
-(function () {
-    const modalEl = document.getElementById('adminRecordViolationModal');
-    if (!modalEl) return;
-
-    const form   = document.getElementById('adminCitationForm');
-    const checks = Array.from(modalEl.querySelectorAll('.aiv-violation-check'));
-    const total  = document.getElementById('aivFineTotal');
-    const error  = document.getElementById('aivError');
-
-    const recalc = function () {
-        let sum = 0;
-        checks.forEach(function (check) {
-            if (check.checked) sum += parseFloat(check.dataset.amount || '0') || 0;
-        });
-        if (total) total.textContent = sum.toFixed(2);
-        if (error && checks.some(function (c) { return c.checked; })) error.classList.add('d-none');
-    };
-
-    checks.forEach(function (check) { check.addEventListener('change', recalc); });
-    recalc();
-
-    if (form) {
-        form.addEventListener('submit', function (event) {
-            if (!checks.some(function (c) { return c.checked; })) {
-                event.preventDefault();
-                if (error) error.classList.remove('d-none');
-                modalEl.querySelector('.modal-body').scrollTop = 0;
-            }
-        });
-    }
-
-    <?php if (session()->getFlashdata('errors') || session()->getFlashdata('error')): ?>
-    // The server bounced the submission back: reopen the form with the values
-    // the browser kept so the admin can fix the field that was rejected.
-    if (window.bootstrap && bootstrap.Modal) {
-        bootstrap.Modal.getOrCreateInstance(modalEl).show();
-    }
-    <?php endif; ?>
-})();
+<?= $this->include('officer/partials/record_ticket_modal_script') ?>
 </script>
 <?= $this->endSection() ?>

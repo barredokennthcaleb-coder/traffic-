@@ -256,7 +256,10 @@
             combos.forEach(c => { if (c !== except) c.close(); });
         };
 
-        document.querySelectorAll('input[data-combo-source]').forEach(input => {
+        // Scope to this modal: the record-modal script binds its own combo
+        // fields on the same page. A global selector would give every field
+        // two click handlers and the list would open then close instantly.
+        document.querySelectorAll('#editViolationModal input[data-combo-source]').forEach(input => {
             const wrap = input.closest('.combo-wrap');
             const list = wrap && wrap.querySelector('.combo-list');
             const toggle = wrap && wrap.querySelector('.combo-toggle');

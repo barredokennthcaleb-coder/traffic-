@@ -6,6 +6,33 @@
 <?php
     $isPrintMode  = service('request')->getGet('print') === '1';
     $fromViolations = service('request')->getGet('from') === 'violations';
+    $fromViolators  = service('request')->getGet('from') === 'violators';
+    $fromProfileId  = (int) service('request')->getGet('violator');
+    $fromViolatorPage = service('request')->getGet('from') === 'violator-profile' && $fromProfileId > 0;
+    $isAdmin = session()->get('role') === 'admin';
+
+    // Keep the reader in the part of the app they came from.
+    if ($fromViolators || ($isAdmin && ! $fromViolatorPage)) {
+        $backUrl   = base_url('violators');
+        $backLabel = 'Back to Violators';
+    } elseif ($fromViolatorPage) {
+        $backUrl   = base_url('officer/violator-profile/' . $fromProfileId);
+        $backLabel = 'Back to Violator Profile';
+    } else {
+        $backUrl   = base_url('officer/violations');
+        $backLabel = 'Back to Violations';
+    }
+
+    $printParams = ['print' => 1, 'format' => 'tct'];
+    if ($fromViolators) {
+        $printParams['from'] = 'violators';
+    } elseif ($fromViolations) {
+        $printParams['from'] = 'violations';
+    } elseif ($fromViolatorPage) {
+        $printParams['from'] = 'violator-profile';
+        $printParams['violator'] = $fromProfileId;
+    }
+    $printUrl = base_url('officer/view/' . (int) ($violation['id'] ?? 0)) . '?' . http_build_query($printParams);
 
     $totalFine   = 0;
     $vList       = isset($all_violations) ? $all_violations : [$violation];
@@ -26,14 +53,21 @@
 
 <!-- Screen toolbar (hidden on print) -->
 <div class="container-fluid py-3 no-print">
-    <div class="d-flex justify-content-between align-items-center">
-        <a href="<?= base_url('officer/violations') ?>" class="btn btn-outline-secondary btn-sm btn-back-electric">
-            <i class="bi bi-arrow-left me-1"></i> Back to Violations
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <a href="<?= esc($backUrl) ?>" class="btn btn-outline-secondary btn-sm btn-back-electric">
+            <i class="bi bi-arrow-left me-1"></i> <?= esc($backLabel) ?>
         </a>
-        <a href="<?= current_url() ?>?print=1<?= $fromViolations ? '&from=violations' : '' ?>"
-           class="btn btn-primary btn-sm shadow-sm">
-            <i class="bi bi-printer me-1"></i> Print Ticket
-        </a>
+        <div class="d-flex gap-2">
+            <?php if (! empty($violation['violator_id'])): ?>
+                <a href="<?= base_url('officer/violator-profile/' . (int) $violation['violator_id']) ?>"
+                   class="btn btn-outline-dark btn-sm shadow-sm">
+                    <i class="bi bi-person-vcard me-1"></i> Violator Profile
+                </a>
+            <?php endif; ?>
+            <a href="<?= esc($printUrl) ?>" class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-printer me-1"></i> Print Ticket
+            </a>
+        </div>
     </div>
 </div>
 
@@ -217,6 +251,21 @@
 
 <!-- Styles -->
 <style>
+    /* Electric blue stays #0066ff on the printed-result screen: the toolbar
+       actions neither shift shade on hover/focus nor pick up the role's
+       violet --brand-primary. Only the shadow/lift gives feedback. */
+    .no-print .btn-back-electric,
+    .no-print .btn-back-electric:hover,
+    .no-print .btn-back-electric:focus-visible,
+    .no-print .btn-primary,
+    .no-print .btn-primary:hover,
+    .no-print .btn-primary:focus-visible {
+        background: #0066ff !important;
+        border-color: #0066ff !important;
+        color: #ffffff !important;
+        box-shadow: 0 3px 10px rgba(0, 102, 255, 0.3);
+    }
+
     .tct-official-card {
         max-width: 720px;
         margin: 0 auto;
@@ -435,6 +484,98 @@
         letter-spacing: 0.05em;
     }
 
+    /* ── MOBILE: streamline the ticket into one readable column ──────────
+       Screen only — the 58mm print layout below must never be restacked.
+       On a phone the certificate-style side-by-side fields collapse into
+       stacked label / value pairs with full-width underlines, so no value
+       is squeezed into a two-letter stub or pushed off the card. */
+    @media screen and (max-width: 768px) {
+        .tct-official-card {
+            padding: 16px 14px !important;
+            border-width: 1.5px;
+        }
+
+        /* Toolbar: actions drop below the back button and share the width. */
+        .no-print.container-fluid .d-flex.flex-wrap { gap: 0.5rem; }
+        .no-print.container-fluid .d-flex.gap-2 { width: 100%; }
+        .no-print.container-fluid .d-flex.gap-2 .btn { flex: 1 1 auto; }
+
+        /* Letterhead: seal above the centred text, smaller type so the long
+           title fits on a narrow screen without awkward wrapping. */
+        .tct-header-area {
+            flex-direction: column !important;
+            gap: 8px;
+            min-height: 0 !important;
+            margin-bottom: 14px !important;
+        }
+        .tct-seal-box {
+            position: static !important;
+            width: 60px !important;
+            height: 60px !important;
+        }
+        .tct-seal-img {
+            width: 60px !important;
+            height: 60px !important;
+            max-width: 60px !important;
+            max-height: 60px !important;
+        }
+        .tct-rep, .tct-city { font-size: 0.9rem; }
+        .tct-office { font-size: 1rem; }
+        .tct-doc-title { font-size: 1.1rem; letter-spacing: 0; margin-top: 4px !important; }
+        .tct-ord-no { font-size: 0.95rem; }
+
+        /* Tighter rhythm so the single column stays compact. */
+        .tct-doc-section { padding-bottom: 10px !important; margin-bottom: 10px !important; }
+
+        /* One field per line: label above its underline, underline full width. */
+        .tct-official-card .tct-row {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px;
+        }
+        .tct-official-card .tct-row > div {
+            width: 100% !important;
+            margin-right: 0 !important;
+        }
+        .tct-official-card .tct-row .d-flex {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 2px;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        .tct-official-card .tct-bold-label { white-space: normal !important; }
+        .tct-field-underline { width: 100%; min-height: 1.35rem; }
+
+        /* Driver's name: First / Middle / Last become three labelled rows,
+           label first (column-reverse) and left-aligned like every field. */
+        .tct-official-card .d-flex.w-100 {
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+        .tct-official-card .d-flex.w-100 .d-flex.flex-column {
+            flex-direction: column-reverse !important;
+            align-items: stretch !important;
+            text-align: left !important;
+        }
+
+        /* Checklist & legal notice. */
+        .tct-checklist-container { gap: 4px; }
+        .tct-check-item, .tct-item-text { font-size: 0.9rem; }
+        .tct-legal-text { text-align: left; }
+
+        /* Acknowledgment + signatures: roomier tap targets, fluid underline. */
+        .tct-official-card .d-flex.gap-5 { gap: 1.25rem !important; }
+        .tct-official-card .tct-sig-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .tct-sig-underline { width: 100% !important; }
+
+        /* Footer: let the two tags wrap onto their own lines. */
+        .tct-footer-area { flex-wrap: wrap; gap: 4px 12px; }
+    }
+
     /* Print styling — tuned for a 58mm thermal receipt printer.
        The printer's app/driver spools the page on an A4 canvas and then
        squeezes that canvas down to the 58mm roll (210mm ÷ 58mm ≈ 3.62×).
@@ -621,24 +762,15 @@
 
 <?php if ($isPrintMode): ?>
 <script>
-    // Ensure all images are loaded before printing
     window.addEventListener('load', function () {
-        // Short delay to ensure rendering is complete
-        setTimeout(() => {
-            // On iOS the dialog only opens from a user tap; the helper shows
-            // a "Tap to Print" button there instead of failing silently.
-            if (window.TrafficPrint) { window.TrafficPrint.autoOrPrompt(); } else { window.print(); }
-        }, 500);
+        // On touch devices the print sheet only opens from a tap; the helper
+        // shows a "Tap to Print" button and returns the reader afterwards.
+        if (window.TrafficPrint) {
+            window.TrafficPrint.autoOrPrompt({ backUrl: <?= json_encode($backUrl) ?> });
+        } else {
+            window.print();
+        }
     });
-    
-    // Auto-close or redirect after printing
-    window.onafterprint = function() {
-        <?php if ($fromViolations): ?>
-            window.location.href = '<?= base_url('officer/violations') ?>';
-        <?php else: ?>
-            // If it's an iframe, we don't need to do anything, the parent will cleanup
-        <?php endif; ?>
-    };
 </script>
 <?php endif; ?>
 

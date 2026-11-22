@@ -544,18 +544,18 @@
         page-break-after: avoid !important; break-after: avoid !important;
         page-break-inside: avoid !important; break-inside: avoid !important;
     }
-    .vpr-part-title { color: #000 !important; font-size: .82rem !important; }
-    .vpr-part-sub { color: #000 !important; font-size: .66rem !important; }
+    .vpr-part-title { color: #000 !important; font-size: 10.5pt !important; }
+    .vpr-part-sub { color: #000 !important; font-size: 8pt !important; }
 
     .vpr-year-month-head { color: #000 !important; border-bottom: 1px solid #000 !important; }
-    .vpr-year-month-name { font-size: .78rem !important; color: #000 !important; }
-    .vpr-year-month-meta { font-size: .68rem !important; color: #000 !important; }
+    .vpr-year-month-name { font-size: 10pt !important; color: #000 !important; }
+    .vpr-year-month-meta { font-size: 8pt !important; color: #000 !important; }
 
     /* Monthly summary: seven columns that must not squeeze their headings.
        Fixed layout keeps the nowrap headings inside A4 instead of widening
        the table past the printable column. */
     .vpr-yearsum-table { table-layout: fixed !important; }
-    .vpr-yearsum-table th { font-size: .6rem !important; padding: 3px 4px !important; }
+    .vpr-yearsum-table th { font-size: 7.5pt !important; padding: 3px 4px !important; }
     .vpr-yearsum-table th, .vpr-yearsum-table td { white-space: nowrap !important; }
     .vpr-yearsum-table th:nth-child(1), .vpr-yearsum-table td:nth-child(1) { width: 12% !important; }
     .vpr-yearsum-table th:nth-child(2), .vpr-yearsum-table td:nth-child(2) { width: 13% !important; }
@@ -586,7 +586,7 @@
 
     .vpr-yearv-table th {
         white-space: nowrap !important;
-        font-size: .56rem !important;
+        font-size: 7.5pt !important;
         padding: 3px 4px !important;
     }
     .vpr-yearv-table th:nth-child(1), .vpr-yearv-table td:nth-child(1) { width: 26% !important; }

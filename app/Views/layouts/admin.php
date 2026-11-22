@@ -1,12 +1,82 @@
 <?php
     $layoutRole = (string) session()->get('role');
     $isAdminDashboard = $layoutRole === 'admin' && uri_string() === 'dashboard';
+
+    // The top-bar badge shows who is actually signed in, not just the login
+    // handle. Sign-in stores the full name; older sessions may only carry the
+    // separate name parts, so fall back to those and finally to the username.
+    $topDisplayName = trim((string) (session()->get('full_name') ?? ''));
+    if ($topDisplayName === '') {
+        $topDisplayName = trim((string) preg_replace('/\s+/', ' ', implode(' ', array_filter([
+            (string) session()->get('firstname'),
+            (string) session()->get('middle_initial'),
+            (string) session()->get('lastname'),
+        ], static fn ($part) => trim($part) !== ''))));
+    }
+    if ($topDisplayName === '') {
+        $topDisplayName = (string) session()->get('username');
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <?php
+        // Paint the saved palette before the first frame. The theme used to be
+        // applied from the end-of-body script, so every navigation in dark
+        // mode painted a white page first and then switched — the flash read
+        // as a slow reload. This blocking snippet runs before the stylesheets
+        // below, so the very first paint already has the right surfaces.
+    ?>
+    <script>
+        (function () {
+            var key = 'trafficThemePreference';
+            var mode = 'auto';
+            try {
+                var saved = localStorage.getItem(key);
+                if (saved === 'light' || saved === 'dark') mode = saved;
+            } catch (e) {}
+            var dark = mode === 'dark'
+                || (mode === 'auto'
+                    && window.matchMedia
+                    && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            var root = document.documentElement;
+            // Freeze shell transitions until the first paint has landed. The
+            // sidebar/main-content width transitions otherwise animate from
+            // their defaults on every reload, so the rail and its labels are
+            // caught half-collapsed while the page is already usable.
+            root.classList.add('app-loading');
+            if (mode === 'light' || mode === 'dark') {
+                root.setAttribute('data-theme', mode);
+            }
+            root.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+        })();
+    </script>
+    <style>
+        /* Critical first-paint colours. They duplicate the design tokens
+           just far enough to cover the gap before the main stylesheet is
+           parsed, so there is never a white frame in dark mode. */
+        html { background-color: #f8fafc; }
+        html[data-theme="dark"],
+        html[data-bs-theme="dark"] { background-color: #0b0f19; color-scheme: dark; }
+        html[data-theme="light"],
+        html[data-bs-theme="light"] { color-scheme: light; }
+
+        /* The saved sidebar state is applied before first paint. Suppress the
+           shell's own transitions for that first frame so it cannot animate
+           from the default width and leave the rail mid-collapse. */
+        html.app-loading .sidebar,
+        html.app-loading .sidebar a,
+        html.app-loading .sidebar .nav-text,
+        html.app-loading .sidebar .sidebar-header-text,
+        html.app-loading .sidebar .brand-logo-container,
+        html.app-loading .main-content {
+            transition: none !important;
+            animation: none !important;
+        }
+    </style>
     <!-- saveData: the same title is shown again in the phone bar and the
          desktop header, and the first render used to consume it, leaving both
          of them empty. -->
@@ -99,33 +169,6 @@
         .dashboard-breadcrumb a:hover,
         .dashboard-breadcrumb [aria-current="page"] { color: var(--text-strong); }
         .dashboard-header-actions { min-width: 0; }
-        .dashboard-header-search {
-            display: flex;
-            align-items: center;
-            gap: 0.55rem;
-            width: min(250px, 24vw);
-            height: 40px;
-            padding: 0 0.65rem;
-            color: var(--text-muted);
-            background: var(--surface-muted);
-            border: 1px solid var(--border-soft);
-            border-radius: 10px;
-        }
-        .dashboard-header-search:focus-within {
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 18%, transparent);
-        }
-        .dashboard-header-search input {
-            min-width: 0;
-            flex: 1;
-            border: 0;
-            outline: 0;
-            color: var(--text-strong);
-            background: transparent;
-            font-size: 0.82rem;
-        }
-        .dashboard-header-search input::placeholder { color: var(--text-muted); }
-        .dashboard-header-search button,
         .dashboard-notification,
         .mobile-header-icon {
             display: inline-flex;
@@ -136,7 +179,6 @@
             border: 0;
             text-decoration: none;
         }
-        .dashboard-header-search button { padding: 0.2rem; }
         .dashboard-notification,
         .mobile-header-icon {
             position: relative;
@@ -147,8 +189,7 @@
             font-size: 1.05rem;
         }
         .dashboard-notification:hover,
-        .mobile-header-icon:hover,
-        .dashboard-header-search button:hover { color: var(--brand-primary); }
+        .mobile-header-icon:hover { color: var(--brand-primary); }
         .notification-dot {
             position: absolute;
             top: 8px;
@@ -415,22 +456,15 @@
             outline-offset: 2px;
         }
 
-        @keyframes pageFadeIn {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
         .main-content {
             margin-left: var(--sidebar-width);
             transition: margin-left var(--transition-speed) ease;
             width: calc(100% - var(--sidebar-width));
             padding: 20px;
             min-height: 100vh;
-            animation: pageFadeIn 0.22s ease-out;
+            /* No entrance animation here: with a view transition active, the
+               new page snapshot is captured while this fade is still running,
+               so old and new text overlapped and looked scattered. */
         }
 
         .sidebar.collapsed + .main-content {
@@ -681,9 +715,11 @@
             border: none;
             color: #ffffff !important;
             box-shadow: var(--shadow-md);
+            /* No idle float: a card that is always moving makes the dashboard
+               feel unstable while charts and numbers are being read. Hover
+               lift below still gives the cards their interactive feedback. */
             transition: all 0.4s var(--ease-premium);
-            animation: kpiFloat 6s ease-in-out infinite;
-            animation-delay: var(--float-delay, 0s);
+            animation: none;
         }
 
         .premium-kpi:hover {
@@ -727,8 +763,9 @@
             height: 300%;
             background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
             transform: rotate(20deg);
-            animation: premiumShine 6s var(--ease-premium) infinite;
-            animation-delay: var(--shine-delay, 0s);
+            /* The looping shine overlay made the figures flicker as it passed.
+               Keep the card's static gradient; drop the moving sweep. */
+            display: none;
         }
 
         /* Colorful KPI Card Backgrounds */
@@ -852,27 +889,18 @@
             background: rgba(100, 116, 139, 0.45);
         }
 
+        /* Cards arrive in their final position. The old staggered reveal
+           (opacity 0 + translateY, with per-card delays) was captured mid-
+           animation by the view transition, so after a reload the headings,
+           figures and table text appeared scattered and then jumped into
+           place. The class is kept so existing views do not need editing. */
         .premium-reveal {
-            opacity: 0;
-            transform: translateY(12px);
-            animation: premiumReveal 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: var(--reveal-delay, 0s);
-            will-change: transform, opacity;
+            opacity: 1;
+            transform: none;
         }
 
         .premium-pulse {
             animation: premiumPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes premiumReveal {
-            0% {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         @keyframes premiumShine {
@@ -1914,25 +1942,15 @@
                         box-shadow 0.32s var(--ease-premium) !important;
         }
 
-        /* Each page fades up into place instead of appearing in a single frame.
-           The animation is opacity-only on purpose: a transform here would turn
-           the shell into a containing block and drag fixed buttons (like the
-           officer's quick-add FAB) away from the viewport. */
-        @keyframes contentDeliver {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
+        /* The new screen is delivered by the browser's cross-document view
+           transition below. There is deliberately no opacity entrance
+           animation on .main-content: it made every dark-mode reload start
+           from a blank page and fade in over ~0.4s, which read as a delay.
+           The shell also has no transform here, so fixed controls (like the
+           officer's quick-add FAB) stay pinned to the viewport. */
         .main-content {
-            animation: contentDeliver 0.3s var(--ease-premium) both;
             transition: margin-left var(--transition-speed) var(--ease-premium),
-                        width var(--transition-speed) var(--ease-premium),
-                        opacity 0.18s ease-in;
-        }
-
-        /* Leaving a page: the shell stays put and only the content fades out. */
-        html.is-leaving .main-content {
-            opacity: 0;
+                        width var(--transition-speed) var(--ease-premium);
         }
 
         /* Wide tables scroll like a native pane: momentum and a thin bar. */
@@ -2011,8 +2029,6 @@
         /* Readers who ask for less motion get the same screens, instantly. */
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
-            .main-content { animation: none !important; }
-            html.is-leaving .main-content { opacity: 1; }
             html.theme-switching body * { transition: none !important; }
             .modal.fade .modal-dialog { transition: none !important; transform: none; }
         }
@@ -2776,12 +2792,6 @@
            The print dialog has no preview, and the sidebar, topbar, theme
            picker and toasts used to be printed on top of the document. */
         @media print {
-            /* Paper is always fully delivered, never mid-transition. */
-            .main-content,
-            html.is-leaving .main-content {
-                animation: none !important;
-                opacity: 1 !important;
-            }
             .sidebar,
             .sidebar-toggle,
             .mobile-topbar,
@@ -2829,30 +2839,110 @@
                 box-shadow: none !important;
             }
         }
-    </style>
-    <style>
-        /* ── Cross-document view transitions (temporary demo) ──────────────
-           Opts every page into the browser's own cross-fade between
-           navigations: no JavaScript, no controller changes. Browsers
-           without support simply navigate as before, and the whole block
-           can be deleted to go back to instant page loads. */
-        @view-transition {
-            navigation: auto;
+
+        /* ═══════════════════════════════════════════════════════════════
+           NAVIGATION POLISH — presentation only.
+
+           Static CSS, scoped to the shell's navigation controls. No scripts,
+           requests, entrance animations or load-time layout work, so clicks
+           and reloads stay instant. Theme tokens keep light/dark readable.
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Breadcrumb: explicit "ink" colour so the header label stays legible
+           instead of relying on the muted token, which washed it out against
+           the light header bar. Current page reads as a soft pill. */
+        .dashboard-breadcrumb {
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+        .dashboard-breadcrumb,
+        .dashboard-breadcrumb a {
+            color: #0f172a !important; /* ink: slate-900 */
+        }
+        .dashboard-breadcrumb a {
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+        }
+        .dashboard-breadcrumb a:hover {
+            color: #1d4ed8 !important; /* ink: blue-700 on hover */
+            background: var(--surface-muted);
+        }
+        .dashboard-breadcrumb i.bi-chevron-right {
+            font-size: 0.72rem;
+            opacity: 0.55;
+            color: #0f172a;
+        }
+        .dashboard-breadcrumb [aria-current="page"] {
+            color: #0f172a !important; /* ink: slate-900 */
+            background: var(--surface-muted);
+            border: 1px solid var(--border-soft);
+            border-radius: 8px;
+            padding: 0.2rem 0.6rem;
+        }
+        /* Dark theme: ink becomes near-white so the breadcrumb stays visible. */
+        [data-bs-theme="dark"] .dashboard-breadcrumb,
+        [data-bs-theme="dark"] .dashboard-breadcrumb a,
+        [data-bs-theme="dark"] .dashboard-breadcrumb [aria-current="page"] {
+            color: #f1f5f9 !important; /* ink: slate-100 */
+        }
+        [data-bs-theme="dark"] .dashboard-breadcrumb i.bi-chevron-right {
+            color: #f1f5f9;
         }
 
-        ::view-transition-old(root),
-        ::view-transition-new(root) {
-            animation-duration: 220ms;
-            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        /* Header icon buttons sit on their own soft chips. */
+        .dashboard-notification,
+        .mobile-header-icon {
+            background: var(--surface-muted);
+        }
+        .dashboard-notification:hover,
+        .mobile-header-icon:hover {
+            border-color: var(--brand-tint-300);
+            box-shadow: 0 4px 12px -3px rgba(var(--brand-rgb), 0.28);
+        }
+        /* The dark phone bar already uses --surface-muted; use the card surface
+           for the chips so they still read as controls against it. */
+        [data-bs-theme="dark"] .dashboard-notification,
+        [data-bs-theme="dark"] .mobile-header-icon {
+            background: var(--surface-card);
+        }
+        .notification-dot {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
         }
 
-        /* Motion-sensitive readers keep the instant switch. */
-        @media (prefers-reduced-motion: reduce) {
-            @view-transition {
-                navigation: none;
-            }
+        .theme-select {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Profile badge: framed avatar and tighter name tracking. */
+        .user-profile-badge {
+            border-radius: 14px;
+        }
+        .user-profile-badge .avatar-circle {
+            border: 2px solid rgba(var(--brand-rgb), 0.4);
+            box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.1);
+        }
+        .user-profile-badge > .d-flex.flex-column > .fw-bold {
+            letter-spacing: -0.01em;
+        }
+
+        /* Phone bar title and controls. */
+        .mobile-topbar .page-title {
+            letter-spacing: -0.01em;
+        }
+        .mobile-topbar .mobile-header-icon {
+            border-radius: 10px;
         }
     </style>
+    <?php
+        /* Navigation is intentionally instant. Cross-document view
+           transitions were tried, but a cross-fade stacks the old and new
+           page snapshots on top of each other: headings, figures and table
+           cells appear in two places at once for a moment and look scattered.
+           Hiding the old snapshot instead leaves the content area blank for
+           the length of the reveal, which reads as a delay. There is no
+           JavaScript hold either, so the click navigates immediately and the
+           new page is shown as one settled block as soon as it is painted. */
+    ?>
     <?= $this->renderSection('styles') ?>
     <?php
         // SweetAlert takes concrete colors — it cannot read a CSS variable — so
@@ -2868,6 +2958,19 @@
 
 <div class="d-flex">
     <?= $this->include('theme/sidebar') ?>
+    <script>
+        // Restore the rail state before the rest of the page paints. Applying
+        // it from the end-of-body script made the sidebar visibly jump on
+        // every navigation.
+        (function () {
+            try {
+                if (localStorage.getItem('sidebarCollapsed') === 'true'
+                    && !window.matchMedia('(max-width: 768px)').matches) {
+                    document.querySelector('.sidebar')?.classList.add('collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <div class="mobile-sidebar-backdrop"></div>
 
     <!-- Main Content -->
@@ -2902,15 +3005,30 @@
                     <span aria-current="page">Dashboard</span>
                 </nav>
             <?php else: ?>
-                <span></span>
+                <?php
+                    // These pages used to render an empty <span> here, which left
+                    // the desktop header blank. Reuse the view's own title as the
+                    // current-page label: saveData=true keeps it available for
+                    // <title>, the phone bar and this breadcrumb alike. Only the
+                    // trailing role suffix (meant for the browser tab) is trimmed.
+                    $headerTitle = trim((string) $this->renderSection('title', true));
+                    $headerLabel = trim((string) preg_replace('/\s+-\s+(Admin|Driver Portal|Traffic System|Traffic Officer)$/i', '', $headerTitle));
+                    if ($headerLabel === '') $headerLabel = 'Page';
+
+                    // Each role has its own landing page; "Home" must not send an
+                    // enforcer or driver to the admin dashboard.
+                    $headerHome = $layoutRole === 'enforcer'
+                        ? base_url('officer/violations')
+                        : ($layoutRole === 'driver' ? base_url('user/dashboard') : base_url('dashboard'));
+                ?>
+                <nav class="dashboard-breadcrumb" aria-label="Breadcrumb">
+                    <a href="<?= $headerHome ?>">Home</a>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    <span aria-current="page"><?= $headerLabel ?></span>
+                </nav>
             <?php endif; ?>
             <div class="dashboard-header-actions d-flex align-items-center gap-3">
                 <?php if ($isAdminDashboard): ?>
-                    <form class="dashboard-header-search" action="<?= base_url('lookup') ?>" method="get" role="search">
-                        <i class="bi bi-search" aria-hidden="true"></i>
-                        <input type="search" name="query" aria-label="Search citations" placeholder="Search citations">
-                        <button type="submit" aria-label="Submit citation search"><i class="bi bi-arrow-return-left" aria-hidden="true"></i></button>
-                    </form>
                     <button class="dashboard-notification" type="button" aria-label="Notifications">
                         <i class="bi bi-bell" aria-hidden="true"></i><span class="notification-dot" aria-hidden="true"></span>
                     </button>
@@ -2934,13 +3052,13 @@
                         ?>
                         <?php if ($hasTopPhoto): ?>
                             <img src="<?= base_url('uploads/profile/' . esc($topProfileImg)) ?>" alt="" class="topbar-avatar-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
-                            <span class="topbar-avatar-initials" style="display:none;"><?= strtoupper(substr((string) (session()->get('username') ?? 'U'), 0, 1)) ?></span>
+                            <span class="topbar-avatar-initials" style="display:none;"><?= strtoupper(substr($topDisplayName, 0, 1)) ?></span>
                         <?php else: ?>
-                            <span class="topbar-avatar-initials"><?= strtoupper(substr((string) (session()->get('username') ?? 'U'), 0, 1)) ?></span>
+                            <span class="topbar-avatar-initials"><?= strtoupper(substr($topDisplayName, 0, 1)) ?></span>
                         <?php endif; ?>
                     </div>
                     <div class="d-flex flex-column">
-                        <span class="fw-bold small text-dark" style="line-height: 1.2;"><?= esc((string) session()->get('username')) ?></span>
+                        <span class="fw-bold small text-dark" style="line-height: 1.2;"><?= esc($topDisplayName) ?></span>
                         <span class="text-muted" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em;"><?= esc($layoutRole) ?></span>
                     </div>
                 </div>
@@ -3076,11 +3194,24 @@
     document.addEventListener('DOMContentLoaded', function() {
         const THEME_KEY = 'trafficThemePreference';
         const root = document.documentElement;
+        // One painted frame with the shell frozen is enough; after that the
+        // normal sidebar/collapse/hover transitions can run again.
+        window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(function () {
+                root.classList.remove('app-loading');
+            });
+        });
         const themeSelectDesktop = document.getElementById('themeSelectDesktop');
         const themeSelectMobile = document.getElementById('themeSelectMobile');
         const darkPreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-        const getSavedTheme = () => localStorage.getItem(THEME_KEY) || 'auto';
+        const getSavedTheme = () => {
+            try {
+                return localStorage.getItem(THEME_KEY) || 'auto';
+            } catch (e) {
+                return 'auto';
+            }
+        };
 
         // Cross-fade the palette during a switch instead of snapping. The class
         // lives only for the length of the change.
@@ -3111,7 +3242,9 @@
             if (themeSelectDesktop) themeSelectDesktop.value = mode;
             if (themeSelectMobile) themeSelectMobile.value = mode;
             if (shouldPersist) {
-                localStorage.setItem(THEME_KEY, mode);
+                try {
+                    localStorage.setItem(THEME_KEY, mode);
+                } catch (e) {}
             }
             window.dispatchEvent(new CustomEvent('themechange', { detail: { mode } }));
         };
@@ -3235,56 +3368,11 @@
             }
         });
 
-        // Smooth delivery: every in-app navigation steps the content out while
-        // the shell stays still. Delegated, so card links and buttons move the
-        // same way as the sidebar. New tabs, downloads, external sites, the
-        // print view and same-page links are left completely alone.
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (!link) return;
-            if (link.target === '_blank' || link.hasAttribute('download')) return;
-            if (e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-
-            const href = link.getAttribute('href');
-            if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
-
-            let target;
-            try {
-                target = new URL(link.href, window.location.href);
-            } catch (err) {
-                return;
-            }
-
-            if (target.origin !== window.location.origin) return;
-            if (target.searchParams.get('print') === '1') return;
-            if (target.pathname === window.location.pathname && target.search === window.location.search) return;
-            // Downloads keep the same page on screen, so they must not fade it.
-            if (/export|download|\.csv$|\.pdf$/i.test(target.pathname + target.search)) return;
-
-            if (isMobile()) {
-                closeMobileSidebar();
-            }
-
-            document.documentElement.classList.add('is-leaving');
-
-            // If the navigation is cancelled (a blocked popup, a stalled
-            // request), bring the page back instead of leaving it faded.
-            window.setTimeout(function() {
-                document.documentElement.classList.remove('is-leaving');
-            }, 1500);
-        });
-
-        // Returning through the browser cache must never restore a faded page.
-        window.addEventListener('pageshow', function(event) {
-            document.documentElement.classList.remove('is-leaving');
-            if (event.persisted) {
-                document.querySelectorAll('.main-content').forEach(function(mc) {
-                    mc.style.opacity = '';
-                    mc.style.transform = '';
-                    mc.style.transition = '';
-                });
-            }
-        });
+        // Navigation is deliberately left native. The browser's own
+        // cross-document view transition cross-fades the page area while the
+        // sidebar stays still, so there is no click hold, no exit fade and no
+        // timeout between the click and the next page. Back/forward and KPI
+        // card links get the same treatment automatically.
 
         // Ensure all modals are direct children of document.body so they are never trapped
         // by container stacking contexts, keeping the backdrop firmly over all page content.

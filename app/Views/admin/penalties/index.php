@@ -185,6 +185,18 @@
     transform: translateY(-1.5px);
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
 }
+/* The shell's global `.table tbody tr:hover` rule paints rows with the dark
+   --surface-muted token using !important, which turns this light table black
+   in Dark mode whenever the pointer crosses a row (or is dragged over the
+   columns). Keep these rows light instead. */
+#pendingTable tbody tr.pending-row:hover,
+#pendingTable tbody tr.pending-row:active,
+#pendingTable tbody tr.pending-row:focus-within {
+    background: #f8fafc !important;
+    background-color: #f8fafc !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07) !important;
+}
 
 /* Driver & Vehicle */
 .driver-name-text {

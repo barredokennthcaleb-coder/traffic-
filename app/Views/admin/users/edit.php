@@ -403,7 +403,7 @@
 
             <!-- Validation Errors -->
             <?php if (session()->getFlashdata('errors')): ?>
-                <div class="alert alert-danger border-0 shadow-sm mb-3 py-2.5 px-3" style="border-radius: 10px;" role="alert">
+                <div class="alert alert-danger border-0 shadow-sm mb-3 py-2.5 px-3" style="border-radius: 10px;" role="alert" id="errorSummary" tabindex="-1">
                     <div class="d-flex align-items-center mb-1">
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
                         <strong class="small">Please correct the following:</strong>
@@ -430,8 +430,9 @@
                 <div class="mb-3">
                     <label class="form-label">System Role <span class="text-danger">*</span></label>
                     <input type="hidden" name="role" id="roleInput" value="<?= esc($currentRoleVal) ?>">
-                    <div class="role-grid">
-                        <div class="role-card-item is-enforcer <?= $currentRoleVal === 'enforcer' ? 'selected' : '' ?>" data-role="enforcer">
+                    <div class="role-grid" role="radiogroup" aria-label="System role">
+                        <div class="role-card-item is-enforcer <?= $currentRoleVal === 'enforcer' ? 'selected' : '' ?>" data-role="enforcer"
+                             role="radio" tabindex="<?= $currentRoleVal === 'enforcer' ? '0' : '-1' ?>" aria-checked="<?= $currentRoleVal === 'enforcer' ? 'true' : 'false' ?>">
                             <div class="role-badge-icon bg-primary bg-opacity-10 text-primary">
                                 <i class="bi bi-person-badge"></i>
                             </div>
@@ -442,7 +443,8 @@
                             <i class="bi bi-check-circle-fill role-check"></i>
                         </div>
 
-                        <div class="role-card-item is-admin <?= $currentRoleVal === 'admin' ? 'selected' : '' ?>" data-role="admin">
+                        <div class="role-card-item is-admin <?= $currentRoleVal === 'admin' ? 'selected' : '' ?>" data-role="admin"
+                             role="radio" tabindex="<?= $currentRoleVal === 'admin' ? '0' : '-1' ?>" aria-checked="<?= $currentRoleVal === 'admin' ? 'true' : 'false' ?>">
                             <div class="role-badge-icon bg-danger bg-opacity-10 text-danger">
                                 <i class="bi bi-shield-check"></i>
                             </div>
@@ -512,7 +514,7 @@
                         </label>
                         <div class="field-group">
                             <i class="bi bi-hash field-icon"></i>
-                            <input type="number" name="age" id="age" class="form-control"
+                            <input type="number" name="age" id="age" class="form-control" readonly
                                    min="1" max="120" step="1" required
                                    value="<?= esc(old('age', $user['age'] ?? '')) ?>">
                         </div>
@@ -635,8 +637,49 @@
                         </div>
                     </div>
                 </div>
-                <div class="text-muted small mb-4" style="font-size: 0.75rem;">
+                <div class="text-muted small mb-2" style="font-size: 0.75rem;">
                     <i class="bi bi-info-circle me-1"></i> If changing the password, enter the new password in both fields to confirm the final password.
+                </div>
+
+                <!-- Optional backup password: a second credential for sign-in -->
+                <div class="row g-2.5 g-md-3 mb-2">
+                    <div class="col-12 col-md-6">
+                        <label for="backup_password" class="form-label">
+                            <span>Backup Password</span>
+                            <?php if (! empty($user['backup_password_hash'])): ?>
+                                <span class="text-success fw-semibold" style="font-size: 0.7rem;"><i class="bi bi-check-circle-fill"></i> Set</span>
+                            <?php else: ?>
+                                <span class="text-muted fw-normal" style="font-size: 0.7rem;">Not set</span>
+                            <?php endif; ?>
+                        </label>
+                        <div class="field-group">
+                            <i class="bi bi-shield-check field-icon"></i>
+                            <input type="text" name="backup_password" id="backup_password" class="form-control pe-5 masked-secret-field is-masked"
+                                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                   data-lpignore="true" data-1p-ignore="true">
+                            <button class="field-eye-btn" type="button" id="toggleBackupPasswordBtn" aria-label="Toggle backup password visibility">
+                                <i class="bi bi-eye" id="toggleBackupPasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="confirm_backup_password" class="form-label">
+                            <span>Confirm Backup Password</span>
+                            <span class="match-status-tag" id="backupMatchStatusTag"></span>
+                        </label>
+                        <div class="field-group">
+                            <i class="bi bi-shield-lock field-icon"></i>
+                            <input type="text" name="confirm_backup_password" id="confirm_backup_password" class="form-control pe-5 masked-secret-field is-masked"
+                                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                   data-lpignore="true" data-1p-ignore="true">
+                            <button class="field-eye-btn" type="button" id="toggleConfirmBackupPasswordBtn" aria-label="Toggle confirm backup password visibility">
+                                <i class="bi bi-eye" id="toggleConfirmBackupPasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-muted small mb-4" style="font-size: 0.75rem;">
+                    <i class="bi bi-info-circle me-1"></i> Optional. This works as a second password at sign-in if the main password is forgotten. Leave blank to keep the current backup password; fill both fields to replace it.
                 </div>
 
                 <!-- Footer Actions -->
@@ -746,23 +789,97 @@
             confirmInput.addEventListener('input', validatePasswordMatch);
         }
 
+        // Backup password: masking, reveal toggles and live match indicator
+        const backupInput = document.getElementById('backup_password');
+        const backupConfirmInput = document.getElementById('confirm_backup_password');
+        const backupToggleBtn = document.getElementById('toggleBackupPasswordBtn');
+        const backupToggleIcon = document.getElementById('toggleBackupPasswordIcon');
+        const backupConfirmToggleBtn = document.getElementById('toggleConfirmBackupPasswordBtn');
+        const backupConfirmToggleIcon = document.getElementById('toggleConfirmBackupPasswordIcon');
+        const backupMatchTag = document.getElementById('backupMatchStatusTag');
+
+        if (!supportsTextSecurity) {
+            if (backupInput) backupInput.type = 'password';
+            if (backupConfirmInput) backupConfirmInput.type = 'password';
+        }
+
+        function wireSecretToggle(btn, input, icon) {
+            if (!btn || !input || !icon) return;
+            btn.addEventListener('click', function () {
+                if (supportsTextSecurity) {
+                    const masked = input.classList.contains('is-masked');
+                    input.classList.toggle('is-masked', !masked);
+                    icon.className = masked ? 'bi bi-eye-slash' : 'bi bi-eye';
+                } else {
+                    const isPass = input.type === 'password';
+                    input.type = isPass ? 'text' : 'password';
+                    icon.className = isPass ? 'bi bi-eye-slash' : 'bi bi-eye';
+                }
+            });
+        }
+        wireSecretToggle(backupToggleBtn, backupInput, backupToggleIcon);
+        wireSecretToggle(backupConfirmToggleBtn, backupConfirmInput, backupConfirmToggleIcon);
+
+        function validateBackupMatch() {
+            if (!backupInput || !backupConfirmInput || !backupMatchTag) return;
+            const p1 = backupInput.value;
+            const p2 = backupConfirmInput.value;
+
+            if (p2.length === 0) {
+                backupMatchTag.className = 'match-status-tag';
+                backupMatchTag.style.display = 'none';
+                backupConfirmInput.style.borderColor = '#e2e8f0';
+                return;
+            }
+
+            if (p1 === p2) {
+                backupMatchTag.className = 'match-status-tag is-match';
+                backupMatchTag.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Passwords match';
+                backupConfirmInput.style.borderColor = '#10b981';
+            } else {
+                backupMatchTag.className = 'match-status-tag is-mismatch';
+                backupMatchTag.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i>Passwords do not match';
+                backupConfirmInput.style.borderColor = '#ef4444';
+            }
+        }
+        if (backupInput && backupConfirmInput) {
+            backupInput.addEventListener('input', validateBackupMatch);
+            backupConfirmInput.addEventListener('input', validateBackupMatch);
+        }
+
         // Role Cards Selection
         const roleCards = document.querySelectorAll('.role-card-item');
         const roleInput = document.getElementById('roleInput');
 
-        roleCards.forEach(card => {
-            card.addEventListener('click', function () {
-                roleCards.forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-                const selectedRole = this.getAttribute('data-role');
-                if (roleInput) {
-                    roleInput.value = selectedRole;
-                }
+        function selectRole(card) {
+            roleCards.forEach(c => {
+                const isSelected = c === card;
+                c.classList.toggle('selected', isSelected);
+                c.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+                c.setAttribute('tabindex', isSelected ? '0' : '-1');
+            });
+            const selectedRole = card.getAttribute('data-role');
+            if (roleInput) roleInput.value = selectedRole;
 
-                // Toggle Station Section visibility
-                const stationSection = document.getElementById('stationSection');
-                if (stationSection) {
-                    stationSection.style.display = (selectedRole === 'enforcer') ? '' : 'none';
+            const stationSection = document.getElementById('stationSection');
+            if (stationSection) {
+                stationSection.style.display = (selectedRole === 'enforcer') ? '' : 'none';
+            }
+        }
+
+        roleCards.forEach((card, index) => {
+            card.addEventListener('click', () => selectRole(card));
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    selectRole(card);
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' ||
+                           e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const delta = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+                    const next = roleCards[(index + delta + roleCards.length) % roleCards.length];
+                    selectRole(next);
+                    next.focus();
                 }
             });
         });
@@ -796,6 +913,16 @@
                         ageInput.style.backgroundColor = '#ffffff';
                     }, 400);
                 }
+            });
+        }
+
+        // Announce and focus validation errors after a failed submit.
+        const errorSummary = document.getElementById('errorSummary');
+        if (errorSummary) errorSummary.focus();
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('.form-wrapper, .anim-fade-up').forEach(el => {
+                el.style.animation = 'none';
             });
         }
     });

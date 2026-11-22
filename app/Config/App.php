@@ -210,9 +210,10 @@ class App extends BaseConfig
      * machine's address, so the app runs unchanged on localhost:8080 (offline
      * or dev), on the office LAN IP and on any other whitelisted hostname.
      *
-     * The request's Host header is only trusted when the hostname is listed in
-     * $allowedHostnames above; anything else keeps the configured $baseURL, so
-     * a spoofed Host header cannot rewrite asset or form URLs.
+     * The request's Host header is only trusted when it is a private LAN IP,
+     * the machine's own hostname/IP, or listed in $allowedHostnames above;
+     * anything else keeps the configured $baseURL, so a spoofed Host header
+     * cannot rewrite asset or form URLs.
      */
     public function __construct()
     {
@@ -246,7 +247,22 @@ class App extends BaseConfig
             $host
         ) === 1;
 
-        if (! $isPrivateLan && ! in_array($host, $allowedHosts, true)) {
+        // Some local networks (hotspots, campus/hotel WiFi, CGNAT-style
+        // routers) hand out public-looking addresses such as 199.x.x.x instead
+        // of an RFC1918 one. Those would otherwise fall through to $baseURL and
+        // every asset/form would point back at localhost on the phone. Trust
+        // the machine's own resolved hostname/IP so the LAN address works no
+        // matter which range the router uses, and stays correct after DHCP
+        // hands out a new lease.
+        $selfName  = strtolower((string) gethostname());
+        $selfHosts = $selfName === '' ? [] : (gethostbynamel($selfName) ?: []);
+        if (! empty($_SERVER['SERVER_ADDR'])) {
+            $selfHosts[] = (string) $_SERVER['SERVER_ADDR'];
+        }
+        $selfHosts = array_map('strtolower', $selfHosts);
+        $isSelf    = $host === $selfName || in_array($host, $selfHosts, true);
+
+        if (! $isPrivateLan && ! $isSelf && ! in_array($host, $allowedHosts, true)) {
             return;
         }
 

@@ -34,9 +34,43 @@
 </datalist>
 
 <datalist id="locationOptions">
-    <option value="Ceres Terminal, Kabankalan City"></option>
-    <option value="Biyarin, Kabankalan City"></option>
-    <?php foreach (kabankalan_areas() as $brgy): ?>
-    <option value="<?= esc($brgy) ?>, Kabankalan City"></option>
-    <?php endforeach; ?>
+    <!-- Place options are the DETAIL entries on the CTRAMO Kabankalan
+         assigned-area duty postings (Mon–Fri, Sat, Sun and the 24/7 detail).
+         They are kept as printed so the ticket's Place matches the officer's
+         assigned-area sheet. The field stays free-text for anything else. -->
+    <!-- Monday to Friday detail -->
+    <option value="City Mall / G-Mall &amp; Fenez Avenue"></option>
+    <option value="Ceres / Col. Health / City Mall"></option>
+    <option value="Shell, Cor. Nolod"></option>
+    <option value="ICC Gimenez Blanco Pharmacy"></option>
+    <option value="LGU-Guimbangon (Main)"></option>
+    <option value="Gasoline / Lights"></option>
+    <option value="Bingkingan"></option>
+    <option value="Broadway / M&amp;S"></option>
+    <option value="Bread Box (Main)"></option>
+    <option value="Groceries / Meat Sec."></option>
+    <option value="Unloading"></option>
+    <option value="Tagula"></option>
+    <option value="G-Mall / Crock Stock Farm"></option>
+    <option value="Rivision / Nolod"></option>
+    <option value="By-Pass / Shell Station"></option>
+    <option value="B-Ri / Kab."></option>
+    <option value="District Hospital"></option>
+    <option value="Patrol / 24/7"></option>
+    <option value="City Hall"></option>
+    <option value="Public Plaza / Cathedral Church, Brgy. 6, Cross Street"></option>
+    <!-- Saturday / Sunday detail -->
+    <option value="E-Bus"></option>
+    <option value="Ceres Terminal"></option>
+    <option value="Cagayan Central College"></option>
+    <option value="Tire Bums"></option>
+    <option value="Traffic Lights"></option>
+    <option value="Bread Box"></option>
+    <option value="Loading / Unloading"></option>
+    <option value="G-Mall / Stockfarm"></option>
+    <option value="Rounding"></option>
+    <option value="Radio Operator"></option>
+    <!-- 24/7 post detail -->
+    <option value="Ceres"></option>
+    <option value="Bus"></option>
 </datalist>

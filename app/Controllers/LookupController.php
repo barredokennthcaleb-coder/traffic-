@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\ViolatorIdentity;
 use CodeIgniter\Controller;
 
 class LookupController extends Controller
@@ -11,6 +12,11 @@ class LookupController extends Controller
         $db = \Config\Database::connect();
         $queryParam = $this->request->getGet('query');
         $queryStr = is_string($queryParam) ? mb_substr(trim($queryParam), 0, 100) : '';
+
+        // "N/A" is the default stored on many tickets and drivers. Treat a
+        // placeholder as "no MTOP" so a meaningless lookup cannot surface
+        // every unassigned record.
+        $mtopStr = ViolatorIdentity::isPlaceholder($queryStr) ? '' : $queryStr;
 
         $records = [];
         $searched = false;
@@ -35,18 +41,40 @@ class LookupController extends Controller
             // separately below, because GROUP_CONCAT's SEPARATOR only accepts a
             // string literal in MariaDB and a delimiter that collides with a
             // violation name would corrupt the list.
-            // violator_id travels with each ticket so the results can be grouped
-            // per person: a name search may match two different drivers, and
-            // their fines must not be added together.
-            $builder->select('ticket_id, MAX(violator_id) as violator_id, MAX(driver_name) as driver_name, MAX(first_name) as first_name, MAX(last_name) as last_name, MAX(address) as address, MAX(license_plate) as license_plate, MAX(location) as location, MAX(violation_date) as violation_date, MAX(created_at) as created_at, GROUP_CONCAT(violation_type SEPARATOR ", ") as violation_type, SUM(penalty_amount) as penalty_amount, MAX(status) as status, MAX(receipt_number) as receipt_number');
+            // violator_id travels with each ticket so the repeat-offender count
+            // can be looked up per person; the name on the ticket is shown with
+            // the citation, but only as output — it is not a search key.
+            $builder->select('ticket_id, MAX(violator_id) as violator_id, MAX(driver_name) as driver_name, MAX(owner_name) as owner_name, MAX(license_plate) as license_plate, MAX(location) as location, MAX(violation_date) as violation_date, MAX(created_at) as created_at, GROUP_CONCAT(violation_type SEPARATOR ", ") as violation_type, SUM(penalty_amount) as penalty_amount, MAX(status) as status, MAX(receipt_number) as receipt_number');
+            // Public lookup is keyed on the citation itself: a ticket number,
+            // a plate number or an MTOP number. The MTOP can be stored on the
+            // ticket (older rows) or only on the linked driver record, so both
+            // are matched — entering an MTOP finds the driver's citations
+            // directly. Names and licence numbers are still not searchable.
             $builder->groupStart()
                 ->like('license_plate', $queryStr)
-                ->orLike('driver_name', $queryStr)
-                ->orLike('first_name', $queryStr)
-                ->orLike('last_name', $queryStr)
-                ->orLike('ticket_id', $queryStr)
-                ->orLike('license_number', $queryStr)
-                ->groupEnd();
+                ->orLike('ticket_id', $queryStr);
+
+            if ($mtopStr !== '') {
+                $builder->orLike('mtop_number', $mtopStr);
+
+                $mtopViolatorIds = [];
+                if ($db->tableExists('violators')) {
+                    $mtopViolatorIds = array_column(
+                        $db->table('violators')
+                            ->select('id')
+                            ->like('mtop_number', $mtopStr)
+                            ->get()
+                            ->getResultArray(),
+                        'id'
+                    );
+                }
+
+                if ($mtopViolatorIds !== []) {
+                    $builder->orWhereIn('violator_id', $mtopViolatorIds);
+                }
+            }
+
+            $builder->groupEnd();
 
             $builder->groupBy('ticket_id');
             $builder->orderBy('MAX(id)', 'DESC');
@@ -58,11 +86,12 @@ class LookupController extends Controller
             // Every offense on each found ticket, in the order it was written,
             // so each fine can be shown against the name it belongs to.
             if ($records !== []) {
-                $ticketIds = array_values(array_filter(array_unique(array_column($records, 'ticket_id'))));
+                $ticketIds   = array_values(array_filter(array_unique(array_column($records, 'ticket_id'))));
+                $ticketMtops = [];
 
                 if ($ticketIds !== []) {
                     $offenseRows = $db->table('violations')
-                        ->select('ticket_id, violation_type, penalty_amount')
+                        ->select('ticket_id, violation_type, penalty_amount, mtop_number')
                         ->whereIn('ticket_id', $ticketIds)
                         ->orderBy('id', 'ASC')
                         ->get()
@@ -78,6 +107,15 @@ class LookupController extends Controller
                                 'type'   => (string) $offense['violation_type'],
                                 'amount' => (float) $offense['penalty_amount'],
                             ];
+
+                            // The MTOP captured on the ticket itself wins. Skip
+                            // placeholders ("N/A" and friends) so an empty
+                            // default can never mask a real recorded value.
+                            $ticketMtop = trim((string) ($offense['mtop_number'] ?? ''));
+
+                            if ($ticketMtop !== '' && !ViolatorIdentity::isPlaceholder($ticketMtop) && !isset($ticketMtops[$key])) {
+                                $ticketMtops[$key] = $ticketMtop;
+                            }
                         }
                     }
 
@@ -92,8 +130,9 @@ class LookupController extends Controller
                 // citations do not count as committed records, the same rule
                 // the rest of the system applies. People matched by name only
                 // (legacy rows without a violator link) are counted by name.
-                $violatorIds = [];
-                $legacyNames = [];
+                $violatorIds  = [];
+                $legacyNames  = [];
+                $violatorMtops = [];
 
                 foreach ($records as $r) {
                     $violatorId = (int) ($r['violator_id'] ?? 0);
@@ -138,6 +177,24 @@ class LookupController extends Controller
                     }
                 }
 
+                // MTOP may live only on the violator record the enforcer or
+                // admin keeps, even when the ticket itself has no value.
+                if ($violatorIds !== [] && $db->tableExists('violators')) {
+                    $mtopRows = $db->table('violators')
+                        ->select('id, mtop_number')
+                        ->whereIn('id', array_keys($violatorIds))
+                        ->get()
+                        ->getResultArray();
+
+                    foreach ($mtopRows as $mtopRow) {
+                        $mtop = trim((string) ($mtopRow['mtop_number'] ?? ''));
+
+                        if ($mtop !== '' && !ViolatorIdentity::isPlaceholder($mtop)) {
+                            $violatorMtops[(int) $mtopRow['id']] = $mtop;
+                        }
+                    }
+                }
+
                 foreach ($records as $i => $r) {
                     $violatorId = (int) ($r['violator_id'] ?? 0);
                     $personKey  = $violatorId > 0
@@ -145,6 +202,11 @@ class LookupController extends Controller
                         : 'name:' . trim((string) ($r['driver_name'] ?? ''));
 
                     $records[$i]['total_citations'] = $citationsByPerson[$personKey] ?? 1;
+
+                    // Show the MTOP exactly as it was recorded: the ticket's
+                    // own value first, then the linked violator's value.
+                    $records[$i]['mtop_number'] = $ticketMtops[(string) ($r['ticket_id'] ?? '')]
+                        ?? ($violatorMtops[$violatorId] ?? '');
                 }
             }
 

@@ -12,10 +12,12 @@
         body {
             margin: 0;
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 24px;
+            box-sizing: border-box;
             background: #faf3f3ff;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             position: relative;
@@ -31,22 +33,42 @@
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.06);
             background: #ffffff;
         }
-        .brand-logo {
+        .brand-mark {
             width: 90px;
             height: 90px;
+            margin: 0 auto 20px;
+        }
+        .brand-logo {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             border-radius: 18px;
             background: #f8f9fa;
             border: 1px solid rgba(0,0,0,0.05);
             padding: 8px;
-            margin-bottom: 20px;
             display: block;
-            margin-left: auto;
-            margin-right: auto;
+            box-sizing: border-box;
+        }
+        .brand-fallback {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 18px;
+            background: #f0fdf4;
+            color: #059669;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        [hidden] {
+            display: none !important;
         }
         .form-side {
             padding: 42px 34px;
             background: #ffffff;
+            box-sizing: border-box;
+            width: 100%;
         }
         .form-head {
             text-align: center;
@@ -92,11 +114,86 @@
             background: #ffffff;
             color: #1a202c;
         }
+        #loginForm {
+            width: 100%;
+        }
+        .login-field + .login-field {
+            margin-top: 1.5rem;
+        }
+        .login-field .form-label {
+            display: block;
+        }
+        .input-group {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+        }
+        .input-group > .input-group-text {
+            display: flex;
+            flex: 0 0 42px;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .input-group > .form-control {
+            flex: 1 1 0;
+            width: 1%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+        .login-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 1rem;
+        }
+        .login-options a {
+            white-space: nowrap;
+        }
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 0;
+        }
+        .form-check-input {
+            flex: 0 0 auto;
+            margin: 0;
+        }
+        .remember-label {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        .login-actions {
+            display: grid;
+            margin-top: 1.5rem;
+        }
         .password-toggle {
+            display: flex;
+            flex: 0 0 48px;
+            align-items: center;
+            justify-content: center;
             border-left: none;
             border-radius: 0 12px 12px 0;
             cursor: pointer;
-            color: #a0aec0;
+            padding: 0;
+            color: #475569;
+            font: inherit;
+        }
+        .password-toggle:hover {
+            color: #047857;
+            background: #f8fafc;
+        }
+        .password-toggle:focus-visible {
+            position: relative;
+            z-index: 1;
+            outline: 2px solid #059669;
+            outline-offset: 2px;
+        }
+        .password-toggle i {
+            font-size: 1.1rem;
+            line-height: 1;
         }
         .btn-login {
             border: none;
@@ -108,6 +205,11 @@
             color: #ffffff;
             box-shadow: 0 10px 24px rgba(16, 185, 129, 0.3);
             transition: 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 44px;
         }
         .btn-login:hover {
             transform: translateY(-2px);
@@ -137,6 +239,22 @@
             font-size: 0.9rem;
             text-align: center;
             margin-top: 12px;
+            margin-bottom: 0;
+        }
+        .d-none {
+            display: none !important;
+        }
+        .spinner-border {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 0.15em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
         }
         @media (max-width: 576px) {
             body {
@@ -145,11 +263,14 @@
             .login-shell {
                 border-radius: 18px;
             }
-            .brand-logo {
+            .brand-mark {
                 width: 72px;
                 height: 72px;
-                border-radius: 14px;
                 margin-bottom: 12px;
+            }
+            .brand-logo,
+            .brand-fallback {
+                border-radius: 14px;
             }
             .form-side {
                 padding: 20px 16px;
@@ -189,7 +310,10 @@
 <div class="login-shell">
     <div class="form-side">
         <div class="form-head text-center">
-            <img class="brand-logo" src="<?= base_url('img/pic-1.png') ?>" alt="Traffic System Logo">
+            <div class="brand-mark">
+                <img class="brand-logo" id="brandLogo" src="img/pic-1.png" alt="Traffic System Logo">
+                <span class="brand-fallback" id="brandFallback" aria-hidden="true" hidden>TS</span>
+            </div>
             <h2>Traffic System</h2>
             <p>Welcome back. Enter your credentials to continue.</p>
         </div>
@@ -217,7 +341,7 @@
 
         <form action="<?= base_url('login') ?>" method="POST" id="loginForm">
             <?= csrf_field() ?>
-            <div class="mb-4">
+            <div class="login-field">
                 <label for="email" class="form-label">Email Address</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
@@ -233,7 +357,7 @@
                     <datalist id="emailSuggestions"></datalist>
                 </div>
             </div>
-            <div class="mb-4">
+            <div class="login-field">
                 <label for="password" class="form-label">Password</label>
                 <div class="input-group" id="passwordGroup">
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
@@ -244,41 +368,57 @@
                            autocapitalize="none"
                            autocorrect="off"
                            spellcheck="false">
-                    <span class="input-group-text password-toggle" onclick="togglePassword()">
-                        <i class="bi bi-eye" id="toggleIcon"></i>
-                    </span>
+                    <button type="button" class="password-toggle" id="togglePasswordButton"
+                            aria-label="Show password" aria-pressed="false">
+                        <i class="bi bi-eye" id="toggleIcon" aria-hidden="true"></i>
+                    </button>
                 </div>
             </div>
-            <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div class="login-options">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="rememberMe" style="border-color: #cbd5e0;">
-                    <label class="form-check-label text-muted small" for="rememberMe">Remember me</label>
+                    <label class="remember-label" for="rememberMe">Remember me</label>
                 </div>
                 <a href="<?= base_url('forgot-password') ?>" class="small text-decoration-none"
                    style="color: #059669; font-weight: 600;">Forgot password?</a>
             </div>
 
-            <div class="d-grid gap-2 mt-4">
+            <div class="login-actions">
                 <button type="submit" class="btn btn-primary btn-login" id="submitBtn">
                     <span id="btnText">Sign In</span>
-                    <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                    <span id="btnSpinner" class="spinner-border d-none" role="status" aria-hidden="true"></span>
                 </button>
                 <!-- <a href="/register" class="btn btn-create">
                     <i class="bi bi-person-plus me-1"></i> Create Account
                 </a> -->
             </div>
         </form>
-        <p class="help-text mb-0">Need access help? Contact your administrator.</p>
+        <p class="help-text">Need access help? Contact your administrator.</p>
     </div>
 </div>
 
 <script src="<?= base_url('vendor/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 <script>
+    const brandLogo = document.getElementById('brandLogo');
+    const brandFallback = document.getElementById('brandFallback');
+
+    function showBrandFallback() {
+        brandLogo.hidden = true;
+        brandFallback.hidden = false;
+    }
+
+    brandLogo.addEventListener('error', showBrandFallback);
+    if (brandLogo.complete && brandLogo.naturalWidth === 0) {
+        showBrandFallback();
+    }
+
     function togglePassword() {
         const passwordInput = document.getElementById('password');
         const toggleIcon = document.getElementById('toggleIcon');
-        
-        if (passwordInput.type === 'password') {
+        const toggleButton = document.getElementById('togglePasswordButton');
+        const showPassword = passwordInput.type === 'password';
+
+        if (showPassword) {
             passwordInput.type = 'text';
             toggleIcon.classList.remove('bi-eye');
             toggleIcon.classList.add('bi-eye-slash');
@@ -287,7 +427,12 @@
             toggleIcon.classList.remove('bi-eye-slash');
             toggleIcon.classList.add('bi-eye');
         }
+
+        toggleButton.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+        toggleButton.setAttribute('aria-pressed', String(showPassword));
     }
+
+    document.getElementById('togglePasswordButton').addEventListener('click', togglePassword);
 
     function resetLoginBtn() {
         const btn = document.getElementById('submitBtn');

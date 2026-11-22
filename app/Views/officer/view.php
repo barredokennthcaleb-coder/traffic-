@@ -231,15 +231,6 @@
                         Apprehended <?= esc($detailDate) ?><?= $detailPlace !== '' ? ' &middot; ' . esc($detailPlace) : '' ?>
                     </div>
                 </div>
-
-                <div class="vp-hero-upload">
-                    <button type="button" class="vp-btn-upload citation-ticket-toggle"
-                            id="ticketToggleBtn" aria-expanded="false" aria-controls="ticketCollapse"
-                            onclick="toggleCitationTicket()">
-                        <i class="bi bi-receipt-cutoff me-1"></i><span>View Citation Ticket</span>
-                    </button>
-                    <small class="vp-hero-hint">Official TCT &middot; opens below</small>
-                </div>
             </div>
         </div>
 
@@ -306,7 +297,7 @@
                                         <div class="d-flex align-items-center gap-2">
                                             <div class="vp-infraction-amount">₱<?= number_format((float) ($v['penalty_amount'] ?? 0), 2) ?></div>
                                             <button type="button" class="vp-infraction-view"
-                                                    onclick="showCitationTicket()"
+                                                    data-bs-toggle="modal" data-bs-target="#citationTicketModal"
                                                     title="Open the citation ticket (TCT) covering this violation">
                                                 <i class="bi bi-eye"></i><span>View Ticket</span>
                                             </button>
@@ -411,14 +402,9 @@
         </div>
     </div>
 
-    <!-- TCT Official Document Wrapper — collapsed until "View Citation Ticket"
-         is used; print mode always renders it. -->
+    <!-- TCT Official Document Wrapper — only the per-violation "View Ticket"
+         button opens it as a popup; print mode always renders it here. -->
     <div class="citation-ticket-shell<?= $isPrintMode ? ' is-open' : '' ?>" id="ticketCollapse">
-        <div class="citation-ticket-shell-bar no-print">
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleCitationTicket()">
-                <i class="bi bi-chevron-up me-1"></i> Hide Citation Ticket
-            </button>
-        </div>
         <div class="tct-official-card" id="tctCard">
 
         <!-- Header -->
@@ -597,6 +583,32 @@
 
 </div>
 
+<!-- Citation TCT popup — the buttons above open the official document here.
+     The single #tctCard is moved into this modal while it is open and returned
+     to its print container on close, so printing never sees two copies. -->
+<div class="modal fade" id="citationTicketModal" tabindex="-1"
+     aria-labelledby="citationTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header no-print">
+                <h5 class="modal-title" id="citationTicketModalLabel">
+                    <i class="bi bi-receipt-cutoff me-2"></i>Traffic Citation Ticket (TCT)
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="citationTicketModalBody">
+                <!-- #tctCard is relocated here by openCitationTicketModal(). -->
+            </div>
+            <div class="modal-footer no-print">
+                <a href="<?= $printUrl ?>" class="btn btn-outline-secondary" target="_blank" rel="noopener">
+                    <i class="bi bi-printer me-1"></i>Print Ticket
+                </a>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Styles -->
 <style>
     /* ── Citation page — the violator profile's design language ────────── */
@@ -649,10 +661,7 @@
     .vp-hud-money small { color:rgba(255,255,255,.75); font-size:.72rem; }
     .vp-hud-last { color:rgba(255,255,255,.78); font-size:.72rem; display:flex; align-items:center; flex-wrap:wrap; }
 
-    .vp-hero-upload { display:flex; flex-direction:column; align-items:flex-start; }
-    .vp-btn-upload { display:inline-flex; align-items:center; background:rgba(255,255,255,.2); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.38); color:#fff; font-size:.85rem; font-weight:600; border-radius:12px; padding:.55rem 1.15rem; cursor:pointer; transition:all .22s ease; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,.15); margin:0; }
-    .vp-btn-upload:hover { background:rgba(255,255,255,.32); transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.22); }
-    .vp-hero-hint { display:block; text-align:left; margin-top:.35rem; color:rgba(255,255,255,.55); font-size:.72rem; }
+
 
     .vp-hero-orb { position:absolute; border-radius:50%; pointer-events:none; z-index:1; filter:blur(55px); opacity:.38; }
     .vp-hero-orb-1 { width:240px; height:240px; background:#a78bfa; top:-70px; right:8%; animation:vpOrbFloat 14s ease-in-out infinite alternate; }
@@ -799,10 +808,20 @@
         justify-content: flex-end;
     }
 
+    /* Popup presentation of the very same official TCT document. */
+    #citationTicketModal .modal-body {
+        background: #eef2f7;
+        padding: 1rem;
+        overflow-x: auto;
+    }
+    #citationTicketModal .tct-official-card {
+        box-shadow: 0 8px 28px rgba(15, 23, 42, .18);
+    }
+    :root[data-bs-theme="dark"] #citationTicketModal .modal-body { background: #0f172a; }
+
     @media (max-width: 991px) {
         .vp-hero-content { align-items:stretch; }
         .vp-hero-hud { width:100%; margin:.75rem 0 0 0 !important; flex-direction:row; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:.75rem; }
-        .vp-hero-upload { width:100%; margin-top:.5rem; }
     }
     @media (max-width: 768px) {
         .vp-hero { padding:1.5rem 1.2rem; border-radius:18px; }
@@ -812,7 +831,6 @@
         .vp-avatar-initials { font-size:2rem; }
         .vp-hero-name { font-size:1.35rem; }
         .vp-hero-meta { font-size:.8rem; gap:.3rem .75rem; }
-        .vp-hero-upload { width:100%; }
         .vp-ticket-head { align-items:flex-start; flex-direction:column; }
         .vp-ticket-foot { flex-direction:column; align-items:stretch; }
         .vp-ticket-actions { justify-content:flex-end; }
@@ -1334,40 +1352,8 @@
 </script>
 <?php endif; ?>
 
-<script>
-    (function () {
-        // One ticket can cover several offenses, so every row's "View Ticket"
-        // and the header toggle drive this single document panel.
-        function setCitationTicket(open, shouldScroll) {
-            var shell = document.getElementById('ticketCollapse');
-            if (!shell) return;
-
-            shell.classList.toggle('is-open', open);
-
-            var btn = document.getElementById('ticketToggleBtn');
-            if (btn) {
-                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-                var label = btn.querySelector('span');
-                if (label) {
-                    label.textContent = open ? 'Hide Citation Ticket' : 'View Citation Ticket';
-                }
-            }
-
-            if (open && shouldScroll) {
-                shell.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        window.toggleCitationTicket = function () {
-            var shell = document.getElementById('ticketCollapse');
-            if (!shell) return;
-            setCitationTicket(!shell.classList.contains('is-open'), true);
-        };
-
-        window.showCitationTicket = function () {
-            setCitationTicket(true, true);
-        };
-    })();
-</script>
+<!-- Loaded as a real file (not inline JS) so browser settings that block
+     inline handlers cannot stop the popup from opening. -->
+<script src="<?= base_url('js/citation-ticket.js') ?>?v=<?= filemtime(FCPATH . 'js/citation-ticket.js') ?>"></script>
 
 <?= $this->endSection() ?>

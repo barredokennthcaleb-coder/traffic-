@@ -207,7 +207,7 @@
                 </li>
             <?php endif; ?>
 
-            <li class="nav-item mt-auto pt-3 pb-4">
+            <li class="nav-item nav-item-logout mt-auto pt-3 pb-4">
                 <form method="post" action="<?= base_url('logout') ?>" class="m-0">
                     <?= csrf_field() ?>
                     <button type="submit" class="nav-link nav-link-logout w-100 border-0 bg-transparent text-start" aria-label="Logout">
@@ -417,6 +417,136 @@
     background: #dc2626 !important;
     box-shadow: 0 4px 16px rgba(220, 38, 38, 0.35);
     transform: translateX(4px);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SIDEBAR POLISH — presentation only.
+
+   Static CSS in the existing <style> block: no new scripts, no requests,
+   no entrance animations and no layout work on load, so navigation and
+   page reloads stay exactly as fast. The rail is always dark, so every
+   colour here is a translucent white/brand tint that works for Admin,
+   Enforcer and Driver alike. Widths, padding and display rules from the
+   collapsed-rail and mobile-drawer media queries are deliberately left
+   untouched, so both behaviours keep working.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Brand header ─────────────────────────────────────────────────── */
+.sidebar .brand-logo-container {
+    background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.sidebar .brand-logo-container:hover {
+    box-shadow: 0 8px 22px rgba(0,0,0,.34), 0 0 0 3px rgba(var(--brand-rgb), .18);
+}
+.sidebar .brand-title {
+    font-size: 1.05rem;
+    letter-spacing: -0.015em;
+}
+.sidebar .brand-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+}
+
+/* ── User quick card ──────────────────────────────────────────────── */
+.sidebar .sidebar-user-card {
+    background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
+    border: 1px solid rgba(255,255,255,.11);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.sidebar .sidebar-user-avatar .rounded-circle {
+    border: 2px solid rgba(var(--brand-rgb), .55);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), .12);
+}
+.sidebar .user-online-dot {
+    box-shadow: 0 0 7px rgba(16,185,129,.9);
+}
+.sidebar .sidebar-user-info .text-white-50 {
+    font-size: 0.62rem;
+    letter-spacing: 0.09em;
+}
+
+/* ── Navigation links ─────────────────────────────────────────────── */
+.sidebar-nav .nav-link {
+    letter-spacing: 0.005em;
+}
+.sidebar-nav .nav-link .nav-icon {
+    opacity: 0.9;
+}
+.sidebar-nav .nav-link.active {
+    background: linear-gradient(90deg, rgba(var(--brand-rgb), .34), rgba(255,255,255,.07));
+    border-color: rgba(255,255,255,.16);
+    box-shadow: 0 6px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
+}
+.sidebar-nav .nav-link.active .nav-icon {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(var(--brand-rgb), .55));
+}
+.sidebar-nav .nav-link:not(.active):hover {
+    background: linear-gradient(90deg, rgba(255,255,255,.1), rgba(255,255,255,.045));
+}
+
+/* ── Group rows (Payment / Settings) ──────────────────────────────── */
+.sidebar .nav-group-link .nav-caret {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.08);
+}
+.sidebar .nav-group-link[aria-expanded="true"] .nav-caret {
+    background: rgba(var(--brand-rgb), .35);
+}
+
+/* ── Sub-navigation ───────────────────────────────────────────────── */
+.sidebar-subnav {
+    border-left-color: rgba(var(--brand-rgb), .35);
+}
+.sidebar-subnav .nav-link {
+    border-radius: 9px;
+}
+.sidebar-subnav .nav-link.active {
+    background: rgba(var(--brand-rgb), .3);
+    border: 1px solid rgba(var(--brand-rgb), .45);
+    color: #fff;
+}
+
+/* ── Section divider & logout ─────────────────────────────────────── */
+.sidebar-nav-divider {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+}
+.nav-link-logout {
+    background: linear-gradient(90deg, rgba(239,68,68,.13), rgba(239,68,68,.05));
+    border-color: rgba(239,68,68,.22);
+}
+.nav-link-logout:hover {
+    background: linear-gradient(90deg, #dc2626, #b91c1c) !important;
+}
+/* On short screens the nav column scrolls. Pin Sign out to the bottom of that
+   column so it stays fully visible instead of being clipped at the edge. */
+.sidebar-nav .nav-item-logout {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, rgba(7, 13, 29, 0), #070d1d 22%);
+    padding-top: 0.75rem;
+}
+.sidebar-nav .nav-link-logout {
+    box-sizing: border-box;
+    color: #fca5a5 !important;
+}
+
+/* ── Collapse toggle ──────────────────────────────────────────────── */
+.sidebar-toggle {
+    background: linear-gradient(145deg, #3b82f6, #1d4ed8);
+    border-color: rgba(255,255,255,.22);
+    box-shadow: 0 4px 14px rgba(0,102,255,.5), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.sidebar-toggle:hover,
+.sidebar-toggle:focus-visible {
+    background: linear-gradient(145deg, #2563eb, #1e40af);
+    box-shadow: 0 6px 18px rgba(0,102,255,.6);
 }
 </style>
 

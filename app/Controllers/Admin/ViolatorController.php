@@ -126,6 +126,17 @@ class ViolatorController extends BaseController
         $tokens           = array_slice(array_values(array_unique($tokens)), -20);
         $session->set('violation_submission_tokens', $tokens);
 
+        // The directory issues the same ticket the enforcer does, so it needs
+        // the same preview values: the next TCT serial and the name that will
+        // print above the apprehending officer's signature box.
+        $officerAccount = $this->users->find((int) $session->get('id'));
+        $middleInitial  = trim((string) ($officerAccount['middle_initial'] ?? ''));
+        $officerPrintName = trim(implode(' ', array_filter([
+            trim((string) ($officerAccount['firstname'] ?? '')),
+            $middleInitial !== '' ? $middleInitial . '.' : '',
+            trim((string) ($officerAccount['lastname'] ?? '')),
+        ]))) ?: (string) $session->get('username');
+
         $data = [
             'title'           => 'Violators - Admin',
             'violationTypes'  => $this->violationTypes
@@ -133,6 +144,8 @@ class ViolatorController extends BaseController
                 ->orderBy('violation_name', 'ASC')
                 ->findAll(),
             'submissionToken' => $submissionToken,
+            'officerPrintName' => $officerPrintName,
+            'nextTctNumber'   => $this->violationRecord->peekNextTctNumber((int) date('Y')),
             'violators'  => $result['rows'],
             'total'      => $result['total'],
             'stats'      => $result['stats'],
