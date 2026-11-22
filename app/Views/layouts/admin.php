@@ -83,6 +83,7 @@
     <title><?= $this->renderSection('title', true) ?> - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
+    <?= $this->include('theme/pwa_head') ?>
     <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= base_url('vendor/sweetalert2/sweetalert2.min.css') ?>">
@@ -3430,5 +3431,6 @@
 </script>
 <?= $this->renderSection('scripts') ?>
 <?= $this->include('theme/posthog') ?>
+<?= $this->include('theme/pwa_scripts') ?>
 </body>
 </html>

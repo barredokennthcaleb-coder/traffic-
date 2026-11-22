@@ -60,6 +60,31 @@ can be added to `app.allowedHostnames` in `.env`.
 
 Do not use `localhost` on the phone — that points at the phone itself.
 
+## Installing as an app (PWA)
+
+The app is installable from a supported browser and keeps a small offline shell.
+
+- **Secure origin required.** Service workers (and therefore install and
+  offline mode) only run over HTTPS or `localhost`. A LAN address such as
+  `http://192.168.1.4/` is a plain-HTTP origin: the site still works there, but
+  phones cannot install it or open it offline. Put the site behind HTTPS for
+  field devices.
+- **Install.** Use the browser's install control, or choose **Install App** in
+  the sidebar of a signed-in screen. The sign-in and public lookup pages also
+  carry an install button. On iPhone/iPad, use Share → **Add to Home Screen**.
+- **Offline behaviour.** Static assets (CSS, JS, fonts, icons) and an offline
+  fallback page are cached. Rendered citation, payment and driver screens are
+  deliberately never written to the cache, so an offline navigation shows the
+  offline page instead of leaving personal data readable after sign-out.
+- **Updating.** A new worker activates automatically and offers a Reload
+  notice. When changing the cache list or strategy, bump `VERSION` at the top of
+  `public/sw.js` so existing installs drop the old cache.
+
+PWA files: `public/manifest.webmanifest`, `public/sw.js`, `public/js/pwa.js`,
+`public/css/pwa.css`, `public/offline.html`, and `public/pwa-icons/`. The icon
+folder is named `pwa-icons/` because XAMPP's Apache already reserves `/icons/`
+for its own sample icons.
+
 ## Main workflows
 
 - **Officer/enforcer:** set duty status, issue multi-infraction citations with TCT numbers, review violator history, and manage pending citations.

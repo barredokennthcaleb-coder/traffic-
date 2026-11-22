@@ -133,15 +133,18 @@ if (version_compare(PHP_VERSION, $minPhpVersion, '<')) {
 
 /*
  * Fix XAMPP SCRIPT_NAME URI stripping issue:
- * When Apache serves the site under XAMPP (htdocs), set SCRIPT_NAME to include
- * the subfolder path relative to htdocs so CI4's parseRequestURI() properly
- * strips the subfolder segments from REQUEST_URI.
+ * Apache under XAMPP reports SCRIPT_NAME relative to htdocs, not the
+ * configured document root. Rebuild it relative to DOCUMENT_ROOT so CI4's
+ * parseRequestURI() strips the correct prefix. This works both when the app
+ * is served from htdocs/traffic-/public/ and when a virtual host points
+ * directly at public/ (where the prefix is empty).
  */
 if (isset($_SERVER['SCRIPT_FILENAME']) && php_sapi_name() !== 'cli') {
     $scriptFn = str_replace('\\', '/', realpath($_SERVER['SCRIPT_FILENAME']) ?: $_SERVER['SCRIPT_FILENAME']);
-    $htdocsPos = strpos(strtolower($scriptFn), '/htdocs/');
-    if ($htdocsPos !== false) {
-        $_SERVER['SCRIPT_NAME'] = substr($scriptFn, $htdocsPos + 7);
+    $docRoot  = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+
+    if ($docRoot !== '' && strpos($scriptFn, rtrim($docRoot, '/') . '/') === 0) {
+        $_SERVER['SCRIPT_NAME'] = substr($scriptFn, strlen(rtrim($docRoot, '/')));
     }
 }
 

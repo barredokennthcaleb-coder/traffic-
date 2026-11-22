@@ -39,6 +39,7 @@ $lkIsMatch = static fn (string $value, string $term): bool => $term !== ''
     <meta property="og:description" content="Search active traffic violations, check offense attempt history, and verify payment status instantly.">
     <meta property="og:url" content="<?= base_url('lookup') ?>">
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
+    <?= view('theme/pwa_head', ['pwaThemeDark' => '#0f172a', 'pwaThemeLight' => '#0f172a']) ?>
     <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>">
     <link rel="stylesheet" href="<?= base_url('vendor/inter/inter.css') ?>">
@@ -849,8 +850,12 @@ $lkIsMatch = static fn (string $value, string $term): bool => $term !== ''
 <body>
 
     <!-- Top Bar Navigation -->
-    <div class="container py-3 d-flex justify-content-end align-items-center">
+    <div class="container py-3 d-flex justify-content-end align-items-center flex-wrap gap-2 gap-sm-3">
         <span class="text-white-50 small"><i class="bi bi-shield-check text-success me-1"></i> Public Official Verification Portal</span>
+        <button type="button" class="pwa-install-inline pwa-install-inline--dark" data-pwa-install hidden>
+            <i class="bi bi-download" aria-hidden="true"></i>
+            Install app
+        </button>
     </div>
 
     <!-- Header Section -->
@@ -1286,5 +1291,6 @@ $lkIsMatch = static fn (string $value, string $term): bool => $term !== ''
             }
         });
     </script>
+<?= view('theme/pwa_scripts') ?>
 </body>
 </html>

@@ -6,6 +6,7 @@
     <title>Login - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
+    <?= view('theme/pwa_head', ['pwaThemeDark' => '#faf3f3', 'pwaThemeLight' => '#faf3f3']) ?>
     <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
@@ -394,6 +395,12 @@
             </div>
         </form>
         <p class="help-text">Need access help? Contact your administrator.</p>
+        <div class="text-center mt-3">
+            <button type="button" class="pwa-install-inline" data-pwa-install hidden>
+                <i class="bi bi-download" aria-hidden="true"></i>
+                Install app
+            </button>
+        </div>
     </div>
 </div>
 
@@ -499,5 +506,6 @@
 </script>
 
 <?= view('theme/posthog') ?>
+<?= view('theme/pwa_scripts') ?>
 </body>
 </html>

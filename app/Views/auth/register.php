@@ -6,6 +6,7 @@
     <title>Register - Traffic System</title>
     <link rel="icon" type="image/png" href="<?= base_url('img/pic-1.png') ?>">
     <link rel="shortcut icon" href="<?= base_url('favicon.ico') ?>">
+    <?= view('theme/pwa_head', ['pwaThemeDark' => '#1a9f95', 'pwaThemeLight' => '#1a9f95']) ?>
     <link href="<?= base_url('vendor/bootstrap/bootstrap.min.css') ?>" rel="stylesheet">
     <link href="<?= base_url('vendor/bootstrap-icons/bootstrap-icons.css') ?>" rel="stylesheet">
     <style>
@@ -434,5 +435,6 @@
     });
 </script>
 
+<?= view('theme/pwa_scripts') ?>
 </body>
 </html>

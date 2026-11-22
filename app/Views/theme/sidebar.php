@@ -207,6 +207,13 @@
                 </li>
             <?php endif; ?>
 
+            <li class="nav-item mb-1 pwa-install-item" hidden>
+                <button type="button" class="nav-link w-100 border-0 bg-transparent text-start" data-pwa-install aria-label="Install app">
+                    <i class="bi bi-download nav-icon" aria-hidden="true"></i>
+                    <span class="nav-text ms-2">Install App</span>
+                </button>
+            </li>
+
             <li class="nav-item nav-item-logout mt-auto pt-3 pb-4">
                 <form method="post" action="<?= base_url('logout') ?>" class="m-0">
                     <?= csrf_field() ?>

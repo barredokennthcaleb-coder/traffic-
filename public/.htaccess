@@ -4,6 +4,22 @@
 </IfModule>
 
 # ----------------------------------------------------------------------
+# Progressive Web App assets
+# ----------------------------------------------------------------------
+# Serve the web app manifest with its registered media type.
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
+# The service worker and manifest must be revalidated so a new deployment is
+# picked up instead of being served from a stale browser cache.
+<FilesMatch "^(sw\.js|manifest\.webmanifest)$">
+    <IfModule mod_headers.c>
+        Header always set Cache-Control "no-cache, no-store, must-revalidate"
+    </IfModule>
+</FilesMatch>
+
+# ----------------------------------------------------------------------
 # Rewrite engine
 # ----------------------------------------------------------------------
 <IfModule mod_rewrite.c>
