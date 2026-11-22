@@ -10,10 +10,11 @@
     Options -MultiViews
     RewriteEngine On
 
-    # Stop rewriting if physical file or directory exists on disk
-    RewriteCond %{REQUEST_URI} ^/traffic-/public/(.*)$
-    RewriteCond %{DOCUMENT_ROOT}/traffic-/public/%1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/traffic-/public/%1 -d
+    # Stop rewriting if the request maps to a real file or directory.
+    # %{REQUEST_FILENAME} works whether the app is served from the domain
+    # root (Render/Docker) or from a /traffic-/public/ subdirectory (XAMPP).
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
     # Stop rewriting if already targeting index.php

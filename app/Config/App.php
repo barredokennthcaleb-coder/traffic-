@@ -234,6 +234,17 @@ class App extends BaseConfig
 
         $allowedHosts = array_map('strtolower', $this->allowedHostnames);
 
+        // Render exposes the public hostname of the running service at runtime.
+        // Trust it automatically so the app can build HTTPS asset and form URLs
+        // without hard-coding the generated *.onrender.com address here.
+        $renderUrl = (string) (getenv('RENDER_EXTERNAL_URL') ?: '');
+        if ($renderUrl !== '') {
+            $renderHost = strtolower((string) parse_url($renderUrl, PHP_URL_HOST));
+            if ($renderHost !== '') {
+                $allowedHosts[] = $renderHost;
+            }
+        }
+
         // Phones and tablets on the office LAN reach the app by its private IP
         // (10.x, 172.16-31.x, 192.168.x), and that address can change when the
         // router hands out a new lease. Private ranges are therefore trusted

@@ -16,7 +16,12 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 WORKDIR /var/www/html
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY . .
+
+# Production PHP limits (larger uploads, no error display, sane memory).
+COPY docker/php-production.ini /usr/local/etc/php/conf.d/zz-app.ini
 RUN composer install --no-dev --optimize-autoloader \
- && chown -R www-data:www-data writable
+ && mkdir -p writable/cache writable/logs writable/session writable/debugbar \
+  && mkdir -p public/uploads/profile public/uploads/violators \
+  && chown -R www-data:www-data writable public/uploads
 
 EXPOSE 80

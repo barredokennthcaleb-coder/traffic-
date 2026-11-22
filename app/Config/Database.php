@@ -196,6 +196,14 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Managed MySQL providers (Aiven, PlanetScale, etc.) require TLS.
+        // Enable it with database.default.encrypt = true in the environment.
+        // CI4's MySQLi driver only turns TLS on when this is an array, so a
+        // plain `true` value has to be converted here rather than inline.
+        if (filter_var(env('database.default.encrypt', false), FILTER_VALIDATE_BOOL)) {
+            $this->default['encrypt'] = ['ssl_verify' => false];
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
