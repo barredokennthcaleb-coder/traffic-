@@ -175,6 +175,164 @@
     }
 }
 
+/* ── Notice stack ────────────────────────────────────────────────────────── */
+/* Keeps the install, offline and update notices from covering each other. */
+.pwa-notice-stack {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    z-index: 99990;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    width: min(560px, calc(100vw - 1.5rem));
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.pwa-notice-stack > * {
+    pointer-events: auto;
+}
+
+.pwa-notice-stack .pwa-banner {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: none;
+    transform: none;
+    animation-name: pwaStackIn;
+}
+
+@keyframes pwaStackIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Automatic install banner ───────────────────────────────────────────── */
+.pwa-install-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 18px 46px -10px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    animation: pwaStackIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.pwa-install-banner--leaving {
+    animation: pwaInstallOut 0.18s ease both;
+}
+
+@keyframes pwaInstallOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.pwa-install-banner__icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #eff6ff;
+    object-fit: cover;
+}
+
+.pwa-install-banner__copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.pwa-install-banner__title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.pwa-install-banner__text {
+    color: #475569;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.pwa-install-banner__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.pwa-install-banner__install,
+.pwa-install-banner__dismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0.45rem 0.8rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.pwa-install-banner__install {
+    border: 0;
+    background: #0066ff;
+    color: #ffffff;
+}
+
+.pwa-install-banner__install:hover {
+    background: #0052cc;
+}
+
+.pwa-install-banner__dismiss {
+    border: 1px solid #e2e8f0;
+    background: transparent;
+    color: #475569;
+}
+
+.pwa-install-banner__dismiss:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.pwa-install-banner__install:active,
+.pwa-install-banner__dismiss:active {
+    transform: scale(0.97);
+}
+
+.pwa-install-banner__install:focus-visible,
+.pwa-install-banner__dismiss:focus-visible {
+    outline: 3px solid #0066ff;
+    outline-offset: 2px;
+}
+
 /* ── Install help dialog (iOS and browsers without an install prompt) ────── */
 .pwa-dialog {
     width: min(440px, calc(100vw - 2rem));
@@ -295,6 +453,31 @@
     color: #f8fafc;
 }
 
+[data-bs-theme="dark"] .pwa-install-banner {
+    border-color: #334155;
+    background: #1e293b;
+    color: #f8fafc;
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+[data-bs-theme="dark"] .pwa-install-banner__icon {
+    background: rgba(0, 102, 255, 0.18);
+}
+
+[data-bs-theme="dark"] .pwa-install-banner__text {
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .pwa-install-banner__dismiss {
+    border-color: #475569;
+    color: #cbd5e1;
+}
+
+[data-bs-theme="dark"] .pwa-install-banner__dismiss:hover {
+    background: #334155;
+    color: #f8fafc;
+}
+
 [data-bs-theme="dark"] .pwa-dialog__card {
     border-color: #334155;
     background: #1e293b;
@@ -325,6 +508,30 @@
         color: #94a3b8;
     }
 
+    html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-install-banner {
+        border-color: #334155;
+        background: #1e293b;
+        color: #f8fafc;
+    }
+
+    html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-install-banner__icon {
+        background: rgba(0, 102, 255, 0.18);
+    }
+
+    html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-install-banner__text {
+        color: #cbd5e1;
+    }
+
+    html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-install-banner__dismiss {
+        border-color: #475569;
+        color: #cbd5e1;
+    }
+
+    html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-install-banner__dismiss:hover {
+        background: #334155;
+        color: #f8fafc;
+    }
+
     html:not([data-bs-theme="light"]):not([data-theme="light"]) .pwa-dialog__card {
         border-color: #334155;
         background: #1e293b;
@@ -352,6 +559,35 @@
         animation-name: pwaBannerInMobile;
     }
 
+    .pwa-notice-stack {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        transform: none;
+    }
+
+    .pwa-install-banner {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        padding: 0.8rem;
+    }
+
+    .pwa-install-banner__copy {
+        flex: 1 1 0;
+    }
+
+    .pwa-install-banner__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .pwa-install-banner__install,
+    .pwa-install-banner__dismiss {
+        flex: 1 1 auto;
+    }
+
     @keyframes pwaBannerInMobile {
         from {
             opacity: 0;
@@ -366,11 +602,14 @@
 
 @media (prefers-reduced-motion: reduce) {
     .pwa-banner,
+    .pwa-install-banner,
     .pwa-dialog__card {
         animation: none;
     }
 
-    .pwa-install-inline {
+    .pwa-install-inline,
+    .pwa-install-banner__install,
+    .pwa-install-banner__dismiss {
         transition: none;
     }
 }

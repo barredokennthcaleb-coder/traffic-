@@ -69,9 +69,14 @@ The app is installable from a supported browser and keeps a small offline shell.
   `http://192.168.1.4/` is a plain-HTTP origin: the site still works there, but
   phones cannot install it or open it offline. Put the site behind HTTPS for
   field devices.
-- **Install.** Use the browser's install control, or choose **Install App** in
-  the sidebar of a signed-in screen. The sign-in and public lookup pages also
-  carry an install button. On iPhone/iPad, use Share → **Add to Home Screen**.
+- **Install.** When the app is installable, an install banner pops up
+  automatically. Browsers do not let a site open the native install dialog
+  without a tap, so tap **Install** in the banner to open it. You can also use
+  the browser's install control or choose **Install App** in the sidebar of a
+  signed-in screen. The sign-in and public lookup pages also carry an install
+  button. On iPhone/iPad, tap **How to install** in the banner, or use Share →
+  **Add to Home Screen**. The banner is shown once per browser session; use
+  `?pwa-install=1` on any app page to show it again.
 - **Offline behaviour.** Static assets (CSS, JS, fonts, icons) and an offline
   fallback page are cached. Rendered citation, payment and driver screens are
   deliberately never written to the cache, so an offline navigation shows the

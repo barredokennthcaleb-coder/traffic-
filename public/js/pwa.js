@@ -2,6 +2,7 @@
    Traffic System — Progressive Web App bootstrap
    ----------------------------------------------------------------------------
    • Registers the service worker that makes the app installable/offline-aware.
+   • Pops up an install banner automatically when the app is installable.
    • Wires the "Install App" entry points (sidebar, sign-in, lookup).
    • Shows offline and "new version available" notices.
    • Keeps the browser/status-bar colour in step with the chosen theme.
@@ -24,9 +25,15 @@
     const scriptUrl = new URL(script.src, window.location.href);
     const swUrl = new URL('../sw.js', scriptUrl).href;
     const swScope = new URL('../', scriptUrl).href;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-        || window.navigator.standalone === true;
+    const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+    const isStandalone = standaloneQuery.matches || window.navigator.standalone === true;
     const isPrintMode = new URLSearchParams(window.location.search).get('print') === '1';
+    const forceInstall = new URLSearchParams(window.location.search).get('pwa-install') === '1';
+
+    const INSTALL_DISMISS_KEY = 'pwa-install-dismissed';
+    const INSTALL_SHOWN_KEY = 'pwa-install-shown';
+    const INSTALLED_KEY = 'pwa-installed';
+    const INSTALL_FALLBACK_DELAY = 2500;
 
     document.documentElement.classList.toggle('pwa-standalone', isStandalone);
 
@@ -53,6 +60,55 @@
             attributes: true,
             attributeFilter: ['data-theme', 'data-bs-theme'],
         });
+    }
+
+    /* ── Shared helpers ──────────────────────────────────────────────────── */
+    const storageGet = (key, storageName = 'localStorage') => {
+        try {
+            return window[storageName].getItem(key);
+        } catch {
+            return null;
+        }
+    };
+
+    const storageSet = (key, value, storageName = 'localStorage') => {
+        try {
+            window[storageName].setItem(key, value);
+        } catch {
+            // Storage can be unavailable (private mode); the UI still works.
+        }
+    };
+
+    const storageRemove = (key, storageName = 'localStorage') => {
+        try {
+            window[storageName].removeItem(key);
+        } catch {
+            // Ignore.
+        }
+    };
+
+    let noticeStack = null;
+
+    const getNoticeStack = () => {
+        if (noticeStack && document.body.contains(noticeStack)) {
+            return noticeStack;
+        }
+
+        noticeStack = document.createElement('div');
+        noticeStack.className = 'pwa-notice-stack';
+        document.body.appendChild(noticeStack);
+
+        return noticeStack;
+    };
+
+    if (isStandalone) {
+        storageSet(INSTALLED_KEY, '1');
+    }
+
+    if (forceInstall) {
+        storageRemove(INSTALL_DISMISS_KEY, 'sessionStorage');
+        storageRemove(INSTALL_SHOWN_KEY, 'sessionStorage');
+        storageRemove(INSTALLED_KEY);
     }
 
     /* ── Service worker ──────────────────────────────────────────────────── */
@@ -89,6 +145,14 @@
 
     /* ── Install entry points ────────────────────────────────────────────── */
     let deferredPrompt = null;
+    let installBanner = null;
+    let installFallbackTimer = null;
+
+    const isInstalled = () => isStandalone
+        || window.navigator.standalone === true
+        || storageGet(INSTALLED_KEY) === '1';
+
+    const isInstallDismissed = () => storageGet(INSTALL_DISMISS_KEY, 'sessionStorage') === '1';
 
     const setInstallVisible = (visible) => {
         document.querySelectorAll('[data-pwa-install]').forEach((button) => {
@@ -98,19 +162,205 @@
     };
 
     // Only a secure context (HTTPS or localhost) can install a PWA.
-    if (!isStandalone && window.isSecureContext) {
+    if (!isInstalled() && window.isSecureContext) {
         setInstallVisible(true);
+    }
+
+    const installButtonLabel = () => (deferredPrompt ? 'Install' : 'How to install');
+
+    const updateInstallBanner = () => {
+        if (!installBanner) {
+            return;
+        }
+
+        const action = installBanner.querySelector('[data-pwa-banner-install]');
+
+        if (action) {
+            action.textContent = installButtonLabel();
+        }
+    };
+
+    const hideInstallBanner = () => {
+        if (installFallbackTimer) {
+            window.clearTimeout(installFallbackTimer);
+            installFallbackTimer = null;
+        }
+
+        if (!installBanner) {
+            return;
+        }
+
+        const banner = installBanner;
+        installBanner = null;
+        banner.classList.add('pwa-install-banner--leaving');
+        window.setTimeout(() => banner.remove(), 180);
+    };
+
+    const dismissInstallBanner = () => {
+        storageSet(INSTALL_DISMISS_KEY, '1', 'sessionStorage');
+        hideInstallBanner();
+    };
+
+    const showInstallBanner = (force = false) => {
+        if (isPrintMode || isInstalled() || !window.isSecureContext) {
+            return;
+        }
+
+        if (!force && (isInstallDismissed() || storageGet(INSTALL_SHOWN_KEY, 'sessionStorage') === '1')) {
+            return;
+        }
+
+        if (installFallbackTimer) {
+            window.clearTimeout(installFallbackTimer);
+            installFallbackTimer = null;
+        }
+
+        if (installBanner) {
+            updateInstallBanner();
+            return;
+        }
+
+        storageSet(INSTALL_SHOWN_KEY, '1', 'sessionStorage');
+
+        const banner = document.createElement('section');
+        banner.className = 'pwa-install-banner';
+        banner.setAttribute('data-pwa-install-banner', '');
+        banner.setAttribute('role', 'region');
+        banner.setAttribute('aria-label', 'Install Traffic System');
+        banner.setAttribute('aria-live', 'polite');
+
+        const icon = document.createElement('img');
+        icon.className = 'pwa-install-banner__icon';
+        icon.src = new URL('../pwa-icons/icon-192.png', scriptUrl).href;
+        icon.alt = '';
+        icon.width = 48;
+        icon.height = 48;
+
+        const copy = document.createElement('div');
+        copy.className = 'pwa-install-banner__copy';
+
+        const title = document.createElement('strong');
+        title.className = 'pwa-install-banner__title';
+        title.textContent = 'Install Traffic System';
+
+        const text = document.createElement('span');
+        text.className = 'pwa-install-banner__text';
+        text.textContent = 'Add the app to your home screen for quick, full-screen access and offline use.';
+
+        copy.appendChild(title);
+        copy.appendChild(text);
+
+        const actions = document.createElement('div');
+        actions.className = 'pwa-install-banner__actions';
+
+        const install = document.createElement('button');
+        install.type = 'button';
+        install.className = 'pwa-install-banner__install';
+        install.setAttribute('data-pwa-banner-install', '');
+        install.textContent = installButtonLabel();
+        install.addEventListener('click', () => {
+            if (deferredPrompt) {
+                promptInstall();
+            } else {
+                showInstallHelp();
+            }
+        });
+
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button';
+        dismiss.className = 'pwa-install-banner__dismiss';
+        dismiss.setAttribute('data-pwa-banner-dismiss', '');
+        dismiss.textContent = 'Not now';
+        dismiss.addEventListener('click', dismissInstallBanner);
+
+        actions.appendChild(install);
+        actions.appendChild(dismiss);
+        banner.appendChild(icon);
+        banner.appendChild(copy);
+        banner.appendChild(actions);
+        getNoticeStack().appendChild(banner);
+        installBanner = banner;
+    };
+
+    const scheduleInstallBanner = () => {
+        if (isPrintMode || isInstalled() || !window.isSecureContext) {
+            return;
+        }
+
+        if (!forceInstall && (isInstallDismissed() || storageGet(INSTALL_SHOWN_KEY, 'sessionStorage') === '1')) {
+            return;
+        }
+
+        if (!document.querySelector('link[rel="manifest"]')) {
+            return;
+        }
+
+        if (installFallbackTimer) {
+            return;
+        }
+
+        installFallbackTimer = window.setTimeout(() => {
+            installFallbackTimer = null;
+            showInstallBanner(forceInstall);
+        }, INSTALL_FALLBACK_DELAY);
+    };
+
+    function promptInstall() {
+        if (!deferredPrompt) {
+            showInstallHelp();
+            return;
+        }
+
+        const prompt = deferredPrompt;
+        deferredPrompt = null;
+
+        try {
+            prompt.prompt();
+        } catch {
+            // Some browsers only allow the native dialog directly from a
+            // trusted gesture; fall back to the step-by-step instructions.
+            showInstallHelp();
+            return;
+        }
+
+        Promise.resolve(prompt.userChoice)
+            .catch(() => null)
+            .then((choice) => {
+                if (choice && choice.outcome === 'accepted') {
+                    storageSet(INSTALLED_KEY, '1');
+                    hideInstallBanner();
+                    setInstallVisible(false);
+                    return;
+                }
+
+                // The user closed the browser prompt; don't pop the banner
+                // back up for the rest of this browser session.
+                dismissInstallBanner();
+            });
     }
 
     window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
         deferredPrompt = event;
+        storageRemove(INSTALLED_KEY);
         setInstallVisible(true);
+        updateInstallBanner();
+        showInstallBanner(forceInstall);
     });
 
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
+        storageSet(INSTALLED_KEY, '1');
+        hideInstallBanner();
         setInstallVisible(false);
+    });
+
+    standaloneQuery.addEventListener?.('change', (event) => {
+        if (event.matches) {
+            storageSet(INSTALLED_KEY, '1');
+            hideInstallBanner();
+            setInstallVisible(false);
+        }
     });
 
     document.addEventListener('click', (event) => {
@@ -122,20 +372,17 @@
         }
 
         event.preventDefault();
-
-        if (deferredPrompt) {
-            const prompt = deferredPrompt;
-            deferredPrompt = null;
-
-            prompt.prompt();
-            Promise.resolve(prompt.userChoice)
-                .catch(() => null)
-                .finally(() => setInstallVisible(!isStandalone));
-            return;
-        }
-
-        showInstallHelp();
+        promptInstall();
     });
+
+    // Escape dismisses the banner without installing.
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && installBanner) {
+            dismissInstallBanner();
+        }
+    });
+
+    scheduleInstallBanner();
 
     function showInstallHelp() {
         const userAgent = navigator.userAgent;
@@ -250,7 +497,7 @@
 
         banner.appendChild(icon);
         banner.appendChild(text);
-        document.body.appendChild(banner);
+        getNoticeStack().appendChild(banner);
 
         return { banner, text };
     };

@@ -110,4 +110,21 @@ final class PwaAssetsTest extends CIUnitTestCase
             $this->assertStringContainsString("view('theme/pwa_scripts'", $source, $view . ' is missing the PWA registration script');
         }
     }
+
+    public function testInstallBannerPopsUpAutomatically(): void
+    {
+        $script = (string) file_get_contents($this->publicFile('js/pwa.js'));
+
+        $this->assertStringContainsString("addEventListener('beforeinstallprompt'", $script);
+        $this->assertStringContainsString('scheduleInstallBanner', $script);
+        $this->assertStringContainsString('INSTALL_FALLBACK_DELAY', $script);
+        $this->assertStringContainsString('pwa-install-banner', $script);
+        $this->assertStringContainsString('data-pwa-banner-install', $script);
+
+        $styles = (string) file_get_contents($this->publicFile('css/pwa.css'));
+
+        $this->assertStringContainsString('.pwa-install-banner', $styles);
+        $this->assertStringContainsString('.pwa-notice-stack', $styles);
+        $this->assertStringContainsString('pwaStackIn', $styles);
+    }
 }

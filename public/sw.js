@@ -15,7 +15,7 @@
    every installed device drops the old cache on the next visit.
    ========================================================================== */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const STATIC_CACHE = `traffic-static-${VERSION}`;
 const RUNTIME_CACHE = `traffic-runtime-${VERSION}`;
 
