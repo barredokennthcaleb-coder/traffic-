@@ -22,7 +22,7 @@ class PenaltyController extends BaseController
         $data = [
             'title' => 'Penalty Management',
             'pending_violations' => $this->violationRecord
-                ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
+                ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, \'::\', penalty_amount) SEPARATOR \'||\') as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
                 ->join('users', 'users.id = violations.officer_id', 'left')
                 ->where('violations.status', 'Pending')
                 ->groupBy('violations.ticket_id')
@@ -256,7 +256,7 @@ class PenaltyController extends BaseController
             ->getRowArray();
 
         $paymentsQuery = $this->violationRecord
-            ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
+            ->select('violations.*, ' . ViolatorRecord::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, \'::\', penalty_amount) SEPARATOR \'||\') as concatenated_violations, SUM(penalty_amount) as total_penalty_sum, SUM(points) as total_points_sum')
             ->join('users', 'users.id = violations.officer_id', 'left')
             ->where('violations.status', 'Paid');
 

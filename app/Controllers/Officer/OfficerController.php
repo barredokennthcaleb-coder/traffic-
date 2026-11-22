@@ -1784,7 +1784,7 @@ class OfficerController extends BaseController
             $baseRecord = $this->violationRecord
                 ->groupStart()
                     ->where('driver_name', $driverName)
-                    ->orWhere('CONCAT(first_name, " ", last_name)', $driverName)
+                    ->orWhere('CONCAT(first_name, \' \', last_name)', $driverName)
                 ->groupEnd()
                 ->first();
         }
@@ -1825,7 +1825,7 @@ class OfficerController extends BaseController
                     $builder->where('violations.driver_name', $driverName);
                     $hasFilter = true;
                 }
-                $builder->orWhere('CONCAT(violations.first_name, " ", violations.last_name)', $driverName);
+                $builder->orWhere('CONCAT(violations.first_name, \' \', violations.last_name)', $driverName);
             }
 
             if (!empty($plate) && !in_array(strtolower(trim($plate)), ['no', 'none', 'n/a', '-'])) {

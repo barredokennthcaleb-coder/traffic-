@@ -435,7 +435,7 @@ class ViolatorRecord extends Model
 
     public function getRecentViolations($limit = 10)
     {
-        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
+        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, \'::\', penalty_amount) SEPARATOR \'||\') as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
                     ->join('users', 'users.id = violations.officer_id', 'left')
                     ->where('violations.status !=', 'Cancelled')
                     ->groupBy('violations.ticket_id')
@@ -622,7 +622,7 @@ class ViolatorRecord extends Model
 
     public function searchViolations($keyword)
     {
-        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, "::", penalty_amount) SEPARATOR "||") as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
+        return $this->select('violations.*, ' . self::officerNameSql() . ' as officer_name, GROUP_CONCAT(CONCAT(violation_type, \'::\', penalty_amount) SEPARATOR \'||\') as concatenated_violations, SUM(penalty_amount) as total_penalty_sum')
                     ->join('users', 'users.id = violations.officer_id', 'left')
                     ->where('violations.status !=', 'Cancelled')
                     ->groupStart()
