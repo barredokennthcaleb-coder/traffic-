@@ -52,6 +52,11 @@ class DatabaseExceptionHandler implements ExceptionHandlerInterface
             // Never let logging break the fallback page.
         }
 
+        // Hosted platforms (Render, Docker, systemd) capture stderr, not the
+        // writable/logs file inside the container. Mirror the reason there so
+        // the real connection error is visible in the platform log stream.
+        error_log('Database connection failure: ' . $exception->getMessage());
+
         $statusCode = 503;
 
         if ($request instanceof IncomingRequest && str_contains($request->getHeaderLine('accept'), 'text/html')) {
